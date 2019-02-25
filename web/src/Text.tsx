@@ -8,6 +8,9 @@ import { lineHeight } from "./StyleConstants";
  * user generated content, interface instructions, or marketing copy
  * for example.
  *
+ * Body text also has a maximum width. Beyond that width the text loses
+ * legibility.
+ *
  * We use a serif font for body text which goes a bit against the modern
  * sans-serif style in tech. Some would argue that serif fonts are better for
  * legibility when reading long blocks of text. This is a contributing factor
@@ -54,11 +57,16 @@ let liteFontSize = 12;
 
 let styles = StyleSheet.create({
   body: {
-    color: "#404040",
+    maxWidth: bodyFontSize * 30,
+    color: "#333333",
     fontFamily: "'Lora', System",
     fontSize: bodyFontSize,
     fontWeight: "normal",
     lineHeight: lineHeight,
+
+    // Better OSX font rendering.
+    WebkitFontSmoothing: "antialiased",
+    MozOsxFontSmoothing: "grayscale",
   },
   label: {
     color: "#000000",
@@ -66,13 +74,21 @@ let styles = StyleSheet.create({
     fontSize: bodyFontSize,
     fontWeight: "bold",
     lineHeight: lineHeight,
+
+    // Better OSX font rendering.
+    WebkitFontSmoothing: "antialiased",
+    MozOsxFontSmoothing: "grayscale",
   },
   lite: {
-    color: "#808080",
+    color: "#8C8C8C",
     fontFamily: "System",
     fontSize: liteFontSize,
     fontWeight: "normal",
     lineHeight: lineHeight,
+
+    // Better OSX font rendering.
+    WebkitFontSmoothing: "antialiased",
+    MozOsxFontSmoothing: "grayscale",
 
     // We want the same baseline as our `bodyFontSize` friends. Ok since lite
     // text will only ever be one line long.
