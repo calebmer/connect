@@ -7,6 +7,13 @@ import { lineHeight } from "./StyleConstants";
  * Body text is the text forming the main content of our website. It could be
  * user generated content, interface instructions, or marketing copy
  * for example.
+ *
+ * We use a serif font for body text which goes a bit against the modern
+ * sans-serif style in tech. Some would argue that serif fonts are better for
+ * legibility when reading long blocks of text. This is a contributing factor
+ * to why we picked a serif font. Mostly, we want to define a unique visual
+ * style for our product. One that distinguishes us from products like Slack
+ * and Facebook. The easiest place to start is with the font.
  */
 export function BodyText({ children }: { children: ReactNode }) {
   return <Text style={styles.body}>{children}</Text>;
@@ -48,14 +55,14 @@ let liteFontSize = 12;
 let styles = StyleSheet.create({
   body: {
     color: "#404040",
-    fontFamily: "System",
+    fontFamily: "'Lora', System",
     fontSize: bodyFontSize,
     fontWeight: "normal",
     lineHeight: lineHeight,
   },
   label: {
     color: "#000000",
-    fontFamily: "System",
+    fontFamily: "'Lora', System",
     fontSize: bodyFontSize,
     fontWeight: "bold",
     lineHeight: lineHeight,
@@ -70,6 +77,6 @@ let styles = StyleSheet.create({
     // We want the same baseline as our `bodyFontSize` friends. Ok since lite
     // text will only ever be one line long.
     position: "relative",
-    bottom: -((bodyFontSize - liteFontSize) / 2) + 0.5,
+    bottom: -((bodyFontSize - liteFontSize) / 2),
   },
 });
