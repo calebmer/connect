@@ -3,8 +3,3 @@
  * `lineHeight` intervals then everything should fit right into place.
  */
 export const lineHeight = 20;
-
-export const bodyFontFamily = "System";
-export const bodyFontSize = 16;
-export const bodyLineHeight = lineHeight;
-export const bodyTextColor = "#333333";

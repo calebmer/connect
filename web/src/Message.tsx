@@ -1,7 +1,7 @@
 import * as React from "react";
 import { StyleSheet, View } from "react-native";
 import { lineHeight } from "./StyleConstants";
-import { BodyText } from "./Text";
+import { BodyText, LabelText } from "./Text";
 import { ProfileImage } from "./ProfileImage";
 
 export function Message() {
@@ -9,6 +9,7 @@ export function Message() {
     <View style={styles.container}>
       <ProfileImage />
       <View style={styles.body}>
+        <LabelText>Caleb Meredith</LabelText>
         <BodyText>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
           vulputate nibh ipsum, eget sollicitudin enim dignissim a.

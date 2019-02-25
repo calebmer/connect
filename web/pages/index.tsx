@@ -4,8 +4,8 @@ import { GridWireFrame } from "../src/GridWireFrame";
 
 export default function IndexPage() {
   return (
-    <GridWireFrame>
-      <Message />
-    </GridWireFrame>
+    // <GridWireFrame>
+    <Message />
+    // </GridWireFrame>
   );
 }
