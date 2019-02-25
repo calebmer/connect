@@ -1,12 +1,14 @@
 {
   "name": "@hello/web",
   "version": "0.0.0",
+  "license": "UNLICENSED",
   "scripts": {
     "dev": "next",
     "build": "next build",
     "start": "next start"
   },
   "dependencies": {
+    "@babel/core": "^7.3.3",
     "@zeit/next-typescript": "^1.1.1",
     "next": "^8.0.3",
     "react": "^16.8.3",

@@ -1,2 +1,3 @@
-let withTypescript = require('@zeit/next-typescript');
+let withTypescript = require("@zeit/next-typescript");
+
 module.exports = withTypescript();
