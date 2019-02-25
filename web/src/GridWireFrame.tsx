@@ -41,6 +41,6 @@ let styles = StyleSheet.create({
   row: {
     height: lineHeight,
     borderBottomColor: "rgba(0, 0, 0, 0.1)",
-    borderBottomWidth: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });
