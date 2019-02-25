@@ -2,7 +2,7 @@
   "private": true,
   "license": "UNLICENSED",
   "workspaces": [
-    "*"
+    "web"
   ],
   "dependencies": {
     "typescript": "^3.3.3333"
