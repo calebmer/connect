@@ -5,7 +5,8 @@
     "web"
   ],
   "scripts": {
-    "eslint": "eslint . --ext .js,.ts,.tsx"
+    "eslint": "eslint . --ext .js,.ts,.tsx",
+    "prettier": "prettier \"**/*.{js,ts,tsx}\" --write"
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^1.4.1",
@@ -15,6 +16,7 @@
     "eslint-plugin-react": "^7.12.4",
     "eslint-plugin-react-hooks": "^1.2.0",
     "eslint-plugin-react-native": "^3.6.0",
+    "prettier": "^1.16.4",
     "typescript": "^3.3.3333"
   }
 }
