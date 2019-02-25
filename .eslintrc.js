@@ -19,6 +19,7 @@ module.exports = {
     node: true,
   },
   rules: {
+    "no-console": "warn",
     "no-async-promise-executor": "warn",
     "no-misleading-character-class": "warn",
     "no-template-curly-in-string": "warn",

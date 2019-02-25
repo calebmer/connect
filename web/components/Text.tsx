@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ReactNode } from "react";
 import { StyleSheet, Text } from "react-native";
 
 let bodyFontFamily = "System";
@@ -9,7 +10,7 @@ let bodyColor = "#333333";
 /**
  * Themed body text.
  */
-export function BodyText({ children }: { children: React.ReactNode }) {
+export function BodyText({ children }: { children: ReactNode }) {
   return <Text style={styles.body}>{children}</Text>;
 }
 
