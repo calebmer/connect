@@ -1,6 +1,10 @@
 {
   "private": true,
+  "license": "UNLICENSED",
   "workspaces": [
     "*"
-  ]
+  ],
+  "dependencies": {
+    "typescript": "^3.3.3333"
+  }
 }

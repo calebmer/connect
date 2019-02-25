@@ -5,5 +5,8 @@ node_modules/
 yarn-debug.log*
 yarn-error.log*
 
+# Next.js
+.next/
+
 # MacOS
 .DS_Store

@@ -8,8 +8,7 @@
   "files.insertFinalNewline": true,
   "files.exclude": {
     "**/.git": true,
-    "**/.DS_Store": true,
-    "**/node_modules": true
+    "**/.DS_Store": true
   },
   "html.format.endWithNewline": true,
   "[markdown]": {
