@@ -866,7 +866,7 @@
     requireindex "^1.2.0"
     tsutils "^3.7.0"
 
-"@typescript-eslint/parser@1.4.1":
+"@typescript-eslint/parser@1.4.1", "@typescript-eslint/parser@^1.4.1":
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-1.4.1.tgz#a7cd1a41722da6a37088ea90c0009ea56a27a372"
   integrity sha512-W+9qep7F4Rn5Eq8F2vkOGbxiy639quYBGvDO6c4p4kIYnKdWj1rBGh3PoyOlaA1v1Dttj23yCRl9Ca9NmdgWCQ==
@@ -1311,6 +1311,11 @@ babel-loader@8.0.2:
     loader-utils "^1.0.2"
     mkdirp "^0.5.1"
     util.promisify "^1.0.0"
+
+babel-plugin-react-native-web@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/babel-plugin-react-native-web/-/babel-plugin-react-native-web-0.10.0.tgz#ee12cbd6571b04c6799fd51c3272ceb1f1886d82"
+  integrity sha512-4aaU9+oUTuYL57/FdTJAwUfVnaE9wpr6vF9VqJvwesI+Lfk1Pi6V3juJyWnWdXtI7FPBwbRYTolC2CTfL7U8lg==
 
 babel-plugin-react-require@3.0.0:
   version "3.0.0"

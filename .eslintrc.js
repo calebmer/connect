@@ -1,5 +1,6 @@
 module.exports = {
   root: true,
+  parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: 2019,
     sourceType: "module",
@@ -50,6 +51,9 @@ module.exports = {
     "func-style": ["warn", "declaration"],
     "no-var": "warn",
 
+    // NOTE: TypeScript will warn about this.
+    "no-unused-vars": "off",
+
     "@typescript-eslint/adjacent-overload-signatures": "warn",
     "@typescript-eslint/array-type": ["warn", "array"],
     "@typescript-eslint/no-angle-bracket-type-assertion": "warn",
@@ -59,6 +63,8 @@ module.exports = {
     "import/first": "warn",
     "import/order": ["warn", { "newlines-between": "never" }],
     "import/newline-after-import": "warn",
+
+    "react/jsx-key": "warn",
 
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
