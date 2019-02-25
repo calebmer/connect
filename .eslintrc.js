@@ -1,6 +1,9 @@
 module.exports = {
   root: true,
-  parserOptions: { sourceType: "module" },
+  parserOptions: {
+    ecmaVersion: 2019,
+    sourceType: "module",
+  },
   plugins: [
     "@typescript-eslint",
     "import",
