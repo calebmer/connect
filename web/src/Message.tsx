@@ -23,7 +23,7 @@ let styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     paddingVertical: lineHeight,
-    paddingHorizontal: lineHeight / 2,
+    paddingHorizontal: lineHeight,
   },
   body: {
     flex: 1,
