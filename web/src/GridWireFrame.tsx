@@ -1,8 +1,7 @@
 import * as React from "react";
 import { ReactNode, useState } from "react";
 import { StyleSheet, View } from "react-native";
-
-let lineHeight = 20;
+import { lineHeight } from "./StyleConstants";
 
 /**
  * Renders a grid wire frame on top of our UI. Useful for checking that our UI
