@@ -10,15 +10,25 @@ import { lineHeight } from "./StyleConstants";
  * content was created. The user’s profile image is put on the left and their
  * name is included above the body content.
  */
-export function ProfileSignature({ children }: { children: ReactNode }) {
+export function ProfileSignature({
+  name,
+  image,
+  time,
+  children,
+}: {
+  name: string;
+  image: string;
+  time: string;
+  children: ReactNode;
+}) {
   return (
     <View style={styles.container}>
-      <ProfileImage />
+      <ProfileImage image={image} />
       <View style={styles.body}>
         <View style={styles.header}>
-          <LabelText>Caleb Meredith</LabelText>
+          <LabelText>{name}</LabelText>
           <View style={styles.headerTime}>
-            <LiteText>7:58 AM</LiteText>
+            <LiteText>{time}</LiteText>
           </View>
         </View>
         {children}

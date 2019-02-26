@@ -9,6 +9,7 @@ export function MessageList({
   messages: Array<{
     id: number;
     name: string;
+    image: string;
     message: string;
     time: string;
   }>;
@@ -17,7 +18,12 @@ export function MessageList({
     <View style={styles.list}>
       {messages.map(message => (
         <View key={message.id} style={styles.item}>
-          <Message />
+          <Message
+            name={message.name}
+            image={message.image}
+            message={message.message}
+            time={message.time}
+          />
         </View>
       ))}
     </View>
