@@ -2,20 +2,23 @@ import * as React from "react";
 import { View, StyleSheet } from "react-native";
 import { ProfileSignature } from "./ProfileSignature";
 import { lineHeight } from "./StyleConstants";
+import { BodyText } from "./Text";
 
 export function PostContent({
   name,
   image,
+  content,
   time,
 }: {
   name: string;
   image: string;
+  content: string;
   time: string;
 }) {
   return (
     <View style={styles.container}>
       <ProfileSignature name={name} image={image} time={time}>
-        {null}
+        <BodyText>{content}</BodyText>
       </ProfileSignature>
     </View>
   );
@@ -24,5 +27,6 @@ export function PostContent({
 let styles = StyleSheet.create({
   container: {
     paddingHorizontal: lineHeight,
+    paddingVertical: lineHeight,
   },
 });

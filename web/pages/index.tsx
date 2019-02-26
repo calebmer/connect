@@ -11,17 +11,9 @@ export default function IndexPage() {
       <Post
         name="Baruch Hen"
         image="https://pbs.twimg.com/profile_images/1022636637891776512/vCciX6oJ_400x400.jpg"
+        content="Dominic Gozza, Joseph Collins: what do you guys use to manage state across your app (react native)"
         time="5:40 AM"
         comments={[
-          {
-            id: 1,
-            name: "Baruch Hen",
-            image:
-              "https://pbs.twimg.com/profile_images/1022636637891776512/vCciX6oJ_400x400.jpg",
-            message:
-              "Dominic Gozza, Joseph Collins: what do you guys use to manage state across your app (react native)",
-            time: "5:40 AM",
-          },
           {
             id: 2,
             name: "Joseph Collins",
