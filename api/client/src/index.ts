@@ -7,6 +7,7 @@ export const signUp = Schema.createMutation({
     email: Schema.string,
     password: Schema.string,
   },
+  output: {},
 });
 
 export const signIn = Schema.createMutation({
@@ -15,9 +16,11 @@ export const signIn = Schema.createMutation({
     email: Schema.string,
     password: Schema.string,
   },
+  output: {},
 });
 
 export const signOut = Schema.createMutation({
   path: "/account/sign-out",
   input: {},
+  output: {},
 });

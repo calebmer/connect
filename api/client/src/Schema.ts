@@ -1,3 +1,10 @@
+import fetch from "isomorphic-unfetch";
+
+/**
+ * The root URL of our API.
+ */
+const apiUrl = "http://localhost:4000";
+
 /**
  * The configuration for a mutation operation. A mutation may have some
  * side-effect on the state of the world. For instance, creating a new record
@@ -13,15 +20,19 @@ type MutationSchema = {
    * The input object for this mutation. Submit as an HTTP body as mutations
    * correspond to `POST` requests.
    */
-  readonly input: MutationSchemaInput;
+  readonly input: MutationSchemaData;
+  /**
+   * The output object for this mutation. Retrieved as the HTTP response body.
+   */
+  readonly output: MutationSchemaData;
 };
 
 /**
- * The configuration for a mutation’s input. The input is an object-map from
- * keys to `Validator`s. `MutationOperationInput` gets the actual input type
- * from the schema.
+ * The configuration for a mutation’s input or output. The input is an
+ * object-map from keys to `Validator`s. `MutationOperationData` gets the
+ * actual input type from the schema.
  */
-type MutationSchemaInput = {
+type MutationSchemaData = {
   [key: string]: Validator<unknown>;
 };
 
@@ -30,14 +41,16 @@ type MutationSchemaInput = {
  * using an HTTP request.
  */
 type MutationOperation<Schema extends MutationSchema> = {
-  (input: MutationOperationInput<Schema["input"]>): Promise<void>;
+  (input: MutationOperationData<Schema["input"]>): Promise<
+    MutationOperationData<Schema["output"]>
+  >;
   readonly schema: Schema;
 };
 
 /**
- * The actual input type for a `MutationSchemaInput`.
+ * The actual data type for a `MutationSchemaData`.
  */
-type MutationOperationInput<Schema extends MutationSchemaInput> = {
+type MutationOperationData<Schema extends MutationSchemaData> = {
   [Key in keyof Schema]: ValidatorValue<Schema[Key]>
 };
 
@@ -49,7 +62,35 @@ type MutationOperationInput<Schema extends MutationSchemaInput> = {
  */
 export function createMutation<Schema extends MutationSchema>(
   schema: Schema,
-): MutationOperation<Schema> {}
+): MutationOperation<Schema> {
+  if (schema.path.startsWith("/")) {
+    throw new Error('Expected schema path to start with "/".');
+  }
+
+  /**
+   * Asynchronously executes our mutation over HTTP.
+   */
+  async function mutationOperation(
+    input: MutationOperationData<Schema["input"]>,
+  ): Promise<MutationOperationData<Schema["output"]>> {
+    // Execute our HTTP request...
+    let response = await fetch(`${apiUrl}${schema.path}`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    // Parse the body as JSON...
+    let data = await response.json();
+    // Return the body without validating its correctness. We trust our API
+    // server to return correct values.
+    return data;
+  }
+
+  // Set the schema for our mutation operation. This will be used by our server
+  // to verify that we implement the operation correctly.
+  mutationOperation.schema = schema;
+
+  return mutationOperation;
+}
 
 /**
  * Validates that an unknown JavaScript value is of a certain TypeScript type.
