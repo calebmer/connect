@@ -29,7 +29,7 @@ export function Message() {
 let styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    paddingTop: lineHeight,
+    paddingVertical: lineHeight / 2,
     paddingHorizontal: lineHeight,
   },
   body: {
