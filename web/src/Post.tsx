@@ -2,6 +2,8 @@ import * as React from "react";
 import { View, StyleSheet } from "react-native";
 import { ProfileSignature } from "./ProfileSignature";
 import { MessageList } from "./MessageList";
+import { lineHeight } from "./StyleConstants";
+import { PostContent } from "./PostContent";
 
 export function Post({
   name,
@@ -22,9 +24,7 @@ export function Post({
 }) {
   return (
     <View style={styles.container}>
-      <ProfileSignature name={name} image={image} time={time}>
-        {null}
-      </ProfileSignature>
+      <PostContent name={name} image={image} time={time} />
       <MessageList messages={comments} />
     </View>
   );
@@ -32,8 +32,6 @@ export function Post({
 
 let styles = StyleSheet.create({
   container: {
-    maxWidth: ProfileSignature.maxWidth,
-    borderWidth: 1,
-    borderColor: "black",
+    maxWidth: ProfileSignature.maxWidth + lineHeight * 2,
   },
 });
