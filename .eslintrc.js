@@ -56,7 +56,7 @@ module.exports = {
     "no-unused-vars": "off",
 
     "@typescript-eslint/adjacent-overload-signatures": "warn",
-    "@typescript-eslint/array-type": ["warn", "array"],
+    "@typescript-eslint/array-type": ["warn", "generic"],
     "@typescript-eslint/no-angle-bracket-type-assertion": "warn",
     "@typescript-eslint/no-triple-slash-reference": "warn",
     "@typescript-eslint/prefer-function-type": "warn",
