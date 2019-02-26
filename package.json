@@ -2,6 +2,8 @@
   "private": true,
   "license": "UNLICENSED",
   "workspaces": [
+    "api/client",
+    "api/server",
     "web"
   ],
   "scripts": {

@@ -27,7 +27,7 @@ export function Post({
   return (
     <View style={styles.container}>
       <PostContent name={name} image={image} content={content} time={time} />
-      <View style={styles.actionBar} />
+      {/* <View style={styles.actionBar} /> */}
       <MessageList messages={comments} />
     </View>
   );
