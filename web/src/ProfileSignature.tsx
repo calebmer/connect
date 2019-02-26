@@ -37,11 +37,12 @@ export function ProfileSignature({
   );
 }
 
-ProfileSignature.sidebarWidth = ProfileImage.size + lineHeight / 2;
+ProfileSignature.sidebarWidth = ProfileImage.size + lineHeight + lineHeight / 2;
 
 let styles = StyleSheet.create({
   container: {
     flexDirection: "row",
+    paddingHorizontal: lineHeight,
   },
   body: {
     flex: 1,

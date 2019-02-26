@@ -2,6 +2,7 @@ import * as React from "react";
 import { View, StyleSheet } from "react-native";
 import { BodyText } from "./Text";
 import { ProfileSignature } from "./ProfileSignature";
+import { lineHeight } from "./StyleConstants";
 
 export function Message({
   name,
@@ -17,16 +18,28 @@ export function Message({
   withoutSignature?: boolean;
 }) {
   let body = <BodyText>{message}</BodyText>;
-  return !withoutSignature ? (
-    <ProfileSignature name={name} image={image} time={time}>
-      {body}
-    </ProfileSignature>
-  ) : (
-    <View style={styles.containerWithoutSignature}>{body}</View>
+  return (
+    <View
+      style={[
+        withoutSignature && styles.containerWithoutSignature,
+        styles.container,
+      ]}
+    >
+      {!withoutSignature ? (
+        <ProfileSignature name={name} image={image} time={time}>
+          {body}
+        </ProfileSignature>
+      ) : (
+        body
+      )}
+    </View>
   );
 }
 
 let styles = StyleSheet.create({
+  container: {
+    paddingVertical: lineHeight / 2,
+  },
   containerWithoutSignature: {
     paddingLeft: ProfileSignature.sidebarWidth,
   },
