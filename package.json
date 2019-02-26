@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "scripts": {
+    "tsc": "tsc",
     "eslint": "eslint . --ext .js,.ts,.tsx",
     "prettier": "prettier \"**/*.{js,ts,tsx}\" --write"
   },

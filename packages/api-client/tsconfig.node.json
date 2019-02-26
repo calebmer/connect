@@ -4,7 +4,6 @@
     "noEmit": false,
     "rootDir": "src",
     "outDir": "build",
-    "types": ["node"]
-  },
-  "references": [{ "path": "../api-client/tsconfig.node.json" }]
+    "composite": true
+  }
 }

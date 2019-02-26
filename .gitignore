@@ -1,6 +1,9 @@
 # Node.js
 node_modules/
 
+# Build Output
+build/
+
 # Yarn
 yarn-debug.log*
 yarn-error.log*

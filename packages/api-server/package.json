@@ -4,5 +4,8 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@connect/api-client": "0.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^11.9.5"
   }
 }

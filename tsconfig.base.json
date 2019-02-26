@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
     "noEmit": true,
-    "lib": ["es2017"],
-    "allowJs": true,
-    "isolatedModules": true,
+    "target": "esnext",
+    "module": "esnext",
     "sourceMap": true,
     "moduleResolution": "node",
+    "lib": ["esnext"],
+    "types": [],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@connect/*": ["packages/*"]
+    }
   }
 }
