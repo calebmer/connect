@@ -2,9 +2,7 @@
   "private": true,
   "license": "UNLICENSED",
   "workspaces": [
-    "api/client",
-    "api/server",
-    "web"
+    "packages/*"
   ],
   "scripts": {
     "eslint": "eslint . --ext .js,.ts,.tsx",
