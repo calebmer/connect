@@ -1,5 +1,5 @@
 {
-  "name": "@hello/api-client",
+  "name": "@connect/api-client",
   "version": "0.0.0",
   "license": "UNLICENSED",
   "dependencies": {

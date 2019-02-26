@@ -1,1 +1,1 @@
-import * as APIClient from "@hello/api-client";
+import * as APIClient from "@connect/api-client";
