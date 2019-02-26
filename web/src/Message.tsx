@@ -21,8 +21,8 @@ export function Message({
   return (
     <View
       style={[
-        withoutSignature && styles.containerWithoutSignature,
         styles.container,
+        withoutSignature && styles.containerWithoutSignature,
       ]}
     >
       {!withoutSignature ? (
@@ -39,8 +39,9 @@ export function Message({
 let styles = StyleSheet.create({
   container: {
     paddingVertical: lineHeight / 2,
+    paddingHorizontal: lineHeight,
   },
   containerWithoutSignature: {
-    paddingLeft: ProfileSignature.sidebarWidth,
+    paddingLeft: ProfileSignature.sidebarWidth + lineHeight,
   },
 });

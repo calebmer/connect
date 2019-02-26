@@ -13,5 +13,6 @@ let styles = StyleSheet.create({
     width: ProfileImage.size,
     height: ProfileImage.size,
     borderRadius: ProfileImage.size / 2,
+    backgroundColor: "#CCCCCC",
   },
 });

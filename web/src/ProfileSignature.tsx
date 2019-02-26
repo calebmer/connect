@@ -2,7 +2,7 @@ import * as React from "react";
 import { ReactNode } from "react";
 import { View, StyleSheet } from "react-native";
 import { ProfileImage } from "./ProfileImage";
-import { LabelText, LiteText } from "./Text";
+import { LabelText, LiteText, BodyText } from "./Text";
 import { lineHeight } from "./StyleConstants";
 
 /**
@@ -37,15 +37,18 @@ export function ProfileSignature({
   );
 }
 
-ProfileSignature.sidebarWidth = ProfileImage.size + lineHeight + lineHeight / 2;
+ProfileSignature.sidebarWidth = ProfileImage.size + lineHeight / 2;
+
+ProfileSignature.maxWidth =
+  ProfileImage.size + lineHeight / 2 + BodyText.maxWidth;
 
 let styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    paddingHorizontal: lineHeight,
   },
   body: {
     flex: 1,
+    maxWidth: BodyText.maxWidth,
     paddingLeft: lineHeight / 2,
   },
   header: {

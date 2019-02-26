@@ -22,6 +22,13 @@ export function BodyText({ children }: { children: ReactNode }) {
   return <Text style={styles.body}>{children}</Text>;
 }
 
+let bodyFontSize = 16;
+
+/**
+ * We want to fit about 50–60 characters per line of text.
+ */
+BodyText.maxWidth = bodyFontSize * 30;
+
 /**
  * Label text is used to annotate some part of our interface with important
  * identifying information. For example, the name over a message. The text is
@@ -52,12 +59,11 @@ export function LiteText({ children }: { children: ReactNode }) {
   );
 }
 
-let bodyFontSize = 16;
 let liteFontSize = 12;
 
 let styles = StyleSheet.create({
   body: {
-    maxWidth: bodyFontSize * 30,
+    maxWidth: BodyText.maxWidth,
     color: "#333333",
     fontFamily: "'Lora', System",
     fontSize: bodyFontSize,

@@ -1,6 +1,5 @@
 import * as React from "react";
 import { ScrollView } from "react-native";
-import { MessageList } from "../src/MessageList";
 import { GridWireFrame } from "../src/GridWireFrame";
 import { Post } from "../src/Post";
 
@@ -13,9 +12,7 @@ export default function IndexPage() {
         name="Baruch Hen"
         image="https://pbs.twimg.com/profile_images/1022636637891776512/vCciX6oJ_400x400.jpg"
         time="5:40 AM"
-      />
-      <MessageList
-        messages={[
+        comments={[
           {
             id: 1,
             name: "Baruch Hen",
