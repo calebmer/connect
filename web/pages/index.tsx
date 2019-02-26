@@ -9,9 +9,15 @@ export default function IndexPage() {
     <>
       <GridWireFrame>
         <View style={styles.messageList}>
-          <Message />
-          <Message />
-          <Message />
+          <View style={styles.message}>
+            <Message />
+          </View>
+          <View style={styles.message}>
+            <Message />
+          </View>
+          <View style={styles.message}>
+            <Message />
+          </View>
         </View>
       </GridWireFrame>
     </>
@@ -20,6 +26,10 @@ export default function IndexPage() {
 
 let styles = StyleSheet.create({
   messageList: {
-    paddingVertical: lineHeight / 2,
+    paddingBottom: lineHeight,
+  },
+  message: {
+    paddingTop: lineHeight,
+    paddingHorizontal: lineHeight,
   },
 });
