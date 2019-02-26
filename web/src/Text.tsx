@@ -70,6 +70,11 @@ let styles = StyleSheet.create({
     fontWeight: "normal",
     lineHeight: lineHeight,
 
+    // `lineHeight` puts our text in the middle of the line, however we want our
+    // text to be base-aligned. Add some re-positioning to accomplish this.
+    position: "relative",
+    bottom: -((lineHeight - bodyFontSize) / 2) - 2,
+
     // Better OSX font rendering.
     WebkitFontSmoothing: "antialiased",
     MozOsxFontSmoothing: "grayscale",
@@ -80,6 +85,11 @@ let styles = StyleSheet.create({
     fontSize: bodyFontSize,
     fontWeight: "bold",
     lineHeight: lineHeight,
+
+    // `lineHeight` puts our text in the middle of the line, however we want our
+    // text to be base-aligned. Add some re-positioning to accomplish this.
+    position: "relative",
+    bottom: -((lineHeight - bodyFontSize) / 2) - 2,
 
     // Better OSX font rendering.
     WebkitFontSmoothing: "antialiased",
@@ -92,13 +102,13 @@ let styles = StyleSheet.create({
     fontWeight: "normal",
     lineHeight: lineHeight,
 
+    // `lineHeight` puts our text in the middle of the line, however we want our
+    // text to be base-aligned. Add some re-positioning to accomplish this.
+    position: "relative",
+    bottom: -((lineHeight - liteFontSize) / 2) - 1.5,
+
     // Better OSX font rendering.
     WebkitFontSmoothing: "antialiased",
     MozOsxFontSmoothing: "grayscale",
-
-    // We want the same baseline as our `bodyFontSize` friends. Ok since lite
-    // text will only ever be one line long.
-    position: "relative",
-    bottom: -((bodyFontSize - liteFontSize) / 2),
   },
 });
