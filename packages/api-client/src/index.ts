@@ -47,4 +47,5 @@ export {
   MutationOperationData,
   Validator,
   ValidatorValue,
+  validateObject,
 } from "./Schema";

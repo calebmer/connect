@@ -3,9 +3,15 @@
   "version": "0.0.0",
   "license": "UNLICENSED",
   "dependencies": {
-    "@connect/api-client": "0.0.0"
+    "@connect/api-client": "0.0.0",
+    "chalk": "^2.4.2",
+    "express": "^4.16.4",
+    "http-errors": "^1.7.2"
   },
   "devDependencies": {
-    "@types/node": "^11.9.5"
+    "@types/express": "^4.16.1",
+    "@types/http-errors": "^1.6.1",
+    "@types/node": "^11.9.5",
+    "chalk": "^2.4.2"
   }
 }
