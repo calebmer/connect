@@ -1,4 +1,7 @@
 import {Database} from "../Database";
+import {hash, compare} from "bcrypt";
+
+const saltRounds = 10;
 
 /**
  * Creates a new account with an email and a password. Accounts may have any
@@ -7,7 +10,10 @@ import {Database} from "../Database";
  */
 export async function signUp(
   database: Database,
-  input: {
+  {
+    email,
+    password,
+  }: {
     email: string;
     password: string;
   },
@@ -15,6 +21,18 @@ export async function signUp(
   accessToken: string;
   refreshToken: string;
 }> {
+  const passwordHash = await hash(password, saltRounds);
+
+  // TODO: Email already exists error.
+  await database.query(
+    "INSERT INTO account (email, password_hash) VALUES ($1, $2)",
+    [email, passwordHash],
+  );
+
+  await database.query("INSERT INTO refresh_token (account_id) VALUES ($1)", [
+    accountID,
+  ]);
+
   throw new Error("TODO");
 }
 
@@ -24,7 +42,10 @@ export async function signUp(
  */
 export async function signIn(
   database: Database,
-  input: {
+  {
+    email,
+    password,
+  }: {
     email: string;
     password: string;
   },
