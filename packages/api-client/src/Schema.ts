@@ -1,5 +1,3 @@
-import fetch from "isomorphic-unfetch";
-
 /**
  * The root URL of our API.
  */

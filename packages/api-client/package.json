@@ -3,8 +3,5 @@
   "version": "0.0.0",
   "license": "UNLICENSED",
   "main": "./build/index.js",
-  "typings": "./build/index.d.ts",
-  "dependencies": {
-    "isomorphic-unfetch": "^3.0.0"
-  }
+  "typings": "./build/index.d.ts"
 }

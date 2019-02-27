@@ -4,6 +4,7 @@
     "noEmit": false,
     "rootDir": "./src",
     "outDir": "./build",
-    "composite": true
+    "composite": true,
+    "lib": ["esnext", "dom"]
   }
 }
