@@ -5,9 +5,8 @@
     "packages/*"
   ],
   "scripts": {
-    "tsc": "tsc",
-    "eslint": "eslint . --ext .js,.ts,.tsx",
-    "prettier": "prettier \"**/*.{js,ts,tsx}\" --write"
+    "lint": "eslint . --ext .js,.ts,.tsx",
+    "format": "prettier \"**/*.{js,ts,tsx}\" --write"
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^1.4.1",
