@@ -68,6 +68,7 @@ module.exports = {
     "import/first": "warn",
     "import/order": ["warn", {"newlines-between": "never"}],
     "import/newline-after-import": "warn",
+    "import/no-extraneous-dependencies": "error",
 
     "react/jsx-key": "warn",
 

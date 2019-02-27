@@ -1,0 +1,13 @@
+{
+  "name": "@connect/database",
+  "version": "0.0.0",
+  "license": "UNLICENSED",
+  "scripts": {
+    "migrate": "node scripts/migrate.js",
+    "drop": "node scripts/drop.js"
+  },
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "pg": "^7.8.1"
+  }
+}
