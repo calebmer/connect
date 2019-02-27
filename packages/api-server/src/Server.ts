@@ -4,11 +4,17 @@ import {Response} from "express";
 import {HttpError, BadRequest} from "http-errors";
 import * as APIClient from "@connect/api-client";
 import {MutationSchema, MutationOperationData} from "@connect/api-client";
+import {APIClientType, APISchemaKey, apiSchemaKeys} from "./ClientSchema";
+import * as Account from "./Account";
 
 /**
  * Defines our API with functions that implement our API client’s schema.
  */
-const apiDefinition: APIDefinition = {};
+const apiDefinition: APIDefinition = {
+  signUp: Account.signUp,
+  signIn: Account.signIn,
+  signOut: Account.signOut,
+};
 
 /**
  * The definition of our entire API. We re-construct the schema to produce the
@@ -17,28 +23,6 @@ const apiDefinition: APIDefinition = {};
 type APIDefinition = {
   [Key in APISchemaKey]: MutationDefinition<APIClientType[Key]["schema"]>
 };
-
-/**
- * Convenient alias for `typeof APIClient`.
- */
-type APIClientType = typeof APIClient;
-
-/**
- * A key in the API client schema which is all of the keys in `APIClientType`
- * which have a `schema` property. `APIClient` exports some other utility
- * functions but we don’t care about those.
- */
-type APISchemaKey = APISchemaKeyGet<keyof APIClientType>;
-
-/**
- * Helper for `APISchemaKey`. We need `keyof APIClientType` to distribute as a
- * string union which is why we use a type alias with a type parameter.
- */
-type APISchemaKeyGet<
-  Key extends keyof APIClientType
-> = Key extends (APIClientType[Key] extends {schema: unknown} ? unknown : never)
-  ? Key
-  : never;
 
 /**
  * The definition of a mutation based on its schema.
@@ -58,32 +42,28 @@ Server.use(express.json());
 
 // Add routes to our app by looking at all of the schemas expected by
 // `APIClient` and adding them to our Express app.
-for (const _key of Object.keys(APIClient)) {
-  if ("schema" in APIClient[_key as keyof APIClientType]) {
-    const key = _key as APISchemaKey;
+for (const key of apiSchemaKeys) {
+  // Get the schema and definition function for this operation.
+  const schema = APIClient[key].schema;
+  const definition = apiDefinition[key];
 
-    // Get the schema and definition function for this operation.
-    const schema = APIClient[key].schema;
-    const definition = apiDefinition[key];
-
-    // Add this operation to our server.
-    Server.post(schema.path, (request, response) => {
-      try {
-        // First, validate that the request input is in the correct format.
-        if (!APIClient.validateObject(schema.input, request.body)) {
-          throw new BadRequest("Invalid input.");
-        }
-        // Execute the operation function. If successful then return 200 with
-        // the data. If the operation fails then handle the error.
-        definition(request.body as any).then(
-          output => response.status(200).json(output),
-          error => handleError(response, error),
-        );
-      } catch (error) {
-        handleError(response, error);
+  // Add this operation to our server.
+  Server.post(schema.path, (request, response) => {
+    try {
+      // First, validate that the request input is in the correct format.
+      if (!APIClient.validateObject(schema.input, request.body)) {
+        throw new BadRequest("Invalid input.");
       }
-    });
-  }
+      // Execute the operation function. If successful then return 200 with
+      // the data. If the operation fails then handle the error.
+      definition(request.body as any).then(
+        output => response.status(200).json(output),
+        error => handleError(response, error),
+      );
+    } catch (error) {
+      handleError(response, error);
+    }
+  });
 }
 
 /**
