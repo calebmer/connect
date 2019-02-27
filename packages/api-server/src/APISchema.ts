@@ -15,14 +15,14 @@ export type APIClientType = typeof APIClient;
  * which have a `schema` property. `APIClient` exports some other utility
  * functions but we don’t care about those.
  */
-export type APISchemaKey = APISchemaKeyGet<keyof APIClientType>;
+export type APISchemaKey = _APISchemaKeyGet<keyof APIClientType>;
 
 /**
  * Private helper for `APISchemaKey`. We need `keyof APIClientType` to
  * distribute as a string union which is why we use a type alias with a
  * type parameter.
  */
-type APISchemaKeyGet<
+type _APISchemaKeyGet<
   Key extends keyof APIClientType
 > = Key extends (APIClientType[Key] extends {schema: unknown} ? unknown : never)
   ? Key
