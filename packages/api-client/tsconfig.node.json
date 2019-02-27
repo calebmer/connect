@@ -2,8 +2,8 @@
   "extends": "../../tsconfig.node.json",
   "compilerOptions": {
     "noEmit": false,
-    "rootDir": "src",
-    "outDir": "build",
+    "rootDir": "./src",
+    "outDir": "./build",
     "composite": true
   }
 }
