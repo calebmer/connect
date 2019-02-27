@@ -17,7 +17,7 @@ rl.question(
   `You are about to ${scary("permanently delete")} everything from your ` +
     `database! Be very careful. ` +
     `Type "${chalk.cyan("yes")}" to continue.\n` +
-    `${chalk.grey("▸")} `,
+    `${chalk.grey("?")} `,
   answer => {
     // We are done with our readline interface.
     rl.close();
@@ -41,14 +41,14 @@ async function run() {
   // Drop everything including the migrations table.
   await client.query(`
     BEGIN;
-    DROP SCHEMA connect CASCADE;
-    DROP TABLE connect_migration;
+    DROP SCHEMA IF EXISTS connect CASCADE;
+    DROP TABLE IF EXISTS connect_migration;
     COMMIT;
   `);
 
   // Release our Postgres client.
   await client.end();
 
-  console.log();
-  console.log("Database successfully dropped ♻️");
+  // Let the user know their database was successfully dropped.
+  console.log(`${chalk.grey("▸")} Database successfully dropped ♻️`);
 }

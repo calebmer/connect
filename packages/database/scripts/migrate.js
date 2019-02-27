@@ -43,6 +43,10 @@ async function run() {
     migrations.delete(row.name);
   }
 
+  // Set the search path to the connect schema. This way all the tables we
+  // create will automatically be added to the connect schema.
+  await client.query("SET search_path = connect");
+
   // Run all the migrations which have not yet been run.
   for (const name of migrations) {
     if (path.extname(name) !== ".sql") continue;
@@ -55,7 +59,7 @@ async function run() {
     const migrationFile = await readFile(migrationPath, "utf8");
     await client.query(migrationFile);
     await client.query({
-      text: "INSERT INTO connect_migration (name) VALUES ($1)",
+      text: "INSERT INTO public.connect_migration (name) VALUES ($1)",
       values: [name],
     });
   }

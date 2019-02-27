@@ -4,7 +4,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "migrate": "node scripts/migrate.js",
-    "drop": "node scripts/drop.js"
+    "drop": "node scripts/drop.js",
+    "reset": "yarn drop && yarn migrate"
   },
   "dependencies": {
     "chalk": "^2.4.2",
