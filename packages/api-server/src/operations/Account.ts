@@ -1,4 +1,5 @@
 import {APIInput, APIOutput} from "../APISchema";
+import {DB} from "../Database";
 
 /**
  * Creates a new account with an email and a password. Accounts may have any
@@ -6,6 +7,7 @@ import {APIInput, APIOutput} from "../APISchema";
  * be updated at any time and is used for display purposes.
  */
 export async function signUp(
+  db: DB,
   input: APIInput<"signUp">,
 ): Promise<APIOutput<"signUp">> {
   throw new Error("TODO");
@@ -16,6 +18,7 @@ export async function signUp(
  * when creating their account.
  */
 export async function signIn(
+  db: DB,
   input: APIInput<"signIn">,
 ): Promise<APIOutput<"signIn">> {
   throw new Error("TODO");
@@ -27,6 +30,7 @@ export async function signIn(
  * sign back in.
  */
 export async function signOut(
+  db: DB,
   input: APIInput<"signOut">,
 ): Promise<APIOutput<"signOut">> {
   throw new Error("TODO");

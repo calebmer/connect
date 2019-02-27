@@ -28,14 +28,14 @@ pool.on("error", (error, _client) => {
 /**
  * A Postgres database client which we may directly execute SQL queries against.
  */
-export interface Database extends PoolClient {}
+export interface DB extends PoolClient {}
 
 /**
  * Executes an action with a database client from our connection pool. Once the
  * action finishes we release the client back to our pool.
  */
 export async function withDatabase<T>(
-  action: (database: Database) => Promise<T>,
+  action: (db: DB) => Promise<T>,
 ): Promise<T> {
   const client = await pool.connect();
   let result: T;

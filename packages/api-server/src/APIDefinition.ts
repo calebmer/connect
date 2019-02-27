@@ -1,6 +1,7 @@
 import {MutationSchema, MutationOperationData} from "@connect/api-client";
 import {APIClientType, APISchemaKey} from "./APISchema";
 import * as Account from "./operations/Account";
+import {DB} from "./Database";
 
 /**
  * Defines our API with functions that implement our API client’s schema.
@@ -23,5 +24,6 @@ export type APIDefinition = {
  * The definition of a mutation based on its schema.
  */
 export type MutationDefinition<Schema extends MutationSchema> = (
+  db: DB,
   input: MutationOperationData<Schema["input"]>,
 ) => Promise<MutationOperationData<Schema["output"]>>;

@@ -5,6 +5,7 @@ import {HttpError, BadRequest} from "http-errors";
 import * as APIClient from "@connect/api-client";
 import {APISchemaKeys} from "./APISchema";
 import {APIDefinition} from "./APIDefinition";
+import {withDatabase} from "./Database";
 
 /**
  * The HTTP server for our API. Powered by Express.
@@ -29,9 +30,10 @@ for (const key of APISchemaKeys) {
       if (!APIClient.validateObject(schema.input, request.body)) {
         throw new BadRequest("Invalid input.");
       }
-      // Execute the operation function. If successful then return 200 with
-      // the data. If the operation fails then handle the error.
-      definition(request.body as any).then(
+      // Execute the operation function with a database connection. If
+      // successful then return 200 with the data. If the operation fails then
+      // handle the error.
+      withDatabase(db => definition(db, request.body as any)).then(
         output => response.status(200).json(output),
         error => handleError(response, error),
       );
