@@ -62,7 +62,7 @@ export function createMutation<Schema extends MutationSchema>(
   schema: Schema,
 ): MutationOperation<Schema> {
   if (schema.path.startsWith("/")) {
-    throw new Error('Expected schema path to start with "/".');
+    throw new Error(`Expected path "${schema.path}" to start with "/".`);
   }
 
   /**
