@@ -33,7 +33,7 @@ for (const key of APISchemaKeys) {
       // Execute the operation function with a database connection. If
       // successful then return 200 with the data. If the operation fails then
       // handle the error.
-      withDatabase(db => definition(db, request.body as any)).then(
+      withDatabase(database => definition(database, request.body as any)).then(
         output => response.status(200).json(output),
         error => handleError(response, error),
       );

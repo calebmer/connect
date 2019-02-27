@@ -9,11 +9,13 @@ import * as Validate from "./Validate";
 export const signUp = Schema.createMutation({
   path: "/account/sign-up",
   input: {
-    name: Validate.string,
     email: Validate.string,
     password: Validate.string,
   },
-  output: {},
+  output: {
+    accessToken: Validate.string,
+    refreshToken: Validate.string,
+  },
 });
 
 /**
@@ -26,7 +28,10 @@ export const signIn = Schema.createMutation({
     email: Validate.string,
     password: Validate.string,
   },
-  output: {},
+  output: {
+    accessToken: Validate.string,
+    refreshToken: Validate.string,
+  },
 });
 
 /**
@@ -36,7 +41,9 @@ export const signIn = Schema.createMutation({
  */
 export const signOut = Schema.createMutation({
   path: "/account/sign-out",
-  input: {},
+  input: {
+    refreshToken: Validate.string,
+  },
   output: {},
 });
 
