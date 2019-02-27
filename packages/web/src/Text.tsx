@@ -22,7 +22,7 @@ export function BodyText({ children }: { children: ReactNode }) {
   return <Text style={styles.body}>{children}</Text>;
 }
 
-let bodyFontSize = 16;
+const bodyFontSize = 16;
 
 /**
  * We want to fit about 50–60 characters per line of text.
@@ -59,9 +59,9 @@ export function LiteText({ children }: { children: ReactNode }) {
   );
 }
 
-let liteFontSize = 12;
+const liteFontSize = 12;
 
-let styles = StyleSheet.create({
+const styles = StyleSheet.create({
   body: {
     maxWidth: BodyText.maxWidth,
     color: "#333333",

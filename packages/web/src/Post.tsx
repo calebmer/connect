@@ -33,7 +33,7 @@ export function Post({
   );
 }
 
-let styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     maxWidth: ProfileSignature.maxWidth + lineHeight * 2,
   },

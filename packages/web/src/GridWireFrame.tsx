@@ -8,9 +8,9 @@ import { lineHeight } from "./StyleConstants";
  * matches the grid layout.
  */
 export function GridWireFrame({ children }: { children: ReactNode }) {
-  let [layout, setLayout] = useState({ width: 0, height: 0 });
+  const [layout, setLayout] = useState({ width: 0, height: 0 });
 
-  let rows = [];
+  const rows = [];
 
   for (let i = 0; i < layout.height; i += lineHeight) {
     rows.push(<View key={i} style={styles.row} />);
@@ -30,7 +30,7 @@ export function GridWireFrame({ children }: { children: ReactNode }) {
   );
 }
 
-let styles = StyleSheet.create({
+const styles = StyleSheet.create({
   grid: {
     position: "absolute",
     top: 0,

@@ -17,7 +17,7 @@ export function Message({
   time: string;
   withoutSignature?: boolean;
 }) {
-  let body = <BodyText>{message}</BodyText>;
+  const body = <BodyText>{message}</BodyText>;
   return (
     <View
       style={[
@@ -36,7 +36,7 @@ export function Message({
   );
 }
 
-let styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     paddingVertical: lineHeight / 2,
     paddingHorizontal: lineHeight,

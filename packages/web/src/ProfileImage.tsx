@@ -8,7 +8,7 @@ export function ProfileImage({ image }: { image: string }) {
 
 ProfileImage.size = lineHeight * 2;
 
-let styles = StyleSheet.create({
+const styles = StyleSheet.create({
   image: {
     width: ProfileImage.size,
     height: ProfileImage.size,

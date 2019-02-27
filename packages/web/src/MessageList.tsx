@@ -16,8 +16,8 @@ export function MessageList({
 }) {
   let previousName: string | undefined = undefined;
 
-  let messageNodes = messages.map(message => {
-    let withoutSignature = previousName === message.name;
+  const messageNodes = messages.map(message => {
+    const withoutSignature = previousName === message.name;
     previousName = message.name;
     return (
       <Message
@@ -34,7 +34,7 @@ export function MessageList({
   return <View style={styles.list}>{messageNodes}</View>;
 }
 
-let styles = StyleSheet.create({
+const styles = StyleSheet.create({
   list: {
     paddingVertical: lineHeight / 2,
   },

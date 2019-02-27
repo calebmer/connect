@@ -11,10 +11,10 @@ import * as APIClient from "@connect/api-client";
 //   [Key in keyof typeof APIClient]: (typeof APIClient)[Key]["schema"]
 // };
 
-let paths = new Map();
+const paths = new Map();
 
 Object.keys(APIClient).forEach(_key => {
-  let key = _key as keyof typeof APIClient;
+  const key = _key as keyof typeof APIClient;
   APIClient[key].schema.path;
 });
 

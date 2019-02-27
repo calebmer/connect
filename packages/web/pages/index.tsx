@@ -3,10 +3,10 @@ import { ScrollView } from "react-native";
 import { GridWireFrame } from "../src/GridWireFrame";
 import { Post } from "../src/Post";
 
-let showGrid = false;
+const showGrid = false;
 
 export default function IndexPage() {
-  let body = (
+  const body = (
     <>
       <Post
         name="Baruch Hen"

@@ -42,7 +42,7 @@ ProfileSignature.sidebarWidth = ProfileImage.size + lineHeight / 2;
 ProfileSignature.maxWidth =
   ProfileImage.size + lineHeight / 2 + BodyText.maxWidth;
 
-let styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
   },

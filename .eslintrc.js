@@ -52,6 +52,7 @@ module.exports = {
     "no-inner-declarations": "off",
     "func-style": ["warn", "declaration"],
     "no-var": "warn",
+    "prefer-const": "warn",
 
     // NOTE: TypeScript will warn about this.
     "no-unused-vars": "off",

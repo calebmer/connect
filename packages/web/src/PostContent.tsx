@@ -24,7 +24,7 @@ export function PostContent({
   );
 }
 
-let styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     paddingHorizontal: lineHeight,
     paddingVertical: lineHeight,

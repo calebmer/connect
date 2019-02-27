@@ -72,12 +72,12 @@ export function createMutation<Schema extends MutationSchema>(
     input: MutationOperationData<Schema["input"]>,
   ): Promise<MutationOperationData<Schema["output"]>> {
     // Execute our HTTP request...
-    let response = await fetch(`${apiUrl}${schema.path}`, {
+    const response = await fetch(`${apiUrl}${schema.path}`, {
       method: "POST",
       body: JSON.stringify(input),
     });
     // Parse the body as JSON...
-    let data = await response.json();
+    const data = await response.json();
     // Return the body without validating its correctness. We trust our API
     // server to return correct values.
     return data;

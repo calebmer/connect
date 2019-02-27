@@ -8,7 +8,7 @@ import * as React from "react";
 import { AppRegistry } from "react-native";
 
 // Force Next-generated DOM elements to fill their parent's height
-let normalizeNextElements = `
+const normalizeNextElements = `
   #__next {
     display: flex;
     flex-direction: column;
@@ -19,9 +19,9 @@ let normalizeNextElements = `
 export default class MyDocument extends Document {
   static async getInitialProps({ renderPage }: NextDocumentContext) {
     AppRegistry.registerComponent("Main", () => Main);
-    let { getStyleElement } = (AppRegistry as any).getApplication("Main");
-    let page = renderPage();
-    let styles = [
+    const { getStyleElement } = (AppRegistry as any).getApplication("Main");
+    const page = renderPage();
+    const styles = [
       <style dangerouslySetInnerHTML={{ __html: normalizeNextElements }} />, // eslint-disable-line react/jsx-key
       getStyleElement(),
     ];
