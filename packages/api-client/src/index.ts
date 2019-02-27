@@ -1,4 +1,5 @@
 import * as Schema from "./Schema";
+import * as Validate from "./Validate";
 
 /**
  * Creates a new account with an email and a password. Accounts may have any
@@ -8,9 +9,9 @@ import * as Schema from "./Schema";
 export const signUp = Schema.createMutation({
   path: "/account/sign-up",
   input: {
-    name: Schema.string,
-    email: Schema.string,
-    password: Schema.string,
+    name: Validate.string,
+    email: Validate.string,
+    password: Validate.string,
   },
   output: {},
 });
@@ -22,8 +23,8 @@ export const signUp = Schema.createMutation({
 export const signIn = Schema.createMutation({
   path: "/account/sign-in",
   input: {
-    email: Schema.string,
-    password: Schema.string,
+    email: Validate.string,
+    password: Validate.string,
   },
   output: {},
 });
@@ -39,13 +40,11 @@ export const signOut = Schema.createMutation({
   output: {},
 });
 
-// Export a bunch of utility types from the schema module.
 export {
   MutationSchema,
   MutationSchemaData,
   MutationOperation,
   MutationOperationData,
-  Validator,
-  ValidatorValue,
-  validateObject,
 } from "./Schema";
+
+export {Validator, ValidatorValue, validateObject} from "./Validate";

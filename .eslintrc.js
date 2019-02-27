@@ -18,6 +18,7 @@ module.exports = {
     es6: true,
     node: true,
     browser: true,
+    jest: true,
   },
   rules: {
     "no-console": "warn",
@@ -55,6 +56,7 @@ module.exports = {
     "prefer-const": "warn",
 
     // NOTE: TypeScript will warn about this.
+    "no-undef": "off",
     "no-unused-vars": "off",
 
     "@typescript-eslint/adjacent-overload-signatures": "warn",
