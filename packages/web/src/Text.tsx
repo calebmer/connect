@@ -1,7 +1,7 @@
 import * as React from "react";
-import { ReactNode } from "react";
-import { StyleSheet, Text } from "react-native";
-import { lineHeight } from "./StyleConstants";
+import {ReactNode} from "react";
+import {StyleSheet, Text} from "react-native";
+import {lineHeight} from "./StyleConstants";
 
 /**
  * Body text is the text forming the main content of our website. It could be
@@ -18,7 +18,7 @@ import { lineHeight } from "./StyleConstants";
  * style for our product. One that distinguishes us from products like Slack
  * and Facebook. The easiest place to start is with the font.
  */
-export function BodyText({ children }: { children: ReactNode }) {
+export function BodyText({children}: {children: ReactNode}) {
   return <Text style={styles.body}>{children}</Text>;
 }
 
@@ -36,7 +36,7 @@ BodyText.maxWidth = bodyFontSize * 33;
  *
  * May never be more than one line long.
  */
-export function LabelText({ children }: { children: ReactNode }) {
+export function LabelText({children}: {children: ReactNode}) {
   return (
     <Text style={styles.label} numberOfLines={1}>
       {children}
@@ -51,7 +51,7 @@ export function LabelText({ children }: { children: ReactNode }) {
  *
  * May never be more than one line long.
  */
-export function LiteText({ children }: { children: ReactNode }) {
+export function LiteText({children}: {children: ReactNode}) {
   return (
     <Text style={styles.lite} numberOfLines={1}>
       {children}

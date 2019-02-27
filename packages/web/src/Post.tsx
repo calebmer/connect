@@ -1,9 +1,9 @@
 import * as React from "react";
-import { View, StyleSheet } from "react-native";
-import { ProfileSignature } from "./ProfileSignature";
-import { MessageList } from "./MessageList";
-import { lineHeight } from "./StyleConstants";
-import { PostContent } from "./PostContent";
+import {View, StyleSheet} from "react-native";
+import {ProfileSignature} from "./ProfileSignature";
+import {MessageList} from "./MessageList";
+import {lineHeight} from "./StyleConstants";
+import {PostContent} from "./PostContent";
 
 export function Post({
   name,

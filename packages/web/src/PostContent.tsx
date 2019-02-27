@@ -1,8 +1,8 @@
 import * as React from "react";
-import { View, StyleSheet } from "react-native";
-import { ProfileSignature } from "./ProfileSignature";
-import { lineHeight } from "./StyleConstants";
-import { BodyText } from "./Text";
+import {View, StyleSheet} from "react-native";
+import {ProfileSignature} from "./ProfileSignature";
+import {lineHeight} from "./StyleConstants";
+import {BodyText} from "./Text";
 
 export function PostContent({
   name,

@@ -1,8 +1,8 @@
 import * as React from "react";
-import { View, StyleSheet } from "react-native";
-import { BodyText } from "./Text";
-import { ProfileSignature } from "./ProfileSignature";
-import { lineHeight } from "./StyleConstants";
+import {View, StyleSheet} from "react-native";
+import {BodyText} from "./Text";
+import {ProfileSignature} from "./ProfileSignature";
+import {lineHeight} from "./StyleConstants";
 
 export function Message({
   name,

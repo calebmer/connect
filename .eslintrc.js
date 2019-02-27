@@ -12,7 +12,7 @@ module.exports = {
     "react-hooks",
     "react-native",
   ],
-  settings: { react: { version: "16.8" } },
+  settings: {react: {version: "16.8"}},
   extends: ["eslint:recommended", "plugin:react/recommended"],
   env: {
     es6: true,
@@ -27,7 +27,7 @@ module.exports = {
     "require-atomic-updates": "warn",
     "block-scoped-var": "error",
     "consistent-return": "warn",
-    eqeqeq: ["warn", "always", { null: "ignore" }],
+    eqeqeq: ["warn", "always", {null: "ignore"}],
     "no-alert": "warn",
     "no-caller": "warn",
     "no-eval": "warn",
@@ -47,7 +47,7 @@ module.exports = {
     "no-shadow-restricted-names": "error",
     "no-buffer-constructor": "warn",
     "no-path-concat": "warn",
-    camelcase: ["warn", { properties: "never" }],
+    camelcase: ["warn", {properties: "never"}],
     "prefer-arrow-callback": "warn",
     "no-inner-declarations": "off",
     "func-style": ["warn", "declaration"],
@@ -64,7 +64,7 @@ module.exports = {
     "@typescript-eslint/prefer-function-type": "warn",
 
     "import/first": "warn",
-    "import/order": ["warn", { "newlines-between": "never" }],
+    "import/order": ["warn", {"newlines-between": "never"}],
     "import/newline-after-import": "warn",
 
     "react/jsx-key": "warn",

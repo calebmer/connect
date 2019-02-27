@@ -1,7 +1,7 @@
 import * as React from "react";
-import { ScrollView } from "react-native";
-import { GridWireFrame } from "../src/GridWireFrame";
-import { Post } from "../src/Post";
+import {ScrollView} from "react-native";
+import {GridWireFrame} from "../src/GridWireFrame";
+import {Post} from "../src/Post";
 
 const showGrid = false;
 

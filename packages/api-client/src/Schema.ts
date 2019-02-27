@@ -118,14 +118,14 @@ export function string(value: unknown): value is string {
  * `validators`. Extra properties will be ignored. Just like in TypeScript.
  */
 export function validateObject<
-  Validators extends { [key: string]: Validator<unknown> }
+  Validators extends {[key: string]: Validator<unknown>}
 >(
   validators: Validators,
   value: unknown,
-): value is { [Key in keyof Validators]: ValidatorValue<Validators[Key]> } {
+): value is {[Key in keyof Validators]: ValidatorValue<Validators[Key]>} {
   if (typeof value === "object" && value !== null && !Array.isArray(value)) {
     for (const [key, validator] of Object.entries(validators)) {
-      if (!validator((value as { [key: string]: unknown })[key])) return false;
+      if (!validator((value as {[key: string]: unknown})[key])) return false;
     }
     return true;
   } else {

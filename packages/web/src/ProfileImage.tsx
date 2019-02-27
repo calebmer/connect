@@ -1,9 +1,9 @@
 import * as React from "react";
-import { StyleSheet, Image } from "react-native";
-import { lineHeight } from "./StyleConstants";
+import {StyleSheet, Image} from "react-native";
+import {lineHeight} from "./StyleConstants";
 
-export function ProfileImage({ image }: { image: string }) {
-  return <Image style={styles.image} source={{ uri: image }} />;
+export function ProfileImage({image}: {image: string}) {
+  return <Image style={styles.image} source={{uri: image}} />;
 }
 
 ProfileImage.size = lineHeight * 2;

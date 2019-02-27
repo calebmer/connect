@@ -1,9 +1,9 @@
 import chalk from "chalk";
 import * as express from "express";
-import { Response } from "express";
-import { HttpError, BadRequest } from "http-errors";
+import {Response} from "express";
+import {HttpError, BadRequest} from "http-errors";
 import * as APIClient from "@connect/api-client";
-import { MutationSchema, MutationOperationData } from "@connect/api-client";
+import {MutationSchema, MutationOperationData} from "@connect/api-client";
 
 /**
  * Defines our API with functions that implement our API client’s schema.
@@ -36,9 +36,7 @@ type APISchemaKey = APISchemaKeyGet<keyof APIClientType>;
  */
 type APISchemaKeyGet<
   Key extends keyof APIClientType
-> = Key extends (APIClientType[Key] extends { schema: unknown }
-  ? unknown
-  : never)
+> = Key extends (APIClientType[Key] extends {schema: unknown} ? unknown : never)
   ? Key
   : never;
 
@@ -107,11 +105,11 @@ function handleError(response: Response, error: unknown): void {
   }
 
   if (error instanceof HttpError) {
-    response.status(error.statusCode).json({ message: error.message });
+    response.status(error.statusCode).json({message: error.message});
   } else {
-    response.status(500).json({ message: "Internal server error." });
+    response.status(500).json({message: "Internal server error."});
   }
 }
 
 // Actually export the server now.
-export { Server };
+export {Server};

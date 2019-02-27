@@ -1,14 +1,14 @@
 import * as React from "react";
-import { ReactNode, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { lineHeight } from "./StyleConstants";
+import {ReactNode, useState} from "react";
+import {StyleSheet, View} from "react-native";
+import {lineHeight} from "./StyleConstants";
 
 /**
  * Renders a grid wire frame on top of our UI. Useful for checking that our UI
  * matches the grid layout.
  */
-export function GridWireFrame({ children }: { children: ReactNode }) {
-  const [layout, setLayout] = useState({ width: 0, height: 0 });
+export function GridWireFrame({children}: {children: ReactNode}) {
+  const [layout, setLayout] = useState({width: 0, height: 0});
 
   const rows = [];
 

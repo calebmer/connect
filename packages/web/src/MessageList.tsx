@@ -1,7 +1,7 @@
 import * as React from "react";
-import { View, StyleSheet } from "react-native";
-import { Message } from "./Message";
-import { lineHeight } from "./StyleConstants";
+import {View, StyleSheet} from "react-native";
+import {Message} from "./Message";
+import {lineHeight} from "./StyleConstants";
 
 export function MessageList({
   messages,

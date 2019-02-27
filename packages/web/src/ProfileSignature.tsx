@@ -1,9 +1,9 @@
 import * as React from "react";
-import { ReactNode } from "react";
-import { View, StyleSheet } from "react-native";
-import { ProfileImage } from "./ProfileImage";
-import { LabelText, LiteText, BodyText } from "./Text";
-import { lineHeight } from "./StyleConstants";
+import {ReactNode} from "react";
+import {View, StyleSheet} from "react-native";
+import {ProfileImage} from "./ProfileImage";
+import {LabelText, LiteText, BodyText} from "./Text";
+import {lineHeight} from "./StyleConstants";
 
 /**
  * Used to “sign” some content with a user’s profile and the time at which the
