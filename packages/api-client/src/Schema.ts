@@ -1,93 +1,33 @@
-import {Validator, ValidatorValue} from "./Validate";
+import {JSONValue, JSONObjectValue} from "./JSONValue";
+import {SchemaInput, SchemaInputValue} from "./SchemaInput";
 
-/**
- * The root URL of our API.
- */
-const apiUrl = "http://localhost:4000";
+export const Schema = {
+  namespace<Schemas extends SchemaNamespaceObject>(
+    schemas: Schemas,
+  ): SchemaNamespace<Schemas> {
+    return {kind: "NAMESPACE", schemas};
+  },
 
-/**
- * The configuration for a mutation operation. A mutation may have some
- * side-effect on the state of the world. For instance, creating a new record
- * or updating an existing record. When executed multiple times a mutation may
- * have different results. Sent over HTTP as a `POST` request.
- */
-export type MutationSchema = {
-  /**
-   * The HTTP API path for this mutation.
-   */
-  readonly path: string;
-  /**
-   * The input object for this mutation. Submit as an HTTP body as mutations
-   * correspond to `POST` requests.
-   */
-  readonly input: MutationSchemaData;
-  /**
-   * The output object for this mutation. Retrieved as the HTTP response body.
-   */
-  readonly output: MutationSchemaData;
+  method<Inputs extends {readonly [key: string]: SchemaInput<JSONValue>}>(
+    inputs: Inputs,
+  ): SchemaMethod<{[Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>}> {
+    const input = SchemaInput.object(inputs);
+    return {kind: "METHOD", input};
+  },
 };
 
-/**
- * The configuration for a mutation’s input or output. The input is an
- * object-map from keys to `Validator`s. `MutationOperationData` gets the
- * actual input type from the schema.
- */
-export type MutationSchemaData = {
-  [key: string]: Validator<unknown>;
+export type Schema =
+  | SchemaNamespace<SchemaNamespaceObject>
+  | SchemaMethod<JSONObjectValue>;
+
+export type SchemaNamespace<Schemas extends SchemaNamespaceObject> = {
+  readonly kind: "NAMESPACE";
+  readonly schemas: Schemas;
 };
 
-/**
- * A mutation operation function will actually execute the mutation operation
- * using an HTTP request.
- */
-export type MutationOperation<Schema extends MutationSchema> = {
-  (input: MutationOperationData<Schema["input"]>): Promise<
-    MutationOperationData<Schema["output"]>
-  >;
-  readonly schema: Schema;
+export type SchemaNamespaceObject = {readonly [key: string]: Schema};
+
+export type SchemaMethod<MethodInputValue extends JSONObjectValue> = {
+  readonly kind: "METHOD";
+  readonly input: SchemaInput<MethodInputValue>;
 };
-
-/**
- * The actual data type for a `MutationSchemaData`.
- */
-export type MutationOperationData<Schema extends MutationSchemaData> = {
-  [Key in keyof Schema]: ValidatorValue<Schema[Key]>
-};
-
-/**
- * Creates a mutation operation. A mutation may have some
- * side-effect on the state of the world. For instance, creating a new record
- * or updating an existing record. When executed multiple times a mutation may
- * have different results. Sent over HTTP as a `POST` request.
- */
-export function createMutation<Schema extends MutationSchema>(
-  schema: Schema,
-): MutationOperation<Schema> {
-  if (schema.path.startsWith("/")) {
-    throw new Error(`Expected path "${schema.path}" to start with "/".`);
-  }
-
-  /**
-   * Asynchronously executes our mutation over HTTP.
-   */
-  async function mutationOperation(
-    input: MutationOperationData<Schema["input"]>,
-  ): Promise<MutationOperationData<Schema["output"]>> {
-    // Execute our HTTP request...
-    const response = await fetch(`${apiUrl}${schema.path}`, {
-      method: "POST",
-      body: JSON.stringify(input),
-    });
-    // Parse the body as JSON...
-    const data = await response.json();
-    // Return the body without validating its correctness. We trust our API
-    // server to return correct values.
-    return data;
-  }
-
-  // Set the schema for our mutation operation. This will be used by our server
-  // to verify that we implement the operation correctly.
-  mutationOperation.schema = schema;
-
-  return mutationOperation;
-}
