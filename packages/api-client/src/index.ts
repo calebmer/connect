@@ -38,3 +38,13 @@ export const signOut = Schema.createMutation({
   input: {},
   output: {},
 });
+
+// Export a bunch of utility types from the schema module.
+export {
+  MutationSchema,
+  MutationSchemaData,
+  MutationOperation,
+  MutationOperationData,
+  Validator,
+  ValidatorValue,
+} from "./Schema";

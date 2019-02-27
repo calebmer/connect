@@ -9,7 +9,7 @@ const apiUrl = "http://localhost:4000";
  * or updating an existing record. When executed multiple times a mutation may
  * have different results. Sent over HTTP as a `POST` request.
  */
-type MutationSchema = {
+export type MutationSchema = {
   /**
    * The HTTP API path for this mutation.
    */
@@ -30,7 +30,7 @@ type MutationSchema = {
  * object-map from keys to `Validator`s. `MutationOperationData` gets the
  * actual input type from the schema.
  */
-type MutationSchemaData = {
+export type MutationSchemaData = {
   [key: string]: Validator<unknown>;
 };
 
@@ -38,7 +38,7 @@ type MutationSchemaData = {
  * A mutation operation function will actually execute the mutation operation
  * using an HTTP request.
  */
-type MutationOperation<Schema extends MutationSchema> = {
+export type MutationOperation<Schema extends MutationSchema> = {
   (input: MutationOperationData<Schema["input"]>): Promise<
     MutationOperationData<Schema["output"]>
   >;
@@ -48,7 +48,7 @@ type MutationOperation<Schema extends MutationSchema> = {
 /**
  * The actual data type for a `MutationSchemaData`.
  */
-type MutationOperationData<Schema extends MutationSchemaData> = {
+export type MutationOperationData<Schema extends MutationSchemaData> = {
   [Key in keyof Schema]: ValidatorValue<Schema[Key]>
 };
 
