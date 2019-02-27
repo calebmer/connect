@@ -1,4 +1,4 @@
-import {APIInput, APIOutput} from "./APISchema";
+import {APIInput, APIOutput} from "../APISchema";
 
 /**
  * Creates a new account with an email and a password. Accounts may have any

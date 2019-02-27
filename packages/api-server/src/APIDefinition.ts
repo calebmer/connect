@@ -1,6 +1,6 @@
 import {MutationSchema, MutationOperationData} from "@connect/api-client";
 import {APIClientType, APISchemaKey} from "./APISchema";
-import * as Account from "./Account";
+import * as Account from "./operations/Account";
 
 /**
  * Defines our API with functions that implement our API client’s schema.
