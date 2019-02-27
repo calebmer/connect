@@ -27,7 +27,7 @@ let bodyFontSize = 16;
 /**
  * We want to fit about 50–60 characters per line of text.
  */
-BodyText.maxWidth = bodyFontSize * 30;
+BodyText.maxWidth = bodyFontSize * 33;
 
 /**
  * Label text is used to annotate some part of our interface with important
