@@ -4,6 +4,6 @@
     "target": "esnext",
     "module": "esnext",
     "jsx": "preserve",
-    "lib": ["dom", "es2017"]
+    "lib": ["es2017"]
   }
 }
