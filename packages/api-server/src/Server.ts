@@ -3,33 +3,8 @@ import * as express from "express";
 import {Response} from "express";
 import {HttpError, BadRequest} from "http-errors";
 import * as APIClient from "@connect/api-client";
-import {MutationSchema, MutationOperationData} from "@connect/api-client";
-import {APIClientType, APISchemaKey, apiSchemaKeys} from "./ClientSchema";
-import * as Account from "./Account";
-
-/**
- * Defines our API with functions that implement our API client’s schema.
- */
-const apiDefinition: APIDefinition = {
-  signUp: Account.signUp,
-  signIn: Account.signIn,
-  signOut: Account.signOut,
-};
-
-/**
- * The definition of our entire API. We re-construct the schema to produce the
- * definition based on all of the operations exposed by our API client.
- */
-type APIDefinition = {
-  [Key in APISchemaKey]: MutationDefinition<APIClientType[Key]["schema"]>
-};
-
-/**
- * The definition of a mutation based on its schema.
- */
-type MutationDefinition<Schema extends MutationSchema> = (
-  input: MutationOperationData<Schema["input"]>,
-) => Promise<MutationOperationData<Schema["output"]>>;
+import {APISchemaKeys} from "./APISchema";
+import {APIDefinition} from "./APIDefinition";
 
 /**
  * The HTTP server for our API. Powered by Express.
@@ -42,10 +17,10 @@ Server.use(express.json());
 
 // Add routes to our app by looking at all of the schemas expected by
 // `APIClient` and adding them to our Express app.
-for (const key of apiSchemaKeys) {
+for (const key of APISchemaKeys) {
   // Get the schema and definition function for this operation.
   const schema = APIClient[key].schema;
-  const definition = apiDefinition[key];
+  const definition = APIDefinition[key];
 
   // Add this operation to our server.
   Server.post(schema.path, (request, response) => {

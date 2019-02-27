@@ -45,6 +45,6 @@ export type APIOutput<Key extends APISchemaKey> = MutationOperationData<
 /**
  * All of the keys in our API schema.
  */
-export const apiSchemaKeys = Object.keys(APIClient).filter(
+export const APISchemaKeys = Object.keys(APIClient).filter(
   key => (APIClient as any)[key].schema !== undefined,
 ) as ReadonlyArray<APISchemaKey>;
