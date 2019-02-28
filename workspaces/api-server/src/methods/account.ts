@@ -1,5 +1,6 @@
-import {hash} from "bcrypt";
+import * as bcrypt from "bcrypt";
 import * as uuidV4 from "uuid/v4";
+import * as jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {Database} from "../Database";
 
@@ -9,7 +10,23 @@ import {Database} from "../Database";
  *
  * [1]: https://yarn.pm/bcrypt
  */
-const saltRounds = 10;
+const SALT_ROUNDS = 10;
+
+/**
+ * The secret we use to sign our JSON Web Tokens (JWT). In development and test
+ * environments we use the super secret “`secret`” token. In production we need
+ * a real secret from our environment variables.
+ */
+export const JWT_SECRET: string = (() => {
+  if (
+    process.env.NODE_ENV === "development" ||
+    process.env.NODE_ENV === "test"
+  ) {
+    return "secret";
+  } else {
+    throw new Error("JWT secret is not configured.");
+  }
+})();
 
 /**
  * Creates a new account with an email and a password. Accounts may have any
@@ -30,7 +47,7 @@ export async function signUp(
   readonly refreshToken: string;
 }> {
   // Hash the provided password with bcrypt.
-  const passwordHash = await hash(password, saltRounds);
+  const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
   // Attempt to create a new account. If there is already an account with the
   // same email then we’ll do nothing. Otherwise we’ll return the ID of the
@@ -61,9 +78,24 @@ export async function signUp(
     [refreshToken, accountID],
   );
 
+  // Create a new access token that lasts for one hour. When the access token
+  // expires an API client may use the refresh token to get a new access token.
+  const accessToken = await new Promise<string>((resolve, reject) => {
+    jwt.sign(
+      {id: accountID},
+      JWT_SECRET,
+      {expiresIn: "1h"},
+      (error, accessToken) => {
+        if (error) reject(error);
+        else resolve(accessToken);
+      },
+    );
+  });
+
+  // Return our refresh token and access token.
   return {
     refreshToken,
-    accessToken: "TODO",
+    accessToken,
   };
 }
 

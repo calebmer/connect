@@ -1,6 +1,7 @@
+import * as jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {Database, withDatabase} from "../../Database";
-import {signUp} from "../account";
+import {JWT_SECRET, signUp} from "../account";
 
 const testEmail = "test@example.com";
 
@@ -63,6 +64,28 @@ describe("signUp", () => {
       );
       expect(result2.rowCount).toBe(1);
       expect(result2.rows[0].account_id).toBe(accountID);
+    });
+  });
+
+  test("creates a new access token", async () => {
+    await testWithDatabase(async database => {
+      const {accessToken} = await signUp(database, {
+        email: testEmail,
+        password: "qwerty",
+      });
+      const result = await database.query(
+        "SELECT id FROM account WHERE email = $1",
+        [testEmail],
+      );
+      expect(result.rowCount).toBe(1);
+      const accountID = result.rows[0].id;
+      const payload: any = await new Promise<any>((resolve, reject) => {
+        jwt.verify(accessToken, JWT_SECRET, (error, payload) => {
+          if (error) reject(error);
+          else resolve(payload);
+        });
+      });
+      expect(payload.id).toBe(accountID);
     });
   });
 });
