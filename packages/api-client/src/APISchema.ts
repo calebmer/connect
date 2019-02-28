@@ -1,5 +1,6 @@
 import {Schema} from "./Schema";
 import {SchemaInput} from "./SchemaInput";
+import {SchemaOutput} from "./SchemaOutput";
 
 /**
  * The declaration of the operations available in our API. We will use this
@@ -21,8 +22,14 @@ export const APISchema = Schema.namespace({
      * Also signs the person into their newly created account.
      */
     signUp: Schema.unauthorizedMethod({
-      email: SchemaInput.string,
-      password: SchemaInput.string,
+      input: {
+        email: SchemaInput.string,
+        password: SchemaInput.string,
+      },
+      output: SchemaOutput.t<{
+        readonly accessToken: string;
+        readonly refreshToken: string;
+      }>(),
     }),
 
     /**
@@ -36,8 +43,14 @@ export const APISchema = Schema.namespace({
      * the refresh token to get a new access token.
      */
     signIn: Schema.unauthorizedMethod({
-      email: SchemaInput.string,
-      password: SchemaInput.string,
+      input: {
+        email: SchemaInput.string,
+        password: SchemaInput.string,
+      },
+      output: SchemaOutput.t<{
+        readonly accessToken: string;
+        readonly refreshToken: string;
+      }>(),
     }),
 
     /**
@@ -48,7 +61,10 @@ export const APISchema = Schema.namespace({
      * access token. The access token will eventually expire.
      */
     signOut: Schema.unauthorizedMethod({
-      refreshToken: SchemaInput.string,
+      input: {
+        refreshToken: SchemaInput.string,
+      },
+      output: SchemaOutput.t<{}>(),
     }),
   }),
 });

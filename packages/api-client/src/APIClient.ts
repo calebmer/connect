@@ -30,8 +30,8 @@ type Client<
   Schema extends SchemaBase
 > = Schema extends SchemaNamespace<infer Schemas> // prettier-ignore
   ? ClientNamespace<Schemas>
-  : Schema extends SchemaMethodUnauthorized<infer MethodInputValue>
-  ? ClientMethodUnauthorized<MethodInputValue>
+  : Schema extends SchemaMethodUnauthorized<infer Input, infer Output>
+  ? ClientMethodUnauthorized<Input, Output>
   : never;
 
 /**
@@ -44,9 +44,9 @@ type ClientNamespace<Schemas extends {readonly [key: string]: SchemaBase}> = {
 /**
  * The executor function for an unauthorized API method.
  */
-type ClientMethodUnauthorized<MethodInputValue> = (
-  input: MethodInputValue,
-) => Promise<unknown>;
+type ClientMethodUnauthorized<Input, Output> = (
+  input: Input,
+) => Promise<Output>;
 
 /**
  * Creates an API client based on the schema we were provided.
@@ -97,11 +97,12 @@ function createClientNamespace<
  * API schema path and the actual schema for this method.
  */
 function createClientMethodUnauthorized<
-  MethodInputValue extends JSONObjectValue
+  Input extends JSONObjectValue,
+  Output extends JSONObjectValue
 >(
   path: Array<string>,
-  _schema: SchemaMethodUnauthorized<MethodInputValue>,
-): ClientMethodUnauthorized<MethodInputValue> {
+  _schema: SchemaMethodUnauthorized<Input, Output>,
+): ClientMethodUnauthorized<Input, Output> {
   // The path to our method on the API server.
   const apiPath = `${apiUrl}/${path.join("/")}`;
 
@@ -113,8 +114,9 @@ function createClientMethodUnauthorized<
       body: JSON.stringify(input),
     });
 
-    // Parse the response body as JSON.
-    const result: APIResult<unknown> = await response.json();
+    // Parse the response body as JSON. We trust our server to return the
+    // correct response so cast to `Output` directly without validating.
+    const result: APIResult<Output> = await response.json();
 
     // If the response is ok then return our response data. If the response is
     // not ok then throw a new `APIError` with the error code.

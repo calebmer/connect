@@ -1,5 +1,6 @@
 import {JSONValue, JSONObjectValue} from "./JSONValue";
 import {SchemaInput, SchemaInputValue} from "./SchemaInput";
+import {SchemaOutput} from "./SchemaOutput";
 
 /**
  * A framework for creating an HTTP RPC based API schema.
@@ -26,14 +27,23 @@ export const Schema = {
    * the result.
    */
   unauthorizedMethod<
-    Inputs extends {readonly [key: string]: SchemaInput<JSONValue>}
-  >(
-    inputs: Inputs,
-  ): SchemaMethodUnauthorized<
-    {[Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>}
+    Inputs extends {readonly [key: string]: SchemaInput<JSONValue>},
+    Output extends JSONObjectValue
+  >({
+    input,
+    output,
+  }: {
+    input: Inputs;
+    output: SchemaOutput<Output>;
+  }): SchemaMethodUnauthorized<
+    {[Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>},
+    Output
   > {
-    const input = SchemaInput.object(inputs);
-    return {kind: SchemaKind.METHOD_UNAUTHORIZED, input};
+    return {
+      kind: SchemaKind.METHOD_UNAUTHORIZED,
+      input: SchemaInput.object(input),
+      output,
+    };
   },
 };
 
@@ -46,7 +56,7 @@ export const Schema = {
  */
 export type SchemaBase =
   | SchemaNamespace<{readonly [key: string]: SchemaBase}>
-  | SchemaMethodUnauthorized<JSONObjectValue>;
+  | SchemaMethodUnauthorized<JSONObjectValue, JSONObjectValue>;
 
 /**
  * The kind of a schema.
@@ -72,8 +82,10 @@ export type SchemaNamespace<
  * API server.
  */
 export type SchemaMethodUnauthorized<
-  MethodInputValue extends JSONObjectValue
+  Input extends JSONObjectValue,
+  Output extends JSONObjectValue
 > = {
   readonly kind: SchemaKind.METHOD_UNAUTHORIZED;
-  readonly input: SchemaInput<MethodInputValue>;
+  readonly input: SchemaInput<Input>;
+  readonly output: SchemaOutput<Output>;
 };

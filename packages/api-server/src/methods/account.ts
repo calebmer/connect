@@ -11,10 +11,13 @@ const saltRounds = 10;
 export async function signUp(
   database: Database,
   input: {
-    email: string;
-    password: string;
+    readonly email: string;
+    readonly password: string;
   },
-): Promise<void> {
+): Promise<{
+  readonly accessToken: string;
+  readonly refreshToken: string;
+}> {
   // const passwordHash = await hash(password, saltRounds);
 
   // // TODO: Email already exists error.
@@ -37,10 +40,13 @@ export async function signUp(
 export async function signIn(
   database: Database,
   input: {
-    email: string;
-    password: string;
+    readonly email: string;
+    readonly password: string;
   },
-): Promise<void> {
+): Promise<{
+  readonly accessToken: string;
+  readonly refreshToken: string;
+}> {
   throw new Error("TODO");
 }
 
@@ -52,8 +58,8 @@ export async function signIn(
 export async function signOut(
   database: Database,
   input: {
-    refreshToken: string;
+    readonly refreshToken: string;
   },
-): Promise<void> {
+): Promise<{}> {
   throw new Error("TODO");
 }

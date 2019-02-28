@@ -86,11 +86,12 @@ function initializeServerNamespace<
  * Initializes the server with a method that does not need authorization.
  */
 function initializeServerMethodUnauthorized<
-  MethodInputValue extends JSONObjectValue
+  Input extends JSONObjectValue,
+  Output extends JSONObjectValue
 >(
   path: Array<string>,
-  definition: ServerMethodUnauthorized<MethodInputValue>,
-  schema: SchemaMethodUnauthorized<MethodInputValue>,
+  definition: ServerMethodUnauthorized<Input, Output>,
+  schema: SchemaMethodUnauthorized<Input, Output>,
 ): void {
   // The path to this API method.
   const apiPath = `/${path.join("/")}`;
@@ -189,8 +190,8 @@ type Server<
   Schema extends SchemaBase
 > = Schema extends SchemaNamespace<infer Schemas> // prettier-ignore
   ? ServerNamespace<Schemas>
-  : Schema extends SchemaMethodUnauthorized<infer MethodInputValue>
-  ? ServerMethodUnauthorized<MethodInputValue>
+  : Schema extends SchemaMethodUnauthorized<infer Input, infer Output>
+  ? ServerMethodUnauthorized<Input, Output>
   : never;
 
 /**
@@ -204,7 +205,7 @@ type ServerNamespace<Schemas extends {readonly [key: string]: SchemaBase}> = {
  * The type of a server-side definition for an unauthorized method. It takes the
  * method input and some unauthorized context.
  */
-type ServerMethodUnauthorized<MethodInputValue> = (
+type ServerMethodUnauthorized<Input, Output> = (
   database: Database,
-  input: MethodInputValue,
-) => Promise<unknown>;
+  input: Input,
+) => Promise<Output>;
