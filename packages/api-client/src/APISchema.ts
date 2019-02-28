@@ -20,7 +20,7 @@ export const APISchema = Schema.namespace({
      *
      * Also signs the person into their newly created account.
      */
-    signUp: Schema.method({
+    signUp: Schema.unauthorizedMethod({
       email: SchemaInput.string,
       password: SchemaInput.string,
     }),
@@ -35,7 +35,7 @@ export const APISchema = Schema.namespace({
      * access token in the database. When the access token expires we can use
      * the refresh token to get a new access token.
      */
-    signIn: Schema.method({
+    signIn: Schema.unauthorizedMethod({
       email: SchemaInput.string,
       password: SchemaInput.string,
     }),
@@ -47,7 +47,7 @@ export const APISchema = Schema.namespace({
      * invalidate their access token, so we trust that the client forgets the
      * access token. The access token will eventually expire.
      */
-    signOut: Schema.method({
+    signOut: Schema.unauthorizedMethod({
       refreshToken: SchemaInput.string,
     }),
   }),

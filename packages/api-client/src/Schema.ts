@@ -16,19 +16,24 @@ export const Schema = {
   namespace<Schemas extends {readonly [key: string]: Schema}>(
     schemas: Schemas,
   ): SchemaNamespace<Schemas> {
-    return {kind: "NAMESPACE", schemas};
+    return {kind: SchemaKind.NAMESPACE, schemas};
   },
 
   /**
-   * Creates a new schema method. A method is the bread and butter of our RPC
-   * API as executing a method with the API client will, in fact, call the
-   * method on the API server and return the result.
+   * Creates a new schema method which does not require authorization. A method
+   * is the bread and butter of our RPC API as executing a method with the API
+   * client will, in fact, call the method on the API server and return
+   * the result.
    */
-  method<Inputs extends {readonly [key: string]: SchemaInput<JSONValue>}>(
+  unauthorizedMethod<
+    Inputs extends {readonly [key: string]: SchemaInput<JSONValue>}
+  >(
     inputs: Inputs,
-  ): SchemaMethod<{[Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>}> {
+  ): SchemaMethodUnauthorized<
+    {[Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>}
+  > {
     const input = SchemaInput.object(inputs);
-    return {kind: "METHOD", input};
+    return {kind: SchemaKind.METHOD_UNAUTHORIZED, input};
   },
 };
 
@@ -37,7 +42,15 @@ export const Schema = {
  */
 export type Schema =
   | SchemaNamespace<{readonly [key: string]: Schema}>
-  | SchemaMethod<JSONObjectValue>;
+  | SchemaMethodUnauthorized<JSONObjectValue>;
+
+/**
+ * The kind of a schema.
+ */
+export enum SchemaKind {
+  NAMESPACE,
+  METHOD_UNAUTHORIZED,
+}
 
 /**
  * A namespace schema is used for introducing more schemas to our API and giving
@@ -46,7 +59,7 @@ export type Schema =
 export type SchemaNamespace<
   Schemas extends {readonly [key: string]: Schema}
 > = {
-  readonly kind: "NAMESPACE";
+  readonly kind: SchemaKind.NAMESPACE;
   readonly schemas: Schemas;
 };
 
@@ -54,7 +67,9 @@ export type SchemaNamespace<
  * A schema method will execute a method with its typed input against our
  * API server.
  */
-export type SchemaMethod<MethodInputValue extends JSONObjectValue> = {
-  readonly kind: "METHOD";
+export type SchemaMethodUnauthorized<
+  MethodInputValue extends JSONObjectValue
+> = {
+  readonly kind: SchemaKind.METHOD_UNAUTHORIZED;
   readonly input: SchemaInput<MethodInputValue>;
 };
