@@ -11,7 +11,7 @@ export const APISchema = Schema.namespace({
   /**
    * Operations related to the administration of a person’s account.
    */
-  Account: Schema.namespace({
+  account: Schema.namespace({
     /**
      * Registers a new account which can be used to access our service.
      * Currently we require an email for password recovery. The account may be
