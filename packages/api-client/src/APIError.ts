@@ -32,9 +32,9 @@ export enum APIErrorCode {
   SIGN_IN_INCORRECT_EMAIL_PASSWORD = "SIGN_IN_INCORRECT_EMAIL_PASSWORD",
 
   /**
-   * An unexpected, internal, error.
+   * An unknown error occurred.
    */
-  INTERNAL = "INTERNAL",
+  UNKNOWN = "UNKNOWN",
 }
 
 /**

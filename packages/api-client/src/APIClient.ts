@@ -111,6 +111,7 @@ function createClientMethodUnauthorized<
     // matter a whole lot to our API.
     const response = await fetch(apiPath, {
       method: "POST",
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify(input),
     });
 

@@ -6,7 +6,7 @@
     "outDir": "./build",
     "target": "es2018",
     "module": "commonjs",
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
   "references": [{"path": "../api-client/tsconfig.node.json"}]
 }

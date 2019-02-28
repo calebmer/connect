@@ -110,11 +110,11 @@ function initializeServerMethodUnauthorized<
 
     // Provides a database to our API method definition.
     withDatabase(database => definition(database, input)).then(
-      _output => {
+      output => {
         // Construct the successful result of an API request.
-        const result: APIResult<null> = {
+        const result: APIResult<Output> = {
           ok: true,
-          data: null,
+          data: output,
         };
         // Send the successful result to our client.
         response.status(200).json(result);
@@ -157,7 +157,12 @@ APIServer.use(
     // set one. If the error is an instance of `APIError` then the error is the
     // client’s fault (400) otherwise it’s our fault (500).
     if (!(response.statusCode >= 400 && response.statusCode < 600)) {
-      response.statusCode = error instanceof APIError ? 400 : 500;
+      response.statusCode =
+        error instanceof APIError
+          ? 400
+          : (error as any).statusCode
+          ? (error as any).statusCode
+          : 500;
     }
 
     // Setup the result. If our error was an `APIError` then we get to add a
@@ -171,7 +176,7 @@ APIServer.use(
     } else {
       result = {
         ok: false,
-        error: {code: APIErrorCode.INTERNAL},
+        error: {code: APIErrorCode.UNKNOWN},
       };
     }
 
