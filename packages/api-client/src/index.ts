@@ -1,4 +1,4 @@
-export * from "./API";
+export * from "./APIClient";
 export * from "./APIError";
 export * from "./APISchema";
 export * from "./JSONValue";

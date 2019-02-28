@@ -1,5 +1,5 @@
 import {Database} from "../Database";
-import {hash, compare} from "bcrypt";
+// import {hash, compare} from "bcrypt";
 
 const saltRounds = 10;
 
@@ -10,28 +10,22 @@ const saltRounds = 10;
  */
 export async function signUp(
   database: Database,
-  {
-    email,
-    password,
-  }: {
+  input: {
     email: string;
     password: string;
   },
-): Promise<{
-  accessToken: string;
-  refreshToken: string;
-}> {
-  const passwordHash = await hash(password, saltRounds);
+): Promise<void> {
+  // const passwordHash = await hash(password, saltRounds);
 
-  // TODO: Email already exists error.
-  await database.query(
-    "INSERT INTO account (email, password_hash) VALUES ($1, $2)",
-    [email, passwordHash],
-  );
+  // // TODO: Email already exists error.
+  // await database.query(
+  //   "INSERT INTO account (email, password_hash) VALUES ($1, $2)",
+  //   [email, passwordHash],
+  // );
 
-  await database.query("INSERT INTO refresh_token (account_id) VALUES ($1)", [
-    accountID,
-  ]);
+  // await database.query("INSERT INTO refresh_token (account_id) VALUES ($1)", [
+  //   accountID,
+  // ]);
 
   throw new Error("TODO");
 }
@@ -42,17 +36,11 @@ export async function signUp(
  */
 export async function signIn(
   database: Database,
-  {
-    email,
-    password,
-  }: {
+  input: {
     email: string;
     password: string;
   },
-): Promise<{
-  accessToken: string;
-  refreshToken: string;
-}> {
+): Promise<void> {
   throw new Error("TODO");
 }
 

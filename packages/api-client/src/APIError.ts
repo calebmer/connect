@@ -9,6 +9,16 @@
  */
 export enum APIErrorCode {
   /**
+   * Tried to provide input in the incorrect format to our API.
+   */
+  BAD_INPUT = "BAD_INPUT",
+
+  /**
+   * Tried to call a method unrecognized by our API.
+   */
+  UNRECOGNIZED_METHOD = "UNRECOGNIZED_METHOD",
+
+  /**
    * When a person tries to sign up and the email they provided is already in
    * use by another account then we’ll throw this error.
    */
