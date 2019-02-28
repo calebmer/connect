@@ -15,7 +15,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@connect/*": ["./packages/*"]
+      "@connect/*": ["./workspaces/*"]
     }
   }
 }

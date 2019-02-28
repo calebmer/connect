@@ -2,7 +2,7 @@
   "private": true,
   "license": "UNLICENSED",
   "workspaces": [
-    "packages/*"
+    "workspaces/*"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.ts,.tsx",
