@@ -13,7 +13,7 @@ export const Schema = {
    * Creates a new schema namespace. The namespace will contain some other
    * schemas. Namespaces allow for organization of the API.
    */
-  namespace<Schemas extends {readonly [key: string]: Schema}>(
+  namespace<Schemas extends {readonly [key: string]: SchemaBase}>(
     schemas: Schemas,
   ): SchemaNamespace<Schemas> {
     return {kind: SchemaKind.NAMESPACE, schemas};
@@ -38,10 +38,14 @@ export const Schema = {
 };
 
 /**
- * All the different types of schemas we might have.
+ * All the different types of schemas we might have. This is the “upper bound”
+ * for a schema. That is all the possible schemas we might write are an instance
+ * of `SchemaBase`. However, `SchemaBase` isn’t very useful as a type since it
+ * could represent anything. It’s mostly useful for constraining type
+ * parameter bounds. (e.g. `<Schema extends SchemaBase>`)
  */
-export type Schema =
-  | SchemaNamespace<{readonly [key: string]: Schema}>
+export type SchemaBase =
+  | SchemaNamespace<{readonly [key: string]: SchemaBase}>
   | SchemaMethodUnauthorized<JSONObjectValue>;
 
 /**
@@ -57,7 +61,7 @@ export enum SchemaKind {
  * the schemas some nesting for better organization.
  */
 export type SchemaNamespace<
-  Schemas extends {readonly [key: string]: Schema}
+  Schemas extends {readonly [key: string]: SchemaBase}
 > = {
   readonly kind: SchemaKind.NAMESPACE;
   readonly schemas: Schemas;

@@ -20,6 +20,34 @@ export enum APIErrorCode {
    * that’s wrong or their password since that might be a security violation.
    */
   SIGN_IN_INCORRECT_EMAIL_PASSWORD = "SIGN_IN_INCORRECT_EMAIL_PASSWORD",
+
+  /**
+   * An unexpected, internal, error.
+   */
+  INTERNAL = "INTERNAL",
+}
+
+/**
+ * A custom `Error` class specifically for API errors. Thrown by the client and
+ * server when there’s an API error.
+ */
+export class APIError extends Error {
+  /**
+   * The code for this error.
+   */
+  public readonly code: APIErrorCode;
+
+  constructor(code: APIErrorCode) {
+    super(`API error: ${code}`);
+
+    // Maintains proper stack trace for where our error was thrown
+    // (only available on V8).
+    if ((Error as any).captureStackTrace) {
+      (Error as any).captureStackTrace(this, APIError);
+    }
+
+    this.code = code;
+  }
 }
 
 /**
