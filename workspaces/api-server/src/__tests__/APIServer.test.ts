@@ -5,7 +5,7 @@ jest.mock("../methods", () => ({account: {signIn}}));
 
 import {Server} from "http";
 import fetch from "node-fetch";
-import {APIErrorCode} from "@connect/api-client/build";
+import {APIErrorCode} from "@connect/api-client";
 import {APIServer} from "../APIServer";
 
 // We spin up the API server as an HTTP server for our tests. We use port 3594

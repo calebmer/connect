@@ -1,4 +1,5 @@
 import {hash} from "bcrypt";
+import {APIError, APIErrorCode} from "@connect/api-client";
 import {Database} from "../Database";
 
 const saltRounds = 10;
@@ -21,9 +22,12 @@ export async function signUp(
   readonly accessToken: string;
   readonly refreshToken: string;
 }> {
+  // Hash the provided password with bcrypt.
   const passwordHash = await hash(password, saltRounds);
 
-  // TODO: Email already exists error.
+  // Attempt to create a new account. If there is already an account with the
+  // same email then we’ll do nothing. Otherwise we’ll return the ID of the
+  // new account.
   const insertAccountResult = await database.query(
     "INSERT INTO account (email, password_hash) VALUES ($1, $2) " +
       "ON CONFLICT (email) DO NOTHING " +
@@ -31,7 +35,14 @@ export async function signUp(
     [email, passwordHash],
   );
 
-  console.log(insertAccountResult);
+  // If we did not create an account then we know the email was already in use
+  // by some other account. Throw an API error for a nice error message.
+  if (insertAccountResult.rows.length === 0) {
+    throw new APIError(APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED);
+  }
+
+  // Otherwise, we have a new account!
+  const accountID: number = insertAccountResult.rows[0].id;
 
   // await database.query("INSERT INTO refresh_token (account_id) VALUES ($1)", [
   //   accountID,
