@@ -41,6 +41,10 @@ export const APISchema = Schema.namespace({
      * short time period. During that time period we don’t need to lookup the
      * access token in the database. When the access token expires we can use
      * the refresh token to get a new access token.
+     *
+     * See the [Auth0 blog][1] for more information about refresh tokens.
+     *
+     * [1]: https://auth0.com/learn/refresh-tokens
      */
     signIn: Schema.unauthorizedMethod({
       input: {

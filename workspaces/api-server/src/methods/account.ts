@@ -1,7 +1,14 @@
 import {hash} from "bcrypt";
+import * as uuidV4 from "uuid/v4";
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {Database} from "../Database";
 
+/**
+ * Balances speed and security for the bcrypt algorithm. See the
+ * [bcrypt module’s][1] documentation for more.
+ *
+ * [1]: https://yarn.pm/bcrypt
+ */
 const saltRounds = 10;
 
 /**
@@ -44,11 +51,20 @@ export async function signUp(
   // Otherwise, we have a new account!
   const accountID: number = insertAccountResult.rows[0].id;
 
-  // await database.query("INSERT INTO refresh_token (account_id) VALUES ($1)", [
-  //   accountID,
-  // ]);
+  // We also want to sign our new account in, so create a new refresh token...
+  const refreshToken = uuidV4();
 
-  return null as any;
+  // Add our new refresh token to the database. This way when the access token
+  // we create expires the API client will be able to get a new one.
+  await database.query(
+    "INSERT INTO refresh_token (token, account_id) VALUES ($1, $2)",
+    [refreshToken, accountID],
+  );
+
+  return {
+    refreshToken,
+    accessToken: "TODO",
+  };
 }
 
 /**
