@@ -33,10 +33,7 @@ export default class MyDocument extends Document {
       <html style={{height: "100%"}}>
         <Head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <link
-            href="https://fonts.googleapis.com/css?family=Lora:400,700"
-            rel="stylesheet"
-          />
+          <link rel="stylesheet" href="https://use.typekit.net/yno3yns.css" />
         </Head>
         <body style={{height: "100%", overflow: "hidden"}}>
           <Main />
