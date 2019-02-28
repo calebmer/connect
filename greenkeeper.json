@@ -1,0 +1,13 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "package.json",
+        "packages/api-client/package.json",
+        "packages/api-server/package.json",
+        "packages/database/package.json",
+        "packages/web/package.json"
+      ]
+    }
+  }
+}
