@@ -31,15 +31,14 @@ describe("signUp", () => {
   test("errors when trying to sign up with an already used email", async () => {
     const database = await databasePromise;
     await signUp(database, {email: "hello@example.com", password: "qwerty1"});
+    let error: any;
     try {
       await signUp(database, {email: "hello@example.com", password: "qwerty2"});
-      expect(true).toBe(false);
-    } catch (error) {
-      console.dir(error);
-      expect(error).toBeInstanceOf(APIError);
-      expect(error.code).toBeInstanceOf(
-        APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED,
-      );
+    } catch (e) {
+      error = e;
     }
+    console.dir(error);
+    expect(error).toBeInstanceOf(APIError);
+    expect(error.code).toBeInstanceOf(APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED);
   });
 });

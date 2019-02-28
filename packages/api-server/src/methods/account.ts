@@ -25,9 +25,13 @@ export async function signUp(
 
   // TODO: Email already exists error.
   const insertAccountResult = await database.query(
-    "INSERT INTO account (email, password_hash) VALUES ($1, $2)",
+    "INSERT INTO account (email, password_hash) VALUES ($1, $2) " +
+      "ON CONFLICT (email) DO NOTHING " +
+      "RETURNING id",
     [email, passwordHash],
   );
+
+  console.log(insertAccountResult);
 
   // await database.query("INSERT INTO refresh_token (account_id) VALUES ($1)", [
   //   accountID,
