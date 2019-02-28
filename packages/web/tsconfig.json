@@ -1,9 +1,3 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "jsx": "preserve",
-    "lib": ["es2017"]
-  }
+  "extends": "../../tsconfig.base.json"
 }

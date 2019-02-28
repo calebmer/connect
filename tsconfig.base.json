@@ -5,6 +5,7 @@
     "module": "esnext",
     "sourceMap": true,
     "moduleResolution": "node",
+    "jsx": "preserve",
     "lib": ["esnext"],
     "types": ["jest"],
     "strict": true,

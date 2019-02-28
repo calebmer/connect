@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "tsc": "tsc"
   },
   "dependencies": {
     "@babel/core": "^7.3.3",

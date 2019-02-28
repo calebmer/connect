@@ -5,7 +5,6 @@
     "packages/*"
   ],
   "scripts": {
-    "tsc": "yarn workspaces run exec tsc",
     "lint": "eslint . --ext .js,.ts,.tsx",
     "format": "prettier \"**/*.{js,ts,tsx}\" --write",
     "test": "jest --watch"

@@ -1,10 +1,12 @@
 {
-  "extends": "../../tsconfig.node.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "noEmit": false,
     "rootDir": "./src",
     "outDir": "./build",
+    "target": "es2018",
+    "module": "commonjs",
     "types": ["node"]
   },
-  "references": [{ "path": "../api-client/tsconfig.node.json" }]
+  "references": [{"path": "../api-client/tsconfig.node.json"}]
 }
