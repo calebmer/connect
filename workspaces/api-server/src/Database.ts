@@ -1,4 +1,4 @@
-import {Pool, PoolClient} from "pg";
+import {Pool, ClientBase, Client} from "pg";
 
 /**
  * A database connection pool. Connecting a new client on every request would be
@@ -14,7 +14,7 @@ const pool = new Pool();
 // Whenever the pool newly connects a client this event is called and we can run
 // some setup commands.
 pool.on("connect", client => {
-  client.query("SET search_path = connect");
+  initializeClient(client);
 });
 
 // The pool with emit an error on behalf of any idle clients it contains if a
@@ -26,9 +26,16 @@ pool.on("error", (error, _client) => {
 });
 
 /**
+ * Initializes a database client.
+ */
+async function initializeClient(client: ClientBase): Promise<void> {
+  await client.query("SET search_path = connect");
+}
+
+/**
  * A Postgres database client which we may directly execute SQL queries against.
  */
-export interface Database extends PoolClient {}
+export interface Database extends ClientBase {}
 
 /**
  * Executes an action with a database client from our connection pool. Once the
@@ -45,4 +52,38 @@ export async function withDatabase<T>(
     client.release();
   }
   return result;
+}
+
+/**
+ * Provides a testing environment with a database client wrapped in a
+ * transaction which will rollback after each test has run.
+ *
+ * Only available in a test environment! This function will throw if you try
+ * to use it anywhere else.
+ */
+export function withTestDatabase(): Database {
+  if (process.env.NODE_ENV !== "test") {
+    throw new Error("You only use a test database in a test environment.");
+  }
+
+  const client = new Client();
+
+  beforeAll(async () => {
+    await client.connect();
+    await initializeClient(client);
+  });
+
+  afterAll(async () => {
+    client.end();
+  });
+
+  beforeEach(async () => {
+    await client.query("BEGIN");
+  });
+
+  afterEach(async () => {
+    await client.query("ROLLBACK");
+  });
+
+  return client;
 }

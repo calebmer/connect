@@ -48,7 +48,6 @@ module.exports = {
     "no-shadow-restricted-names": "error",
     "no-buffer-constructor": "warn",
     "no-path-concat": "warn",
-    camelcase: ["warn", {properties: "never"}],
     "prefer-arrow-callback": "warn",
     "no-inner-declarations": "off",
     "func-style": ["warn", "declaration"],
@@ -64,6 +63,10 @@ module.exports = {
     "@typescript-eslint/no-angle-bracket-type-assertion": "warn",
     "@typescript-eslint/no-triple-slash-reference": "warn",
     "@typescript-eslint/prefer-function-type": "warn",
+
+    // NOTE: Use the TypeScript camelcase rule instead of the base ESLint one.
+    camelcase: "off",
+    "@typescript-eslint/camelcase": ["warn", {properties: "never"}],
 
     "import/first": "warn",
     "import/order": ["warn", {"newlines-between": "never"}],
