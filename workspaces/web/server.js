@@ -87,7 +87,7 @@ const apiProxyAgent = new http.Agent({keepAlive: true});
  */
 function apiProxy(request, response, pathname) {
   // Options for the HTTP request to our proxy.
-  const options = {
+  const proxyRequestOptions = {
     protocol: apiUrl.protocol,
     hostname: apiUrl.hostname,
     port: apiUrl.port,
@@ -98,15 +98,16 @@ function apiProxy(request, response, pathname) {
   };
 
   // Copy headers we’re ok with proxying to our request options.
-  Object.entries(request.headers).forEach(([headerName, headerValue]) => {
-    if (apiProxyHeaders.has(headerName)) {
-      options.headers[headerName] = headerValue;
+  for (let i = 0; i < request.rawHeaders.length; i += 2) {
+    const header = request.rawHeaders[i];
+    if (apiProxyHeaders.has(header.toLowerCase())) {
+      proxyRequestOptions.headers[header] = request.rawHeaders[i + 1];
     }
-  });
+  }
 
   // Make the request. When we get a response pipe it to our actual HTTP
   // response so our browser can use it.
-  const proxyRequest = http.request(options, proxyResponse => {
+  const proxyRequest = http.request(proxyRequestOptions, proxyResponse => {
     // Copy the status code and headers from our proxy response.
     response.statusCode = proxyResponse.statusCode;
     for (let i = 0; i < proxyResponse.rawHeaders.length; i += 2) {
