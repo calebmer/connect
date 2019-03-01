@@ -32,8 +32,8 @@ export const grey3 = "hsl(0, 0%, 38%)";
 export const grey2 = "hsl(0, 0%, 32%)";
 export const grey1 = "hsl(0, 0%, 23%)";
 export const grey0 = "hsl(0, 0%, 13%)";
-export const white = grey9;
-export const block = grey0;
+export const white = "hsl(0, 0%, 100%)";
+export const black = grey0;
 
 // Supporting colors:
 export const red9 = "hsl(360, 100%, 95%)";
