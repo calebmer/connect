@@ -34,7 +34,6 @@ test("GET /", async () => {
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({
@@ -51,7 +50,6 @@ test("GET /account", async () => {
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({
@@ -69,7 +67,6 @@ test("GET /account/signIn", async () => {
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({
@@ -88,7 +85,6 @@ test("POST /account/signIn - without input", async () => {
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({
@@ -111,7 +107,6 @@ test("POST /account/signIn - with non-JSON input", async () => {
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({
@@ -134,7 +129,6 @@ test("POST /account/signIn - with invalid JSON input", async () => {
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({
@@ -157,7 +151,6 @@ test("POST /account/signIn - with string input", async () => {
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({
@@ -180,7 +173,6 @@ test("POST /account/signIn - with incorrect input", async () => {
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({
@@ -203,7 +195,6 @@ test("POST /account/signIn - with semi-incorrect input, missing key", async () =
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({
@@ -226,7 +217,6 @@ test("POST /account/signIn - with semi-incorrect input, wrong type", async () =>
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({
@@ -249,7 +239,6 @@ test("POST /account/signIn", async () => {
     ["content-length", expect.anything()],
     ["content-type", "application/json; charset=utf-8"],
     ["date", expect.anything()],
-    ["etag", expect.anything()],
   ]);
   const body = await response.json();
   expect(body).toEqual({

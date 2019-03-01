@@ -12,7 +12,16 @@ export function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSignUp() {}
+  function handleSignUp() {
+    fetch("/api/account/signUp", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({displayName, email, password}),
+    })
+      .then(r => r.json())
+      .then(console.log)
+      .catch(e => console.error(e.stack));
+  }
 
   return (
     <View style={styles.container}>

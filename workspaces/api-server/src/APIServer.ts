@@ -20,6 +20,7 @@ import * as _APIServerDefinition from "./methods";
  */
 const APIServer = express();
 APIServer.set("x-powered-by", false);
+APIServer.set("etag", false);
 
 // Parse JSON HTTP bodies.
 APIServer.use(express.json());

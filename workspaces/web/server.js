@@ -107,6 +107,15 @@ function apiProxy(request, response, pathname) {
   // Make the request. When we get a response pipe it to our actual HTTP
   // response so our browser can use it.
   const proxyRequest = http.request(options, proxyResponse => {
+    // Copy the status code and headers from our proxy response.
+    response.statusCode = proxyResponse.statusCode;
+    for (let i = 0; i < proxyResponse.rawHeaders.length; i += 2) {
+      response.setHeader(
+        proxyResponse.rawHeaders[i],
+        proxyResponse.rawHeaders[i + 1],
+      );
+    }
+    // Send the body to our actual response.
     proxyResponse.pipe(response);
   });
 

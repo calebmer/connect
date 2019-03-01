@@ -57,6 +57,11 @@ export async function signUp(
   readonly accessToken: string;
   readonly refreshToken: string;
 }> {
+  // Require an email. We will not accept an empty string!
+  if (email === "") {
+    throw new APIError(APIErrorCode.BAD_INPUT);
+  }
+
   // Hash the provided password with bcrypt.
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
