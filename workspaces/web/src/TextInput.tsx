@@ -45,7 +45,7 @@ function TextInput(
         {...textInputProps}
         ref={inputRef}
         style={styles.input}
-        placeholderTextColor={Color.grey7}
+        placeholderTextColor={Color.grey2}
       />
     </View>
   );
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: Space.space2,
     top: Space.space2,
-    color: Color.grey2,
+    color: Color.grey7,
     ...Font.sans,
     ...Font.size1,
     lineHeight: Font.size1.fontSize,
@@ -75,8 +75,8 @@ const styles = StyleSheet.create({
     padding: Space.space2,
     paddingTop: Space.space0 + Font.size1.fontSize + Space.space2,
     maxWidth: Space.space14,
-    backgroundColor: Color.grey9,
-    borderColor: Color.grey8,
+    backgroundColor: Color.grey0,
+    borderColor: Color.grey1,
     borderWidth: Border.width0,
     borderRadius: Border.radius0,
     color: Color.black,

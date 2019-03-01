@@ -20,11 +20,11 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: Space.space2,
     paddingHorizontal: Space.space4,
-    backgroundColor: Color.yellow7,
+    backgroundColor: Color.yellow2B,
     borderRadius: Space.space3 * 2,
   },
   label: {
-    color: Color.yellow0,
+    color: Color.yellow9,
     ...Font.sansBold,
     ...Font.size3,
   },

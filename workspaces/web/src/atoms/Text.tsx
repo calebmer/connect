@@ -13,7 +13,7 @@ export function HeaderText(props: TextProps & {readonly children: string}) {
 
 const styles = StyleSheet.create({
   body: {
-    color: Color.grey3,
+    color: Color.grey6,
     ...Font.serif,
     ...Font.size2,
   },
