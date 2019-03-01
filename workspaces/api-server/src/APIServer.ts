@@ -1,6 +1,7 @@
-import * as express from "express";
 import chalk from "chalk";
+import * as express from "express";
 import {Request, Response, NextFunction} from "express";
+import * as morgan from "morgan";
 import {
   SchemaBase,
   SchemaNamespace,
@@ -21,6 +22,9 @@ import * as _APIServerDefinition from "./methods";
 const APIServer = express();
 APIServer.set("x-powered-by", false);
 APIServer.set("etag", false);
+
+// Log all our requests for debugging.
+APIServer.use(morgan("dev"));
 
 // Parse JSON HTTP bodies.
 APIServer.use(express.json());

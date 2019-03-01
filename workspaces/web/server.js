@@ -1,6 +1,7 @@
 const http = require("http");
 const {parse: parseUrl} = require("url");
 const cookie = require("cookie");
+const jwt = require("jsonwebtoken");
 const chalk = require("chalk");
 const next = require("next");
 
@@ -88,6 +89,28 @@ const apiProxyAgent = new http.Agent({keepAlive: true});
 const tokenCookieMaxAge = 60 * 60 * 24 * 365 * 100;
 
 /**
+ * The cookie settings for a refresh token.
+ */
+const refreshTokenCookieSettings = {
+  path: "/api",
+  httpOnly: true,
+  secure: !dev,
+  sameSite: "strict",
+  maxAge: tokenCookieMaxAge,
+};
+
+/**
+ * The cookie settings for an access token.
+ */
+const accessTokenCookieSettings = {
+  path: "/api",
+  httpOnly: true,
+  secure: !dev,
+  sameSite: "strict",
+  maxAge: tokenCookieMaxAge,
+};
+
+/**
  * Proxies a POST request to our API.
  *
  * Adds special handling for authorization. When signing in we will attach our
@@ -95,56 +118,81 @@ const tokenCookieMaxAge = 60 * 60 * 24 * 365 * 100;
  * with the API.
  */
 function apiProxy(request, response, pathname) {
-  // Parse the access token and refresh token from the request cookies.
+  // We first try to parse the access and refresh tokens from our cookie. If
+  // the access token has expired then we try to refresh it before sending
+  // our request.
   let accessToken;
   let refreshToken;
-  const cookieHeader = request.getHeader("Cookie");
+
+  // Parse the access token and refresh token from the request cookies.
+  const cookieHeader = request.headers.cookie;
   if (cookieHeader !== undefined) {
     try {
+      // Parse our cookie header.
       const result = cookie.parse(cookieHeader);
       accessToken = result.access_token;
       refreshToken = result.refresh_token;
+
+      // If the access token has expired then we need to generate a new access
+      // token! We refresh the token even if the token will only expire in 30
+      // seconds. That’s to factor in network latency. We want to avoid the
+      // token expiring while in flight to our API server.
+      if (Math.floor(Date.now() / 1000) >= jwt.decode(accessToken).exp - 30) {
+        refreshAccessToken();
+      } else {
+        // Otherwise our access token did not expire and we can send
+        // our request.
+        sendRequest();
+      }
     } catch (error) {
       sendUnknownError();
-      return;
     }
+  } else {
+    // If we do not have a cookie header then send our request on its way!
+    sendRequest();
   }
 
-  // Options for the HTTP request to our proxy.
-  const proxyRequestOptions = {
-    protocol: apiUrl.protocol,
-    hostname: apiUrl.hostname,
-    port: apiUrl.port,
-    agent: apiProxyAgent,
-    method: "POST",
-    path: pathname,
-  };
+  /**
+   * Sends the request we are proxying to our API server. We might have to
+   * refresh our access token before we can proxy a request.
+   */
+  function sendRequest() {
+    // Options for the HTTP request to our proxy.
+    const proxyRequestOptions = {
+      protocol: apiUrl.protocol,
+      hostname: apiUrl.hostname,
+      port: apiUrl.port,
+      agent: apiProxyAgent,
+      method: "POST",
+      path: pathname,
+    };
 
-  // Make the request.
-  const proxyRequest = http.request(proxyRequestOptions, handleResponse);
+    // Make the request.
+    const proxyRequest = http.request(proxyRequestOptions, handleResponse);
 
-  // Copy headers we’re ok with proxying to our request options.
-  for (let i = 0; i < request.rawHeaders.length; i += 2) {
-    const header = request.rawHeaders[i];
-    if (apiProxyHeaders.has(header.toLowerCase())) {
-      proxyRequest.setHeader(header, request.rawHeaders[i + 1]);
+    // Copy headers we’re ok with proxying to our request options.
+    for (let i = 0; i < request.rawHeaders.length; i += 2) {
+      const header = request.rawHeaders[i];
+      if (apiProxyHeaders.has(header.toLowerCase())) {
+        proxyRequest.setHeader(header, request.rawHeaders[i + 1]);
+      }
     }
-  }
 
-  // Add an authorization header with our access token (from a cookie) to the
-  // API request.
-  if (accessToken !== undefined) {
-    proxyRequest.setHeader("Authorization", `Bearer ${accessToken}`);
-  }
+    // Add an authorization header with our access token (from a cookie) to the
+    // API request.
+    if (accessToken !== undefined) {
+      proxyRequest.setHeader("Authorization", `Bearer ${accessToken}`);
+    }
 
-  // If this is a “sign in” or a “sign up” request then we’ll be intercepting
-  // the API response body so make sure the response is not compressed.
-  if (pathname === "/account/signIn" || pathname === "/account/signUp") {
-    proxyRequest.removeHeader("Accept-Encoding");
-  }
+    // If this is a “sign in” or a “sign up” request then we’ll be intercepting
+    // the API response body so make sure the response is not compressed.
+    if (pathname === "/account/signIn" || pathname === "/account/signUp") {
+      proxyRequest.removeHeader("Accept-Encoding");
+    }
 
-  // Pipe the body we received into the proxy request body.
-  request.pipe(proxyRequest);
+    // Pipe the body we received into the proxy request body.
+    request.pipe(proxyRequest);
+  }
 
   /**
    * When we get a response pipe it to our actual HTTP response so our browser
@@ -173,28 +221,7 @@ function apiProxy(request, response, pathname) {
    * browser cookies.
    */
   function handleNewTokensResponse(proxyResponse) {
-    let result = "";
-    let error = false;
-
-    // We want to get strings from `.on("data")` so set the encoding to UTF-8.
-    proxyResponse.setEncoding("utf8");
-
-    // Add our checks to `data` as we get them.
-    proxyResponse.on("data", chunk => {
-      result += chunk;
-    });
-
-    // If we encounter an error then send that error down to our client.
-    proxyResponse.on("error", () => {
-      error = true;
-      sendUnknownError();
-    });
-
-    // Yay! We have all the data. Now we can parse it and set our cookies.
-    proxyResponse.on("end", () => {
-      // Don’t continue if there was an error!
-      if (error) return;
-
+    readStream(proxyResponse, result => {
       try {
         // Parse our response body as JSON.
         result = JSON.parse(result);
@@ -214,20 +241,16 @@ function apiProxy(request, response, pathname) {
         // Since refresh tokens are very dangerous in the wrong hands we also
         // force the cookie to only be sent over secure contexts.
         response.setHeader("Set-Cookie", [
-          cookie.serialize("refresh_token", result.data.refreshToken, {
-            path: "/api",
-            httpOnly: true,
-            secure: !dev,
-            sameSite: "strict",
-            maxAge: tokenCookieMaxAge,
-          }),
-          cookie.serialize("access_token", result.data.accessToken, {
-            path: "/api",
-            httpOnly: true,
-            secure: !dev,
-            sameSite: "strict",
-            maxAge: tokenCookieMaxAge,
-          }),
+          cookie.serialize(
+            "refresh_token",
+            result.data.refreshToken,
+            refreshTokenCookieSettings,
+          ),
+          cookie.serialize(
+            "access_token",
+            result.data.accessToken,
+            accessTokenCookieSettings,
+          ),
         ]);
 
         // Send an ok response to our client. We remove the refresh and access
@@ -247,6 +270,97 @@ function apiProxy(request, response, pathname) {
         response.end();
       } catch (error) {
         sendUnknownError();
+      }
+    });
+  }
+
+  /**
+   * Generates a new access token before sending our request.
+   */
+  function refreshAccessToken() {
+    // Send a request to refresh our token.
+    const refreshRequest = http.request(
+      {
+        protocol: apiUrl.protocol,
+        hostname: apiUrl.hostname,
+        port: apiUrl.port,
+        agent: apiProxyAgent,
+        method: "POST",
+        path: "/account/refreshAccessToken",
+        headers: {"Content-Type": "application/json"},
+      },
+      handleRefreshResponse,
+    );
+
+    // Set the refresh token as the method input.
+    refreshRequest.write(JSON.stringify({refreshToken}));
+    refreshRequest.end();
+
+    function handleRefreshResponse(refreshResponse) {
+      readStream(refreshResponse, result => {
+        try {
+          // Parse our refresh request response...
+          result = JSON.parse(result);
+          if (!result.ok) {
+            throw new Error("Expected a successful API response.");
+          }
+
+          // Retrieve the new access token.
+          const newAccessToken = result.data.accessToken;
+
+          // Set our cookie with the updated access token. This way we won’t
+          // need to generate an access token for every request. We can use
+          // this one for the next hour or so.
+          response.setHeader(
+            "Set-Cookie",
+            cookie.serialize(
+              "access_token",
+              newAccessToken,
+              accessTokenCookieSettings,
+            ),
+          );
+
+          // Set the access token in our closure to the new access token.
+          accessToken = newAccessToken;
+        } catch (error) {
+          sendUnknownError();
+          return;
+        }
+
+        // Yay! Now that we have a non-expired access token we can actually send
+        // our API request.
+        sendRequest();
+      });
+    }
+  }
+
+  /**
+   * Reads the response from a Node.js stream as a string. If it fails we call
+   * `sendUnknownError()` without calling our callback.
+   */
+  function readStream(stream, callback) {
+    let result = "";
+    let error = false;
+
+    // We want to get strings from `.on("data")` so set the encoding to UTF-8.
+    stream.setEncoding("utf8");
+
+    // Add our checks to `data` as we get them.
+    stream.on("data", chunk => {
+      result += chunk;
+    });
+
+    // If we encounter an error then send that error down to our client.
+    stream.on("error", () => {
+      error = true;
+      sendUnknownError();
+    });
+
+    // Yay! We have all the data. Now we can parse it and set our cookies.
+    stream.on("end", () => {
+      // Only call our callback if there was no error!
+      if (!error) {
+        callback(result);
       }
     });
   }
