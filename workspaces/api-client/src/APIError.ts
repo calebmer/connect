@@ -32,6 +32,12 @@ export enum APIErrorCode {
   SIGN_IN_INCORRECT_EMAIL_PASSWORD = "SIGN_IN_INCORRECT_EMAIL_PASSWORD",
 
   /**
+   * Tried to automatically refresh an access token with a refresh token, but
+   * the refresh token was invalid. Either it was revoked or never existed.
+   */
+  REFRESH_TOKEN_INVALID = "REFRESH_TOKEN_INVALID",
+
+  /**
    * An unknown error occurred.
    */
   UNKNOWN = "UNKNOWN",

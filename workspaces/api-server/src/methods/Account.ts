@@ -146,6 +146,59 @@ export async function signIn(
 }
 
 /**
+ * Allows a user to sign out of their account on their current device. To access
+ * the private information associated with their account again the user must
+ * sign back in.
+ */
+export async function signOut(
+  _database: Database,
+  _input: {
+    readonly refreshToken: string;
+  },
+): Promise<{}> {
+  throw new Error("TODO");
+}
+
+/**
+ * Uses a refresh token to generate a new access token. This method can be
+ * used when you have an expired access token and you need to get a new one.
+ */
+export async function refreshAccessToken(
+  database: Database,
+  {
+    refreshToken,
+  }: {
+    readonly refreshToken: string;
+  },
+): Promise<{
+  readonly accessToken: string;
+}> {
+  // Fetch the refresh token from our database.
+  const {
+    rows: [_token],
+  } = await database.query(
+    "SELECT account_id FROM refresh_token WHERE token = $1",
+    [refreshToken],
+  );
+
+  // Cast our database response to the appropriate type.
+  const token: {readonly account_id: number} | undefined = _token;
+
+  // If the refresh token does not exist then we can’t create a new
+  // access token.
+  if (!token) {
+    throw new APIError(APIErrorCode.REFRESH_TOKEN_INVALID);
+  }
+
+  // Generate a new access token.
+  const accessToken = await generateAccessToken(token.account_id);
+
+  return {
+    accessToken,
+  };
+}
+
+/**
  * Generate a refresh token and an access token for an account. These tokens
  * will be used to authorize an account when they try to access restricted
  * resources. Both `signUp()` and `signIn()` calls this function to generate
@@ -164,6 +217,24 @@ async function generateTokens(database: Database, accountID: number) {
 
   // Create a new access token that lasts for one hour. When the access token
   // expires an API client may use the refresh token to get a new access token.
+  const accessToken = await generateAccessToken(accountID);
+
+  // Return our refresh token and access token.
+  return {
+    refreshToken,
+    accessToken,
+  };
+}
+
+/**
+ * Generate a new access token for an account. The access token has a relatively
+ * short expiration time. If an attacker gets their hands on an access token
+ * that means they have access to the associated account until the
+ * expiration time.
+ */
+async function generateAccessToken(accountID: number) {
+  // Create a new access token that lasts for one hour. When the access token
+  // expires an API client may use the refresh token to get a new access token.
   const accessToken = await new Promise<string>((resolve, reject) => {
     jwt.sign(
       {id: accountID},
@@ -176,23 +247,5 @@ async function generateTokens(database: Database, accountID: number) {
     );
   });
 
-  // Return our refresh token and access token.
-  return {
-    refreshToken,
-    accessToken,
-  };
-}
-
-/**
- * Allows a user to sign out of their account on their current device. To access
- * the private information associated with their account again the user must
- * sign back in.
- */
-export async function signOut(
-  _database: Database,
-  _input: {
-    readonly refreshToken: string;
-  },
-): Promise<{}> {
-  throw new Error("TODO");
+  return accessToken;
 }

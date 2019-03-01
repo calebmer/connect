@@ -71,5 +71,18 @@ export const APISchema = Schema.namespace({
       },
       output: SchemaOutput.t<{}>(),
     }),
+
+    /**
+     * Uses a refresh token to generate a new access token. This method can be
+     * used when you have an expired access token and you need to get a new one.
+     */
+    refreshAccessToken: Schema.unauthorizedMethod({
+      input: {
+        refreshToken: SchemaInput.string,
+      },
+      output: SchemaOutput.t<{
+        readonly accessToken: string;
+      }>(),
+    }),
   }),
 });

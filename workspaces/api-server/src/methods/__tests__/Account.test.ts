@@ -1,7 +1,8 @@
+import * as uuidV4 from "uuid/v4";
 import * as jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {withTestDatabase} from "../../Database";
-import {JWT_SECRET, signUp, signIn} from "../Account";
+import {JWT_SECRET, signUp, signIn, refreshAccessToken} from "../Account";
 
 const testDisplayName = "Test";
 const testEmail = "test@example.com";
@@ -146,6 +147,41 @@ describe("signIn", () => {
       email: testEmail,
       password: "qwerty",
     });
+    const result = await database.query(
+      "SELECT id FROM account WHERE email = $1",
+      [testEmail],
+    );
+    expect(result.rowCount).toBe(1);
+    const accountID = result.rows[0].id;
+    const payload: any = await new Promise<any>((resolve, reject) => {
+      jwt.verify(accessToken, JWT_SECRET, (error, payload) => {
+        if (error) reject(error);
+        else resolve(payload);
+      });
+    });
+    expect(payload.id).toBe(accountID);
+  });
+});
+
+describe("refreshAccessToken", () => {
+  test("fails if the refresh token does not exist", async () => {
+    let error: any;
+    try {
+      await refreshAccessToken(database, {refreshToken: uuidV4()});
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(APIError);
+    expect(error.code).toBe(APIErrorCode.REFRESH_TOKEN_INVALID);
+  });
+
+  test("creates a new access token when given a refresh token", async () => {
+    const {refreshToken} = await signUp(database, {
+      displayName: testDisplayName,
+      email: testEmail,
+      password: "qwerty",
+    });
+    const {accessToken} = await refreshAccessToken(database, {refreshToken});
     const result = await database.query(
       "SELECT id FROM account WHERE email = $1",
       [testEmail],
