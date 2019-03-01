@@ -38,7 +38,9 @@ function TextInput(
 
   return (
     <View style={styles.container} accessibilityRole={"label" as any}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label} selectable={false}>
+        {label}
+      </Text>
       <NativeTextInput
         {...textInputProps}
         ref={inputRef}

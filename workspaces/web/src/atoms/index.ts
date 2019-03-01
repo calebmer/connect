@@ -5,4 +5,5 @@ import * as Space from "./Space";
 
 export {Border, Color, Font, Space};
 
+export * from "./Button";
 export * from "./Text";

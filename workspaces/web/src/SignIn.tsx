@@ -1,7 +1,7 @@
 import * as React from "react";
 import {View, StyleSheet, Platform} from "react-native";
 import {TextInput, TextInputInstance} from "./TextInput";
-import {Space, HeaderText, BodyText} from "./atoms";
+import {Space, HeaderText, BodyText, Button} from "./atoms";
 
 export function SignIn() {
   const passwordInput = React.createRef<TextInputInstance>();
@@ -43,6 +43,9 @@ export function SignIn() {
             returnKeyType="go"
           />
         </View>
+        <View style={styles.button}>
+          <Button label="Sign In" />
+        </View>
       </View>
     </View>
   );
@@ -63,6 +66,11 @@ const styles = StyleSheet.create({
     paddingBottom: Space.space1,
   },
   input: {
+    paddingTop: Space.space4,
+  },
+  button: {
+    // flexDirection: "row",
+    // justifyContents: "flex-end",
     paddingTop: Space.space4,
   },
 });
