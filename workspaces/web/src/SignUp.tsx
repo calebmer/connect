@@ -42,7 +42,6 @@ export function SignUp() {
           autoFocus={true}
           autoCapitalize="words"
           autoComplete="given-name"
-          selectTextOnFocus={true}
           textContentType="givenName"
           returnKeyType="next"
           onSubmitEditing={() => {
@@ -61,7 +60,6 @@ export function SignUp() {
             autoCapitalize="none"
             autoComplete="email"
             keyboardType="email-address"
-            selectTextOnFocus={true}
             textContentType="emailAddress"
             returnKeyType="next"
             onSubmitEditing={() => {

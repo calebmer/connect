@@ -1,5 +1,6 @@
 const http = require("http");
 const {parse: parseUrl} = require("url");
+const cookie = require("cookie");
 const chalk = require("chalk");
 const next = require("next");
 
@@ -65,6 +66,8 @@ const apiUrl = parseUrl("http://localhost:4000");
 
 /**
  * Proxy these headers when calling our API.
+ *
+ * All headers are in lowercase for easy matching.
  */
 const apiProxyHeaders = new Set([
   "content-type",
@@ -77,6 +80,12 @@ const apiProxyHeaders = new Set([
  * reconnecting them.
  */
 const apiProxyAgent = new http.Agent({keepAlive: true});
+
+/**
+ * A token cookie lives for 100 years. We have other mechanisms of expiring and
+ * invalidating tokens besides cookie expiration.
+ */
+const tokenCookieMaxAge = 60 * 60 * 24 * 365 * 100;
 
 /**
  * Proxies a POST request to our API.
@@ -94,32 +103,145 @@ function apiProxy(request, response, pathname) {
     agent: apiProxyAgent,
     method: "POST",
     path: pathname,
-    headers: {},
   };
+
+  // Make the request.
+  const proxyRequest = http.request(proxyRequestOptions, handleResponse);
 
   // Copy headers we’re ok with proxying to our request options.
   for (let i = 0; i < request.rawHeaders.length; i += 2) {
     const header = request.rawHeaders[i];
     if (apiProxyHeaders.has(header.toLowerCase())) {
-      proxyRequestOptions.headers[header] = request.rawHeaders[i + 1];
+      proxyRequest.setHeader(header, request.rawHeaders[i + 1]);
     }
   }
 
-  // Make the request. When we get a response pipe it to our actual HTTP
-  // response so our browser can use it.
-  const proxyRequest = http.request(proxyRequestOptions, proxyResponse => {
-    // Copy the status code and headers from our proxy response.
-    response.statusCode = proxyResponse.statusCode;
-    for (let i = 0; i < proxyResponse.rawHeaders.length; i += 2) {
-      response.setHeader(
-        proxyResponse.rawHeaders[i],
-        proxyResponse.rawHeaders[i + 1],
-      );
-    }
-    // Send the body to our actual response.
-    proxyResponse.pipe(response);
-  });
+  // If this is a “sign in” or a “sign up” request then we’ll be intercepting
+  // the API response body so make sure the response is not compressed.
+  if (pathname === "/account/signIn" || pathname === "/account/signUp") {
+    proxyRequest.removeHeader("Accept-Encoding");
+  }
 
   // Pipe the body we received into the proxy request body.
   request.pipe(proxyRequest);
+
+  /**
+   * When we get a response pipe it to our actual HTTP response so our browser
+   * can use it.
+   */
+  function handleResponse(proxyResponse) {
+    if (pathname === "/account/signIn" || pathname === "/account/signUp") {
+      handleNewTokensResponse(proxyResponse);
+    } else {
+      // Copy the status code and headers from our proxy response.
+      response.statusCode = proxyResponse.statusCode;
+      for (let i = 0; i < proxyResponse.rawHeaders.length; i += 2) {
+        response.setHeader(
+          proxyResponse.rawHeaders[i],
+          proxyResponse.rawHeaders[i + 1],
+        );
+      }
+
+      // Send the body to our actual response.
+      proxyResponse.pipe(response);
+    }
+  }
+
+  /**
+   * Handles new tokens being returned by our API. We store these tokens in
+   * browser cookies.
+   */
+  function handleNewTokensResponse(proxyResponse) {
+    let result = "";
+    let error = false;
+
+    // We want to get strings from `.on("data")` so set the encoding to UTF-8.
+    proxyResponse.setEncoding("utf8");
+
+    // Add our checks to `data` as we get them.
+    proxyResponse.on("data", chunk => {
+      result += chunk;
+    });
+
+    // If we encounter an error then send that error down to our client.
+    proxyResponse.on("error", () => {
+      error = true;
+      sendUnknownError();
+    });
+
+    // Yay! We have all the data. Now we can parse it and set our cookies.
+    proxyResponse.on("end", () => {
+      // Don’t continue if there was an error!
+      if (error) return;
+
+      try {
+        // Parse our response body as JSON.
+        result = JSON.parse(result);
+
+        // If the API result was not ok then send it as-is to the client.
+        if (!result.ok) {
+          response.statusCode = proxyResponse.statusCode;
+          response.setHeader("Content-Type", "application/json");
+          response.write(JSON.stringify(result));
+          response.end();
+          return;
+        }
+
+        // Set our refresh token and access token as secure cookies. HTTP-only
+        // is very important here as it avoids XSS security vulnerabilities!
+        //
+        // Since refresh tokens are very dangerous in the wrong hands we also
+        // force the cookie to only be sent over secure contexts.
+        response.setHeader("Set-Cookie", [
+          cookie.serialize("refresh_token", result.data.refreshToken, {
+            path: "/api",
+            httpOnly: true,
+            secure: !dev,
+            sameSite: "strict",
+            maxAge: tokenCookieMaxAge,
+          }),
+          cookie.serialize("access_token", result.data.accessToken, {
+            path: "/api",
+            httpOnly: true,
+            secure: !dev,
+            sameSite: "strict",
+            maxAge: tokenCookieMaxAge,
+          }),
+        ]);
+
+        // Send an ok response to our client. We remove the refresh and access
+        // tokens from the response body so that client-side code will never
+        // have access to them.
+        response.statusCode = 200;
+        response.setHeader("Content-Type", "application/json");
+        response.write(
+          JSON.stringify({
+            ok: true,
+            data: {
+              refreshToken: "",
+              accessToken: "",
+            },
+          }),
+        );
+        response.end();
+      } catch (error) {
+        sendUnknownError();
+      }
+    });
+  }
+
+  /**
+   * Utility for sending an API error with an `UNKNOWN` error code.
+   */
+  function sendUnknownError() {
+    response.statusCode = 500;
+    response.setHeader("Content-Type", "application/json");
+    response.write(
+      JSON.stringify({
+        ok: false,
+        error: {code: "UNKNOWN"},
+      }),
+    );
+    response.end();
+  }
 }
