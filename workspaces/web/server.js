@@ -95,6 +95,21 @@ const tokenCookieMaxAge = 60 * 60 * 24 * 365 * 100;
  * with the API.
  */
 function apiProxy(request, response, pathname) {
+  // Parse the access token and refresh token from the request cookies.
+  let accessToken;
+  let refreshToken;
+  const cookieHeader = request.getHeader("Cookie");
+  if (cookieHeader !== undefined) {
+    try {
+      const result = cookie.parse(cookieHeader);
+      accessToken = result.access_token;
+      refreshToken = result.refresh_token;
+    } catch (error) {
+      sendUnknownError();
+      return;
+    }
+  }
+
   // Options for the HTTP request to our proxy.
   const proxyRequestOptions = {
     protocol: apiUrl.protocol,
@@ -114,6 +129,12 @@ function apiProxy(request, response, pathname) {
     if (apiProxyHeaders.has(header.toLowerCase())) {
       proxyRequest.setHeader(header, request.rawHeaders[i + 1]);
     }
+  }
+
+  // Add an authorization header with our access token (from a cookie) to the
+  // API request.
+  if (accessToken !== undefined) {
+    proxyRequest.setHeader("Authorization", `Bearer ${accessToken}`);
   }
 
   // If this is a “sign in” or a “sign up” request then we’ll be intercepting
