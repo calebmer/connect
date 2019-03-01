@@ -45,7 +45,7 @@ function TextInput(
         {...textInputProps}
         ref={inputRef}
         style={styles.input}
-        placeholderTextColor={Color.grey2}
+        placeholderTextColor={Color.grey3}
       />
     </View>
   );
@@ -82,6 +82,5 @@ const styles = StyleSheet.create({
     color: Color.black,
     ...Font.serif,
     ...Font.size2,
-    lineHeight: Font.size2.fontSize,
   },
 });

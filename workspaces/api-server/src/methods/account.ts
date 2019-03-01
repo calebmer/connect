@@ -33,6 +33,11 @@ export const JWT_SECRET: string = (() => {
  * string as their name even if another account has the same name. That name can
  * be updated at any time and is used for display purposes.
  *
+ * NOTE: We allow an account to be created with a password of any length.
+ * However, in the UI we require accounts to have a password of at least 8
+ * characters for security. This way if the clever hacker really wants a
+ * password with less than 8 characters they can find a way around our UI.
+ *
  * TODO: We need some kind of client secret to ensure clients who aren’t
  * verified don’t access our API. Right now, anyone can make a request against
  * our API!

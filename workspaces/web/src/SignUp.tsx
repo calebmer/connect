@@ -4,50 +4,64 @@ import {View, StyleSheet, Platform} from "react-native";
 import {TextInput, TextInputInstance} from "./TextInput";
 import {Space, TitleText, BodyText, Button, Color, Border} from "./atoms";
 
-export function SignIn() {
+export function SignUp() {
+  const emailInput = React.createRef<TextInputInstance>();
   const passwordInput = React.createRef<TextInputInstance>();
 
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSignIn() {
-    fetch("/api/account/signIn", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({email, password}),
-    })
-      .then(r => r.json())
-      .then(console.log)
-      .catch(e => console.error(e.stack));
-  }
+  function handleSignUp() {}
 
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <View style={styles.title}>
-          <TitleText>Sign In</TitleText>
+          <TitleText>Sign Up</TitleText>
         </View>
         <View style={styles.subtitle}>
-          <BodyText>Welcome back!</BodyText>
+          <BodyText>
+            What would you like to be called? Your first name is fine.
+          </BodyText>
         </View>
         <TextInput
-          value={email}
-          onChangeText={setEmail}
-          label="Email"
-          placeholder="taylor@example.com"
+          value={displayName}
+          onChangeText={setDisplayName}
+          label="Name"
+          placeholder="Taylor"
           autoFocus={true}
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
+          autoCapitalize="words"
+          autoComplete="given-name"
           selectTextOnFocus={true}
-          textContentType="emailAddress"
+          textContentType="givenName"
           returnKeyType="next"
           onSubmitEditing={() => {
-            if (passwordInput.current) {
-              passwordInput.current.focus();
+            if (emailInput.current) {
+              emailInput.current.focus();
             }
           }}
         />
+        <View style={styles.input}>
+          <TextInput
+            ref={emailInput}
+            value={email}
+            onChangeText={setEmail}
+            label="Email"
+            placeholder="taylor@example.com"
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            selectTextOnFocus={true}
+            textContentType="emailAddress"
+            returnKeyType="next"
+            onSubmitEditing={() => {
+              if (passwordInput.current) {
+                passwordInput.current.focus();
+              }
+            }}
+          />
+        </View>
         <View style={styles.input}>
           <TextInput
             ref={passwordInput}
@@ -57,17 +71,15 @@ export function SignIn() {
             placeholder={passwordPlaceholder}
             secureTextEntry={true}
             autoCapitalize="none"
-            autoComplete={
-              Platform.OS === "web" ? "current-password" : "password"
-            }
+            autoComplete={Platform.OS === "web" ? "new-password" : "password"}
             selectTextOnFocus={true}
-            textContentType="password"
+            textContentType="newPassword"
             returnKeyType="go"
-            onSubmitEditing={handleSignIn}
+            onSubmitEditing={handleSignUp}
           />
         </View>
         <View style={styles.input}>
-          <Button label="Sign In" onPress={handleSignIn} />
+          <Button label="Sign Up" onPress={handleSignUp} />
         </View>
       </View>
     </View>
