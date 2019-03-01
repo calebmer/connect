@@ -9,6 +9,12 @@ CREATE TABLE account (
   -- not require an email to create an account. So an email would be a bad
   -- primary key.
   id SERIAL PRIMARY KEY,
+  -- The display name for this account. This is how people will be able to
+  -- reference each other. There will, of course, be duplicates.
+  --
+  -- We recommend that people use their first name. This balances anonymity with
+  -- real, authentic, names.
+  display_name TEXT NOT NULL,
   -- The email associated with this account. Must be unique since the email is
   -- used to sign in to the account and reset the account’s password. Of course,
   -- one could always create a new email address if they want a new account.

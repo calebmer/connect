@@ -23,6 +23,7 @@ export const APISchema = Schema.namespace({
      */
     signUp: Schema.unauthorizedMethod({
       input: {
+        displayName: SchemaInput.string,
         email: SchemaInput.string,
         password: SchemaInput.string,
       },

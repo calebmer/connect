@@ -3,6 +3,7 @@ import {APIError, APIErrorCode} from "@connect/api-client";
 import {withTestDatabase} from "../../Database";
 import {JWT_SECRET, signUp, signIn} from "../account";
 
+const testDisplayName = "Test";
 const testEmail = "test@example.com";
 
 const database = withTestDatabase();
@@ -14,7 +15,11 @@ describe("signUp", () => {
       [testEmail],
     );
     expect(result1.rowCount).toBe(0);
-    await signUp(database, {email: testEmail, password: "qwerty"});
+    await signUp(database, {
+      displayName: testDisplayName,
+      email: testEmail,
+      password: "qwerty",
+    });
     const result2 = await database.query(
       "SELECT 1 FROM account WHERE email = $1",
       [testEmail],
@@ -23,10 +28,18 @@ describe("signUp", () => {
   });
 
   test("errors when trying to sign up with an already used email", async () => {
-    await signUp(database, {email: testEmail, password: "qwerty1"});
+    await signUp(database, {
+      displayName: testDisplayName,
+      email: testEmail,
+      password: "qwerty1",
+    });
     let error: any;
     try {
-      await signUp(database, {email: testEmail, password: "qwerty2"});
+      await signUp(database, {
+        displayName: testDisplayName,
+        email: testEmail,
+        password: "qwerty2",
+      });
     } catch (e) {
       error = e;
     }
@@ -36,6 +49,7 @@ describe("signUp", () => {
 
   test("creates a new refresh token", async () => {
     const {refreshToken} = await signUp(database, {
+      displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
     });
@@ -55,6 +69,7 @@ describe("signUp", () => {
 
   test("creates a new access token", async () => {
     const {accessToken} = await signUp(database, {
+      displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
     });
@@ -98,7 +113,11 @@ describe("signIn", () => {
   });
 
   test("creates a new refresh token", async () => {
-    await signUp(database, {email: testEmail, password: "qwerty"});
+    await signUp(database, {
+      displayName: testDisplayName,
+      email: testEmail,
+      password: "qwerty",
+    });
     const {refreshToken} = await signIn(database, {
       email: testEmail,
       password: "qwerty",
@@ -118,7 +137,11 @@ describe("signIn", () => {
   });
 
   test("creates a new access token", async () => {
-    await signUp(database, {email: testEmail, password: "qwerty"});
+    await signUp(database, {
+      displayName: testDisplayName,
+      email: testEmail,
+      password: "qwerty",
+    });
     const {accessToken} = await signIn(database, {
       email: testEmail,
       password: "qwerty",

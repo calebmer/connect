@@ -6,6 +6,7 @@
   "typings": "./build/index.d.ts",
   "scripts": {
     "dev": "ts-node-dev --no-notify --transpileOnly src/index.ts",
+    "build": "tsc --build",
     "tsc": "tsc"
   },
   "dependencies": {

@@ -40,9 +40,11 @@ export const JWT_SECRET: string = (() => {
 export async function signUp(
   database: Database,
   {
+    displayName,
     email,
     password,
   }: {
+    readonly displayName: string;
     readonly email: string;
     readonly password: string;
   },
@@ -59,10 +61,10 @@ export async function signUp(
   const {
     rows: [newAccount],
   } = await database.query(
-    "INSERT INTO account (email, password_hash) VALUES ($1, $2) " +
+    "INSERT INTO account (display_name, email, password_hash) VALUES ($1, $2, $3) " +
       "ON CONFLICT (email) DO NOTHING " +
       "RETURNING id",
-    [email, passwordHash],
+    [displayName, email, passwordHash],
   );
 
   // If we did not create an account then we know the email was already in use

@@ -36,7 +36,7 @@ export const Schema = {
     input: Inputs;
     output: SchemaOutput<Output>;
   }): SchemaMethodUnauthorized<
-    {[Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>},
+    {readonly [Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>},
     Output
   > {
     return {
