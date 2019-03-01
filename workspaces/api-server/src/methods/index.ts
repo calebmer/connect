@@ -1,3 +1,3 @@
-import * as account from "./account";
+import * as account from "./Account";
 
 export {account};

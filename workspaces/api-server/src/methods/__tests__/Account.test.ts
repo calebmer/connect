@@ -1,7 +1,7 @@
 import * as jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {withTestDatabase} from "../../Database";
-import {JWT_SECRET, signUp, signIn} from "../account";
+import {JWT_SECRET, signUp, signIn} from "../Account";
 
 const testDisplayName = "Test";
 const testEmail = "test@example.com";
