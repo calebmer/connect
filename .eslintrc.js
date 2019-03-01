@@ -21,6 +21,8 @@ module.exports = {
     jest: true,
   },
   rules: {
+    "no-undef": "warn",
+    "no-unused-vars": "warn",
     "no-console": "warn",
     "no-async-promise-executor": "warn",
     "no-misleading-character-class": "warn",
@@ -54,10 +56,6 @@ module.exports = {
     "no-var": "warn",
     "prefer-const": "warn",
 
-    // NOTE: TypeScript will warn about this.
-    "no-undef": "off",
-    "no-unused-vars": "off",
-
     "@typescript-eslint/adjacent-overload-signatures": "warn",
     "@typescript-eslint/array-type": ["warn", "generic"],
     "@typescript-eslint/no-angle-bracket-type-assertion": "warn",
@@ -80,4 +78,15 @@ module.exports = {
 
     "react-native/no-unused-styles": "warn",
   },
+  overrides: [
+    {
+      files: ["*.ts", "*.tsx"],
+      rules: {
+        // NOTE: TypeScript will warn about this. TypeScript also does it better
+        // since it can understand reads/writes.
+        "no-undef": "off",
+        "no-unused-vars": "off",
+      },
+    },
+  ],
 };

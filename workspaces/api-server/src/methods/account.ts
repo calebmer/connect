@@ -32,6 +32,10 @@ export const JWT_SECRET: string = (() => {
  * Creates a new account with an email and a password. Accounts may have any
  * string as their name even if another account has the same name. That name can
  * be updated at any time and is used for display purposes.
+ *
+ * TODO: We need some kind of client secret to ensure clients who aren’t
+ * verified don’t access our API. Right now, anyone can make a request against
+ * our API!
  */
 export async function signUp(
   database: Database,
@@ -78,6 +82,10 @@ export async function signUp(
 /**
  * Allows a user to sign in to their account with the password they selected
  * when creating their account.
+ *
+ * TODO: We need some kind of client secret to ensure clients who aren’t
+ * verified don’t access our API. Right now, anyone can make a request against
+ * our API!
  */
 export async function signIn(
   database: Database,

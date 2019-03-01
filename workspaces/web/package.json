@@ -3,15 +3,16 @@
   "version": "0.0.0",
   "license": "UNLICENSED",
   "scripts": {
-    "dev": "next",
+    "dev": "node server.js",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production node server.js",
     "tsc": "tsc"
   },
   "dependencies": {
     "@babel/core": "^7.3.3",
     "@zeit/next-typescript": "^1.1.1",
     "babel-plugin-react-native-web": "^0.10.0",
+    "chalk": "^2.4.2",
     "next": "^8.0.3",
     "react": "^16.8.3",
     "react-art": "^16.8.3",
