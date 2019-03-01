@@ -1,10 +1,19 @@
 import * as React from "react";
+import {useState} from "react";
 import {View, StyleSheet, Platform} from "react-native";
 import {TextInput, TextInputInstance} from "./TextInput";
-import {Space, TitleText, BodyText, Button} from "./atoms";
+import {Space, TitleText, BodyText, Button, Color, Border} from "./atoms";
 
 export function SignIn() {
   const passwordInput = React.createRef<TextInputInstance>();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  function handleSignIn() {
+    console.log("Sign in!");
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -15,6 +24,8 @@ export function SignIn() {
           <BodyText>Welcome back!</BodyText>
         </View>
         <TextInput
+          value={email}
+          onChangeText={setEmail}
           label="Email"
           autoFocus={true}
           autoCapitalize="none"
@@ -32,6 +43,8 @@ export function SignIn() {
         <View style={styles.password}>
           <TextInput
             ref={passwordInput}
+            value={password}
+            onChangeText={setPassword}
             label="Password"
             secureTextEntry={true}
             autoCapitalize="none"
@@ -41,11 +54,11 @@ export function SignIn() {
             selectTextOnFocus={true}
             textContentType="password"
             returnKeyType="go"
+            onSubmitEditing={handleSignIn}
           />
         </View>
-        <View style={styles.button}>
-          <Button label="Sign In" />
-        </View>
+
+        <Button label="Sign In" onPress={handleSignIn} />
       </View>
     </View>
   );
@@ -55,6 +68,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
+    backgroundColor: Color.white,
+    borderTopWidth: Border.width3,
+    borderTopColor: Color.yellow4,
   },
   card: {
     padding: Space.space5,
@@ -70,9 +86,5 @@ const styles = StyleSheet.create({
   },
   password: {
     paddingVertical: Space.space4,
-  },
-  button: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
   },
 });

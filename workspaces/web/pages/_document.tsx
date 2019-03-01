@@ -6,9 +6,14 @@ import Document, {
 } from "next/document";
 import * as React from "react";
 import {AppRegistry} from "react-native";
+import {Color} from "../src/atoms";
 
 // Force Next-generated DOM elements to fill their parent's height
 const normalizeNextElements = `
+  html {
+    background-color: ${Color.yellow4};
+  }
+
   #__next {
     display: flex;
     flex-direction: column;
