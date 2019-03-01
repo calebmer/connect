@@ -1,16 +1,48 @@
 import * as React from "react";
-import {View, StyleSheet} from "react-native";
-import {TextInput} from "./TextInput";
-import {Space, Color} from "./atoms";
+import {View, StyleSheet, Platform} from "react-native";
+import {TextInput, TextInputInstance} from "./TextInput";
+import {Space, HeaderText, BodyText} from "./atoms";
 
 export function SignIn() {
+  const passwordInput = React.createRef<TextInputInstance>();
   return (
     <View style={styles.container}>
-      <View style={styles.header} />
       <View style={styles.card}>
-        <TextInput label="Email" />
-        <View style={styles.space} />
-        <TextInput label="Password" />
+        <View style={styles.header}>
+          <HeaderText>Sign In</HeaderText>
+        </View>
+        <BodyText>Welcome back!</BodyText>
+        <View style={styles.input}>
+          <TextInput
+            label="Email"
+            autoFocus={true}
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            selectTextOnFocus={true}
+            textContentType="emailAddress"
+            returnKeyType="next"
+            onSubmitEditing={() => {
+              if (passwordInput.current) {
+                passwordInput.current.focus();
+              }
+            }}
+          />
+        </View>
+        <View style={styles.input}>
+          <TextInput
+            ref={passwordInput}
+            label="Password"
+            secureTextEntry={true}
+            autoCapitalize="none"
+            autoComplete={
+              Platform.OS === "web" ? "current-password" : "password"
+            }
+            selectTextOnFocus={true}
+            textContentType="password"
+            returnKeyType="go"
+          />
+        </View>
       </View>
     </View>
   );
@@ -20,21 +52,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    // backgroundColor: Color.grey9,
-  },
-  header: {
-    flex: 0.2,
-  },
-  space: {
-    height: Space.space5,
   },
   card: {
-    padding: Space.space6,
+    padding: Space.space5,
+    paddingTop: Space.space7,
     width: "100%",
     maxWidth: Space.space14,
-    backgroundColor: Color.white,
-    // borderColor: Color.grey8,
-    // borderWidth: Border.width0,
-    // borderRadius: Border.radius1,
+  },
+  header: {
+    paddingBottom: Space.space1,
+  },
+  input: {
+    paddingTop: Space.space4,
   },
 });

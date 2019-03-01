@@ -1,25 +1,60 @@
 import * as React from "react";
+import {useImperativeHandle} from "react";
 import {
   View,
   Text,
   TextInput as NativeTextInput,
+  TextInputProps as NativeTextInputProps,
   StyleSheet,
 } from "react-native";
 import {Font, Color, Space, Border} from "./atoms";
 
-export function TextInput({
-  label,
-  ...textInputProps
-}: React.ComponentProps<typeof NativeTextInput> & {
+interface TextInputProps extends NativeTextInputProps {
+  /**
+   * The label for our text input.
+   */
   readonly label: string;
-}) {
+
+  /**
+   * Available on Web and Android but not iOS.
+   */
+  readonly autoComplete?: string;
+}
+
+function TextInput(
+  {label, ...textInputProps}: TextInputProps,
+  ref: React.Ref<TextInputInstance>,
+) {
+  const inputRef = React.createRef<NativeTextInput>();
+
+  // If focus is called on a ref of ours then focus our underlying text input.
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    },
+  }));
+
   return (
     <View style={styles.container} accessibilityRole={"label" as any}>
       <Text style={styles.label}>{label}</Text>
-      <NativeTextInput {...textInputProps} style={styles.input} />
+      <NativeTextInput
+        {...textInputProps}
+        ref={inputRef}
+        style={styles.input}
+        placeholderTextColor={Color.grey7}
+      />
     </View>
   );
 }
+
+export type TextInputInstance = {
+  readonly focus: () => void;
+};
+
+const _TextInput = React.forwardRef(TextInput);
+export {_TextInput as TextInput};
 
 const styles = StyleSheet.create({
   container: {

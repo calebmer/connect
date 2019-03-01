@@ -6,14 +6,9 @@ import Document, {
 } from "next/document";
 import * as React from "react";
 import {AppRegistry} from "react-native";
-import {Color} from "../src/atoms";
 
 // Force Next-generated DOM elements to fill their parent's height
-const globalStyles = `
-  html {
-    background-color: ${Color.white};
-  }
-
+const normalizeNextElements = `
   #__next {
     display: flex;
     flex-direction: column;
@@ -27,7 +22,7 @@ export default class MyDocument extends Document {
     const {getStyleElement} = (AppRegistry as any).getApplication("Main");
     const page = renderPage();
     const styles = [
-      <style dangerouslySetInnerHTML={{__html: globalStyles}} />, // eslint-disable-line react/jsx-key
+      <style dangerouslySetInnerHTML={{__html: normalizeNextElements}} />, // eslint-disable-line react/jsx-key
       getStyleElement(),
     ];
     return {...page, styles: React.Children.toArray(styles)};
