@@ -1,14 +1,18 @@
 import * as React from "react";
-import {Text, StyleSheet, TextProps} from "react-native";
+import {Text, StyleSheet, TextProps as NativeTextProps} from "react-native";
 import * as Color from "./Color";
 import * as Font from "./Font";
 
-export function BodyText(props: TextProps & {readonly children: string}) {
+interface TextProps extends NativeTextProps {
+  readonly children: string;
+}
+
+export function BodyText(props: TextProps) {
   return <Text {...props} style={styles.body} />;
 }
 
-export function HeaderText(props: TextProps & {readonly children: string}) {
-  return <Text {...props} style={styles.header} />;
+export function TitleText(props: TextProps) {
+  return <Text {...props} style={styles.title} />;
 }
 
 const styles = StyleSheet.create({
@@ -17,7 +21,7 @@ const styles = StyleSheet.create({
     ...Font.serif,
     ...Font.size2,
   },
-  header: {
+  title: {
     color: Color.black,
     ...Font.sansBold,
     ...Font.size4,

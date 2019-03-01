@@ -1,35 +1,35 @@
 import * as React from "react";
 import {View, StyleSheet, Platform} from "react-native";
 import {TextInput, TextInputInstance} from "./TextInput";
-import {Space, HeaderText, BodyText, Button} from "./atoms";
+import {Space, TitleText, BodyText, Button} from "./atoms";
 
 export function SignIn() {
   const passwordInput = React.createRef<TextInputInstance>();
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <View style={styles.header}>
-          <HeaderText>Sign In</HeaderText>
+        <View style={styles.title}>
+          <TitleText>Sign In</TitleText>
         </View>
-        <BodyText>Welcome back!</BodyText>
-        <View style={styles.input}>
-          <TextInput
-            label="Email"
-            autoFocus={true}
-            autoCapitalize="none"
-            autoComplete="email"
-            keyboardType="email-address"
-            selectTextOnFocus={true}
-            textContentType="emailAddress"
-            returnKeyType="next"
-            onSubmitEditing={() => {
-              if (passwordInput.current) {
-                passwordInput.current.focus();
-              }
-            }}
-          />
+        <View style={styles.subtitle}>
+          <BodyText>Welcome back!</BodyText>
         </View>
-        <View style={styles.input}>
+        <TextInput
+          label="Email"
+          autoFocus={true}
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+          selectTextOnFocus={true}
+          textContentType="emailAddress"
+          returnKeyType="next"
+          onSubmitEditing={() => {
+            if (passwordInput.current) {
+              passwordInput.current.focus();
+            }
+          }}
+        />
+        <View style={styles.password}>
           <TextInput
             ref={passwordInput}
             label="Password"
@@ -62,15 +62,17 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: Space.space14,
   },
-  header: {
+  title: {
     paddingBottom: Space.space1,
   },
-  input: {
-    paddingTop: Space.space4,
+  subtitle: {
+    paddingBottom: Space.space5,
+  },
+  password: {
+    paddingVertical: Space.space4,
   },
   button: {
-    // flexDirection: "row",
-    // justifyContents: "flex-end",
-    paddingTop: Space.space4,
+    flexDirection: "row",
+    justifyContent: "flex-end",
   },
 });

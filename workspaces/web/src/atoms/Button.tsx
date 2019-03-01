@@ -19,8 +19,8 @@ export function Button({label}: {readonly label: string}) {
 const styles = StyleSheet.create({
   button: {
     paddingVertical: Space.space2,
-    paddingHorizontal: Space.space4,
-    backgroundColor: Color.yellow2B,
+    paddingHorizontal: Space.space6,
+    backgroundColor: Color.yellow3,
     borderRadius: Space.space3 * 2,
   },
   label: {
