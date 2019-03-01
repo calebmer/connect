@@ -148,7 +148,7 @@ APIServer.use(
 
     // In development, print the error stack trace to stderr for debugging.
     if (process.env.NODE_ENV === "development") {
-      if (error instanceof Error) {
+      if (error instanceof Error && !(error instanceof APIError)) {
         console.error(chalk.red(error.stack || "")); // eslint-disable-line no-console
       }
     }

@@ -21,7 +21,6 @@ module.exports = {
     jest: true,
   },
   rules: {
-    "no-undef": "warn",
     "no-unused-vars": "warn",
     "no-console": "warn",
     "no-async-promise-executor": "warn",

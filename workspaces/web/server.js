@@ -25,6 +25,12 @@ async function run() {
     // Parse the url.
     const url = parseUrl(request.url, true);
 
+    // If the client is trying to make an API request...
+    if (request.method === "POST" && url.pathname.startsWith("/api")) {
+      apiProxy(request, response, url.pathname.slice(4));
+      return;
+    }
+
     // Let Next.js handle everything else.
     handle(request, response, url);
   });
@@ -48,3 +54,62 @@ run().catch(error => {
     throw error;
   });
 });
+
+/**
+ * The URL of our API on the internet! We will proxy post requests on `/api` for
+ * our server to this URL.
+ *
+ * TODO: Make this configurable
+ */
+const apiUrl = parseUrl("http://localhost:4000");
+
+/**
+ * Proxy these headers when calling our API.
+ */
+const apiProxyHeaders = new Set([
+  "content-type",
+  "content-length",
+  "accept-encoding",
+]);
+
+/**
+ * Our API proxy agent will keep alive TCP connections so we don’t have to keep
+ * reconnecting them.
+ */
+const apiProxyAgent = new http.Agent({keepAlive: true});
+
+/**
+ * Proxies a POST request to our API.
+ *
+ * Adds special handling for authorization. When signing in we will attach our
+ * tokens to a cookie. Future requests will use those cookies to authorize us
+ * with the API.
+ */
+function apiProxy(request, response, pathname) {
+  // Options for the HTTP request to our proxy.
+  const options = {
+    protocol: apiUrl.protocol,
+    hostname: apiUrl.hostname,
+    port: apiUrl.port,
+    agent: apiProxyAgent,
+    method: "POST",
+    path: pathname,
+    headers: {},
+  };
+
+  // Copy headers we’re ok with proxying to our request options.
+  Object.entries(request.headers).forEach(([headerName, headerValue]) => {
+    if (apiProxyHeaders.has(headerName)) {
+      options.headers[headerName] = headerValue;
+    }
+  });
+
+  // Make the request. When we get a response pipe it to our actual HTTP
+  // response so our browser can use it.
+  const proxyRequest = http.request(options, proxyResponse => {
+    proxyResponse.pipe(response);
+  });
+
+  // Pipe the body we received into the proxy request body.
+  request.pipe(proxyRequest);
+}
