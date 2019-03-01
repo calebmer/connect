@@ -24,7 +24,9 @@ APIServer.set("x-powered-by", false);
 APIServer.set("etag", false);
 
 // Log all our requests for debugging.
-APIServer.use(morgan("dev"));
+if (process.env.NODE_ENV === "development") {
+  APIServer.use(morgan("dev"));
+}
 
 // Parse JSON HTTP bodies.
 APIServer.use(express.json());
