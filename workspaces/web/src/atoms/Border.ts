@@ -6,3 +6,5 @@ export const width2 = 3;
 export const width3 = 8;
 
 export const radius0 = 4;
+export const radius1 = 8;
+export const radius2 = 16;

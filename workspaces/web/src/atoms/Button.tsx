@@ -3,6 +3,7 @@ import {TouchableWithoutFeedback, View, Text, StyleSheet} from "react-native";
 import * as Color from "./Color";
 import * as Font from "./Font";
 import * as Space from "./Space";
+import * as Border from "./Border";
 
 export function Button({
   label,
@@ -28,11 +29,7 @@ const styles = StyleSheet.create({
     height: Space.space6,
     paddingHorizontal: Space.space6,
     backgroundColor: Color.yellow3,
-    borderTopWidth: 0,
-    borderBottomWidth: 3,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderRadius: 8,
+    borderRadius: Border.radius2,
     borderColor: Color.yellow5,
   },
   label: {
