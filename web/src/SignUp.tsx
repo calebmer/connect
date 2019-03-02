@@ -151,6 +151,5 @@ const styles = StyleSheet.create({
   },
   meta: {
     paddingTop: Space.space5,
-    textAlign: "center",
   },
 });
