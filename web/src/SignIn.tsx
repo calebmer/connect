@@ -1,5 +1,4 @@
-import * as React from "react";
-import {useState} from "react";
+import React, {useState} from "react";
 import {View, StyleSheet, Platform} from "react-native";
 import {API} from "./API";
 import {Space, TitleText, BodyText, Button, Color, Border} from "./atoms";

@@ -170,6 +170,12 @@ function apiProxy(request, response, pathname) {
     // Make the request.
     const proxyRequest = http.request(proxyRequestOptions, handleResponse);
 
+    // If an error occurs while we are trying to make our proxy request then
+    // send an unknown error to the client.
+    proxyRequest.on("error", () => {
+      sendUnknownError();
+    });
+
     // Copy headers we’re ok with proxying to our request options.
     for (let i = 0; i < request.rawHeaders.length; i += 2) {
       const header = request.rawHeaders[i];
@@ -291,6 +297,12 @@ function apiProxy(request, response, pathname) {
       },
       handleRefreshResponse,
     );
+
+    // If an error occurs while we are trying to make our proxy request then
+    // send an unknown error to the client.
+    refreshRequest.on("error", () => {
+      sendUnknownError();
+    });
 
     // Set the refresh token as the method input.
     refreshRequest.write(JSON.stringify({refreshToken}));

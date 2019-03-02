@@ -1,8 +1,0 @@
-{
-  "extends": "../tsconfig.base.json",
-  "compilerOptions": {
-    "paths": {
-      "@connect/api-client": ["../api/client"]
-    }
-  }
-}

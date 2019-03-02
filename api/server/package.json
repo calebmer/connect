@@ -2,13 +2,12 @@
   "name": "@connect/api-server",
   "version": "0.0.0",
   "license": "UNLICENSED",
-  "main": "./build/index.js",
-  "typings": "./build/index.d.ts",
+  "main": "./src/index.ts",
   "scripts": {
-    "dev": "NODE_ENV=development ts-node-dev --no-notify --transpileOnly src/index.ts",
-    "tsc": "tsc --build"
+    "dev": "NODE_ENV=development babel-watch src/index.ts --extensions .ts,.js"
   },
   "dependencies": {
+    "@babel/cli": "^7.2.3",
     "@connect/api-client": "0.0.0",
     "bcrypt": "^3.0.4",
     "chalk": "^2.4.2",
@@ -28,7 +27,7 @@
     "@types/node-fetch": "^2.1.6",
     "@types/pg": "^7.4.13",
     "@types/uuid": "^3.4.4",
-    "chalk": "^2.4.2",
-    "ts-node-dev": "^1.0.0-pre.32"
+    "babel-watch": "^7.0.0",
+    "chalk": "^2.4.2"
   }
 }

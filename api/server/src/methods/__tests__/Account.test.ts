@@ -1,5 +1,5 @@
-import * as uuidV4 from "uuid/v4";
-import * as jwt from "jsonwebtoken";
+import uuidV4 from "uuid/v4";
+import jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {withTestDatabase} from "../../Database";
 import {JWT_SECRET, signUp, signIn, refreshAccessToken} from "../Account";

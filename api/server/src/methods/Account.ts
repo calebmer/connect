@@ -1,6 +1,6 @@
-import * as bcrypt from "bcrypt";
-import * as uuidV4 from "uuid/v4";
-import * as jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import uuidV4 from "uuid/v4";
+import jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {Database} from "../Database";
 

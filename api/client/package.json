@@ -2,9 +2,5 @@
   "name": "@connect/api-client",
   "version": "0.0.0",
   "license": "UNLICENSED",
-  "main": "./build/index.js",
-  "typings": "./build/index.d.ts",
-  "scripts": {
-    "tsc": "tsc"
-  }
+  "main": "./src/index.ts"
 }

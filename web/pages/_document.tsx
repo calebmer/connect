@@ -1,10 +1,10 @@
+import React from "react";
 import Document, {
   Head,
   Main,
   NextScript,
   NextDocumentContext,
 } from "next/document";
-import * as React from "react";
 import {AppRegistry} from "react-native";
 import {Color} from "../src/atoms";
 

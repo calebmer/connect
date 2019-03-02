@@ -1,7 +1,7 @@
 import chalk from "chalk";
-import * as express from "express";
+import express from "express";
 import {Request, Response, NextFunction} from "express";
-import * as morgan from "morgan";
+import morgan from "morgan";
 import {
   SchemaBase,
   SchemaNamespace,

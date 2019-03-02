@@ -1,12 +1,17 @@
 /* eslint-disable import/first */
 
-const signIn = jest.fn((_ctx, _input) => Promise.resolve({works: true}));
-jest.mock("../methods", () => ({account: {signIn}}));
+jest.mock("../methods", () => ({
+  account: {signIn: jest.fn((_ctx, _input) => Promise.resolve({works: true}))},
+}));
 
 import {Server} from "http";
 import fetch from "node-fetch";
 import {APIErrorCode} from "@connect/api-client";
 import {APIServer} from "../APIServer";
+import * as methods from "../methods";
+
+const signIn: jest.Mock<typeof methods.account.signIn> = methods.account
+  .signIn as any;
 
 // We spin up the API server as an HTTP server for our tests. We use port 3594
 // since we don’t expect anyone else to use it. 3593 is a prime number and then

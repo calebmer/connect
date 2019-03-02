@@ -1,5 +1,4 @@
-import * as React from "react";
-import {useImperativeHandle} from "react";
+import React, {useImperativeHandle} from "react";
 import {
   View,
   Text,

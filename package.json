@@ -8,11 +8,16 @@
     "web"
   ],
   "scripts": {
-    "lint": "eslint . --ext .js,.ts,.tsx",
+    "types": "tsc",
+    "line": "eslint . --ext .js,.ts,.tsx",
     "format": "prettier \"**/*.{js,ts,tsx}\" --write",
     "test": "jest --watch"
   },
   "dependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/plugin-proposal-class-properties": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "@babel/preset-typescript": "^7.3.3",
     "@types/jest": "^24.0.9",
     "@typescript-eslint/eslint-plugin": "^1.4.1",
     "@typescript-eslint/parser": "^1.4.1",
@@ -23,7 +28,6 @@
     "eslint-plugin-react-native": "^3.6.0",
     "jest": "^24.1.0",
     "prettier": "^1.16.4",
-    "ts-jest": "^24.0.0",
     "typescript": "^3.3.3333"
   }
 }
