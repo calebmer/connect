@@ -10,6 +10,51 @@ const testEmail = "test@example.com";
 const database = withTestDatabase();
 
 describe("signUp", () => {
+  test("rejects empty display names", async () => {
+    let error: any;
+    try {
+      await signUp(database, {
+        displayName: "",
+        email: testEmail,
+        password: "qwerty",
+      });
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(APIError);
+    expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+  });
+
+  test("rejects single character display names", async () => {
+    let error: any;
+    try {
+      await signUp(database, {
+        displayName: "a",
+        email: testEmail,
+        password: "qwerty",
+      });
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(APIError);
+    expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+  });
+
+  test("rejects empty emails", async () => {
+    let error: any;
+    try {
+      await signUp(database, {
+        displayName: testDisplayName,
+        email: "",
+        password: "qwerty",
+      });
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toBeInstanceOf(APIError);
+    expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+  });
+
   test("creates a new account", async () => {
     const result1 = await database.query(
       "SELECT 1 FROM account WHERE email = $1",

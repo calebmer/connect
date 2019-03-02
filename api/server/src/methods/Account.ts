@@ -57,8 +57,8 @@ export async function signUp(
   readonly accessToken: string;
   readonly refreshToken: string;
 }> {
-  // Require an email. We will not accept an empty string!
-  if (email === "") {
+  // Require a display name and an email. We will not accept an empty string!
+  if (displayName.length < 2 || email === "") {
     throw new APIError(APIErrorCode.BAD_INPUT);
   }
 

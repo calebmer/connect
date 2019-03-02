@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {View, StyleSheet, Platform, Text} from "react-native";
 import Router from "next/router";
+import {APIError, APIErrorCode} from "@connect/api-client";
 import {API} from "./API";
 import {
   Space,
@@ -14,21 +15,103 @@ import {
   TextLink,
 } from "./atoms";
 import {TextInput, TextInputInstance} from "./TextInput";
+import {displayErrorMessage} from "./ErrorMessage";
 
 export function SignUp() {
+  // References to text inputs.
+  const displayNameInput = React.createRef<TextInputInstance>();
   const emailInput = React.createRef<TextInputInstance>();
   const passwordInput = React.createRef<TextInputInstance>();
 
+  // Input state variables.
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Check if the display name is in a valid format.
+  let displayNameError: string | undefined;
+  if (displayName === "") {
+    displayNameError = "A name is required.";
+  } else if (displayName.length < 2) {
+    displayNameError = "Your name should have at least 2 characters.";
+  }
+
+  // Check if the email is in a valid format.
+  let emailError: string | undefined;
+  if (email === "") {
+    emailError = "An email address is required.";
+  } else if (!/^.*@.*\..+$/.test(email)) {
+    // Emails are really complex. We use a pretty dumb regex to check them.
+    emailError = "Please enter a correct email address.";
+  }
+
+  // Check if the password is in a valid format.
+  let passwordError: string | undefined;
+  if (password === "") {
+    passwordError = "A password is required.";
+  } else if (password.length < 8) {
+    passwordError = "Your password should have at least 8 characters.";
+  }
+
+  // Server error state variables.
+  const [attempted, setAttempted] = useState(false);
+  const [displayNameServerError, setDisplayNameServerError] =
+    useState<string | undefined>(undefined); // prettier-ignore
+  const [emailServerError, setEmailServerError] =
+    useState<string | undefined>(undefined); // prettier-ignore
+  const [passwordServerError, setPasswordServerError] =
+    useState<string | undefined>(undefined); // prettier-ignore
+
   function handleSignUp() {
-    API.account.signUp({
-      displayName,
-      email,
-      password,
-    });
+    // We have now attempted to sign up!
+    setAttempted(true);
+
+    // Check client side errors. If we have any then focus the associated input.
+    // Force the user to fix their errors before continuing.
+    if (displayNameError) {
+      if (displayNameInput.current) displayNameInput.current.focus();
+      return;
+    }
+    if (emailError) {
+      if (emailInput.current) emailInput.current.focus();
+      return;
+    }
+    if (passwordError) {
+      if (passwordInput.current) passwordInput.current.focus();
+      return;
+    }
+
+    // Actually sign up!
+    API.account
+      .signUp({
+        displayName,
+        email,
+        password,
+      })
+      // If we got an error then resolve with that error instead of rejecting.
+      .then(() => undefined, error => error)
+      .then(error => {
+        // Reset server errors.
+        setDisplayNameServerError(undefined);
+        setEmailServerError(undefined);
+        setPasswordServerError(undefined);
+
+        if (error === undefined) {
+          // TODO
+        } else {
+          // Set server error.
+          if (
+            error instanceof APIError &&
+            error.code === APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED
+          ) {
+            setEmailServerError(displayErrorMessage(error));
+            if (emailInput.current) emailInput.current.focus();
+          } else {
+            setDisplayNameServerError(displayErrorMessage(error));
+            if (displayNameInput.current) displayNameInput.current.focus();
+          }
+        }
+      });
   }
 
   return (
@@ -43,10 +126,14 @@ export function SignUp() {
           </BodyText>
         </View>
         <TextInput
+          ref={displayNameInput}
           value={displayName}
           onChangeText={setDisplayName}
           label="Name"
           placeholder="Taylor"
+          errorMessage={
+            attempted ? displayNameServerError || displayNameError : undefined
+          }
           autoFocus={true}
           autoCapitalize="words"
           autoComplete="given-name"
@@ -65,6 +152,9 @@ export function SignUp() {
             onChangeText={setEmail}
             label="Email"
             placeholder="taylor@example.com"
+            errorMessage={
+              attempted ? emailServerError || emailError : undefined
+            }
             autoCapitalize="none"
             autoComplete="email"
             keyboardType="email-address"
@@ -84,6 +174,9 @@ export function SignUp() {
             onChangeText={setPassword}
             label="Password"
             placeholder={passwordPlaceholder}
+            errorMessage={
+              attempted ? passwordServerError || passwordError : undefined
+            }
             secureTextEntry={true}
             autoCapitalize="none"
             autoComplete={Platform.OS === "web" ? "new-password" : "password"}

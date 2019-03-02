@@ -26,61 +26,73 @@ export function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Error message state.
+  // Check if the email is in a valid format.
+  let emailError: string | undefined;
+  if (email === "") {
+    emailError = "An email address is required.";
+  }
+
+  // Check if the password is in a valid format.
+  let passwordError: string | undefined;
+  if (password === "") {
+    passwordError = "A password is required.";
+  }
+
+  // Server error state variables.
   const [attempted, setAttempted] = useState(false);
-  let [emailErrorMessage, setEmailErrorMessage] =
+  const [emailServerError, setEmailServerError] =
     useState<string | undefined>(undefined); // prettier-ignore
-  let [passwordErrorMessage, setPasswordErrorMessage] =
+  const [passwordServerError, setPasswordServerError] =
     useState<string | undefined>(undefined); // prettier-ignore
-
-  // Update our error message based on state.
-  if (emailErrorMessage === undefined && attempted && email === "")
-    emailErrorMessage = "Please enter an email address.";
-
-  // Update our error message based on state.
-  if (passwordErrorMessage === undefined && attempted && password === "")
-    passwordErrorMessage = "Please enter a password.";
 
   /**
    * When the user presses the sign in button or submits the form it’s time to
    * handle their sign in request!
    */
-  async function handleSignIn() {
-    let newEmailError = false;
-    let newPasswordError = false;
+  function handleSignIn() {
+    // We have now attempted to sign in!
+    setAttempted(true);
 
-    try {
-      // Immediately return if either email or password is missing.
-      if (email === "" || password === "") {
-        return;
-      }
+    // Check client side errors. If we have any then focus the associated input.
+    // Force the user to fix their errors before continuing.
+    if (emailError) {
+      if (emailInput.current) emailInput.current.focus();
+      return;
+    }
+    if (passwordError) {
+      if (passwordInput.current) passwordInput.current.focus();
+      return;
+    }
 
-      // Attempt to sign in! Our API proxy will handle saving the access/refresh
-      // token in a cookie so we don’t have to worry about it.
-      await API.account.signIn({
+    // Actually sign up!
+    API.account
+      .signIn({
         email,
         password,
+      })
+      // If we got an error then resolve with that error instead of rejecting.
+      .then(() => undefined, error => error)
+      .then(error => {
+        // Reset server errors.
+        setEmailServerError(undefined);
+        setPasswordServerError(undefined);
+
+        if (error === undefined) {
+          // TODO
+        } else {
+          // If we got an error then decide which input to display the error on.
+          if (
+            error instanceof APIError &&
+            error.code === APIErrorCode.SIGN_IN_INCORRECT_PASSWORD
+          ) {
+            setPasswordServerError(displayErrorMessage(error));
+            if (passwordInput.current) passwordInput.current.focus();
+          } else {
+            setEmailServerError(displayErrorMessage(error));
+            if (emailInput.current) emailInput.current.focus();
+          }
+        }
       });
-    } catch (error) {
-      // If we got an error then decide which input to display the error on.
-      if (
-        error instanceof APIError &&
-        error.code === APIErrorCode.SIGN_IN_INCORRECT_PASSWORD
-      ) {
-        if (passwordInput.current) passwordInput.current.focus();
-        setPasswordErrorMessage(displayErrorMessage(error));
-        newPasswordError = true;
-      } else {
-        if (emailInput.current) emailInput.current.focus();
-        setEmailErrorMessage(displayErrorMessage(error));
-        newEmailError = true;
-      }
-    } finally {
-      // Reset error messages.
-      setAttempted(true);
-      if (!newEmailError) setEmailErrorMessage(undefined);
-      if (!newPasswordError) setPasswordErrorMessage(undefined);
-    }
   }
 
   return (
@@ -98,7 +110,7 @@ export function SignIn() {
           onChangeText={setEmail}
           label="Email"
           placeholder="taylor@example.com"
-          errorMessage={emailErrorMessage}
+          errorMessage={attempted ? emailServerError || emailError : undefined}
           autoFocus={true}
           autoCapitalize="none"
           autoComplete="email"
@@ -119,7 +131,9 @@ export function SignIn() {
             onChangeText={setPassword}
             label="Password"
             placeholder={passwordPlaceholder}
-            errorMessage={passwordErrorMessage}
+            errorMessage={
+              attempted ? passwordServerError || passwordError : undefined
+            }
             secureTextEntry={true}
             autoCapitalize="none"
             autoComplete={
