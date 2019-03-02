@@ -25,11 +25,16 @@ export enum APIErrorCode {
   SIGN_UP_EMAIL_ALREADY_USED = "SIGN_UP_EMAIL_ALREADY_USED",
 
   /**
-   * When a person tries to sign into their account but they provide the wrong
-   * email and password combination. We don’t tell the person if its their email
-   * that’s wrong or their password since that might be a security violation.
+   * When a person tries to sign into their account but they provide an email
+   * which is not recognized.
    */
-  SIGN_IN_INCORRECT_EMAIL_PASSWORD = "SIGN_IN_INCORRECT_EMAIL_PASSWORD",
+  SIGN_IN_UNRECOGNIZED_EMAIL = "SIGN_IN_UNRECOGNIZED_EMAIL",
+
+  /**
+   * When a person tries to sign into their account but they provide the wrong
+   * password combination.
+   */
+  SIGN_IN_INCORRECT_PASSWORD = "SIGN_IN_INCORRECT_PASSWORD",
 
   /**
    * Tried to automatically refresh an access token with a refresh token, but

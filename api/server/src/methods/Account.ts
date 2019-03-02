@@ -124,11 +124,12 @@ export async function signIn(
   const account: {id: number; password_hash: string} | undefined = _account;
 
   // If there is no account for the provided email address then throw an error.
-  // We don’t let the person trying to sign in know whether they got the email
-  // or password wrong as it could be a privacy vulnerability to expose who
-  // has an account by guessing emails.
+  //
+  // It may help an attacker to know whether the email was incorrect or the
+  // password. However, they could get this information anyway from our sign-up
+  // method by checking whether an account with a given email exists.
   if (!account) {
-    throw new APIError(APIErrorCode.SIGN_IN_INCORRECT_EMAIL_PASSWORD);
+    throw new APIError(APIErrorCode.SIGN_IN_UNRECOGNIZED_EMAIL);
   }
 
   // Use bcrypt to compare the new password against the hashed password in
@@ -138,7 +139,7 @@ export async function signIn(
   // If the passwords are not the same then throw an error. We must not sign
   // the person in if they gave us the wrong password.
   if (!same) {
-    throw new APIError(APIErrorCode.SIGN_IN_INCORRECT_EMAIL_PASSWORD);
+    throw new APIError(APIErrorCode.SIGN_IN_INCORRECT_PASSWORD);
   }
 
   // Generate tokens for this account, officially signing the person in!

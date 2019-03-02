@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "types": "tsc",
-    "line": "eslint . --ext .js,.ts,.tsx",
+    "lint": "eslint . --ext .js,.ts,.tsx",
     "format": "prettier \"**/*.{js,ts,tsx}\" --write",
     "test": "jest --watch"
   },

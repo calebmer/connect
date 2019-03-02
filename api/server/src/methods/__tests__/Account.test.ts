@@ -99,18 +99,23 @@ describe("signIn", () => {
       error = e;
     }
     expect(error).toBeInstanceOf(APIError);
-    expect(error.code).toBe(APIErrorCode.SIGN_IN_INCORRECT_EMAIL_PASSWORD);
+    expect(error.code).toBe(APIErrorCode.SIGN_IN_UNRECOGNIZED_EMAIL);
   });
 
   test("fails if the wrong password is used", async () => {
     let error: any;
+    await signUp(database, {
+      displayName: testDisplayName,
+      email: testEmail,
+      password: "qwerty",
+    });
     try {
       await signIn(database, {email: testEmail, password: "qwerty1"});
     } catch (e) {
       error = e;
     }
     expect(error).toBeInstanceOf(APIError);
-    expect(error.code).toBe(APIErrorCode.SIGN_IN_INCORRECT_EMAIL_PASSWORD);
+    expect(error.code).toBe(APIErrorCode.SIGN_IN_INCORRECT_PASSWORD);
   });
 
   test("creates a new refresh token", async () => {

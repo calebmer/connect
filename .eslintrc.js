@@ -53,7 +53,7 @@ module.exports = {
     "no-inner-declarations": "off",
     "func-style": ["warn", "declaration"],
     "no-var": "warn",
-    "prefer-const": "warn",
+    "prefer-const": ["warn", {destructuring: "all"}],
 
     "@typescript-eslint/adjacent-overload-signatures": "warn",
     "@typescript-eslint/array-type": ["warn", "generic"],

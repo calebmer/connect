@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {View, StyleSheet, Platform, Text, TouchableOpacity} from "react-native";
 import Router from "next/router";
+import {APIError, APIErrorCode} from "@connect/api-client";
 import {API} from "./API";
 import {
   Space,
@@ -13,18 +14,72 @@ import {
   MetaLinkText,
 } from "./atoms";
 import {TextInput, TextInputInstance} from "./TextInput";
+import {displayErrorMessage} from "./ErrorMessage";
 
 export function SignIn() {
+  // Text input refs.
+  const emailInput = React.createRef<TextInputInstance>();
   const passwordInput = React.createRef<TextInputInstance>();
 
+  // Input state.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSignIn() {
-    API.account.signIn({
-      email,
-      password,
-    });
+  // Error message state.
+  const [attempted, setAttempted] = useState(false);
+  let [emailErrorMessage, setEmailErrorMessage] =
+    useState<string | undefined>(undefined); // prettier-ignore
+  let [passwordErrorMessage, setPasswordErrorMessage] =
+    useState<string | undefined>(undefined); // prettier-ignore
+
+  // Update our error message based on state.
+  if (emailErrorMessage === undefined && attempted && email === "")
+    emailErrorMessage = "Please enter an email address.";
+
+  // Update our error message based on state.
+  if (passwordErrorMessage === undefined && attempted && password === "")
+    passwordErrorMessage = "Please enter a password.";
+
+  /**
+   * When the user presses the sign in button or submits the form it’s time to
+   * handle their sign in request!
+   */
+  async function handleSignIn() {
+    let newEmailError = false;
+    let newPasswordError = false;
+
+    try {
+      // Immediately return if either email or password is missing.
+      if (email === "" || password === "") {
+        return;
+      }
+
+      // Attempt to sign in! Our API proxy will handle saving the access/refresh
+      // token in a cookie so we don’t have to worry about it.
+      await API.account.signIn({
+        email,
+        password,
+      });
+    } catch (error) {
+      // If we got an error then decide which input to display the error on.
+      if (
+        error instanceof APIError &&
+        error.code === APIErrorCode.SIGN_IN_INCORRECT_PASSWORD
+      ) {
+        if (passwordInput.current) passwordInput.current.focus();
+        setPasswordErrorMessage(displayErrorMessage(error));
+        newPasswordError = true;
+      } else {
+        if (emailInput.current) emailInput.current.focus();
+        setEmailErrorMessage(displayErrorMessage(error));
+        newEmailError = true;
+      }
+    } finally {
+      // Reset error messages.
+      setAttempted(true);
+      if (!newEmailError) setEmailErrorMessage(undefined);
+      if (!newPasswordError) setPasswordErrorMessage(undefined);
+    }
   }
 
   return (
@@ -37,10 +92,12 @@ export function SignIn() {
           <BodyText>Welcome back!</BodyText>
         </View>
         <TextInput
+          ref={emailInput}
           value={email}
           onChangeText={setEmail}
           label="Email"
           placeholder="taylor@example.com"
+          errorMessage={emailErrorMessage}
           autoFocus={true}
           autoCapitalize="none"
           autoComplete="email"
@@ -61,6 +118,7 @@ export function SignIn() {
             onChangeText={setPassword}
             label="Password"
             placeholder={passwordPlaceholder}
+            errorMessage={passwordErrorMessage}
             secureTextEntry={true}
             autoCapitalize="none"
             autoComplete={
