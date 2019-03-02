@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {View, StyleSheet, Platform, Text, TouchableOpacity} from "react-native";
+import {View, StyleSheet, Platform, Text} from "react-native";
 import Router from "next/router";
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {API} from "./API";
@@ -12,6 +12,7 @@ import {
   Border,
   MetaText,
   MetaLinkText,
+  TextLink,
 } from "./atoms";
 import {TextInput, TextInputInstance} from "./TextInput";
 import {displayErrorMessage} from "./ErrorMessage";
@@ -136,12 +137,9 @@ export function SignIn() {
         <Text style={styles.meta}>
           <MetaText>
             Don’t have an account?{" "}
-            <TouchableOpacity
-              accessibilityRole="link"
-              onPress={() => Router.push("/sign-up")}
-            >
+            <TextLink onPress={() => Router.push("/sign-up")}>
               <MetaLinkText>Sign up.</MetaLinkText>
-            </TouchableOpacity>
+            </TextLink>
           </MetaText>
         </Text>
       </View>

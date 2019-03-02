@@ -7,3 +7,4 @@ export {Border, Color, Font, Space};
 
 export * from "./Button";
 export * from "./Text";
+export * from "./TextLink";
