@@ -1,3 +1,8 @@
 {
-  "extends": "../tsconfig.base.json"
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@connect/api-client": ["../api/client"]
+    }
+  }
 }

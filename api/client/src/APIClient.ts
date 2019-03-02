@@ -8,20 +8,28 @@ import {
 import {APIError, APIResult} from "./APIError";
 import {APISchema} from "./APISchema";
 
-/**
- * The root url of our API. In development one may choose to use a local API
- * endpoint instead of a production API endpoint.
- */
-const apiUrl = "http://localhost:4000";
+export const APIClient = {
+  /**
+   * Creates an API client. Allows us to execute requests against our
+   * API server.
+   *
+   * Thanks to TypeScript being awesome we gets documentation, jump to
+   * definition, and find references from `APISchema` all for free!
+   */
+  create(config: APIClientConfig): Client<typeof APISchema> {
+    return createClient(config, [], APISchema) as any;
+  },
+};
 
 /**
- * Our API client. Allows us to execute requests against our API server using
- * the declaration from our API server.
- *
- * Thanks to TypeScript being awesome `APISchema` gets documentation, jump to
- * definition, and find references all for free!
+ * Configuration for our API client.
  */
-export const API: Client<typeof APISchema> = createClient([], APISchema) as any;
+export type APIClientConfig = {
+  /**
+   * The root url for our API client.
+   */
+  readonly url: string;
+};
 
 /**
  * Creates the type for an API client based on its schema.
@@ -52,14 +60,15 @@ type ClientMethodUnauthorized<Input, Output> = (
  * Creates an API client based on the schema we were provided.
  */
 function createClient(
+  config: APIClientConfig,
   path: Array<string>,
   schema: SchemaBase,
 ): Client<SchemaBase> {
   switch (schema.kind) {
     case SchemaKind.NAMESPACE:
-      return createClientNamespace(path, schema);
+      return createClientNamespace(config, path, schema);
     case SchemaKind.METHOD_UNAUTHORIZED:
-      return createClientMethodUnauthorized(path, schema);
+      return createClientMethodUnauthorized(config, path, schema);
     default: {
       const never: never = schema;
       return never;
@@ -74,6 +83,7 @@ function createClient(
 function createClientNamespace<
   Schemas extends {readonly [key: string]: SchemaBase}
 >(
+  config: APIClientConfig,
   path: Array<string>,
   namespaceSchema: SchemaNamespace<Schemas>,
 ): ClientNamespace<Schemas> {
@@ -85,7 +95,7 @@ function createClientNamespace<
   // our client.
   for (const [key, schema] of Object.entries(namespaceSchema.schemas)) {
     path.push(key);
-    client[key] = createClient(path, schema);
+    client[key] = createClient(config, path, schema);
     path.pop();
   }
 
@@ -100,11 +110,12 @@ function createClientMethodUnauthorized<
   Input extends JSONObjectValue,
   Output extends JSONObjectValue
 >(
+  config: APIClientConfig,
   path: Array<string>,
   _schema: SchemaMethodUnauthorized<Input, Output>,
 ): ClientMethodUnauthorized<Input, Output> {
   // The path to our method on the API server.
-  const apiPath = `${apiUrl}/${path.join("/")}`;
+  const apiPath = `${config.url}/${path.join("/")}`;
 
   return async input => {
     // All methods are executed with a `POST` request. HTTP semantics don’t

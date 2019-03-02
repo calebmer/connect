@@ -1,8 +1,9 @@
 import * as React from "react";
 import {useState} from "react";
 import {View, StyleSheet, Platform} from "react-native";
-import {TextInput, TextInputInstance} from "./TextInput";
+import {API} from "./API";
 import {Space, TitleText, BodyText, Button, Color, Border} from "./atoms";
+import {TextInput, TextInputInstance} from "./TextInput";
 
 export function SignIn() {
   const passwordInput = React.createRef<TextInputInstance>();
@@ -11,14 +12,10 @@ export function SignIn() {
   const [password, setPassword] = useState("");
 
   function handleSignIn() {
-    fetch("/api/account/signIn", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({email, password}),
-    })
-      .then(r => r.json())
-      .then(console.log)
-      .catch(e => console.error(e.stack));
+    API.account.signIn({
+      email,
+      password,
+    });
   }
 
   return (
