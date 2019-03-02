@@ -1,5 +1,10 @@
-import * as React from "react";
-import {TouchableWithoutFeedback, View, Text, StyleSheet} from "react-native";
+import React, {useState} from "react";
+import {
+  TouchableWithoutFeedback,
+  Text,
+  StyleSheet,
+  Animated,
+} from "react-native";
 import * as Color from "./Color";
 import * as Font from "./Font";
 import * as Space from "./Space";
@@ -12,13 +17,23 @@ export function Button({
   readonly label: string;
   readonly onPress: () => void;
 }) {
+  const [pressed] = useState(new Animated.Value(0));
+  const backgroundColor = pressed.interpolate({
+    inputRange: [0, 1],
+    outputRange: [Color.yellow3, Color.yellow5],
+  });
   return (
-    <TouchableWithoutFeedback accessibilityRole="button" onPress={onPress}>
-      <View style={styles.button}>
+    <TouchableWithoutFeedback
+      accessibilityRole="button"
+      onPress={onPress}
+      onPressIn={() => Animated.spring(pressed, {toValue: 1}).start()}
+      onPressOut={() => Animated.spring(pressed, {toValue: 0}).start()}
+    >
+      <Animated.View style={[styles.button, {backgroundColor}]}>
         <Text style={styles.label} selectable={false}>
           {label}
         </Text>
-      </View>
+      </Animated.View>
     </TouchableWithoutFeedback>
   );
 }
@@ -30,7 +45,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Space.space6,
     backgroundColor: Color.yellow3,
     borderRadius: Border.radius2,
-    borderColor: Color.yellow5,
   },
   label: {
     color: Color.yellow9,

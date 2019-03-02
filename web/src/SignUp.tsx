@@ -98,7 +98,10 @@ export function SignUp() {
         <Text style={styles.meta}>
           <MetaText>
             Already have an account?{" "}
-            <TouchableOpacity onPress={() => Router.push("/sign-in")}>
+            <TouchableOpacity
+              accessibilityRole="link"
+              onPress={() => Router.push("/sign-in")}
+            >
               <MetaLinkText>Sign in.</MetaLinkText>
             </TouchableOpacity>
           </MetaText>
