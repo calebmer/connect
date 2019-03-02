@@ -2,7 +2,10 @@
   "private": true,
   "license": "UNLICENSED",
   "workspaces": [
-    "workspaces/*"
+    "api/client",
+    "api/server",
+    "db",
+    "web"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.ts,.tsx",

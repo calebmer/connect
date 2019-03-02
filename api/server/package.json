@@ -6,8 +6,7 @@
   "typings": "./build/index.d.ts",
   "scripts": {
     "dev": "NODE_ENV=development ts-node-dev --no-notify --transpileOnly src/index.ts",
-    "build": "tsc --build",
-    "tsc": "tsc"
+    "tsc": "tsc --build"
   },
   "dependencies": {
     "@connect/api-client": "0.0.0",

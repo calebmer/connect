@@ -13,9 +13,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
-      "@connect/*": ["./workspaces/*"]
-    }
-  }
+    "baseUrl": "."
+  },
+  "exclude": ["**/node_modules", "**/build", "**/.next"]
 }
