@@ -7,7 +7,6 @@
     "dev": "NODE_ENV=development babel-watch src/index.ts --extensions .ts,.js"
   },
   "dependencies": {
-    "@babel/cli": "^7.2.3",
     "@connect/api-client": "0.0.0",
     "bcrypt": "^3.0.4",
     "chalk": "^2.4.2",
