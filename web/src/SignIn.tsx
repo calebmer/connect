@@ -1,7 +1,17 @@
 import React, {useState} from "react";
-import {View, StyleSheet, Platform} from "react-native";
+import {View, StyleSheet, Platform, Text, TouchableOpacity} from "react-native";
+import Router from "next/router";
 import {API} from "./API";
-import {Space, TitleText, BodyText, Button, Color, Border} from "./atoms";
+import {
+  Space,
+  TitleText,
+  BodyText,
+  Button,
+  Color,
+  Border,
+  MetaText,
+  MetaLinkText,
+} from "./atoms";
 import {TextInput, TextInputInstance} from "./TextInput";
 
 export function SignIn() {
@@ -65,6 +75,14 @@ export function SignIn() {
         <View style={styles.input}>
           <Button label="Sign In" onPress={handleSignIn} />
         </View>
+        <Text style={styles.meta}>
+          <MetaText>
+            Don’t have an account?{" "}
+            <TouchableOpacity onPress={() => Router.push("/sign-up")}>
+              <MetaLinkText>Sign up.</MetaLinkText>
+            </TouchableOpacity>
+          </MetaText>
+        </Text>
       </View>
     </View>
   );
@@ -107,5 +125,9 @@ const styles = StyleSheet.create({
   },
   input: {
     paddingTop: Space.space4,
+  },
+  meta: {
+    paddingTop: Space.space5,
+    textAlign: "center",
   },
 });

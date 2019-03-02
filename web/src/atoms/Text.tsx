@@ -1,10 +1,10 @@
-import * as React from "react";
+import React, {ReactNode} from "react";
 import {Text, StyleSheet, TextProps as NativeTextProps} from "react-native";
 import * as Color from "./Color";
 import * as Font from "./Font";
 
 interface TextProps extends NativeTextProps {
-  readonly children: string;
+  readonly children: ReactNode;
 }
 
 export function BodyText(props: TextProps) {
@@ -15,9 +15,17 @@ export function TitleText(props: TextProps) {
   return <Text {...props} style={styles.title} />;
 }
 
+export function MetaText(props: TextProps) {
+  return <Text {...props} style={styles.meta} />;
+}
+
+export function MetaLinkText(props: TextProps) {
+  return <Text {...props} style={[styles.meta, styles.metaLink]} />;
+}
+
 const styles = StyleSheet.create({
   body: {
-    color: Color.grey6,
+    color: Color.grey7,
     ...Font.serif,
     ...Font.size2,
   },
@@ -25,5 +33,14 @@ const styles = StyleSheet.create({
     color: Color.black,
     ...Font.sansBold,
     ...Font.size4,
+  },
+  meta: {
+    color: Color.grey6,
+    ...Font.sans,
+    ...Font.size1,
+  },
+  metaLink: {
+    color: Color.blue5,
+    textDecorationLine: "underline",
   },
 });

@@ -44,7 +44,7 @@ function TextInput(
         {...textInputProps}
         ref={inputRef}
         style={styles.input}
-        placeholderTextColor={Color.grey3}
+        placeholderTextColor={Color.grey2}
       />
     </View>
   );
