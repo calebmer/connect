@@ -28,8 +28,16 @@ function displayErrorCodeMessage(errorCode: APIErrorCode): string {
     case APIErrorCode.BAD_INPUT:
     case APIErrorCode.UNRECOGNIZED_METHOD:
     case APIErrorCode.REFRESH_TOKEN_INVALID:
-    case APIErrorCode.UNKNOWN:
-      return "An internal error occurred.";
+    case APIErrorCode.UNKNOWN: {
+      let message = "Uh oh! Something unexpected went wrong.";
+
+      // Display the error code with the message in development.
+      if (process.env.NODE_ENV === "development") {
+        message += ` (APIErrorCode.${errorCode})`;
+      }
+
+      return message;
+    }
 
     default: {
       // Check statically, via TypeScript, that all API error codes are handled
