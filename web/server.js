@@ -111,6 +111,22 @@ const accessTokenCookieSettings = {
 };
 
 /**
+ * The cookie settings to remove a refresh token.
+ */
+const removeRefreshTokenCookieSettings = {
+  ...refreshTokenCookieSettings,
+  maxAge: -1,
+};
+
+/**
+ * The cookie settings to remove an access token.
+ */
+const removeAccessTokenCookieSettings = {
+  ...accessTokenCookieSettings,
+  maxAge: -1,
+};
+
+/**
  * Proxies a POST request to our API.
  *
  * Adds special handling for authorization. When signing in we will attach our
@@ -313,27 +329,42 @@ function apiProxy(request, response, pathname) {
         try {
           // Parse our refresh request response...
           result = JSON.parse(result);
+
+          // If we did not get a successful response then remove our cookies and
+          // continue with the API request. This will sign the user out, they’ll
+          // have to sign back in now.
           if (!result.ok) {
-            throw new Error("Expected a successful API response.");
+            response.setHeader("Set-Cookie", [
+              cookie.serialize(
+                "refresh_token",
+                "",
+                removeRefreshTokenCookieSettings,
+              ),
+              cookie.serialize(
+                "access_token",
+                "",
+                removeAccessTokenCookieSettings,
+              ),
+            ]);
+          } else {
+            // Retrieve the new access token.
+            const newAccessToken = result.data.accessToken;
+
+            // Set our cookie with the updated access token. This way we won’t
+            // need to generate an access token for every request. We can use
+            // this one for the next hour or so.
+            response.setHeader(
+              "Set-Cookie",
+              cookie.serialize(
+                "access_token",
+                newAccessToken,
+                accessTokenCookieSettings,
+              ),
+            );
+
+            // Set the access token in our closure to the new access token.
+            accessToken = newAccessToken;
           }
-
-          // Retrieve the new access token.
-          const newAccessToken = result.data.accessToken;
-
-          // Set our cookie with the updated access token. This way we won’t
-          // need to generate an access token for every request. We can use
-          // this one for the next hour or so.
-          response.setHeader(
-            "Set-Cookie",
-            cookie.serialize(
-              "access_token",
-              newAccessToken,
-              accessTokenCookieSettings,
-            ),
-          );
-
-          // Set the access token in our closure to the new access token.
-          accessToken = newAccessToken;
         } catch (error) {
           sendUnknownError();
           return;
