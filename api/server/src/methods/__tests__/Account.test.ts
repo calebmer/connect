@@ -133,6 +133,20 @@ describe("signUp", () => {
     });
     expect(payload.id).toBe(accountID);
   });
+
+  test("creates a new refresh token and sets last_used_at", async () => {
+    const {refreshToken} = await signUp(database, {
+      displayName: testDisplayName,
+      email: testEmail,
+      password: "qwerty",
+    });
+    const result = await database.query(
+      "SELECT last_used_at FROM refresh_token WHERE token = $1",
+      [refreshToken],
+    );
+    expect(result.rowCount).toBe(1);
+    expect(result.rows[0].last_used_at).toBeInstanceOf(Date);
+  });
 });
 
 describe("signIn", () => {
@@ -211,6 +225,24 @@ describe("signIn", () => {
     });
     expect(payload.id).toBe(accountID);
   });
+
+  test("creates a new refresh token and sets last_used_at", async () => {
+    await signUp(database, {
+      displayName: testDisplayName,
+      email: testEmail,
+      password: "qwerty",
+    });
+    const {refreshToken} = await signIn(database, {
+      email: testEmail,
+      password: "qwerty",
+    });
+    const result = await database.query(
+      "SELECT last_used_at FROM refresh_token WHERE token = $1",
+      [refreshToken],
+    );
+    expect(result.rowCount).toBe(1);
+    expect(result.rows[0].last_used_at).toBeInstanceOf(Date);
+  });
 });
 
 describe("refreshAccessToken", () => {
@@ -245,5 +277,36 @@ describe("refreshAccessToken", () => {
       });
     });
     expect(payload.id).toBe(accountID);
+  });
+
+  test("updates last_used_at on the refresh token", async () => {
+    const {refreshToken} = await signUp(database, {
+      displayName: testDisplayName,
+      email: testEmail,
+      password: "qwerty",
+    });
+    const result1 = await database.query(
+      "SELECT last_used_at FROM refresh_token WHERE token = $1",
+      [refreshToken],
+    );
+    expect(result1.rowCount).toBe(1);
+    expect(result1.rows[0].last_used_at).toBeInstanceOf(Date);
+    await database.query(
+      "UPDATE refresh_token SET last_used_at = null WHERE token = $1",
+      [refreshToken],
+    );
+    const result2 = await database.query(
+      "SELECT last_used_at FROM refresh_token WHERE token = $1",
+      [refreshToken],
+    );
+    expect(result2.rowCount).toBe(1);
+    expect(result2.rows[0].last_used_at).toBe(null);
+    await refreshAccessToken(database, {refreshToken});
+    const result3 = await database.query(
+      "SELECT last_used_at FROM refresh_token WHERE token = $1",
+      [refreshToken],
+    );
+    expect(result3.rowCount).toBe(1);
+    expect(result3.rows[0].last_used_at).toBeInstanceOf(Date);
   });
 });

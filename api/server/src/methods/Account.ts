@@ -174,11 +174,13 @@ export async function refreshAccessToken(
 ): Promise<{
   readonly accessToken: string;
 }> {
-  // Fetch the refresh token from our database.
+  // Fetch the refresh token from our database and update the `last_used_at`
+  // column. By updating `last_used_at` we can tell, roughly, the last hour or
+  // so the associated account was active.
   const {
     rows: [_token],
   } = await database.query(
-    "SELECT account_id FROM refresh_token WHERE token = $1",
+    "UPDATE refresh_token SET last_used_at = now() WHERE token = $1 RETURNING account_id",
     [refreshToken],
   );
 

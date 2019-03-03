@@ -20,5 +20,7 @@ CREATE TABLE account (
   -- one could always create a new email address if they want a new account.
   email TEXT UNIQUE,
   -- A bcrypt hash of the account password.
-  password_hash TEXT NOT NULL
+  password_hash TEXT NOT NULL,
+  -- The time at which the account was created.
+  created_at TIMESTAMP DEFAULT now()
 );
