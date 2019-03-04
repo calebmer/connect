@@ -13,7 +13,8 @@ import {
   APISchema,
   APIResult,
 } from "@connect/api-client";
-import {withDatabase, Database} from "./Database";
+import {withDatabase} from "./Database";
+import {ContextUnauthorized} from "./Context";
 import * as _APIServerDefinition from "./methods";
 
 /**
@@ -96,7 +97,7 @@ function initializeServerMethodUnauthorized<
   Input extends JSONObjectValue,
   Output extends JSONObjectValue
 >(
-  path: Array<string>,
+  path: ReadonlyArray<string>,
   definition: ServerMethodUnauthorized<Input, Output>,
   schema: SchemaMethodUnauthorized<Input, Output>,
 ): void {
@@ -116,7 +117,9 @@ function initializeServerMethodUnauthorized<
     }
 
     // Provides a database to our API method definition.
-    withDatabase(database => definition(database, input)).then(
+    withDatabase(database => {
+      return definition(new ContextUnauthorized(database), input);
+    }).then(
       output => {
         // Construct the successful result of an API request.
         const result: APIResult<Output> = {
@@ -218,6 +221,6 @@ type ServerNamespace<Schemas extends {readonly [key: string]: SchemaBase}> = {
  * method input and some unauthorized context.
  */
 type ServerMethodUnauthorized<Input, Output> = (
-  database: Database,
+  ctx: ContextUnauthorized,
   input: Input,
 ) => Promise<Output>;

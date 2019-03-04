@@ -2,18 +2,20 @@ import uuidV4 from "uuid/v4";
 import jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {withTestDatabase} from "../../Database";
+import {ContextUnauthorized} from "../../Context";
 import {JWT_SECRET, signUp, signIn, refreshAccessToken} from "../Account";
 
 const testDisplayName = "Test";
 const testEmail = "test@example.com";
 
 const database = withTestDatabase();
+const ctx = new ContextUnauthorized(database);
 
 describe("signUp", () => {
   test("rejects empty display names", async () => {
     let error: any;
     try {
-      await signUp(database, {
+      await signUp(ctx, {
         displayName: "",
         email: testEmail,
         password: "qwerty",
@@ -28,7 +30,7 @@ describe("signUp", () => {
   test("rejects single character display names", async () => {
     let error: any;
     try {
-      await signUp(database, {
+      await signUp(ctx, {
         displayName: "a",
         email: testEmail,
         password: "qwerty",
@@ -43,7 +45,7 @@ describe("signUp", () => {
   test("rejects empty emails", async () => {
     let error: any;
     try {
-      await signUp(database, {
+      await signUp(ctx, {
         displayName: testDisplayName,
         email: "",
         password: "qwerty",
@@ -61,7 +63,7 @@ describe("signUp", () => {
       [testEmail],
     );
     expect(result1.rowCount).toBe(0);
-    await signUp(database, {
+    await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
@@ -74,14 +76,14 @@ describe("signUp", () => {
   });
 
   test("errors when trying to sign up with an already used email", async () => {
-    await signUp(database, {
+    await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty1",
     });
     let error: any;
     try {
-      await signUp(database, {
+      await signUp(ctx, {
         displayName: testDisplayName,
         email: testEmail,
         password: "qwerty2",
@@ -94,7 +96,7 @@ describe("signUp", () => {
   });
 
   test("creates a new refresh token", async () => {
-    const {refreshToken} = await signUp(database, {
+    const {refreshToken} = await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
@@ -114,7 +116,7 @@ describe("signUp", () => {
   });
 
   test("creates a new access token", async () => {
-    const {accessToken} = await signUp(database, {
+    const {accessToken} = await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
@@ -135,7 +137,7 @@ describe("signUp", () => {
   });
 
   test("creates a new refresh token and sets last_used_at", async () => {
-    const {refreshToken} = await signUp(database, {
+    const {refreshToken} = await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
@@ -153,7 +155,7 @@ describe("signIn", () => {
   test("fails if the account does not exist", async () => {
     let error: any;
     try {
-      await signIn(database, {email: testEmail, password: "qwerty"});
+      await signIn(ctx, {email: testEmail, password: "qwerty"});
     } catch (e) {
       error = e;
     }
@@ -163,13 +165,13 @@ describe("signIn", () => {
 
   test("fails if the wrong password is used", async () => {
     let error: any;
-    await signUp(database, {
+    await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
     });
     try {
-      await signIn(database, {email: testEmail, password: "qwerty1"});
+      await signIn(ctx, {email: testEmail, password: "qwerty1"});
     } catch (e) {
       error = e;
     }
@@ -178,12 +180,12 @@ describe("signIn", () => {
   });
 
   test("creates a new refresh token", async () => {
-    await signUp(database, {
+    await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
     });
-    const {refreshToken} = await signIn(database, {
+    const {refreshToken} = await signIn(ctx, {
       email: testEmail,
       password: "qwerty",
     });
@@ -202,12 +204,12 @@ describe("signIn", () => {
   });
 
   test("creates a new access token", async () => {
-    await signUp(database, {
+    await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
     });
-    const {accessToken} = await signIn(database, {
+    const {accessToken} = await signIn(ctx, {
       email: testEmail,
       password: "qwerty",
     });
@@ -227,12 +229,12 @@ describe("signIn", () => {
   });
 
   test("creates a new refresh token and sets last_used_at", async () => {
-    await signUp(database, {
+    await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
     });
-    const {refreshToken} = await signIn(database, {
+    const {refreshToken} = await signIn(ctx, {
       email: testEmail,
       password: "qwerty",
     });
@@ -249,7 +251,7 @@ describe("refreshAccessToken", () => {
   test("fails if the refresh token does not exist", async () => {
     let error: any;
     try {
-      await refreshAccessToken(database, {refreshToken: uuidV4()});
+      await refreshAccessToken(ctx, {refreshToken: uuidV4()});
     } catch (e) {
       error = e;
     }
@@ -258,12 +260,12 @@ describe("refreshAccessToken", () => {
   });
 
   test("creates a new access token when given a refresh token", async () => {
-    const {refreshToken} = await signUp(database, {
+    const {refreshToken} = await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
     });
-    const {accessToken} = await refreshAccessToken(database, {refreshToken});
+    const {accessToken} = await refreshAccessToken(ctx, {refreshToken});
     const result = await database.query(
       "SELECT id FROM account WHERE email = $1",
       [testEmail],
@@ -280,7 +282,7 @@ describe("refreshAccessToken", () => {
   });
 
   test("updates last_used_at on the refresh token", async () => {
-    const {refreshToken} = await signUp(database, {
+    const {refreshToken} = await signUp(ctx, {
       displayName: testDisplayName,
       email: testEmail,
       password: "qwerty",
@@ -301,7 +303,7 @@ describe("refreshAccessToken", () => {
     );
     expect(result2.rowCount).toBe(1);
     expect(result2.rows[0].last_used_at).toBe(null);
-    await refreshAccessToken(database, {refreshToken});
+    await refreshAccessToken(ctx, {refreshToken});
     const result3 = await database.query(
       "SELECT last_used_at FROM refresh_token WHERE token = $1",
       [refreshToken],

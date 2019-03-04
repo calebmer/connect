@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import uuidV4 from "uuid/v4";
 import jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
-import {Database} from "../Database";
+import {ContextUnauthorized} from "../Context";
 
 /**
  * Balances speed and security for the bcrypt algorithm. See the
@@ -43,7 +43,7 @@ export const JWT_SECRET: string = (() => {
  * our API!
  */
 export async function signUp(
-  database: Database,
+  ctx: ContextUnauthorized,
   {
     displayName,
     email,
@@ -70,7 +70,7 @@ export async function signUp(
   // new account.
   const {
     rows: [newAccount],
-  } = await database.query(
+  } = await ctx.database.query(
     "INSERT INTO account (display_name, email, password_hash) VALUES ($1, $2, $3) " +
       "ON CONFLICT (email) DO NOTHING " +
       "RETURNING id",
@@ -88,7 +88,7 @@ export async function signUp(
 
   // We also want to sign our new account in, so generate new
   // authorization tokens...
-  return await generateTokens(database, accountID);
+  return await generateTokens(ctx, accountID);
 }
 
 /**
@@ -100,7 +100,7 @@ export async function signUp(
  * our API!
  */
 export async function signIn(
-  database: Database,
+  ctx: ContextUnauthorized,
   {
     email,
     password,
@@ -115,7 +115,7 @@ export async function signIn(
   // Lookup the account associated with the provided email address.
   const {
     rows: [_account],
-  } = await database.query(
+  } = await ctx.database.query(
     "SELECT id, password_hash FROM account WHERE email = $1",
     [email],
   );
@@ -143,7 +143,7 @@ export async function signIn(
   }
 
   // Generate tokens for this account, officially signing the person in!
-  return await generateTokens(database, account.id);
+  return await generateTokens(ctx, account.id);
 }
 
 /**
@@ -152,7 +152,7 @@ export async function signIn(
  * sign back in.
  */
 export async function signOut(
-  _database: Database,
+  _ctx: ContextUnauthorized,
   _input: {
     readonly refreshToken: string;
   },
@@ -165,7 +165,7 @@ export async function signOut(
  * used when you have an expired access token and you need to get a new one.
  */
 export async function refreshAccessToken(
-  database: Database,
+  ctx: ContextUnauthorized,
   {
     refreshToken,
   }: {
@@ -179,7 +179,7 @@ export async function refreshAccessToken(
   // so the associated account was active.
   const {
     rows: [_token],
-  } = await database.query(
+  } = await ctx.database.query(
     "UPDATE refresh_token SET last_used_at = now() WHERE token = $1 RETURNING account_id",
     [refreshToken],
   );
@@ -207,13 +207,13 @@ export async function refreshAccessToken(
  * resources. Both `signUp()` and `signIn()` calls this function to generate
  * tokens after they have verify the identity of the person trying to sign in.
  */
-async function generateTokens(database: Database, accountID: number) {
+async function generateTokens(ctx: ContextUnauthorized, accountID: number) {
   // Randomly generate a new refresh token.
   const refreshToken = uuidV4();
 
   // Add our new refresh token to the database. This way when the access token
   // we create expires the API client will be able to get a new one.
-  await database.query(
+  await ctx.database.query(
     "INSERT INTO refresh_token (token, account_id) VALUES ($1, $2)",
     [refreshToken, accountID],
   );
