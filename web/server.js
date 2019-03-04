@@ -5,6 +5,9 @@ const jwt = require("jsonwebtoken");
 const chalk = require("chalk");
 const next = require("next");
 
+// Polyfill `fetch()` in Node.js
+require("isomorphic-unfetch");
+
 // The port our web server will be listening on.
 const port = process.env.PORT || 3000;
 

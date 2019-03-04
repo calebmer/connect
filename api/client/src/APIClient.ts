@@ -134,13 +134,14 @@ function createClientMethod<
 
   return async input => {
     // Create the headers object for an authorized client method.
-    const headers = new Headers();
-    headers.set("Content-Type", "application/json");
+    const headers: {[key: string]: string} = {
+      "Content-Type": "application/json",
+    };
 
     // If we were configured to provide authentication in some way then add an
     // `Authorization` header.
     if (config.auth) {
-      headers.set("Authorization", `Bearer ${config.auth()}`);
+      headers["Authorization"] = `Bearer ${config.auth()}`;
     }
 
     // All methods are executed with a `POST` request. HTTP semantics don’t
