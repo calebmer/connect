@@ -19,6 +19,25 @@ export enum APIErrorCode {
   UNRECOGNIZED_METHOD = "UNRECOGNIZED_METHOD",
 
   /**
+   * A person is unauthorized to perform some action that they were trying to
+   * perform. This error message is intentionally opaque. The person is not
+   * always allowed to know why they were unauthorized.
+   */
+  UNAUTHORIZED = "UNAUTHORIZED",
+
+  /**
+   * A person’s access token expired. They should use their refresh token to get
+   * a new one.
+   */
+  ACCESS_TOKEN_EXPIRED = "ACCESS_TOKEN_EXPIRED",
+
+  /**
+   * Tried to automatically refresh an access token with a refresh token, but
+   * the refresh token was invalid. Either it was revoked or never existed.
+   */
+  REFRESH_TOKEN_INVALID = "REFRESH_TOKEN_INVALID",
+
+  /**
    * When a person tries to sign up and the email they provided is already in
    * use by another account then we’ll throw this error.
    */
@@ -35,12 +54,6 @@ export enum APIErrorCode {
    * password combination.
    */
   SIGN_IN_INCORRECT_PASSWORD = "SIGN_IN_INCORRECT_PASSWORD",
-
-  /**
-   * Tried to automatically refresh an access token with a refresh token, but
-   * the refresh token was invalid. Either it was revoked or never existed.
-   */
-  REFRESH_TOKEN_INVALID = "REFRESH_TOKEN_INVALID",
 
   /**
    * An unknown error occurred.

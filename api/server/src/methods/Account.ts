@@ -2,7 +2,8 @@ import bcrypt from "bcrypt";
 import uuidV4 from "uuid/v4";
 import jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
-import {ContextUnauthorized} from "../Context";
+import {JWT_SECRET} from "../RunConfig";
+import {Context, ContextUnauthorized} from "../Context";
 
 /**
  * Balances speed and security for the bcrypt algorithm. See the
@@ -11,22 +12,6 @@ import {ContextUnauthorized} from "../Context";
  * [1]: https://yarn.pm/bcrypt
  */
 const SALT_ROUNDS = 10;
-
-/**
- * The secret we use to sign our JSON Web Tokens (JWT). In development and test
- * environments we use the super secret “`secret`” token. In production we need
- * a real secret from our environment variables.
- */
-export const JWT_SECRET: string = (() => {
-  if (
-    process.env.NODE_ENV === "development" ||
-    process.env.NODE_ENV === "test"
-  ) {
-    return "secret";
-  } else {
-    throw new Error("JWT secret is not configured.");
-  }
-})();
 
 /**
  * Creates a new account with an email and a password. Accounts may have any
@@ -251,4 +236,18 @@ async function generateAccessToken(accountID: number) {
   });
 
   return accessToken;
+}
+
+/**
+ * Gets basic information about the current account’s profile. Takes no
+ * input because we use the authorization context to determine the
+ * current profile.
+ */
+export function getCurrentProfile(
+  _ctx: Context,
+  {}: {},
+): Promise<{
+  readonly displayName: string;
+}> {
+  throw new Error("TODO");
 }

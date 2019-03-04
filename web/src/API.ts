@@ -5,4 +5,5 @@ import {APIClient} from "@connect/api-client";
  */
 export const API = APIClient.create({
   url: "/api",
+  auth: null,
 });

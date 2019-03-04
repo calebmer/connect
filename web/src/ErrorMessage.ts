@@ -25,8 +25,12 @@ function displayErrorCodeMessage(errorCode: APIErrorCode): string {
     case APIErrorCode.SIGN_IN_INCORRECT_PASSWORD:
       return "Incorrect password.";
 
+    case APIErrorCode.UNAUTHORIZED:
+      return "Unauthorized. Please try signing in.";
+
     case APIErrorCode.BAD_INPUT:
     case APIErrorCode.UNRECOGNIZED_METHOD:
+    case APIErrorCode.ACCESS_TOKEN_EXPIRED:
     case APIErrorCode.REFRESH_TOKEN_INVALID:
     case APIErrorCode.UNKNOWN: {
       let message = "Uh oh! Something unexpected went wrong.";

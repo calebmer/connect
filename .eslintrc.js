@@ -21,6 +21,7 @@ module.exports = {
     jest: true,
   },
   rules: {
+    "no-empty-pattern": "off",
     "no-unused-vars": "warn",
     "no-console": "warn",
     "no-async-promise-executor": "warn",

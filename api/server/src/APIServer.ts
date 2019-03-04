@@ -2,19 +2,22 @@ import chalk from "chalk";
 import express from "express";
 import {Request, Response, NextFunction} from "express";
 import morgan from "morgan";
+import jwt from "jsonwebtoken";
 import {
-  SchemaBase,
-  SchemaNamespace,
   JSONObjectValue,
-  SchemaMethodUnauthorized,
+  SchemaBase,
   SchemaKind,
+  SchemaNamespace,
+  SchemaMethod,
+  SchemaMethodUnauthorized,
   APIError,
   APIErrorCode,
   APISchema,
   APIResult,
 } from "@connect/api-client";
+import {JWT_SECRET} from "./RunConfig";
 import {withDatabase} from "./Database";
-import {ContextUnauthorized} from "./Context";
+import {Context, ContextUnauthorized} from "./Context";
 import * as _APIServerDefinition from "./methods";
 
 /**
@@ -57,6 +60,8 @@ function initializeServer(
   switch (schema.kind) {
     case SchemaKind.NAMESPACE:
       return initializeServerNamespace(path, definition as any, schema);
+    case SchemaKind.METHOD:
+      return initializeServerMethod(path, definition as any, schema);
     case SchemaKind.METHOD_UNAUTHORIZED:
       return initializeServerMethodUnauthorized(
         path,
@@ -91,6 +96,104 @@ function initializeServerNamespace<
 }
 
 /**
+ * Parses the `Bearer` auth scheme token out of the `Authorization` header as
+ * defined by [RFC7235][1].
+ *
+ * ```
+ * Authorization = credentials
+ * credentials   = auth-scheme [ 1*SP ( token68 / #auth-param ) ]
+ * token68       = 1*( ALPHA / DIGIT / "-" / "." / "_" / "~" / "+" / "/" )*"="
+ * ```
+ *
+ * [1]: https://tools.ietf.org/html/rfc7235
+ *
+ * @private
+ */
+const authorizationHeaderRegex = /^\s*bearer\s+([a-z0-9\-._~+/]+=*)\s*$/i;
+
+/**
+ * Initializes the server with a method that does not need authorization.
+ */
+function initializeServerMethod<
+  Input extends JSONObjectValue,
+  Output extends JSONObjectValue
+>(
+  path: ReadonlyArray<string>,
+  definition: ServerMethod<Input, Output>,
+  schema: SchemaMethod<Input, Output>,
+): void {
+  // The path to this API method.
+  const apiPath = `/${path.join("/")}`;
+
+  // Register this method on our API server. When this method is executed we
+  // will call the appropriate function.
+  APIServer.post(apiPath, (request, response, next) => {
+    // Get the authorization header. If there is no authorization header then
+    // the client is unauthorized and can’t continue.
+    const authorizationHeader = request.headers.authorization;
+    if (!authorizationHeader) {
+      response.statusCode = 401;
+      next(new APIError(APIErrorCode.UNAUTHORIZED));
+      return;
+    }
+
+    // Parse the access token from the authorization header. If the
+    // authorization header is not in the correct “bearer” auth scheme then
+    // the client is unauthorized and can’t continue.
+    const match = authorizationHeaderRegex.exec(authorizationHeader);
+    if (!match) {
+      response.statusCode = 401;
+      next(new APIError(APIErrorCode.UNAUTHORIZED));
+      return;
+    }
+
+    // Next verify the JWT token using our shared JWT secret.
+    jwt.verify(match[1], JWT_SECRET, (error, accessToken) => {
+      // If we failed to verify the token then return an unauthorized API error.
+      // If the token was expired then return a token expired error code.
+      if (error) {
+        response.statusCode = 401;
+        let code = APIErrorCode.UNAUTHORIZED;
+        if (error instanceof jwt.TokenExpiredError)
+          code = APIErrorCode.ACCESS_TOKEN_EXPIRED;
+        next(new APIError(code));
+        return;
+      }
+
+      // Get the account ID from our access token.
+      const accountID: number = (accessToken as any).id;
+
+      // Get the input from our request body.
+      const input: unknown = request.body;
+
+      // Validate that the input from our request body is correct. If the input
+      // is not correct then throw an API error.
+      if (!schema.input.validate(input)) {
+        throw new APIError(APIErrorCode.BAD_INPUT);
+      }
+
+      // Provides a database to our API method definition.
+      withDatabase(database => {
+        return definition(new Context({accountID, database}), input);
+      }).then(
+        output => {
+          // Construct the successful result of an API request.
+          const result: APIResult<Output> = {
+            ok: true,
+            data: output,
+          };
+          // Send the successful result to our client.
+          response.status(200).json(result);
+        },
+
+        // If the method failed then forward to our Express error handler!
+        error => next(error),
+      );
+    });
+  });
+}
+
+/**
  * Initializes the server with a method that does not need authorization.
  */
 function initializeServerMethodUnauthorized<
@@ -108,7 +211,7 @@ function initializeServerMethodUnauthorized<
   // will call the appropriate function.
   APIServer.post(apiPath, (request, response, next) => {
     // Get the input from our request body.
-    const input = request.body;
+    const input: unknown = request.body;
 
     // Validate that the input from our request body is correct. If the input
     // is not correct then throw an API error.
@@ -205,6 +308,8 @@ type Server<
   Schema extends SchemaBase
 > = Schema extends SchemaNamespace<infer Schemas> // prettier-ignore
   ? ServerNamespace<Schemas>
+  : Schema extends SchemaMethod<infer Input, infer Output>
+  ? ServerMethod<Input, Output>
   : Schema extends SchemaMethodUnauthorized<infer Input, infer Output>
   ? ServerMethodUnauthorized<Input, Output>
   : never;
@@ -215,6 +320,15 @@ type Server<
 type ServerNamespace<Schemas extends {readonly [key: string]: SchemaBase}> = {
   readonly [Key in keyof Schemas]: Server<Schemas[Key]>
 };
+
+/**
+ * The type of a server-side definition for an authorized method. It takes the
+ * method input and some authorized context.
+ */
+type ServerMethod<Input, Output> = (
+  ctx: Context,
+  input: Input,
+) => Promise<Output>;
 
 /**
  * The type of a server-side definition for an unauthorized method. It takes the

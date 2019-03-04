@@ -84,5 +84,17 @@ export const APISchema = Schema.namespace({
         readonly accessToken: string;
       }>(),
     }),
+
+    /**
+     * Gets basic information about the current account’s profile. Takes no
+     * input because we use the authorization context to determine the
+     * current profile.
+     */
+    getCurrentProfile: Schema.method({
+      input: {},
+      output: SchemaOutput.t<{
+        readonly displayName: string;
+      }>(),
+    }),
   }),
 });

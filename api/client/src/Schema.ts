@@ -21,6 +21,32 @@ export const Schema = {
   },
 
   /**
+   * Creates a new schema method which requires authorization. A method
+   * is the bread and butter of our RPC API as executing a method with the API
+   * client will, in fact, call the method on the API server and return
+   * the result.
+   */
+  method<
+    Inputs extends {readonly [key: string]: SchemaInput<JSONValue>},
+    Output extends JSONObjectValue
+  >({
+    input,
+    output,
+  }: {
+    input: Inputs;
+    output: SchemaOutput<Output>;
+  }): SchemaMethod<
+    {readonly [Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>},
+    Output
+  > {
+    return {
+      kind: SchemaKind.METHOD,
+      input: SchemaInput.object(input),
+      output,
+    };
+  },
+
+  /**
    * Creates a new schema method which does not require authorization. A method
    * is the bread and butter of our RPC API as executing a method with the API
    * client will, in fact, call the method on the API server and return
@@ -56,6 +82,7 @@ export const Schema = {
  */
 export type SchemaBase =
   | SchemaNamespace<{readonly [key: string]: SchemaBase}>
+  | SchemaMethod<JSONObjectValue, JSONObjectValue>
   | SchemaMethodUnauthorized<JSONObjectValue, JSONObjectValue>;
 
 /**
@@ -63,6 +90,7 @@ export type SchemaBase =
  */
 export enum SchemaKind {
   NAMESPACE,
+  METHOD,
   METHOD_UNAUTHORIZED,
 }
 
@@ -78,8 +106,22 @@ export type SchemaNamespace<
 };
 
 /**
- * A schema method will execute a method with its typed input against our
+ * A schema method will execute a function with its typed input against our
  * API server.
+ */
+export type SchemaMethod<
+  Input extends JSONObjectValue,
+  Output extends JSONObjectValue
+> = {
+  readonly kind: SchemaKind.METHOD;
+  readonly input: SchemaInput<Input>;
+  readonly output: SchemaOutput<Output>;
+};
+
+/**
+ * A schema method will execute a function with its typed input against our
+ * API server. An unauthorized method does not need an account to be signed in
+ * to run.
  */
 export type SchemaMethodUnauthorized<
   Input extends JSONObjectValue,
