@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useRef} from "react";
 import {View, StyleSheet, Platform, Text} from "react-native";
 import Router from "next/router";
 import {APIError, APIErrorCode} from "@connect/api-client";
@@ -19,8 +19,8 @@ import {displayErrorMessage} from "./ErrorMessage";
 
 export function SignIn() {
   // Text input refs.
-  const emailInput = React.createRef<TextInputInstance>();
-  const passwordInput = React.createRef<TextInputInstance>();
+  const emailInput = useRef<TextInputInstance | null>(null);
+  const passwordInput = useRef<TextInputInstance | null>(null);
 
   // Input state.
   const [email, setEmail] = useState("");
@@ -53,6 +53,10 @@ export function SignIn() {
     // We have now attempted to sign in!
     setAttempted(true);
 
+    // Reset server errors.
+    setEmailServerError(undefined);
+    setPasswordServerError(undefined);
+
     // Check client side errors. If we have any then focus the associated input.
     // Force the user to fix their errors before continuing.
     if (emailError) {
@@ -60,7 +64,11 @@ export function SignIn() {
       return;
     }
     if (passwordError) {
-      if (passwordInput.current) passwordInput.current.focus();
+      // We can’t re-focus an element immediately after it is blurred, so wait a
+      // tick before re-focusing the element.
+      setImmediate(() => {
+        if (passwordInput.current) passwordInput.current.focus();
+      });
       return;
     }
 
@@ -73,10 +81,6 @@ export function SignIn() {
       // If we got an error then resolve with that error instead of rejecting.
       .then(() => undefined, error => error)
       .then(error => {
-        // Reset server errors.
-        setEmailServerError(undefined);
-        setPasswordServerError(undefined);
-
         if (error === undefined) {
           // TODO
         } else {

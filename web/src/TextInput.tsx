@@ -1,4 +1,4 @@
-import React, {useImperativeHandle} from "react";
+import React, {useImperativeHandle, useRef} from "react";
 import {
   View,
   Text,
@@ -30,16 +30,20 @@ function TextInput(
   {label, errorMessage, ...textInputProps}: TextInputProps,
   ref: React.Ref<TextInputInstance>,
 ) {
-  const inputRef = React.createRef<NativeTextInput>();
+  const inputRef = useRef<NativeTextInput | null>(null);
 
   // If focus is called on a ref of ours then focus our underlying text input.
-  useImperativeHandle(ref, () => ({
-    focus: () => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-    },
-  }));
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      },
+    }),
+    [],
+  );
 
   return (
     <View style={styles.container} accessibilityRole={"label" as any}>
