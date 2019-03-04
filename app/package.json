@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "name": "@connect/app",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@connect/api-client": "0.0.0"
+  }
+}

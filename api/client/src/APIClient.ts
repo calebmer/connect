@@ -9,6 +9,11 @@ import {
 import {APIError, APIResult} from "./APIError";
 import {APISchema} from "./APISchema";
 
+/**
+ * The type of an API client.
+ */
+export type APIClient = Client<typeof APISchema>;
+
 export const APIClient = {
   /**
    * Creates an API client. Allows us to execute requests against our
@@ -17,7 +22,7 @@ export const APIClient = {
    * Thanks to TypeScript being awesome we gets documentation, jump to
    * definition, and find references from `APISchema` all for free!
    */
-  create(config: APIClientConfig): Client<typeof APISchema> {
+  create(config: APIClientConfig): APIClient {
     return createClient(config, [], APISchema) as any;
   },
 };

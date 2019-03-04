@@ -4,6 +4,7 @@
   "workspaces": [
     "api/client",
     "api/server",
+    "app",
     "db",
     "native",
     "web"
