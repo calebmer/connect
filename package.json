@@ -5,6 +5,7 @@
     "api/client",
     "api/server",
     "db",
+    "native",
     "web"
   ],
   "scripts": {
