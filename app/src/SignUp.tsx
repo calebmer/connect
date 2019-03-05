@@ -7,14 +7,13 @@ import {
   TitleText,
   BodyText,
   Button,
-  Color,
-  Border,
   MetaText,
   MetaLinkText,
   TextLink,
 } from "./atoms";
 import {TextInput, TextInputInstance} from "./TextInput";
 import {displayErrorMessage} from "./ErrorMessage";
+import {SignUpLayout} from "./SignUpLayout";
 
 export function SignUp() {
   // References to text inputs.
@@ -83,9 +82,9 @@ export function SignUp() {
     if (passwordError) {
       // We can’t re-focus an element immediately after it is blurred, so wait a
       // tick before re-focusing the element.
-      setImmediate(() => {
+      setTimeout(() => {
         if (passwordInput.current) passwordInput.current.focus();
-      });
+      }, 5);
       return;
     }
 
@@ -118,90 +117,86 @@ export function SignUp() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <View style={styles.title}>
-          <TitleText>Sign Up</TitleText>
-        </View>
-        <View style={styles.subtitle}>
-          <BodyText>
-            What would you like to be called? Your first name is fine.
-          </BodyText>
-        </View>
-        <TextInput
-          ref={displayNameInput}
-          value={displayName}
-          onChangeText={setDisplayName}
-          label="Name"
-          placeholder="Taylor"
-          errorMessage={
-            attempted ? displayNameServerError || displayNameError : undefined
+    <SignUpLayout>
+      <View style={styles.title}>
+        <TitleText>Sign Up</TitleText>
+      </View>
+      <View style={styles.subtitle}>
+        <BodyText>
+          What would you like to be called? Your first name is fine.
+        </BodyText>
+      </View>
+      <TextInput
+        ref={displayNameInput}
+        value={displayName}
+        onChangeText={setDisplayName}
+        label="Name"
+        placeholder="Taylor"
+        errorMessage={
+          attempted ? displayNameServerError || displayNameError : undefined
+        }
+        autoFocus={true}
+        autoCapitalize="words"
+        autoComplete="given-name"
+        textContentType="givenName"
+        returnKeyType="next"
+        onSubmitEditing={() => {
+          if (emailInput.current) {
+            emailInput.current.focus();
           }
-          autoFocus={true}
-          autoCapitalize="words"
-          autoComplete="given-name"
-          textContentType="givenName"
+        }}
+      />
+      <View style={styles.input}>
+        <TextInput
+          ref={emailInput}
+          value={email}
+          onChangeText={setEmail}
+          label="Email"
+          placeholder="taylor@example.com"
+          errorMessage={attempted ? emailServerError || emailError : undefined}
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+          textContentType="emailAddress"
           returnKeyType="next"
           onSubmitEditing={() => {
-            if (emailInput.current) {
-              emailInput.current.focus();
+            if (passwordInput.current) {
+              passwordInput.current.focus();
             }
           }}
         />
-        <View style={styles.input}>
-          <TextInput
-            ref={emailInput}
-            value={email}
-            onChangeText={setEmail}
-            label="Email"
-            placeholder="taylor@example.com"
-            errorMessage={
-              attempted ? emailServerError || emailError : undefined
-            }
-            autoCapitalize="none"
-            autoComplete="email"
-            keyboardType="email-address"
-            textContentType="emailAddress"
-            returnKeyType="next"
-            onSubmitEditing={() => {
-              if (passwordInput.current) {
-                passwordInput.current.focus();
-              }
-            }}
-          />
-        </View>
-        <View style={styles.input}>
-          <TextInput
-            ref={passwordInput}
-            value={password}
-            onChangeText={setPassword}
-            label="Password"
-            placeholder={passwordPlaceholder}
-            errorMessage={
-              attempted ? passwordServerError || passwordError : undefined
-            }
-            secureTextEntry={true}
-            autoCapitalize="none"
-            autoComplete={Platform.OS === "web" ? "new-password" : "password"}
-            selectTextOnFocus={true}
-            textContentType="newPassword"
-            returnKeyType="go"
-            onSubmitEditing={handleSignUp}
-          />
-        </View>
-        <View style={styles.input}>
-          <Button label="Sign Up" onPress={handleSignUp} />
-        </View>
-        <Text style={styles.meta}>
-          <MetaText>
-            Already have an account?{" "}
-            <TextLink onPress={() => console.log("TODO")}>
-              <MetaLinkText>Sign in.</MetaLinkText>
-            </TextLink>
-          </MetaText>
-        </Text>
       </View>
-    </View>
+      <View style={styles.input}>
+        <TextInput
+          ref={passwordInput}
+          value={password}
+          onChangeText={setPassword}
+          label="Password"
+          placeholder={passwordPlaceholder}
+          errorMessage={
+            attempted ? passwordServerError || passwordError : undefined
+          }
+          secureTextEntry={true}
+          autoCapitalize="none"
+          autoComplete={Platform.OS === "web" ? "new-password" : "password"}
+          selectTextOnFocus={true}
+          textContentType="newPassword"
+          returnKeyType="go"
+          onSubmitEditing={handleSignUp}
+        />
+      </View>
+      <View style={styles.input}>
+        <Button label="Sign Up" onPress={handleSignUp} />
+      </View>
+      <Text style={styles.meta}>
+        <MetaText>
+          Already have an account?{" "}
+          <TextLink onPress={() => console.log("TODO")}>
+            <MetaLinkText>Sign in.</MetaLinkText>
+          </TextLink>
+        </MetaText>
+      </Text>
+    </SignUpLayout>
   );
 }
 
@@ -221,19 +216,6 @@ const passwordPlaceholder = Array(32)
   .join("\u200A");
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    backgroundColor: Color.white,
-    borderTopWidth: Border.width3,
-    borderTopColor: Color.yellow4,
-  },
-  card: {
-    padding: Space.space5,
-    paddingTop: Space.space7,
-    width: "100%",
-    maxWidth: Space.space14,
-  },
   title: {
     paddingBottom: Space.space1,
   },

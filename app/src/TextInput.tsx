@@ -51,18 +51,22 @@ function TextInput(
       style={styles.container}
       accessibilityRole={Platform.OS === "web" ? ("label" as any) : undefined}
     >
-      <Text style={styles.label} selectable={false}>
-        {label}
-      </Text>
       <NativeTextInput
         {...textInputProps}
         ref={inputRef}
         style={styles.input}
         placeholderTextColor={Color.grey2}
       />
+      <Text
+        style={styles.label}
+        selectable={false}
+        onPress={() => inputRef.current && inputRef.current.focus()}
+      >
+        {label}
+      </Text>
       {errorMessage && (
         <View style={styles.error}>
-          <ErrorIcon />
+          {/* <ErrorIcon /> */}
           <Text style={styles.errorText}>{errorMessage}</Text>
         </View>
       )}
@@ -70,20 +74,20 @@ function TextInput(
   );
 }
 
-function ErrorIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      version="1.1"
-      width={Space.space1}
-      height={Space.space1}
-      fill={Color.red5}
-      viewBox="0 0 16 16"
-    >
-      <path d="M3 .156l-2.844 2.844 1.438 1.406 3.594 3.594-3.594 3.594-1.438 1.406 2.844 2.844 1.406-1.438 3.594-3.594 3.594 3.594 1.406 1.438 2.844-2.844-1.438-1.406-3.594-3.594 3.594-3.594 1.438-1.406-2.844-2.844-1.406 1.438-3.594 3.594-3.594-3.594-1.406-1.438z" />
-    </svg>
-  );
-}
+// function ErrorIcon() {
+//   return (
+//     <svg
+//       xmlns="http://www.w3.org/2000/svg"
+//       version="1.1"
+//       width={Space.space1}
+//       height={Space.space1}
+//       fill={Color.red5}
+//       viewBox="0 0 16 16"
+//     >
+//       <path d="M3 .156l-2.844 2.844 1.438 1.406 3.594 3.594-3.594 3.594-1.438 1.406 2.844 2.844 1.406-1.438 3.594-3.594 3.594 3.594 1.406 1.438 2.844-2.844-1.438-1.406-3.594-3.594 3.594-3.594 1.438-1.406-2.844-2.844-1.406 1.438-3.594 3.594-3.594-3.594-1.406-1.438z" />
+//     </svg>
+//   );
+// }
 
 export type TextInputInstance = {
   readonly focus: () => void;
@@ -111,11 +115,12 @@ const styles = StyleSheet.create({
     maxWidth: Space.space14,
     backgroundColor: Color.grey0,
     borderColor: Color.grey1,
-    borderWidth: Border.width0,
-    borderRadius: Border.radius0,
+    borderWidth: Border.width1,
+    borderRadius: Border.radius1,
     color: Color.black,
     ...Font.serif,
     ...Font.size2,
+    lineHeight: undefined,
   },
   error: {
     flexDirection: "row",

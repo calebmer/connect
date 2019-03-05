@@ -7,14 +7,13 @@ import {
   TitleText,
   BodyText,
   Button,
-  Color,
-  Border,
   MetaText,
   MetaLinkText,
   TextLink,
 } from "./atoms";
 import {TextInput, TextInputInstance} from "./TextInput";
 import {displayErrorMessage} from "./ErrorMessage";
+import {SignUpLayout} from "./SignUpLayout";
 
 export function SignIn() {
   // Text input refs.
@@ -65,9 +64,9 @@ export function SignIn() {
     if (passwordError) {
       // We can’t re-focus an element immediately after it is blurred, so wait a
       // tick before re-focusing the element.
-      setImmediate(() => {
+      setTimeout(() => {
         if (passwordInput.current) passwordInput.current.focus();
-      });
+      }, 5);
       return;
     }
 
@@ -99,68 +98,64 @@ export function SignIn() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <View style={styles.title}>
-          <TitleText>Sign In</TitleText>
-        </View>
-        <View style={styles.subtitle}>
-          <BodyText>Welcome back!</BodyText>
-        </View>
-        <TextInput
-          ref={emailInput}
-          value={email}
-          onChangeText={setEmail}
-          label="Email"
-          placeholder="taylor@example.com"
-          errorMessage={attempted ? emailServerError || emailError : undefined}
-          autoFocus={true}
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
-          selectTextOnFocus={true}
-          textContentType="emailAddress"
-          returnKeyType="next"
-          onSubmitEditing={() => {
-            if (passwordInput.current) {
-              passwordInput.current.focus();
-            }
-          }}
-        />
-        <View style={styles.input}>
-          <TextInput
-            ref={passwordInput}
-            value={password}
-            onChangeText={setPassword}
-            label="Password"
-            placeholder={passwordPlaceholder}
-            errorMessage={
-              attempted ? passwordServerError || passwordError : undefined
-            }
-            secureTextEntry={true}
-            autoCapitalize="none"
-            autoComplete={
-              Platform.OS === "web" ? "current-password" : "password"
-            }
-            selectTextOnFocus={true}
-            textContentType="password"
-            returnKeyType="go"
-            onSubmitEditing={handleSignIn}
-          />
-        </View>
-        <View style={styles.input}>
-          <Button label="Sign In" onPress={handleSignIn} />
-        </View>
-        <Text style={styles.meta}>
-          <MetaText>
-            Don’t have an account?{" "}
-            <TextLink onPress={() => console.log("TODO")}>
-              <MetaLinkText>Sign up.</MetaLinkText>
-            </TextLink>
-          </MetaText>
-        </Text>
+    <SignUpLayout>
+      <View style={styles.title}>
+        <TitleText>Sign In</TitleText>
       </View>
-    </View>
+      <View style={styles.subtitle}>
+        <BodyText>Welcome back!</BodyText>
+      </View>
+      <TextInput
+        ref={emailInput}
+        value={email}
+        onChangeText={setEmail}
+        label="Email"
+        placeholder="taylor@example.com"
+        errorMessage={attempted ? emailServerError || emailError : undefined}
+        autoFocus={true}
+        autoCapitalize="none"
+        autoComplete="email"
+        keyboardType="email-address"
+        selectTextOnFocus={true}
+        textContentType="emailAddress"
+        returnKeyType="next"
+        onSubmitEditing={() => {
+          if (passwordInput.current) {
+            passwordInput.current.focus();
+          }
+        }}
+      />
+      <View style={styles.input}>
+        <TextInput
+          ref={passwordInput}
+          value={password}
+          onChangeText={setPassword}
+          label="Password"
+          placeholder={passwordPlaceholder}
+          errorMessage={
+            attempted ? passwordServerError || passwordError : undefined
+          }
+          secureTextEntry={true}
+          autoCapitalize="none"
+          autoComplete={Platform.OS === "web" ? "current-password" : "password"}
+          selectTextOnFocus={true}
+          textContentType="password"
+          returnKeyType="go"
+          onSubmitEditing={handleSignIn}
+        />
+      </View>
+      <View style={styles.input}>
+        <Button label="Sign In" onPress={handleSignIn} />
+      </View>
+      <Text style={styles.meta}>
+        <MetaText>
+          Don’t have an account?{" "}
+          <TextLink onPress={() => console.log("TODO")}>
+            <MetaLinkText>Sign up.</MetaLinkText>
+          </TextLink>
+        </MetaText>
+      </Text>
+    </SignUpLayout>
   );
 }
 
@@ -180,19 +175,6 @@ const passwordPlaceholder = Array(32)
   .join("\u200A");
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    backgroundColor: Color.white,
-    borderTopWidth: Border.width3,
-    borderTopColor: Color.yellow4,
-  },
-  card: {
-    padding: Space.space5,
-    paddingTop: Space.space7,
-    width: "100%",
-    maxWidth: Space.space14,
-  },
   title: {
     paddingBottom: Space.space1,
   },
