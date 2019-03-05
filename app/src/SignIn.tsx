@@ -1,19 +1,19 @@
-import React, {useState, useRef} from "react";
-import {View, StyleSheet, Platform} from "react-native";
 import {APIError, APIErrorCode} from "@connect/api-client";
-import {API} from "./API";
 import {
-  Space,
-  TitleText,
   BodyText,
   Button,
-  MetaText,
   MetaLinkText,
+  MetaText,
+  Space,
   TextLink,
+  TitleText,
 } from "./atoms";
+import {Platform, StyleSheet, View} from "react-native";
+import React, {useRef, useState} from "react";
 import {TextInput, TextInputInstance} from "./TextInput";
-import {displayErrorMessage} from "./ErrorMessage";
+import {API} from "./API";
 import {SignUpLayout} from "./SignUpLayout";
+import {displayErrorMessage} from "./ErrorMessage";
 
 export function SignIn() {
   // Text input refs.

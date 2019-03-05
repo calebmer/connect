@@ -1,5 +1,5 @@
+import {Platform, TouchableOpacity} from "react-native";
 import React, {ReactNode} from "react";
-import {TouchableOpacity, Platform} from "react-native";
 
 const hitSlop = {
   top: 5,

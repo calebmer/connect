@@ -1,6 +1,6 @@
+import {Border, Color, Space} from "./atoms";
+import {Platform, SafeAreaView, StyleSheet, View} from "react-native";
 import React, {ReactNode} from "react";
-import {View, SafeAreaView, StyleSheet, Platform} from "react-native";
-import {Color, Border, Space} from "./atoms";
 
 export function SignUpLayout({children}: {children: ReactNode}) {
   if (Platform.OS === "ios") {

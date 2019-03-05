@@ -1,13 +1,13 @@
-import {JSONObjectValue} from "./JSONValue";
+import {APIError, APIResult} from "./APIError";
 import {
   SchemaBase,
   SchemaKind,
-  SchemaNamespace,
   SchemaMethod,
   SchemaMethodUnauthorized,
+  SchemaNamespace,
 } from "./Schema";
-import {APIError, APIResult} from "./APIError";
 import {APISchema} from "./APISchema";
+import {JSONObjectValue} from "./JSONValue";
 
 /**
  * The type of an API client.

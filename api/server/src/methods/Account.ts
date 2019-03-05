@@ -1,9 +1,9 @@
-import bcrypt from "bcrypt";
-import uuidV4 from "uuid/v4";
-import jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
-import {JWT_SECRET} from "../RunConfig";
 import {Context, ContextUnauthorized} from "../Context";
+import {JWT_SECRET} from "../RunConfig";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import uuidV4 from "uuid/v4";
 
 /**
  * Balances speed and security for the bcrypt algorithm. See the

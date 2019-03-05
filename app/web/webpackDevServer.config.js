@@ -6,6 +6,7 @@
  */
 
 const path = require("path");
+
 const errorOverlayMiddleware = require("react-dev-utils/errorOverlayMiddleware");
 const evalSourceMapMiddleware = require("react-dev-utils/evalSourceMapMiddleware");
 

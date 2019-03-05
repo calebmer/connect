@@ -1,4 +1,4 @@
-import {JSONValue, JSONObjectValue} from "./JSONValue";
+import {JSONObjectValue, JSONValue} from "./JSONValue";
 import {SchemaInput, SchemaInputValue} from "./SchemaInput";
 import {SchemaOutput} from "./SchemaOutput";
 

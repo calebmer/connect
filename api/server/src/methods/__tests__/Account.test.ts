@@ -1,10 +1,10 @@
-import uuidV4 from "uuid/v4";
-import jwt from "jsonwebtoken";
 import {APIError, APIErrorCode} from "@connect/api-client";
-import {JWT_SECRET} from "../../RunConfig";
-import {withTestDatabase} from "../../Database";
+import {refreshAccessToken, signIn, signUp} from "../Account";
 import {ContextUnauthorized} from "../../Context";
-import {signUp, signIn, refreshAccessToken} from "../Account";
+import {JWT_SECRET} from "../../RunConfig";
+import jwt from "jsonwebtoken";
+import uuidV4 from "uuid/v4";
+import {withTestDatabase} from "../../Database";
 
 const testDisplayName = "Test";
 const testEmail = "test@example.com";

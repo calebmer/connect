@@ -55,6 +55,7 @@ module.exports = {
     "func-style": ["warn", "declaration"],
     "no-var": "warn",
     "prefer-const": ["warn", {destructuring: "all"}],
+    "sort-imports": "warn",
 
     "@typescript-eslint/adjacent-overload-signatures": "warn",
     "@typescript-eslint/array-type": ["warn", "generic"],
@@ -67,7 +68,6 @@ module.exports = {
     "@typescript-eslint/camelcase": ["warn", {properties: "never"}],
 
     "import/first": "warn",
-    "import/order": ["warn", {"newlines-between": "never"}],
     "import/newline-after-import": "warn",
     "import/no-extraneous-dependencies": "error",
 

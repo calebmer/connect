@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 const readline = require("readline");
+
 const chalk = require("chalk");
 const {Client} = require("pg");
 

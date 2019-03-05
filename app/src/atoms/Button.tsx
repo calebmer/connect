@@ -1,14 +1,14 @@
-import React, {useState} from "react";
-import {
-  TouchableWithoutFeedback,
-  Text,
-  StyleSheet,
-  Animated,
-} from "react-native";
+import * as Border from "./Border";
 import * as Color from "./Color";
 import * as Font from "./Font";
 import * as Space from "./Space";
-import * as Border from "./Border";
+import {
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+} from "react-native";
+import React, {useState} from "react";
 
 export function Button({
   label,

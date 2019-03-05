@@ -1,4 +1,4 @@
-import {Pool, ClientBase, Client} from "pg";
+import {Client, ClientBase, Pool} from "pg";
 
 /**
  * A database connection pool. Connecting a new client on every request would be

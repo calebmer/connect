@@ -1,14 +1,14 @@
-import React, {useImperativeHandle, useRef} from "react";
+import {Border, Color, Font, Space} from "./atoms";
 import {
-  View,
-  Text,
+  Image,
   TextInput as NativeTextInput,
   TextInputProps as NativeTextInputProps,
-  StyleSheet,
   Platform,
-  Image,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-import {Font, Color, Space, Border} from "./atoms";
+import React, {useImperativeHandle, useRef} from "react";
 
 interface TextInputProps extends NativeTextInputProps {
   /**

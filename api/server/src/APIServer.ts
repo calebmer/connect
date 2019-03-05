@@ -1,24 +1,24 @@
-import chalk from "chalk";
-import express from "express";
-import {Request, Response, NextFunction} from "express";
-import morgan from "morgan";
-import jwt from "jsonwebtoken";
+import * as _APIServerDefinition from "./methods";
 import {
+  APIError,
+  APIErrorCode,
+  APIResult,
+  APISchema,
   JSONObjectValue,
   SchemaBase,
   SchemaKind,
-  SchemaNamespace,
   SchemaMethod,
   SchemaMethodUnauthorized,
-  APIError,
-  APIErrorCode,
-  APISchema,
-  APIResult,
+  SchemaNamespace,
 } from "@connect/api-client";
-import {JWT_SECRET} from "./RunConfig";
-import {withDatabase} from "./Database";
 import {Context, ContextUnauthorized} from "./Context";
-import * as _APIServerDefinition from "./methods";
+import {NextFunction, Request, Response} from "express";
+import {JWT_SECRET} from "./RunConfig";
+import chalk from "chalk";
+import express from "express";
+import jwt from "jsonwebtoken";
+import morgan from "morgan";
+import {withDatabase} from "./Database";
 
 /**
  * The HTTP server for our API. Powered by Express.

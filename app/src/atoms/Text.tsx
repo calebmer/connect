@@ -1,7 +1,7 @@
-import React, {ReactNode} from "react";
-import {Text, StyleSheet, TextProps as NativeTextProps} from "react-native";
 import * as Color from "./Color";
 import * as Font from "./Font";
+import {TextProps as NativeTextProps, StyleSheet, Text} from "react-native";
+import React, {ReactNode} from "react";
 
 interface TextProps extends NativeTextProps {
   readonly children: ReactNode;

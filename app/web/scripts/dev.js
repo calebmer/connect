@@ -14,6 +14,7 @@ process.on("unhandledRejection", err => {
 const webpack = require("webpack");
 const WebpackDevServer = require("webpack-dev-server");
 const openBrowser = require("react-dev-utils/openBrowser");
+
 const webpackConfig = require("../webpack.config");
 const webpackDevServerConfig = require("../webpackDevServer.config");
 

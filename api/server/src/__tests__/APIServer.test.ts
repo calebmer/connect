@@ -11,13 +11,13 @@ jest.mock("../methods", () => ({
   },
 }));
 
+import * as methods from "../methods";
+import {APIErrorCode} from "@connect/api-client";
+import {APIServer} from "../APIServer";
+import {JWT_SECRET} from "../RunConfig";
 import {Server} from "http";
 import fetch from "node-fetch";
 import jwt from "jsonwebtoken";
-import {APIErrorCode} from "@connect/api-client";
-import {JWT_SECRET} from "../RunConfig";
-import {APIServer} from "../APIServer";
-import * as methods from "../methods";
 
 const signIn: jest.Mock<typeof methods.account.signIn> = methods.account
   .signIn as any;

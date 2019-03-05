@@ -1,5 +1,5 @@
-import chalk from "chalk";
 import {APIServer} from "./APIServer";
+import chalk from "chalk";
 
 // The port our API server will be listening on.
 const port = process.env.PORT || 4000;
