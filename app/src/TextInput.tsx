@@ -50,7 +50,11 @@ function TextInput(
   return (
     <View
       style={styles.container}
-      accessibilityRole={Platform.OS === "web" ? ("label" as any) : undefined}
+      accessibilityRole={
+        // On web, we can select the input through the label because of the
+        // native behavior of a `<label>` element.
+        Platform.OS === "web" ? ("label" as any) : undefined
+      }
     >
       <NativeTextInput
         {...textInputProps}
@@ -61,7 +65,13 @@ function TextInput(
       <Text
         style={styles.label}
         selectable={false}
-        onPress={() => inputRef.current && inputRef.current.focus()}
+        onPress={
+          // On other platforms we can select the input through the label by
+          // adding a press handler.
+          Platform.OS !== "web"
+            ? () => inputRef.current && inputRef.current.focus()
+            : undefined
+        }
       >
         {label}
       </Text>
@@ -105,7 +115,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.grey0,
     borderColor: Color.grey1,
     borderWidth: Border.width1,
-    borderRadius: Border.radius1,
+    borderRadius: Border.radius0,
     color: Color.black,
     ...Font.serif,
     ...Font.size2,
@@ -114,19 +124,18 @@ const styles = StyleSheet.create({
   error: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: Space.space1,
-    paddingLeft: Space.space1,
+    paddingVertical: Space.space1,
+    paddingHorizontal: Space.space0,
   },
   errorIcon: {
     width: Space.space1,
     height: Space.space1,
-    tintColor: Color.red5,
   },
   errorText: {
     paddingLeft: Space.space0,
     color: Color.red6,
     ...Font.sans,
     ...Font.size2,
-    lineHeight: Font.size2.fontSize,
+    lineHeight: undefined,
   },
 });

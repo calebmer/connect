@@ -1,39 +1,49 @@
+import {Platform} from "react-native";
+
+const fontSmoothing =
+  Platform.OS === "web"
+    ? {
+        WebkitFontSmoothing: "antialiased",
+        MozOsxFontSmoothing: "grayscale",
+      }
+    : {};
+
 // Font families and variations:
 export const serif = {
-  // fontFamily: "freight-text-pro, serif",
-  // fontFamily: "serif",
+  fontFamily: "'Merriweather', serif",
   fontWeight: "400" as "400",
   fontStyle: "normal" as "normal",
+  ...fontSmoothing,
 };
 export const serifBold = {
-  // fontFamily: "freight-text-pro, serif",
-  // fontFamily: "serif",
+  fontFamily: "'Merriweather', serif",
   fontWeight: "700" as "700",
   fontStyle: "normal" as "normal",
+  ...fontSmoothing,
 };
 export const serifItalic = {
-  // fontFamily: "freight-text-pro, serif",
-  // fontFamily: "serif",
+  fontFamily: "'Merriweather', serif",
   fontWeight: "400" as "400",
   fontStyle: "italic" as "italic",
+  ...fontSmoothing,
 };
 export const serifBoldItalic = {
-  // fontFamily: "freight-text-pro, serif",
-  // fontFamily: "serif",
+  fontFamily: "'Merriweather', serif",
   fontWeight: "700" as "700",
   fontStyle: "italic" as "italic",
+  ...fontSmoothing,
 };
 export const sans = {
-  // fontFamily: "freight-sans-pro, sans-serif",
-  // fontFamily: "sans-serif",
+  fontFamily: "'Work Sans', sans-serif",
   fontWeight: "400" as "400",
   fontStyle: "normal" as "normal",
+  ...fontSmoothing,
 };
 export const sansBold = {
-  // fontFamily: "freight-sans-pro, sans-serif",
-  // fontFamily: "sans-serif",
+  fontFamily: "'Work Sans', sans-serif",
   fontWeight: "700" as "700",
   fontStyle: "normal" as "normal",
+  ...fontSmoothing,
 };
 
 // Type size scale:

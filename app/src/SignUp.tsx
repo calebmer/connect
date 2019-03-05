@@ -204,19 +204,17 @@ export function SignUp() {
 }
 
 /**
- * 32 [bullets][1] with [hair spaces][2] in between since no space looks too
- * tight. While secure text entry is rendered differently across browsers, the
- * theme is usually the same.
+ * 32 [bullets][1]. While secure text entry is rendered differently across
+ * browsers, the theme is usually the same.
  *
  * We encourage a long password by using 32 characters. Also a power of 2. Yay
  * powers of 2!
  *
  * [1]: https://graphemica.com/2022
- * [2]: https://graphemica.com/200A
  */
 const passwordPlaceholder = Array(32)
   .fill("\u2022")
-  .join("\u200A");
+  .join("");
 
 const styles = StyleSheet.create({
   title: {
