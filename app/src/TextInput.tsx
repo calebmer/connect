@@ -6,6 +6,7 @@ import {
   TextInputProps as NativeTextInputProps,
   StyleSheet,
   Platform,
+  Image,
 } from "react-native";
 import {Font, Color, Space, Border} from "./atoms";
 
@@ -66,28 +67,16 @@ function TextInput(
       </Text>
       {errorMessage && (
         <View style={styles.error}>
-          {/* <ErrorIcon /> */}
+          <Image
+            style={styles.errorIcon}
+            source={require("../assets/icons/x-sm.png")}
+          />
           <Text style={styles.errorText}>{errorMessage}</Text>
         </View>
       )}
     </View>
   );
 }
-
-// function ErrorIcon() {
-//   return (
-//     <svg
-//       xmlns="http://www.w3.org/2000/svg"
-//       version="1.1"
-//       width={Space.space1}
-//       height={Space.space1}
-//       fill={Color.red5}
-//       viewBox="0 0 16 16"
-//     >
-//       <path d="M3 .156l-2.844 2.844 1.438 1.406 3.594 3.594-3.594 3.594-1.438 1.406 2.844 2.844 1.406-1.438 3.594-3.594 3.594 3.594 1.406 1.438 2.844-2.844-1.438-1.406-3.594-3.594 3.594-3.594 1.438-1.406-2.844-2.844-1.406 1.438-3.594 3.594-3.594-3.594-1.406-1.438z" />
-//     </svg>
-//   );
-// }
 
 export type TextInputInstance = {
   readonly focus: () => void;
@@ -125,8 +114,13 @@ const styles = StyleSheet.create({
   error: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: Space.space0,
-    paddingLeft: Space.space0,
+    paddingTop: Space.space1,
+    paddingLeft: Space.space1,
+  },
+  errorIcon: {
+    width: Space.space1,
+    height: Space.space1,
+    tintColor: Color.red5,
   },
   errorText: {
     paddingLeft: Space.space0,
