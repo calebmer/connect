@@ -114,6 +114,7 @@ export function SignIn() {
         errorMessage={attempted ? emailServerError || emailError : undefined}
         autoCapitalize="none"
         autoComplete="email"
+        autoCorrect={false}
         keyboardType="email-address"
         selectTextOnFocus={true}
         textContentType="emailAddress"

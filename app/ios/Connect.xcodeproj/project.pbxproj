@@ -37,6 +37,12 @@
 		2DCD954D1E0B4F2C00145EB5 /* ConnectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* ConnectTests.m */; };
 		2DF0FFEE2056DD460020B375 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DAD3EA31DF850E9000B6D8A /* libReact.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
+		AD36D9FE222F113B00FA4E60 /* WorkSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD36D9FA222F113B00FA4E60 /* WorkSans-Bold.ttf */; };
+		AD36DA00222F113B00FA4E60 /* WorkSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD36D9FC222F113B00FA4E60 /* WorkSans-Regular.ttf */; };
+		AD36DA05222F123A00FA4E60 /* Merriweather-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD36DA01222F123A00FA4E60 /* Merriweather-Bold.ttf */; };
+		AD36DA06222F123A00FA4E60 /* Merriweather-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD36DA02222F123A00FA4E60 /* Merriweather-Italic.ttf */; };
+		AD36DA07222F123A00FA4E60 /* Merriweather-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD36DA03222F123A00FA4E60 /* Merriweather-BoldItalic.ttf */; };
+		AD36DA08222F123A00FA4E60 /* Merriweather-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD36DA04222F123A00FA4E60 /* Merriweather-Regular.ttf */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
 		ADD566B1222E21DA00944552 /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADD566AE222E21CF00944552 /* libReactNativeNavigation.a */; };
 		ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
@@ -359,6 +365,12 @@
 		5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTAnimation.xcodeproj; path = "../node_modules/react-native/Libraries/NativeAnimation/RCTAnimation.xcodeproj"; sourceTree = "<group>"; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
+		AD36D9FA222F113B00FA4E60 /* WorkSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "WorkSans-Bold.ttf"; path = "../../src/assets/fonts/WorkSans-Bold.ttf"; sourceTree = "<group>"; };
+		AD36D9FC222F113B00FA4E60 /* WorkSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "WorkSans-Regular.ttf"; path = "../../src/assets/fonts/WorkSans-Regular.ttf"; sourceTree = "<group>"; };
+		AD36DA01222F123A00FA4E60 /* Merriweather-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Merriweather-Bold.ttf"; path = "../../src/assets/fonts/Merriweather-Bold.ttf"; sourceTree = "<group>"; };
+		AD36DA02222F123A00FA4E60 /* Merriweather-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Merriweather-Italic.ttf"; path = "../../src/assets/fonts/Merriweather-Italic.ttf"; sourceTree = "<group>"; };
+		AD36DA03222F123A00FA4E60 /* Merriweather-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Merriweather-BoldItalic.ttf"; path = "../../src/assets/fonts/Merriweather-BoldItalic.ttf"; sourceTree = "<group>"; };
+		AD36DA04222F123A00FA4E60 /* Merriweather-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Merriweather-Regular.ttf"; path = "../../src/assets/fonts/Merriweather-Regular.ttf"; sourceTree = "<group>"; };
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
 		ADD566A8222E21CF00944552 /* ReactNativeNavigation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativeNavigation.xcodeproj; path = "../node_modules/react-native-navigation/lib/ios/ReactNativeNavigation.xcodeproj"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -599,6 +611,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07FAE1A68108700A75B9A /* Connect */,
+				AD36D9D1222F10FB00FA4E60 /* Resources */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* ConnectTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
@@ -618,6 +631,19 @@
 				2D02E4901E0B4A5D006451C7 /* Connect-tvOSTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AD36D9D1222F10FB00FA4E60 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AD36DA01222F123A00FA4E60 /* Merriweather-Bold.ttf */,
+				AD36DA03222F123A00FA4E60 /* Merriweather-BoldItalic.ttf */,
+				AD36DA02222F123A00FA4E60 /* Merriweather-Italic.ttf */,
+				AD36DA04222F123A00FA4E60 /* Merriweather-Regular.ttf */,
+				AD36D9FA222F113B00FA4E60 /* WorkSans-Bold.ttf */,
+				AD36D9FC222F113B00FA4E60 /* WorkSans-Regular.ttf */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		ADBDB9201DFEBF0600ED6528 /* Products */ = {
@@ -1101,7 +1127,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				AD36DA06222F123A00FA4E60 /* Merriweather-Italic.ttf in Resources */,
+				AD36DA08222F123A00FA4E60 /* Merriweather-Regular.ttf in Resources */,
+				AD36DA00222F113B00FA4E60 /* WorkSans-Regular.ttf in Resources */,
+				AD36DA05222F123A00FA4E60 /* Merriweather-Bold.ttf in Resources */,
+				AD36DA07222F123A00FA4E60 /* Merriweather-BoldItalic.ttf in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
+				AD36D9FE222F113B00FA4E60 /* WorkSans-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
