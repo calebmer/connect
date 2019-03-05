@@ -1,13 +1,19 @@
 import {Navigation} from "react-native-navigation";
-import {App} from "./App";
+import {SignIn} from "./SignIn";
+import {SignUp} from "./SignUp";
 
-Navigation.registerComponent("navigation.playground.WelcomeScreen", () => App);
+Navigation.registerComponent("connect.SignIn", () => SignIn);
+Navigation.registerComponent("connect.SignUp", () => SignUp);
 
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({
     root: {
-      component: {
-        name: "navigation.playground.WelcomeScreen",
+      stack: {
+        options: {
+          // There should be no top bar when the user is signing in.
+          topBar: {visible: false},
+        },
+        children: [{component: {name: "connect.SignIn"}}],
       },
     },
   });
