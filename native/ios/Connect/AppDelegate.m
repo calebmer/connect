@@ -10,33 +10,22 @@
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
+#import <ReactNativeNavigation/ReactNativeNavigation.h>
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
-  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
-                                                   moduleName:@"Connect"
-                                            initialProperties:nil];
+  #if DEBUG
+    NSURL *jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"native/index" fallbackResource:nil];
+  #else
+    NSURL *jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  #endif
 
-  rootView.backgroundColor = [[UIColor alloc] initWithRed:1.0f green:1.0f blue:1.0f alpha:1];
+  [ReactNativeNavigation bootstrap:jsCodeLocation launchOptions:launchOptions];
 
-  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-  UIViewController *rootViewController = [UIViewController new];
-  rootViewController.view = rootView;
-  self.window.rootViewController = rootViewController;
-  [self.window makeKeyAndVisible];
   return YES;
 }
 
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-{
-#if DEBUG
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"native/index" fallbackResource:nil];
-#else
-  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
-#endif
-}
 
 @end

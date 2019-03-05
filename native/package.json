@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "workspaces": {
     "nohoist": [
-      "react-native"
+      "react-native",
+      "react-native-navigation"
     ]
   },
   "scripts": {
@@ -14,7 +15,8 @@
   "dependencies": {
     "@connect/app": "0.0.0",
     "react": "16.8.3",
-    "react-native": "0.59.0-rc.3"
+    "react-native": "0.59.0-rc.3",
+    "react-native-navigation": "^2.13.1"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
