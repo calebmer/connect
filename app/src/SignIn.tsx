@@ -112,7 +112,6 @@ export function SignIn() {
         label="Email"
         placeholder="taylor@example.com"
         errorMessage={attempted ? emailServerError || emailError : undefined}
-        autoFocus={true}
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"
@@ -124,6 +123,12 @@ export function SignIn() {
             passwordInput.current.focus();
           }
         }}
+        // Only auto-focus on web because on mobile the keyboard will cover up
+        // the sign-up/sign-in link at the bottom of the screen.
+        //
+        // Since we don’t have any other means of navigation at this point in
+        // the app, auto-focusing is pretty inconvenient.
+        autoFocus={Platform.OS === "web"}
       />
       <View style={styles.input}>
         <TextInput

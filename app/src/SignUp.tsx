@@ -135,7 +135,6 @@ export function SignUp() {
         errorMessage={
           attempted ? displayNameServerError || displayNameError : undefined
         }
-        autoFocus={true}
         autoCapitalize="words"
         autoComplete="given-name"
         textContentType="givenName"
@@ -145,6 +144,12 @@ export function SignUp() {
             emailInput.current.focus();
           }
         }}
+        // Only auto-focus on web because on mobile the keyboard will cover up
+        // the sign-up/sign-in link at the bottom of the screen.
+        //
+        // Since we don’t have any other means of navigation at this point in
+        // the app, auto-focusing is pretty inconvenient.
+        autoFocus={Platform.OS === "web"}
       />
       <View style={styles.input}>
         <TextInput
