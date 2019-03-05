@@ -1,7 +1,7 @@
 import React, {useState, useRef} from "react";
-import {View, StyleSheet, Platform, Text} from "react-native";
+import {View, StyleSheet, Platform} from "react-native";
 import {APIError, APIErrorCode} from "@connect/api-client";
-import {API} from "./api";
+import {API} from "./API";
 import {
   Space,
   TitleText,
