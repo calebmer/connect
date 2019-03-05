@@ -1,14 +1,26 @@
 {
   "private": true,
-  "name": "@connect/app",
+  "name": "@connect/native",
   "version": "0.0.0",
-  "license": "UNLICENSED",
-  "main": "src/index.ts",
+  "workspaces": {
+    "nohoist": [
+      "react-native",
+      "react-native-navigation"
+    ]
+  },
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start"
+  },
   "dependencies": {
     "@connect/api-client": "0.0.0",
-    "react": "^16.8.3"
+    "react": "16.8.3",
+    "react-native": "0.59.0-rc.3",
+    "react-native-navigation": "^2.13.1"
   },
   "devDependencies": {
-    "@types/react": "^16.8.6"
+    "@babel/core": "^7.3.4",
+    "@babel/preset-typescript": "^7.3.3",
+    "@babel/runtime": "^7.3.4",
+    "metro-react-native-babel-preset": "^0.53.0"
   }
 }
