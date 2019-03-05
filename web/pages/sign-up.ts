@@ -1,3 +1,3 @@
-import {SignUp} from "../src/SignUp";
+import {SignUp} from "../../app/src/SignUp";
 
 export default SignUp;

@@ -1,8 +1,7 @@
 import React, {useState, useRef} from "react";
 import {View, StyleSheet, Platform, Text} from "react-native";
-import Router from "next/router";
 import {APIError, APIErrorCode} from "@connect/api-client";
-import {API} from "./API";
+import {API} from "./api";
 import {
   Space,
   TitleText,
@@ -196,7 +195,7 @@ export function SignUp() {
         <Text style={styles.meta}>
           <MetaText>
             Already have an account?{" "}
-            <TextLink onPress={() => Router.push("/sign-in")}>
+            <TextLink onPress={() => console.log("TODO")}>
               <MetaLinkText>Sign in.</MetaLinkText>
             </TextLink>
           </MetaText>
