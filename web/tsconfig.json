@@ -1,4 +1,5 @@
 // Required by `create-react-app`. We use `../tsconfig.json` for type checking.
+// our entire project.
 {
   "compilerOptions": {
     "target": "es5",

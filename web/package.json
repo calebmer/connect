@@ -7,8 +7,10 @@
     "build": "react-scripts build"
   },
   "dependencies": {
+    "@connect/app": "0.0.0",
     "react": "^16.8.3",
-    "react-dom": "^16.8.3"
+    "react-dom": "^16.8.3",
+    "react-native": "^0.58.6"
   },
   "devDependencies": {
     "@types/jest": "24.0.9",
