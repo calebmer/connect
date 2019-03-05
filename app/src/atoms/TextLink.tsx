@@ -1,6 +1,13 @@
 import React, {ReactNode} from "react";
 import {TouchableOpacity, Platform} from "react-native";
 
+const hitSlop = {
+  top: 5,
+  bottom: 5,
+  left: 5,
+  right: 5,
+};
+
 export function TextLink({
   onPress,
   children,
@@ -22,6 +29,10 @@ export function TextLink({
       </_TouchableOpacity>
     );
   } else {
-    return <TouchableOpacity onPress={onPress}>{children}</TouchableOpacity>;
+    return (
+      <TouchableOpacity hitSlop={hitSlop} onPress={onPress}>
+        {children}
+      </TouchableOpacity>
+    );
   }
 }
