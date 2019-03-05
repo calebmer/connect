@@ -147,14 +147,12 @@ export function SignIn() {
       <View style={styles.input}>
         <Button label="Sign In" onPress={handleSignIn} />
       </View>
-      <Text style={styles.meta}>
-        <MetaText>
-          Don’t have an account?{" "}
-          <TextLink onPress={() => console.log("TODO")}>
-            <MetaLinkText>Sign up.</MetaLinkText>
-          </TextLink>
-        </MetaText>
-      </Text>
+      <View style={styles.meta}>
+        <MetaText>Don’t have an account? </MetaText>
+        <TextLink onPress={() => console.log("TODO")}>
+          <MetaLinkText>Sign up.</MetaLinkText>
+        </TextLink>
+      </View>
     </SignUpLayout>
   );
 }
@@ -185,6 +183,7 @@ const styles = StyleSheet.create({
     paddingTop: Space.space4,
   },
   meta: {
+    flexDirection: "row",
     paddingTop: Space.space5,
   },
 });

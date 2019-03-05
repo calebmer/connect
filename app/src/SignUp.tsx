@@ -1,5 +1,5 @@
 import React, {useState, useRef} from "react";
-import {View, StyleSheet, Platform, Text} from "react-native";
+import {View, StyleSheet, Platform} from "react-native";
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {API} from "./api";
 import {
@@ -188,14 +188,12 @@ export function SignUp() {
       <View style={styles.input}>
         <Button label="Sign Up" onPress={handleSignUp} />
       </View>
-      <Text style={styles.meta}>
-        <MetaText>
-          Already have an account?{" "}
-          <TextLink onPress={() => console.log("TODO")}>
-            <MetaLinkText>Sign in.</MetaLinkText>
-          </TextLink>
-        </MetaText>
-      </Text>
+      <View style={styles.meta}>
+        <MetaText>Already have an account? </MetaText>
+        <TextLink onPress={() => console.log("TODO")}>
+          <MetaLinkText>Sign in.</MetaLinkText>
+        </TextLink>
+      </View>
     </SignUpLayout>
   );
 }
@@ -226,6 +224,7 @@ const styles = StyleSheet.create({
     paddingTop: Space.space4,
   },
   meta: {
+    flexDirection: "row",
     paddingTop: Space.space5,
   },
 });
