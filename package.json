@@ -6,8 +6,7 @@
     "api/server",
     "app",
     "db",
-    "native",
-    "web"
+    "native"
   ],
   "scripts": {
     "types": "tsc",
