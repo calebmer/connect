@@ -69,7 +69,7 @@ function TextInput(
         <View style={styles.error}>
           <Image
             style={styles.errorIcon}
-            source={require("../assets/icons/x-sm.png")}
+            source={require("./assets/icons/x-sm.png")}
           />
           <Text style={styles.errorText}>{errorMessage}</Text>
         </View>
