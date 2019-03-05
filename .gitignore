@@ -11,5 +11,8 @@ yarn-error.log*
 # Next.js
 .next/
 
+# Jest
+coverage/
+
 # MacOS
 .DS_Store
