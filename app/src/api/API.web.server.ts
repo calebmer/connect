@@ -1,9 +1,9 @@
 import {APIClient} from "@connect/api-client";
+import {API_URL} from "../RunConfig";
 
 /**
  * A web server instance of our API client.
  */
 export const API = APIClient.create({
-  url: "/api",
-  auth: null,
+  url: API_URL,
 });

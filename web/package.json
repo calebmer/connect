@@ -11,6 +11,7 @@
   "dependencies": {
     "@babel/core": "^7.3.4",
     "@connect/api-client": "0.0.0",
+    "@types/cookie": "^0.3.2",
     "chalk": "^2.4.2",
     "cookie": "^0.3.1",
     "isomorphic-unfetch": "^3.0.0",

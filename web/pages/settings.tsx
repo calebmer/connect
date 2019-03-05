@@ -7,7 +7,7 @@ type Props = {
 };
 
 AccountSettings.getInitialProps = async (): Promise<Props> => {
-  const {displayName} = await API.account.getCurrentProfile({});
+  const {displayName} = await API.account.getCurrentProfile({}, {});
   return {displayName};
 };
 
