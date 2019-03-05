@@ -18,6 +18,7 @@ const appDirectory = path.resolve(__dirname, "..");
 const workspaceDirectory = path.resolve(appDirectory, "..");
 
 module.exports = {
+  context: appDirectory,
   mode: dev ? "development" : "production",
   bail: !dev,
   devtool: dev ? "cheap-module-source-map" : "source-map",
@@ -27,7 +28,7 @@ module.exports = {
     // `create-react-app` dev client because it displays nice error overlays.
     dev && require.resolve("react-dev-utils/webpackHotDevClient"),
     // Web entry file!
-    path.join(appDirectory, "src", "main.web.ts"),
+    path.join(appDirectory, "src", "main"),
   ].filter(Boolean),
 
   output: {
@@ -105,64 +106,68 @@ module.exports = {
     ],
   },
 
-  optimization: {
-    minimize: !dev,
-    minimizer: [
-      // This is only used in production mode
-      new TerserPlugin({
-        terserOptions: {
-          parse: {
-            // we want terser to parse ecma 8 code. However, we don't want it
-            // to apply any minfication steps that turns valid ecma 5 code
-            // into invalid ecma 5 code. This is why the 'compress' and 'output'
-            // sections only apply transformations that are ecma 5 safe
-            // https://github.com/facebook/create-react-app/pull/4234
-            ecma: 8,
-          },
-          compress: {
-            ecma: 5,
-            warnings: false,
-            // Disabled because of an issue with Uglify breaking seemingly valid code:
-            // https://github.com/facebook/create-react-app/issues/2376
-            // Pending further investigation:
-            // https://github.com/mishoo/UglifyJS2/issues/2011
-            comparisons: false,
-            // Disabled because of an issue with Terser breaking valid code:
-            // https://github.com/facebook/create-react-app/issues/5250
-            // Pending further investigation:
-            // https://github.com/terser-js/terser/issues/120
-            inline: 2,
-          },
-          mangle: {
-            safari10: true,
-          },
-          output: {
-            ecma: 5,
-            comments: false,
-            // Turned on because emoji and regex is not minified properly using default
-            // https://github.com/facebook/create-react-app/issues/2488
-            ascii_only: true,
-          },
+  optimization: dev
+    ? undefined
+    : {
+        minimize: true,
+        minimizer: [
+          // This is only used in production mode
+          new TerserPlugin({
+            terserOptions: {
+              parse: {
+                // we want terser to parse ecma 8 code. However, we don't want
+                // it to apply any minfication steps that turns valid ecma 5
+                // code into invalid ecma 5 code. This is why the 'compress' and
+                // 'output' sections only apply transformations that are ecma 5 safe
+                // https://github.com/facebook/create-react-app/pull/4234
+                ecma: 8,
+              },
+              compress: {
+                ecma: 5,
+                warnings: false,
+                // Disabled because of an issue with Uglify breaking seemingly
+                // valid code:
+                // https://github.com/facebook/create-react-app/issues/2376
+                // Pending further investigation:
+                // https://github.com/mishoo/UglifyJS2/issues/2011
+                comparisons: false,
+                // Disabled because of an issue with Terser breaking valid code:
+                // https://github.com/facebook/create-react-app/issues/5250
+                // Pending further investigation:
+                // https://github.com/terser-js/terser/issues/120
+                inline: 2,
+              },
+              mangle: {
+                safari10: true,
+              },
+              output: {
+                ecma: 5,
+                comments: false,
+                // Turned on because emoji and regex is not minified properly
+                // using default
+                // https://github.com/facebook/create-react-app/issues/2488
+                ascii_only: true,
+              },
+            },
+            // Use multi-process parallel running to improve the build speed
+            // Default number of concurrent runs: os.cpus().length - 1
+            parallel: true,
+            // Enable file caching
+            cache: true,
+            sourceMap: true,
+          }),
+        ],
+        // Automatically split vendor and commons
+        // https://twitter.com/wSokra/status/969633336732905474
+        // https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
+        splitChunks: {
+          chunks: "all",
+          name: false,
         },
-        // Use multi-process parallel running to improve the build speed
-        // Default number of concurrent runs: os.cpus().length - 1
-        parallel: true,
-        // Enable file caching
-        cache: true,
-        sourceMap: true,
-      }),
-    ],
-    // Automatically split vendor and commons
-    // https://twitter.com/wSokra/status/969633336732905474
-    // https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
-    splitChunks: {
-      chunks: "all",
-      name: false,
-    },
-    // Keep the runtime chunk separated to enable long term caching
-    // https://twitter.com/wSokra/status/969679223278505985
-    runtimeChunk: true,
-  },
+        // Keep the runtime chunk separated to enable long term caching
+        // https://twitter.com/wSokra/status/969679223278505985
+        runtimeChunk: true,
+      },
 
   plugins: [
     // Generates an `index.html` file with the <script> injected.
@@ -222,7 +227,4 @@ module.exports = {
     tls: "empty",
     child_process: "empty",
   },
-
-  // Configure the webpack dev server.
-  devServer: require("./webpackDevServer.config"),
 };

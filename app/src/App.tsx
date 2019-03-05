@@ -1,6 +1,6 @@
 import React from "react";
 import {SignIn} from "./SignIn";
 
-export default function App() {
+export function App() {
   return <SignIn />;
 }

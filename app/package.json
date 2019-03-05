@@ -9,12 +9,13 @@
     ]
   },
   "scripts": {
-    "dev:web": "webpack-dev-server --config web/webpack.config.js",
+    "dev:web": "node web/scripts/dev.js",
     "dev:native": "node node_modules/react-native/local-cli/cli.js start"
   },
   "dependencies": {
     "@connect/api-client": "0.0.0",
     "react": "16.8.3",
+    "react-dom": "16.8.3",
     "react-native": "0.59.0-rc.3",
     "react-native-navigation": "^2.13.1",
     "react-native-web": "^0.10.0"
@@ -31,6 +32,7 @@
     "metro-react-native-babel-preset": "^0.53.0",
     "react-dev-utils": "^7.0.3",
     "terser-webpack-plugin": "^1.2.3",
+    "url-loader": "^1.1.2",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3",
     "webpack-dev-server": "^3.2.1"
