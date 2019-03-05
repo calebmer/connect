@@ -4,8 +4,7 @@
   "version": "0.0.0",
   "workspaces": {
     "nohoist": [
-      "react-native",
-      "react-native/**"
+      "react-native"
     ]
   },
   "scripts": {
@@ -13,11 +12,13 @@
     "test": "jest"
   },
   "dependencies": {
+    "@connect/app": "0.0.0",
     "react": "16.8.3",
     "react-native": "0.59.0-rc.3"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
+    "@babel/preset-typescript": "^7.3.3",
     "@babel/runtime": "^7.3.4",
     "babel-jest": "^24.1.0",
     "jest": "^24.1.0",

@@ -1,31 +1,37 @@
 // Font families and variations:
 export const serif = {
-  fontFamily: "freight-text-pro, serif",
+  // fontFamily: "freight-text-pro, serif",
+  // fontFamily: "serif",
   fontWeight: "400" as "400",
   fontStyle: "normal" as "normal",
 };
 export const serifBold = {
-  fontFamily: "freight-text-pro, serif",
+  // fontFamily: "freight-text-pro, serif",
+  // fontFamily: "serif",
   fontWeight: "700" as "700",
   fontStyle: "normal" as "normal",
 };
 export const serifItalic = {
-  fontFamily: "freight-text-pro, serif",
+  // fontFamily: "freight-text-pro, serif",
+  // fontFamily: "serif",
   fontWeight: "400" as "400",
   fontStyle: "italic" as "italic",
 };
 export const serifBoldItalic = {
-  fontFamily: "freight-text-pro, serif",
+  // fontFamily: "freight-text-pro, serif",
+  // fontFamily: "serif",
   fontWeight: "700" as "700",
   fontStyle: "italic" as "italic",
 };
 export const sans = {
-  fontFamily: "freight-sans-pro, sans-serif",
+  // fontFamily: "freight-sans-pro, sans-serif",
+  // fontFamily: "sans-serif",
   fontWeight: "400" as "400",
   fontStyle: "normal" as "normal",
 };
 export const sansBold = {
-  fontFamily: "freight-sans-pro, sans-serif",
+  // fontFamily: "freight-sans-pro, sans-serif",
+  // fontFamily: "sans-serif",
   fontWeight: "700" as "700",
   fontStyle: "normal" as "normal",
 };

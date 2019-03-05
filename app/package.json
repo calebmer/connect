@@ -3,6 +3,7 @@
   "name": "@connect/app",
   "version": "0.0.0",
   "license": "UNLICENSED",
+  "main": "src/index.ts",
   "dependencies": {
     "@connect/api-client": "0.0.0",
     "react": "^16.8.3"

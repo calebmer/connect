@@ -5,6 +5,7 @@ import {
   TextInput as NativeTextInput,
   TextInputProps as NativeTextInputProps,
   StyleSheet,
+  Platform,
 } from "react-native";
 import {Font, Color, Space, Border} from "./atoms";
 
@@ -46,7 +47,10 @@ function TextInput(
   );
 
   return (
-    <View style={styles.container} accessibilityRole={"label" as any}>
+    <View
+      style={styles.container}
+      accessibilityRole={Platform.OS === "web" ? ("label" as any) : undefined}
+    >
       <Text style={styles.label} selectable={false}>
         {label}
       </Text>
