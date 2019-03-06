@@ -190,6 +190,10 @@ export abstract class RouteBase {
       return;
     }
 
+    // NOTE: We shouldn’t need this when React Concurrent Mode and Suspense are
+    // fully released. However, for now this is necessary to get the
+    // same experience.
+
     // Did we time out while waiting for the next route to load?
     let timedOut = false;
 
