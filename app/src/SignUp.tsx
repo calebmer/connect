@@ -207,7 +207,6 @@ export function SignUp({
         </MetaText>
         <TextLink
           onPress={() => {
-            console.log(signInRoute);
             if (signInRoute) {
               signInRoute.popTo();
             } else {

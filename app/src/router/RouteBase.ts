@@ -104,6 +104,13 @@ export abstract class RouteBase {
    *
    * By keeping a reference to this route after calling `push()` we can easily
    * return to this route from any future route.
+   *
+   * On web, this will push a new route with the same config instead of popping
+   * back to our route’s reference. We do this because on web popping breaks
+   * the back button which breaks the user’s perception. Navigation through
+   * space is perceived differently on web and native. If we want a method
+   * that actually pops on both native and web we might implement an
+   * `actuallyPopTo()` method in the future.
    */
   abstract popTo(): void;
 }
