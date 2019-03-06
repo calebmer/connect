@@ -6,9 +6,11 @@ import {RouteConfig} from "./Route";
 export const SignInRoute = new RouteConfig({
   path: "/sign-in",
   component: () => import("../SignIn").then(m => m.SignIn),
+  defaultProps: {},
 });
 
 export const SignUpRoute = new RouteConfig({
   path: "/sign-up",
   component: () => import("../SignUp").then(m => m.SignUp),
+  defaultProps: {},
 });

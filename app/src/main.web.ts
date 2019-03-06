@@ -1,4 +1,7 @@
-import {App} from "./App";
+// Import all our routes for the initialization side-effects.
+import "./router/AllRoutes";
+
+import {App} from "./App.web";
 import {AppRegistry} from "react-native";
 
 declare const document: any;

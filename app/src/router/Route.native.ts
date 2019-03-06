@@ -1,7 +1,9 @@
 import {Layout, Navigation} from "react-native-navigation";
 import {RouteBase, RouteConfigBase} from "./RouteBase";
 import React from "react";
-import {RouteRoot} from "./RouteRoot.native";
+
+// Utility type for removing keys from an object.
+type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
 /**
  * Registers a route component with `react-native-navigation` and manages the
@@ -17,15 +19,23 @@ export class RouteConfig<
   protected registerComponent(
     LazyComponent: React.LazyExoticComponent<React.ComponentType<Props>>,
   ): void {
-    Navigation.registerComponent(this.path, () => {
-      return function NavigationComponent({componentId, ...props}) {
-        // `...props` is a new object so it is ok to mutate it.
-        props.route = new Route(componentId);
-        const child = React.createElement(LazyComponent, props);
+    const defaultProps = this.defaultProps;
 
-        // We need to wrap our lazy component in `<RouteRoot>` which includes
-        // Suspense handling code.
-        return React.createElement(RouteRoot, null, child);
+    // Register the navigation component at our route’s path.
+    Navigation.registerComponent(this.path, () => {
+      return function RouteRoot({componentId, ...props}) {
+        // Create the lazy component element with all the appropriate props.
+        // Make sure to use the default props object in case some of our
+        // required props were not provided!
+        const element = React.createElement(LazyComponent, {
+          ...defaultProps,
+          ...props,
+          route: new Route(componentId),
+        });
+
+        // We need to wrap our lazy component in `<React.Suspense>` to handle
+        // the `React.lazy()` suspend.
+        return React.createElement(React.Suspense, {fallback: null}, element);
       };
     });
   }
@@ -33,11 +43,11 @@ export class RouteConfig<
   /**
    * Gets the `react-native-navigation` layout.
    */
-  getLayout(props: Pick<Props, Exclude<keyof Props, "route">>): Layout {
+  getLayout(partialProps: Partial<Omit<Props, "route">>): Layout {
     return {
       component: {
         name: this.path,
-        passProps: props,
+        passProps: partialProps,
       },
     };
   }
@@ -60,9 +70,9 @@ export class Route extends RouteBase {
    */
   push<NextProps extends {readonly route: RouteBase}>(
     nextRoute: RouteConfig<NextProps>,
-    props: Pick<NextProps, Exclude<keyof NextProps, "route">>,
+    partialProps: Partial<Omit<NextProps, "route">>,
   ) {
-    Navigation.push(this.componentID, nextRoute.getLayout(props));
+    Navigation.push(this.componentID, nextRoute.getLayout(partialProps));
   }
 
   /**

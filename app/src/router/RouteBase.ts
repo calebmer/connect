@@ -1,5 +1,8 @@
 import React from "react";
 
+// Utility type for removing keys from an object.
+type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+
 /**
  * Configuration for a route that uses stack-based navigation. We can use the
  * configuration to create a new route.
@@ -19,14 +22,41 @@ export abstract class RouteConfigBase<
    */
   public readonly path: string;
 
+  /**
+   * The props we will use to render this route if no other props are provided
+   * during navigation.
+   *
+   * The props of a component might include some session data. For instance,
+   * knowledge about who pushed a component to the navigation stack. If a
+   * client navigates out-of-the-blue to this route we won’t expect them to
+   * provide detailed runtime bookkeeping props. Instead we will use our
+   * default props to satisfy our component.
+   */
+  protected readonly defaultProps: Omit<Props, "route">;
+
   constructor({
     path,
     component,
+    defaultProps,
   }: {
+    /**
+     * The path this route is registered on. If a client navigates to this path
+     * then we will display the route’s component.
+     */
     readonly path: string;
+    /**
+     * The component rendered by this route. We force the component to be a
+     * promise to encourage code splitting with `import()`.
+     */
     readonly component: () => Promise<React.ComponentType<Props>>;
+    /**
+     * The props we will use to render this route if no other props are provided
+     * during navigation.
+     */
+    readonly defaultProps: Omit<Props, "route">;
   }) {
     this.path = path;
+    this.defaultProps = defaultProps;
 
     // Wrap our component getter in `React.lazy()`. We will use Suspense (oooh)
     // to wait for our component to finish loading.
@@ -58,10 +88,14 @@ export abstract class RouteBase {
   /**
    * Pushes a new route to our navigation stack. The new route will be displayed
    * to the user.
+   *
+   * The props object is “partial” which means all the props are optional. If
+   * a required prop is not provided then we will use the value from
+   * `defaultProps` when the route was configured.
    */
   abstract push<NextProps extends {readonly route: RouteBase}>(
     nextRoute: RouteConfigBase<NextProps>,
-    props: Pick<NextProps, Exclude<keyof NextProps, "route">>,
+    partialProps: Partial<Omit<NextProps, "route">>,
   ): void;
 
   /**
