@@ -10,12 +10,19 @@ import {
 } from "./atoms";
 import {Platform, StyleSheet, View} from "react-native";
 import React, {useRef, useState} from "react";
+import {Route, SignInRoute} from "./router";
 import {TextInput, TextInputInstance} from "./TextInput";
 import {API} from "./API";
 import {SignUpLayout} from "./SignUpLayout";
 import {displayErrorMessage} from "./ErrorMessage";
 
-export function SignUp() {
+export function SignUp({
+  route,
+  signInRoute,
+}: {
+  route: Route;
+  signInRoute?: Route;
+}) {
   // References to text inputs.
   const displayNameInput = useRef<TextInputInstance | null>(null);
   const emailInput = useRef<TextInputInstance | null>(null);
@@ -195,8 +202,18 @@ export function SignUp() {
         <Button label="Sign Up" onPress={handleSignUp} />
       </View>
       <View style={styles.meta}>
-        <MetaText>Already have an account? </MetaText>
-        <TextLink onPress={() => console.log("TODO")}>
+        <MetaText>
+          Already have an account?{" " /* Intentional space */}
+        </MetaText>
+        <TextLink
+          onPress={() => {
+            if (signInRoute) {
+              signInRoute.popTo();
+            } else {
+              route.push(SignInRoute, {signUpRoute: route});
+            }
+          }}
+        >
           <MetaLinkText>Sign in.</MetaLinkText>
         </TextLink>
       </View>
