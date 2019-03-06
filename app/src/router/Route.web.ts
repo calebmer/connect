@@ -67,7 +67,7 @@ export class RouteConfig<
       } as any);
 
       // We need to wrap our lazy component in `<React.Suspense>` to handle
-      // the `React.lazy()` suspend.
+      // the `LazyComponent` suspend.
       return React.createElement(React.Suspense, {fallback: null}, element);
     }
 
