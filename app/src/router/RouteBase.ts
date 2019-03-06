@@ -108,11 +108,12 @@ export abstract class RouteConfigBase<
 
   /**
    * Loads the route’s component and returns a promise which resolves when the
-   * route component has finished loading.
+   * route component has finished loading. This function can be used to preload
+   * a component before we navigate to that route.
    *
    * Calling this multiple times will return the same promise.
    */
-  loadComponent(): Promise<React.ComponentType<Props>> {
+  public loadComponent(): Promise<React.ComponentType<Props>> {
     switch (this.componentState.status) {
       case 0: {
         const promise = this.componentState.result();
@@ -147,7 +148,7 @@ export abstract class RouteConfigBase<
    * If the component has not loaded you may call `loadComponent()` to get a
    * promise which resolves when the component finishes loading.
    */
-  hasComponentLoaded(): boolean {
+  public hasComponentLoaded(): boolean {
     return this.componentState.status === 2 || this.componentState.status === 3;
   }
 }
@@ -179,7 +180,55 @@ export abstract class RouteBase {
    * a required prop is not provided then we will use the value from
    * `defaultProps` when the route was configured.
    */
-  abstract push<NextProps extends {readonly route: RouteBase}>(
+  public push<NextProps extends {readonly route: RouteBase}>(
+    nextRoute: RouteConfigBase<NextProps>,
+    partialProps: Partial<Omit<NextProps, "route">>,
+  ) {
+    // If the route has already loaded then immediately push the next route.
+    if (nextRoute.hasComponentLoaded()) {
+      this._push(nextRoute, partialProps);
+      return;
+    }
+
+    // Did we time out while waiting for the next route to load?
+    let timedOut = false;
+
+    // We want to wait until our route has loaded before we move on to the next
+    // route. However, on slow networks we also want to feel responsive. [At
+    // 100ms it starts to feel like the app isn’t responsive][1], so if our
+    // route component does not load within 100ms push the new route and display
+    // the loading fallback.
+    //
+    // [1]: https://developers.google.com/web/fundamentals/performance/rail
+    const timeoutID = setTimeout(() => {
+      timedOut = true;
+      this._push(nextRoute, partialProps);
+    }, 100);
+
+    // Load the next route’s component. If we resolve before our timeout then
+    // immediately push our next route and clear our timer.
+    nextRoute.loadComponent().then(
+      () => {
+        if (!timedOut) {
+          clearTimeout(timeoutID);
+          this._push(nextRoute, partialProps);
+        }
+      },
+      () => {
+        if (!timedOut) {
+          clearTimeout(timeoutID);
+          this._push(nextRoute, partialProps);
+        }
+      },
+    );
+  }
+
+  /**
+   * Internal implementation of `push()`. We expect platform specific code to
+   * override this function and not `push()` which handles some
+   * Suspense-y stuff.
+   */
+  protected abstract _push<NextProps extends {readonly route: RouteBase}>(
     nextRoute: RouteConfigBase<NextProps>,
     partialProps: Partial<Omit<NextProps, "route">>,
   ): void;
@@ -198,5 +247,5 @@ export abstract class RouteBase {
    * that actually pops on both native and web we might implement an
    * `actuallyPopTo()` method in the future.
    */
-  abstract popTo(): void;
+  public abstract popTo(): void;
 }

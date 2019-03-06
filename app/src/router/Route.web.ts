@@ -43,7 +43,7 @@ export class RouteConfig<
    * Registers a component to our route map. Throws an error if the path already
    * exists in our route map.
    */
-  registerComponent(LazyComponent: React.ComponentType<Props>) {
+  protected registerComponent(LazyComponent: React.ComponentType<Props>) {
     // Throw an error if the route already exists in our route map.
     if (routeMap.has(this.path)) {
       throw new Error(
@@ -96,7 +96,7 @@ export class Route extends RouteBase {
    * _any_ props instead of just serializable props. Instead of fixing this we
    * choose to ignore props for now.
    */
-  push<NextProps extends {readonly route: RouteBase}>(
+  protected _push<NextProps extends {readonly route: RouteBase}>(
     nextRoute: RouteConfig<NextProps>,
     _partialProps: Partial<Omit<NextProps, "route">>,
   ) {
@@ -118,7 +118,7 @@ export class Route extends RouteBase {
    * `actuallyPopTo()` method which pops on both platforms instead of using an
    * intelligent default on web.
    */
-  popTo() {
+  public popTo() {
     this.push(this.config, {});
   }
 }

@@ -41,7 +41,7 @@ export class RouteConfig<
   /**
    * Gets the `react-native-navigation` layout.
    */
-  getLayout(partialProps: Partial<Omit<Props, "route">>): Layout {
+  public getLayout(partialProps: Partial<Omit<Props, "route">>): Layout {
     return {
       component: {
         name: this.path,
@@ -66,7 +66,7 @@ export class Route extends RouteBase {
   /**
    * Pushes a new route to our navigation stack.
    */
-  push<NextProps extends {readonly route: RouteBase}>(
+  protected _push<NextProps extends {readonly route: RouteBase}>(
     nextRoute: RouteConfig<NextProps>,
     partialProps: Partial<Omit<NextProps, "route">>,
   ) {
@@ -76,7 +76,7 @@ export class Route extends RouteBase {
   /**
    * Pops routes off the navigation stack until we return to this route.
    */
-  popTo() {
+  public popTo() {
     Navigation.popTo(this.componentID);
   }
 }
