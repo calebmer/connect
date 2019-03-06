@@ -43,9 +43,7 @@ export class RouteConfig<
    * Registers a component to our route map. Throws an error if the path already
    * exists in our route map.
    */
-  registerComponent(
-    LazyComponent: React.LazyExoticComponent<React.ComponentType<Props>>,
-  ) {
+  registerComponent(LazyComponent: React.ComponentType<Props>) {
     // Throw an error if the route already exists in our route map.
     if (routeMap.has(this.path)) {
       throw new Error(

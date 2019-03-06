@@ -16,9 +16,7 @@ export class RouteConfig<
    * Registers the component with `react-native-navigation`. Converts a
    * `componentId` into a `Route`.
    */
-  protected registerComponent(
-    LazyComponent: React.LazyExoticComponent<React.ComponentType<Props>>,
-  ): void {
+  protected registerComponent(LazyComponent: React.ComponentType<Props>): void {
     const defaultProps = this.defaultProps;
 
     // Register the navigation component at our route’s path.

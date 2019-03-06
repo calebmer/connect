@@ -34,6 +34,13 @@ export abstract class RouteConfigBase<
    */
   protected readonly defaultProps: Omit<Props, "route">;
 
+  /**
+   * The state of our lazily loaded component. As the component loads we will
+   * update this state appropriately. Once the component finishes loading we
+   * will have synchronous access to the component through this member.
+   */
+  private componentState: LazyComponentState<React.ComponentType<Props>>;
+
   constructor({
     path,
     component,
@@ -57,12 +64,37 @@ export abstract class RouteConfigBase<
   }) {
     this.path = path;
     this.defaultProps = defaultProps;
+    this.componentState = {status: 0, result: component};
 
-    // Wrap our component getter in `React.lazy()`. We will use Suspense (oooh)
-    // to wait for our component to finish loading.
-    const LazyComponent = React.lazy(() => {
-      return component().then(c => ({default: c}));
-    });
+    /**
+     * A lazy component translates the state of our lazy-loaded component
+     * promise into a React component. If the component is not yet loading then
+     * we suspend.
+     */
+    const LazyComponent = (props: Props) => {
+      switch (this.componentState.status) {
+        // If our promise is not resolved then suspend our component by
+        // throwing a promise! Yay, Suspense.
+        case 0:
+        case 1:
+          throw this.loadComponent();
+
+        // If our promise is resolved then render our React component.
+        case 2:
+          return React.createElement(this.componentState.result, props);
+
+        // If our promise is rejected then throw the error.
+        case 3:
+          throw this.componentState.result;
+
+        default: {
+          const never: never = this.componentState;
+          throw new Error(`Unexpected state: ${JSON.stringify(never)}`);
+        }
+      }
+    };
+
+    // Register the lazy component we just created.
     this.registerComponent(LazyComponent);
   }
 
@@ -71,9 +103,63 @@ export abstract class RouteConfigBase<
    * route’s component.
    */
   protected abstract registerComponent(
-    LazyComponent: React.LazyExoticComponent<React.ComponentType<Props>>,
+    LazyComponent: React.ComponentType<Props>,
   ): void;
+
+  /**
+   * Loads the route’s component and returns a promise which resolves when the
+   * route component has finished loading.
+   *
+   * Calling this multiple times will return the same promise.
+   */
+  loadComponent(): Promise<React.ComponentType<Props>> {
+    switch (this.componentState.status) {
+      case 0: {
+        const promise = this.componentState.result();
+        this.componentState = {status: 1, result: promise};
+        promise.then(
+          value => {
+            this.componentState = {status: 2, result: value};
+          },
+          error => {
+            this.componentState = {status: 3, result: error};
+          },
+        );
+        return promise;
+      }
+      case 1:
+        return this.componentState.result;
+      case 2:
+        return Promise.resolve(this.componentState.result);
+      case 3:
+        return Promise.reject(this.componentState.result);
+      default: {
+        const never: never = this.componentState;
+        throw new Error(`Unexpected state: ${JSON.stringify(never)}`);
+      }
+    }
+  }
+
+  /**
+   * Lets us know if the component has been loaded. Whether it resolved
+   * or rejected.
+   *
+   * If the component has not loaded you may call `loadComponent()` to get a
+   * promise which resolves when the component finishes loading.
+   */
+  hasComponentLoaded(): boolean {
+    return this.componentState.status === 2 || this.componentState.status === 3;
+  }
 }
+
+/**
+ * The state of a component which is lazily loaded.
+ */
+type LazyComponentState<T> =
+  | {status: 0; result: () => Promise<T>} // Idle
+  | {status: 1; result: Promise<T>} // Pending
+  | {status: 2; result: T} // Resolved
+  | {status: 3; result: any}; // Rejected
 
 /**
  * A runtime “identifier” for some route that’s currently loaded in our
