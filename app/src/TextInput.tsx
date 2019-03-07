@@ -1,6 +1,5 @@
 import {Border, Color, Font, Space} from "./atoms";
 import {
-  Image,
   TextInput as NativeTextInput,
   TextInputProps as NativeTextInputProps,
   Platform,

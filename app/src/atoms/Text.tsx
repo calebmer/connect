@@ -11,6 +11,14 @@ export function BodyText(props: TextProps) {
   return <Text {...props} style={styles.body} />;
 }
 
+export function BodyItalicText(props: TextProps) {
+  return <Text {...props} style={[styles.body, Font.serifItalic]} />;
+}
+
+export function LabelText(props: TextProps) {
+  return <Text {...props} style={styles.label} numberOfLines={1} />;
+}
+
 export function TitleText(props: TextProps) {
   return <Text {...props} style={styles.title} />;
 }
@@ -28,6 +36,12 @@ const styles = StyleSheet.create({
     color: Color.grey7,
     ...Font.serif,
     ...Font.size2,
+  },
+  label: {
+    color: Color.black,
+    ...Font.serifBold,
+    ...Font.size2,
+    lineHeight: undefined,
   },
   title: {
     color: Color.black,

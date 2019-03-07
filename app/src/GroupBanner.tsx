@@ -6,28 +6,28 @@ export function GroupBanner() {
   const title = <Text style={styles.title}>Definitely Work</Text>;
 
   return Platform.OS === "ios" ? (
-    <View style={styles.banner}>
-      <SafeAreaView style={styles.center}>{title}</SafeAreaView>
-    </View>
+    <SafeAreaView style={styles.background}>
+      <View style={styles.banner}>{title}</View>
+    </SafeAreaView>
   ) : (
-    <View style={[styles.banner, styles.center]}>{title}</View>
+    <View style={[styles.background, styles.banner]}>{title}</View>
   );
 }
 
+GroupBanner.maxWidth = Space.space15;
 GroupBanner.height = Space.space10;
 
 const styles = StyleSheet.create({
-  banner: {
+  background: {
     overflow: "hidden",
-    maxWidth: Space.space15,
-    width: "100%",
-    height: GroupBanner.height,
-    paddingHorizontal: Space.space4,
     backgroundColor: Color.yellow3,
   },
-  center: {
-    flex: 1,
+  banner: {
     justifyContent: "center",
+    width: "100%",
+    maxWidth: GroupBanner.maxWidth,
+    height: GroupBanner.height,
+    paddingHorizontal: Space.space4,
   },
   title: {
     color: Color.yellow9,
