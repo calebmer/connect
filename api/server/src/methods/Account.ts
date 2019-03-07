@@ -243,7 +243,7 @@ async function generateAccessToken(accountID: number) {
  * input because we use the authorization context to determine the
  * current profile.
  */
-export function getCurrentProfile(
+export function getCurrentAccount(
   _ctx: Context,
   {}: {},
 ): Promise<{

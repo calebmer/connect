@@ -18,5 +18,5 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": "."
   },
-  "exclude": ["**/node_modules", "**/build", "**/.next"]
+  "exclude": ["**/node_modules", "**/build"]
 }

@@ -5,7 +5,7 @@ jest.mock("../methods", () => ({
     signIn: jest.fn((_ctx, _input) => {
       return Promise.resolve({works: true});
     }),
-    getCurrentProfile: jest.fn((ctx, _input) => {
+    getCurrentAccount: jest.fn((ctx, _input) => {
       return Promise.resolve({works: true, accountID: ctx.accountID});
     }),
   },
@@ -21,8 +21,8 @@ import jwt from "jsonwebtoken";
 
 const signIn: jest.Mock<typeof methods.account.signIn> = methods.account
   .signIn as any;
-const getCurrentProfile: jest.Mock<typeof methods.account.signIn> = methods
-  .account.getCurrentProfile as any;
+const getCurrentAccount: jest.Mock<typeof methods.account.signIn> = methods
+  .account.getCurrentAccount as any;
 
 // We spin up the API server as an HTTP server for our tests. We use port 3594
 // since we don’t expect anyone else to use it. 3593 is a prime number and then
@@ -299,9 +299,9 @@ test("POST /account/signIn - with extra input", async () => {
   });
 });
 
-test("GET /account/getCurrentProfile", async () => {
-  getCurrentProfile.mockClear();
-  const response = await fetch(`${url}/account/getCurrentProfile`);
+test("GET /account/getCurrentAccount", async () => {
+  getCurrentAccount.mockClear();
+  const response = await fetch(`${url}/account/getCurrentAccount`);
   expect(response.status).toBe(404);
   expect(Array.from(response.headers)).toEqual([
     ["connection", "close"],
@@ -314,12 +314,12 @@ test("GET /account/getCurrentProfile", async () => {
     ok: false,
     error: {code: APIErrorCode.UNRECOGNIZED_METHOD},
   });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
+  expect(getCurrentAccount).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentProfile - without authorization", async () => {
-  getCurrentProfile.mockClear();
-  const response = await fetch(`${url}/account/getCurrentProfile`, {
+test("POST /account/getCurrentAccount - without authorization", async () => {
+  getCurrentAccount.mockClear();
+  const response = await fetch(`${url}/account/getCurrentAccount`, {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({}),
@@ -330,12 +330,12 @@ test("POST /account/getCurrentProfile - without authorization", async () => {
     ok: false,
     error: {code: APIErrorCode.UNAUTHORIZED},
   });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
+  expect(getCurrentAccount).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentProfile - incorrect authorization header", async () => {
-  getCurrentProfile.mockClear();
-  const response = await fetch(`${url}/account/getCurrentProfile`, {
+test("POST /account/getCurrentAccount - incorrect authorization header", async () => {
+  getCurrentAccount.mockClear();
+  const response = await fetch(`${url}/account/getCurrentAccount`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -349,12 +349,12 @@ test("POST /account/getCurrentProfile - incorrect authorization header", async (
     ok: false,
     error: {code: APIErrorCode.UNAUTHORIZED},
   });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
+  expect(getCurrentAccount).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentProfile - malformed JWT", async () => {
-  getCurrentProfile.mockClear();
-  const response = await fetch(`${url}/account/getCurrentProfile`, {
+test("POST /account/getCurrentAccount - malformed JWT", async () => {
+  getCurrentAccount.mockClear();
+  const response = await fetch(`${url}/account/getCurrentAccount`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -368,13 +368,13 @@ test("POST /account/getCurrentProfile - malformed JWT", async () => {
     ok: false,
     error: {code: APIErrorCode.UNAUTHORIZED},
   });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
+  expect(getCurrentAccount).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentProfile - bad signature JWT", async () => {
-  getCurrentProfile.mockClear();
+test("POST /account/getCurrentAccount - bad signature JWT", async () => {
+  getCurrentAccount.mockClear();
   const accessToken = jwt.sign({id: 42}, "secret-secret-cats");
-  const response = await fetch(`${url}/account/getCurrentProfile`, {
+  const response = await fetch(`${url}/account/getCurrentAccount`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -388,13 +388,13 @@ test("POST /account/getCurrentProfile - bad signature JWT", async () => {
     ok: false,
     error: {code: APIErrorCode.UNAUTHORIZED},
   });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
+  expect(getCurrentAccount).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentProfile - expired JWT", async () => {
-  getCurrentProfile.mockClear();
+test("POST /account/getCurrentAccount - expired JWT", async () => {
+  getCurrentAccount.mockClear();
   const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "-1d"});
-  const response = await fetch(`${url}/account/getCurrentProfile`, {
+  const response = await fetch(`${url}/account/getCurrentAccount`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -408,13 +408,13 @@ test("POST /account/getCurrentProfile - expired JWT", async () => {
     ok: false,
     error: {code: APIErrorCode.ACCESS_TOKEN_EXPIRED},
   });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
+  expect(getCurrentAccount).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentProfile", async () => {
-  getCurrentProfile.mockClear();
+test("POST /account/getCurrentAccount", async () => {
+  getCurrentAccount.mockClear();
   const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
-  const response = await fetch(`${url}/account/getCurrentProfile`, {
+  const response = await fetch(`${url}/account/getCurrentAccount`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -428,5 +428,5 @@ test("POST /account/getCurrentProfile", async () => {
     ok: true,
     data: {works: true, accountID: 42},
   });
-  expect(getCurrentProfile).toHaveBeenCalledTimes(1);
+  expect(getCurrentAccount).toHaveBeenCalledTimes(1);
 });

@@ -3,6 +3,3 @@ node_modules/
 
 # Build Output
 build/
-
-# Next.js
-.next/
