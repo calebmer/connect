@@ -5,7 +5,7 @@
   "scripts": {
     "migrate": "node scripts/migrate.js",
     "drop": "node scripts/drop.js",
-    "reset": "yarn drop && yarn migrate"
+    "reset": "node scripts/reset.js"
   },
   "dependencies": {
     "chalk": "^2.4.2",

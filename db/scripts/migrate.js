@@ -3,7 +3,6 @@
 const util = require("util");
 const fs = require("fs");
 const path = require("path");
-
 const chalk = require("chalk");
 const {Client} = require("pg");
 
@@ -72,9 +71,13 @@ async function run() {
   await client.end();
 }
 
+module.exports = run;
+
 // Make unhandled promise exceptions an unhandled runtime exception.
-run().catch(error => {
-  setImmediate(() => {
-    throw error;
+if (!module.parent) {
+  run().catch(error => {
+    setImmediate(() => {
+      throw error;
+    });
   });
-});
+}
