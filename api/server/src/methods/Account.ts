@@ -1,4 +1,4 @@
-import {APIError, APIErrorCode} from "@connect/api-client";
+import {APIError, APIErrorCode, Account} from "@connect/api-client";
 import {Context, ContextUnauthorized} from "../Context";
 import {JWT_SECRET} from "../RunConfig";
 import bcrypt from "bcrypt";
@@ -243,11 +243,6 @@ async function generateAccessToken(accountID: number) {
  * input because we use the authorization context to determine the
  * current profile.
  */
-export function getCurrentProfile(
-  _ctx: Context,
-  {}: {},
-): Promise<{
-  readonly displayName: string;
-}> {
+export function getCurrentAccount(_ctx: Context, {}: {}): Promise<Account> {
   throw new Error("TODO");
 }

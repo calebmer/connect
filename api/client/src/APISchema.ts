@@ -9,9 +9,6 @@ import {SchemaOutput} from "./SchemaOutput";
  * the idea.
  */
 export const APISchema = Schema.namespace({
-  /**
-   * Operations related to the administration of a person’s account.
-   */
   account: Schema.namespace({
     /**
      * Registers a new account which can be used to access our service.
@@ -90,11 +87,39 @@ export const APISchema = Schema.namespace({
      * input because we use the authorization context to determine the
      * current profile.
      */
-    getCurrentProfile: Schema.method({
+    getCurrentAccount: Schema.method({
       input: {},
-      output: SchemaOutput.t<{
-        readonly displayName: string;
-      }>(),
+      output: SchemaOutput.t<Account>(),
     }),
   }),
+
+  /**
+   * Gets a group by its identifier.
+   */
+  getGroup: Schema.method({
+    input: {id: SchemaInput.number},
+    output: SchemaOutput.t<{readonly group: Group | undefined}>(),
+  }),
+
+  /**
+   * Gets a group by its slug.
+   */
+  getGroupBySlug: Schema.method({
+    input: {slug: SchemaInput.string},
+    output: SchemaOutput.t<{readonly group: Group | undefined}>(),
+  }),
 });
+
+export type Account = {
+  readonly id: number;
+  readonly displayName: string;
+  readonly avatarURL: string;
+};
+
+export type Group = {
+  readonly id: number;
+  readonly slug: string;
+  readonly displayName: string;
+  readonly ownerID: number;
+  readonly createdAt: string;
+};
