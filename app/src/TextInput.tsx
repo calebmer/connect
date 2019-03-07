@@ -123,11 +123,11 @@ const styles = StyleSheet.create({
   },
   error: {
     flexDirection: "row",
-    alignItems: "center",
     paddingVertical: Space.space1,
     paddingHorizontal: Space.space0,
   },
   errorIcon: {
+    marginTop: 6,
     width: Space.space1,
     height: Space.space1,
   },
