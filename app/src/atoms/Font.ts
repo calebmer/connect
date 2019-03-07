@@ -71,3 +71,7 @@ export const size5 = {
   fontSize: 36,
   lineHeight: 36,
 };
+export const size6 = {
+  fontSize: 48,
+  lineHeight: 48,
+};
