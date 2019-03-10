@@ -14,10 +14,6 @@
     "test": "jest --watch"
   },
   "dependencies": {
-    "@babel/core": "^7.3.4",
-    "@babel/plugin-proposal-class-properties": "^7.3.4",
-    "@babel/preset-env": "^7.3.4",
-    "@babel/preset-typescript": "^7.3.3",
     "@types/jest": "^24.0.9",
     "@typescript-eslint/eslint-plugin": "^1.4.1",
     "@typescript-eslint/parser": "^1.4.1",
@@ -26,7 +22,7 @@
     "eslint-plugin-react": "^7.12.4",
     "eslint-plugin-react-hooks": "^1.2.0",
     "eslint-plugin-react-native": "^3.6.0",
-    "jest": "^24.1.0",
+    "jest": "^24.3.1",
     "prettier": "^1.16.4",
     "typescript": "^3.3.3333"
   }

@@ -22,10 +22,14 @@ INSERT INTO account (id, display_name, email, password_hash) VALUES
   (18, 'John', 'john@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
   (19, 'Budd', 'budd@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.');
 
+ALTER SEQUENCE account_id_seq RESTART WITH 20;
+
 INSERT INTO "group" (id, slug, display_name, owner_id) VALUES
   (1, 'nohello', 'Definitely Work', 3),
   (2, 'dnd', 'D&D', 7),
   (3, 'coffeekit', 'CoffeeKit', 17);
+
+ALTER SEQUENCE group_id_seq RESTART WITH 4;
 
 INSERT INTO group_member (account_id, group_id) VALUES
   (1, 1),

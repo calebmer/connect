@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@connect/native",
+  "name": "@connect/app",
   "version": "0.0.0",
   "workspaces": {
     "nohoist": [
@@ -16,6 +16,7 @@
     "@connect/api-client": "0.0.0",
     "history": "^4.7.2",
     "react": "16.8.3",
+    "react-art": "^16.8.4",
     "react-dom": "16.8.3",
     "react-native": "0.59.0-rc.3",
     "react-native-navigation": "^2.13.1",
@@ -23,16 +24,17 @@
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
-    "@babel/preset-typescript": "^7.3.3",
     "@babel/runtime": "^7.3.4",
     "@types/history": "^4.7.2",
     "@types/react": "^16.8.6",
     "@types/react-native": "^0.57.38",
+    "@types/react-test-renderer": "^16.8.1",
     "babel-loader": "^8.0.5",
     "babel-plugin-react-native-web": "^0.10.0",
     "html-webpack-plugin": "^4.0.0-beta.5",
     "metro-react-native-babel-preset": "^0.53.0",
     "react-dev-utils": "^7.0.3",
+    "react-test-renderer": "^16.8.4",
     "terser-webpack-plugin": "^1.2.3",
     "url-loader": "^1.1.2",
     "webpack": "^4.29.6",

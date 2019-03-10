@@ -23,18 +23,4 @@
     {"language": "typescript", "autoFix": true},
     {"language": "typescriptreact", "autoFix": true}
   ]
-  // // We will format-on-save with ESLint instead of Prettier or VSCode.
-  // "[javascript]": {
-  //   "editor.formatOnSave": false
-  // },
-  // "[javascriptreact]": {
-  //   "editor.formatOnSave": false
-  // },
-  // "[typescript]": {
-  //   "editor.formatOnSave": false
-  // },
-  // "[typescriptreact]": {
-  //   "editor.formatOnSave": false
-  // },
-  // "prettier.disableLanguages": ["js"]
 }
