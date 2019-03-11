@@ -14,6 +14,7 @@ import {GroupBanner} from "./GroupBanner";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupItemInbox} from "./GroupItemInbox";
 import {GroupPostPrompt} from "./GroupPostPrompt";
+import {GroupSectionHeader} from "./GroupSectionHeader";
 
 const currentAccount = MockData.calebMeredith;
 
@@ -46,13 +47,17 @@ export function Group() {
         });
 
   const inboxSection: SectionListData<InboxItem> = {
+    title: "Inbox",
     data: MockData.inbox,
     keyExtractor: item => String(item.id),
     renderItem: ({item}) => <GroupItemInbox item={item} />,
   };
 
   const feedSection: SectionListData<Post> = {
-    data: MockData.feed,
+    title: "Feed",
+    data: [...MockData.feed, ...MockData.feed, ...MockData.feed].map(
+      (item, id) => ({...item, id}),
+    ),
     keyExtractor: item => String(item.id),
     renderItem: ({item}) => <GroupItemFeed post={item} />,
   };
@@ -74,27 +79,32 @@ export function Group() {
         // Data stuff:
         sections={[inboxSection, feedSection] as any}
         // Layout stuff:
-        contentContainerStyle={styles.content}
         ListHeaderComponent={
-          <View style={styles.header}>
-            <GroupPostPrompt account={currentAccount} />
-          </View>
+          <>
+            <View style={styles.header}>
+              <GroupPostPrompt account={currentAccount} />
+            </View>
+            <GroupSectionSeparator isLeading />
+          </>
         }
         ListFooterComponent={<View style={styles.footer} />}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        SectionSeparatorComponent={info => {
-          const isLeading = Boolean(info.trailingItem);
-          const isTrailing = Boolean(info.leadingItem);
-          return (
-            <View style={styles.sectionSeparator}>
-              {isLeading && (
-                <View style={styles.sectionSeparatorShadowLeading} />
-              )}
-              {isTrailing && (
-                <View style={styles.sectionSeparatorShadowTrailing} />
-              )}
-            </View>
-          );
+        ItemSeparatorComponent={GroupItemSeparator}
+        stickySectionHeadersEnabled
+        renderSectionHeader={({section: {title}}) => (
+          <>
+            <GroupSectionHeader title={title} />
+            <GroupItemSeparator />
+          </>
+        )}
+        SectionSeparatorComponent={({leadingItem, trailingSection}) => {
+          return leadingItem && trailingSection ? (
+            <>
+              <GroupSectionSeparator isTrailing />
+              <GroupSectionSeparator isLeading />
+            </>
+          ) : leadingItem ? (
+            <GroupSectionSeparator isTrailing />
+          ) : null;
         }}
         // Scroll event stuff:
         scrollEventThrottle={1}
@@ -108,6 +118,25 @@ export function Group() {
           {useNativeDriver: Platform.OS !== "web"},
         )}
       />
+    </View>
+  );
+}
+
+function GroupItemSeparator() {
+  return <View style={styles.separator} />;
+}
+
+function GroupSectionSeparator({
+  isLeading,
+  isTrailing,
+}: {
+  isLeading?: boolean;
+  isTrailing?: boolean;
+}) {
+  return (
+    <View style={styles.sectionSeparator}>
+      {isLeading && <View style={styles.sectionSeparatorShadowLeading} />}
+      {isTrailing && <View style={styles.sectionSeparatorShadowTrailing} />}
     </View>
   );
 }
@@ -130,28 +159,22 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
-  content: {
-    marginTop: GroupBanner.height,
-    backgroundColor,
-
-    // On iOS `marginTop` will push down the content so that a height of
-    // `-marginTop` is not scrollable. Circumvent this by adding some empty
-    // space with `paddingBottom`.
-    ...Platform.select({ios: {paddingBottom: GroupBanner.height}}),
-  },
   header: {
-    marginBottom: sectionMargin / 2,
+    marginTop: GroupBanner.height,
+    paddingBottom: sectionMargin / 2,
+    backgroundColor,
   },
   footer: {
     marginTop: sectionMargin / 2,
   },
   separator: {
     height: Border.width1,
-    backgroundColor: "rgba(0, 0, 0, 0.05)",
+    backgroundColor: "hsl(0, 0%, 90%)",
   },
   sectionSeparator: {
     overflow: "hidden",
     height: sectionMargin / 2,
+    backgroundColor,
   },
   sectionSeparatorShadowLeading: {
     position: "relative",
