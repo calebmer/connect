@@ -1,5 +1,5 @@
 import {Image, ImageSourcePropType, Platform} from "react-native";
-import {IconProps} from "./IconTypes";
+import {IconProps} from "./Icon";
 import React from "react";
 
 export function createIconComponent(source: ImageSourcePropType) {

@@ -1,3 +1,3 @@
-import {IconComponent} from "./IconTypes";
+import {IconComponent} from "./Icon";
 
 export declare const XIcon: IconComponent;
