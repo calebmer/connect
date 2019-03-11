@@ -1,3 +1,3 @@
-import {createIconComponent} from "./createIconComponent.native";
+import {createIconComponent} from "./Icon.native";
 
-export const InboxIcon = createIconComponent(require("./inbox-md.png"));
+export const InboxIcon = createIconComponent(require("./inbox-sm.png"));

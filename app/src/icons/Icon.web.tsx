@@ -1,5 +1,5 @@
 import React, {SVGProps} from "react";
-import {IconProps} from "./Icon";
+import {IconProps} from "./IconTypes";
 import {Platform} from "react-native";
 
 // @ts-ignore
