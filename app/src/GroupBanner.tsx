@@ -14,7 +14,7 @@ export function GroupBanner() {
   );
 }
 
-GroupBanner.maxWidth = Space.space15;
+GroupBanner.maxWidth = Space.space14;
 GroupBanner.height = Space.space10;
 
 const styles = StyleSheet.create({

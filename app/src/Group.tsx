@@ -10,6 +10,7 @@ import React, {useState} from "react";
 import {Color} from "./atoms";
 import {GroupBanner} from "./GroupBanner";
 import {GroupPostPrompt} from "./GroupPostPrompt";
+import {GroupSectionTitle} from "./GroupSectionTitle";
 
 export function Group() {
   // On iOS you can scroll up which results in a negative value for `scrollY`.
@@ -55,6 +56,8 @@ export function Group() {
       >
         <View style={styles.content}>
           <GroupPostPrompt />
+          <GroupSectionTitle title="Inbox" link="Archive" />
+          <GroupSectionTitle title="Feed" />
           <View style={{height: 1000}} />
           <GroupPostPrompt />
         </View>
@@ -63,6 +66,8 @@ export function Group() {
   );
 }
 
+const backgroundColor = Color.grey0;
+
 const styles = StyleSheet.create({
   container: {
     overflow: "hidden",
@@ -70,7 +75,7 @@ const styles = StyleSheet.create({
     position: "relative",
     width: "100%",
     maxWidth: GroupBanner.maxWidth,
-    backgroundColor: Color.grey1,
+    backgroundColor,
   },
   banner: {
     position: "absolute",
@@ -80,6 +85,6 @@ const styles = StyleSheet.create({
   },
   content: {
     marginTop: GroupBanner.height,
-    backgroundColor: Color.grey1,
+    backgroundColor,
   },
 });

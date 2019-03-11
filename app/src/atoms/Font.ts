@@ -53,7 +53,7 @@ export const size0 = {
 };
 export const size1 = {
   fontSize: 14,
-  lineHeight: 21,
+  lineHeight: 28,
 };
 export const size2 = {
   fontSize: 16,
