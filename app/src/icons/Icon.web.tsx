@@ -1,11 +1,15 @@
+import React, {SVGProps} from "react";
 import {IconProps} from "./IconTypes";
 import {Platform} from "react-native";
-import {ReactElement} from "react";
 
 // @ts-ignore
 import {createElement} from "react-native-web";
 
-export function createIconComponent(source: ReactElement<any, "svg">) {
+export function createIconComponent({
+  default: Component,
+}: {
+  readonly default: React.ComponentType<SVGProps<SVGSVGElement>>;
+}) {
   if (Platform.OS !== "web") {
     throw new Error(
       "SVG icons can only be used on the web please use Icon.native.tsx everywhere else.",
@@ -13,8 +17,7 @@ export function createIconComponent(source: ReactElement<any, "svg">) {
   }
 
   return function Icon({style, color}: IconProps) {
-    return createElement("svg", {
-      ...source.props,
+    return createElement(Component, {
       style: [style, {fill: color}],
     });
   };

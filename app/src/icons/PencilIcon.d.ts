@@ -1,4 +1,3 @@
-import {IconProps} from "./IconTypes";
-import React from "react";
+import {IconComponent} from "./IconTypes";
 
-export declare const PencilIcon: React.ComponentType<IconProps>;
+export declare const PencilIcon: IconComponent;

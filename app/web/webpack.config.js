@@ -94,9 +94,22 @@ module.exports = {
         },
       },
 
+      // SVG files with the `.react.svg` extension are imported as React
+      // components instead of file URLs.
+      {
+        test: /\.react\.svg$/,
+        use: {
+          loader: "@svgr/webpack",
+          options: {
+            icon: true,
+          },
+        },
+      },
+
       // This is needed for webpack to import static images in JavaScript files.
       {
         test: /\.(gif|jpe?g|png|svg)$/,
+        exclude: /\.react\.svg$/,
         use: {
           loader: "url-loader",
           options: {

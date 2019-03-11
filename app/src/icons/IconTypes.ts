@@ -4,6 +4,7 @@ import {
   StyleProp,
   TransformsStyle,
 } from "react-native";
+import React from "react";
 
 export type IconProps = {
   style?: StyleProp<IconStyle>;
@@ -13,3 +14,5 @@ export type IconProps = {
 export interface IconStyle extends FlexStyle, ShadowStyleIOS, TransformsStyle {
   overflow?: "visible" | "hidden";
 }
+
+export type IconComponent = React.ComponentType<IconProps>;
