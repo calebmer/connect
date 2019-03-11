@@ -4,6 +4,7 @@ export type Account = {
 };
 
 export type Post = {
+  readonly id: number;
   readonly author: Account;
   readonly topics: ReadonlyArray<GroupTopic>;
   readonly content: string;
@@ -16,6 +17,7 @@ export type GroupTopic = {
 export type InboxItem =
   | {
       readonly kind: InboxItemKind.Post;
+      readonly id: number;
       readonly reason: InboxItemPostReason;
       readonly author: Account;
       readonly topics: ReadonlyArray<GroupTopic>;
@@ -23,6 +25,7 @@ export type InboxItem =
     }
   | {
       readonly kind: InboxItemKind.Comment;
+      readonly id: number;
       readonly reason: InboxItemCommentReason;
       readonly author: Account;
       readonly contentPreview: string;
@@ -92,9 +95,10 @@ export const programmingHelp: GroupTopic = {
   displayName: "Programming Help",
 };
 
-export const inbox: ReadonlyArray<InboxItem> = [
+export const inbox: Array<InboxItem> = [
   {
     kind: InboxItemKind.Comment,
+    id: 1,
     reason: InboxItemCommentReason.PostSubscription,
     author: baruchHen,
     contentPreview:
@@ -102,6 +106,7 @@ export const inbox: ReadonlyArray<InboxItem> = [
   },
   {
     kind: InboxItemKind.Post,
+    id: 2,
     reason: InboxItemPostReason.TopicSubscription,
     author: kateEfimova,
     topics: [programmingHelp],
@@ -110,6 +115,7 @@ export const inbox: ReadonlyArray<InboxItem> = [
   },
   {
     kind: InboxItemKind.Post,
+    id: 3,
     reason: InboxItemPostReason.Mention,
     author: josephCollins,
     topics: [],
@@ -118,6 +124,7 @@ export const inbox: ReadonlyArray<InboxItem> = [
   },
   {
     kind: InboxItemKind.Post,
+    id: 4,
     reason: InboxItemPostReason.TopicSubscription,
     author: marcelloGozza,
     topics: [programmingHelp],
@@ -126,30 +133,35 @@ export const inbox: ReadonlyArray<InboxItem> = [
   },
 ];
 
-export const feed: ReadonlyArray<Post> = [
+export const feed: Array<Post> = [
   {
+    id: 5,
     author: courtneyCross,
     topics: [],
     content: "what happened to DOGE life",
   },
   {
+    id: 6,
     author: dominicGozza,
     topics: [],
     content:
       "I’m sad that indiehackers.com doesn’t have a mobile app. But if you don’t already read the content on the site. Start here: https://www.indiehackers.com/interviews/page/1",
   },
   {
+    id: 7,
     author: kateEfimova,
     topics: [],
     content: "By the way, @Baruch, why do you have Sonic meme as ur avatar? 😉",
   },
   {
+    id: 8,
     author: baruchHen,
     topics: [],
     content:
       "never heard of bluebottle in my life, until Caleb and I went there to meet Jeff from the podcasts, now my feed is full of blue bottle ads",
   },
   {
+    id: 9,
     author: marcelloGozza,
     topics: [],
     content: "Thoughts? https://brave.com",

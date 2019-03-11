@@ -1,28 +1,28 @@
 import {Color, Space} from "./atoms";
 import {Image, StyleSheet, View} from "react-native";
+import {Account} from "./MockData";
 import React from "react";
 
-const avatarURL =
-  "https://pbs.twimg.com/profile_images/1040125515665879040/jrLzK1ta_400x400.jpg";
-
-export function AccountAvatar() {
+export function AccountAvatar({account}: {account: Account}) {
   return (
     <View style={styles.container}>
-      <Image style={styles.image} source={{uri: avatarURL}} />
+      <Image style={styles.image} source={{uri: account.avatarURL}} />
     </View>
   );
 }
 
+AccountAvatar.size = Space.space6;
+
 const styles = StyleSheet.create({
   container: {
-    width: Space.space6,
-    height: Space.space6,
-    borderRadius: Space.space6 / 2,
+    width: AccountAvatar.size,
+    height: AccountAvatar.size,
+    borderRadius: AccountAvatar.size / 2,
     backgroundColor: Color.grey1,
   },
   image: {
-    width: Space.space6,
-    height: Space.space6,
-    borderRadius: Space.space6 / 2,
+    width: AccountAvatar.size,
+    height: AccountAvatar.size,
+    borderRadius: AccountAvatar.size / 2,
   },
 });

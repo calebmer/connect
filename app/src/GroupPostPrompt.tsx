@@ -1,13 +1,14 @@
 import {BodyText, Border, Color, Shadow, Space} from "./atoms";
 import {StyleSheet, View} from "react-native";
+import {Account} from "./MockData";
 import {AccountSignature} from "./AccountSignature";
 import {PencilIcon} from "./icons/PencilIcon";
 import React from "react";
 
-export function GroupPostPrompt() {
+export function GroupPostPrompt({account}: {account: Account}) {
   return (
     <View style={styles.container}>
-      <AccountSignature>
+      <AccountSignature account={account}>
         <BodyText>Start a conversation…</BodyText>
       </AccountSignature>
       <PencilIcon style={styles.icon} color={Color.grey8} />
@@ -19,8 +20,7 @@ GroupPostPrompt.borderRadius = Border.radius1;
 
 const styles = StyleSheet.create({
   container: {
-    position: "relative",
-    top: -GroupPostPrompt.borderRadius,
+    marginTop: -GroupPostPrompt.borderRadius,
     flexDirection: "row",
     alignItems: "center",
     paddingRight: Space.space4,

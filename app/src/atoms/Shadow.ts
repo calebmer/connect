@@ -25,8 +25,8 @@ export const elevation1 = Platform.select({
     shadowOpacity: 0.2,
   },
   web: {
-    shadowOffset: {width: 0, height: 4},
-    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 2},
+    shadowRadius: 8,
     shadowColor: "black",
     shadowOpacity: 0.2,
   },
@@ -40,8 +40,8 @@ export const elevation2 = Platform.select({
     shadowOpacity: 0.2,
   },
   web: {
-    shadowOffset: {width: 0, height: 5},
-    shadowRadius: 15,
+    shadowOffset: {width: 0, height: 4},
+    shadowRadius: 17,
     shadowColor: "black",
     shadowOpacity: 0.2,
   },

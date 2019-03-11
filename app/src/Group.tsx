@@ -1,16 +1,26 @@
+import * as MockData from "./MockData";
 import {
   Animated,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   Platform,
+  SectionList,
+  SectionListData,
   StyleSheet,
   View,
 } from "react-native";
+import {Border, Color, Shadow, Space} from "./atoms";
+import {InboxItem, Post} from "./MockData";
 import React, {useState} from "react";
-import {Color} from "./atoms";
 import {GroupBanner} from "./GroupBanner";
+import {GroupItemFeed} from "./GroupItemFeed";
+import {GroupItemInbox} from "./GroupItemInbox";
 import {GroupPostPrompt} from "./GroupPostPrompt";
-import {GroupSectionTitle} from "./GroupSectionTitle";
+
+const currentAccount = MockData.calebMeredith;
+
+// NOTE: `Animated.SectionList` is typed as `any` so give it a proper type!
+const AnimatedSectionList: SectionList<
+  unknown
+> = Animated.createAnimatedComponent(SectionList);
 
 export function Group() {
   const groupTitle = "Definitely Work";
@@ -35,8 +45,21 @@ export function Group() {
           extrapolateRight: "clamp",
         });
 
+  const inboxSection: SectionListData<InboxItem> = {
+    data: MockData.inbox,
+    keyExtractor: item => String(item.id),
+    renderItem: ({item}) => <GroupItemInbox item={item} />,
+  };
+
+  const feedSection: SectionListData<Post> = {
+    data: MockData.feed,
+    keyExtractor: item => String(item.id),
+    renderItem: ({item}) => <GroupItemFeed post={item} />,
+  };
+
   return (
     <View style={styles.container}>
+      {/* The banner which exists in the background of the view. */}
       <Animated.View
         // TODO: Scale background only instead of background and text? Only do
         // this when we have a background image to test against.
@@ -44,9 +67,38 @@ export function Group() {
       >
         <GroupBanner title={groupTitle} />
       </Animated.View>
-      <Animated.ScrollView
+
+      {/* All the scrollable content in the group. This is a scroll view which
+       * will scroll above the group banner. */}
+      <AnimatedSectionList
+        // Data stuff:
+        sections={[inboxSection, feedSection] as any}
+        // Layout stuff:
+        contentContainerStyle={styles.content}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <GroupPostPrompt account={currentAccount} />
+          </View>
+        }
+        ListFooterComponent={<View style={styles.footer} />}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        SectionSeparatorComponent={info => {
+          const isLeading = Boolean(info.trailingItem);
+          const isTrailing = Boolean(info.leadingItem);
+          return (
+            <View style={styles.sectionSeparator}>
+              {isLeading && (
+                <View style={styles.sectionSeparatorShadowLeading} />
+              )}
+              {isTrailing && (
+                <View style={styles.sectionSeparatorShadowTrailing} />
+              )}
+            </View>
+          );
+        }}
+        // Scroll event stuff:
         scrollEventThrottle={1}
-        onScrollBeginDrag={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        onScrollBeginDrag={event => {
           if (offsetScrollY === null) {
             setOffsetScrollY(event.nativeEvent.contentOffset.y);
           }
@@ -55,20 +107,13 @@ export function Group() {
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {useNativeDriver: Platform.OS !== "web"},
         )}
-      >
-        <View style={styles.content}>
-          <GroupPostPrompt />
-          <GroupSectionTitle title="Inbox" link="Archive" />
-          <GroupSectionTitle title="Feed" />
-          <View style={{height: 1000}} />
-          <GroupPostPrompt />
-        </View>
-      </Animated.ScrollView>
+      />
     </View>
   );
 }
 
 const backgroundColor = Color.grey0;
+const sectionMargin = Space.space6;
 
 const styles = StyleSheet.create({
   container: {
@@ -88,5 +133,38 @@ const styles = StyleSheet.create({
   content: {
     marginTop: GroupBanner.height,
     backgroundColor,
+
+    // On iOS `marginTop` will push down the content so that a height of
+    // `-marginTop` is not scrollable. Circumvent this by adding some empty
+    // space with `paddingBottom`.
+    ...Platform.select({ios: {paddingBottom: GroupBanner.height}}),
+  },
+  header: {
+    marginBottom: sectionMargin / 2,
+  },
+  footer: {
+    marginTop: sectionMargin / 2,
+  },
+  separator: {
+    height: Border.width1,
+    backgroundColor: "rgba(0, 0, 0, 0.05)",
+  },
+  sectionSeparator: {
+    overflow: "hidden",
+    height: sectionMargin / 2,
+  },
+  sectionSeparatorShadowLeading: {
+    position: "relative",
+    top: sectionMargin / 2,
+    height: sectionMargin / 2,
+    backgroundColor: "white",
+    ...Shadow.elevation1,
+  },
+  sectionSeparatorShadowTrailing: {
+    position: "relative",
+    top: -sectionMargin / 2,
+    height: sectionMargin / 2,
+    backgroundColor: "white",
+    ...Shadow.elevation1,
   },
 });
