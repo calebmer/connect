@@ -76,38 +76,23 @@ export function Group() {
       {/* All the scrollable content in the group. This is a scroll view which
        * will scroll above the group banner. */}
       <AnimatedSectionList
-        // Data stuff:
+        // The section list data!
         sections={[inboxSection, feedSection] as any}
-        // Layout stuff:
-        ListHeaderComponent={
-          <>
-            <View style={styles.header}>
-              <GroupPostPrompt account={currentAccount} />
-            </View>
-            <GroupSectionSeparator isLeading />
-          </>
-        }
-        ListFooterComponent={<View style={styles.footer} />}
-        ItemSeparatorComponent={GroupItemSeparator}
+        // Components for rendering various parts of the group section list
+        // layout. Our list design is more stylized then standard native list
+        // designs, so we have to jump through some hoops.
+        ListHeaderComponent={GroupHeader}
+        ListFooterComponent={GroupFooter}
         stickySectionHeadersEnabled
-        renderSectionHeader={({section: {title}}) => (
-          <>
-            <GroupSectionHeader title={title} />
-            <GroupItemSeparator />
-          </>
-        )}
-        SectionSeparatorComponent={({leadingItem, trailingSection}) => {
-          return leadingItem && trailingSection ? (
-            <>
-              <GroupSectionSeparator isTrailing />
-              <GroupSectionSeparator isLeading />
-            </>
-          ) : leadingItem ? (
-            <GroupSectionSeparator isTrailing />
-          ) : null;
-        }}
-        // Scroll event stuff:
-        scrollEventThrottle={1}
+        renderSectionHeader={GroupSectionHeaderWrapper}
+        SectionSeparatorComponent={GroupSectionSeparatorWrapper}
+        ItemSeparatorComponent={GroupItemSeparator}
+        // Watch scroll events and keep track of:
+        //
+        // - The starting Y offset for our scroll view.
+        // - An animated value representing the scroll Y position.
+        // - Whether or not we should show our navbar on mobile devices.
+        scrollEventThrottle={16}
         onScrollBeginDrag={event => {
           if (offsetScrollY === null) {
             setOffsetScrollY(event.nativeEvent.contentOffset.y);
@@ -122,23 +107,76 @@ export function Group() {
   );
 }
 
-function GroupItemSeparator() {
-  return <View style={styles.separator} />;
+function GroupHeader() {
+  return (
+    <>
+      <View style={styles.header}>
+        <GroupPostPrompt account={currentAccount} />
+        <View style={styles.headerSpace} />
+        <GroupSectionSeparator isLeading noBackground />
+      </View>
+    </>
+  );
+}
+
+function GroupFooter() {
+  return <View style={styles.footerSpace} />;
+}
+
+function GroupSectionHeaderWrapper({
+  section: {title},
+}: {
+  section: SectionListData<unknown>;
+}) {
+  return (
+    <>
+      <GroupSectionHeader title={title} />
+      <GroupItemSeparator />
+    </>
+  );
+}
+
+function GroupSectionSeparatorWrapper({
+  leadingItem,
+  trailingSection,
+}: {
+  leadingItem?: unknown;
+  trailingSection?: unknown;
+}) {
+  return leadingItem !== undefined && trailingSection !== undefined ? (
+    <>
+      <GroupSectionSeparator isTrailing />
+      <GroupSectionSeparator isLeading />
+    </>
+  ) : leadingItem !== undefined ? (
+    <GroupSectionSeparator isTrailing />
+  ) : null;
 }
 
 function GroupSectionSeparator({
   isLeading,
   isTrailing,
+  noBackground,
 }: {
   isLeading?: boolean;
   isTrailing?: boolean;
+  noBackground?: boolean;
 }) {
   return (
-    <View style={styles.sectionSeparator}>
+    <View
+      style={[
+        styles.sectionSeparator,
+        !noBackground && styles.sectionSeparatorBackground,
+      ]}
+    >
       {isLeading && <View style={styles.sectionSeparatorShadowLeading} />}
       {isTrailing && <View style={styles.sectionSeparatorShadowTrailing} />}
     </View>
   );
+}
+
+function GroupItemSeparator() {
+  return <View style={styles.separator} />;
 }
 
 const backgroundColor = Color.grey0;
@@ -161,12 +199,10 @@ const styles = StyleSheet.create({
   },
   header: {
     marginTop: GroupBanner.height,
-    paddingBottom: sectionMargin / 2,
     backgroundColor,
   },
-  footer: {
-    marginTop: sectionMargin / 2,
-  },
+  headerSpace: {height: sectionMargin / 2},
+  footerSpace: {height: sectionMargin / 2},
   separator: {
     height: Border.width1,
     backgroundColor: "hsl(0, 0%, 90%)",
@@ -174,6 +210,8 @@ const styles = StyleSheet.create({
   sectionSeparator: {
     overflow: "hidden",
     height: sectionMargin / 2,
+  },
+  sectionSeparatorBackground: {
     backgroundColor,
   },
   sectionSeparatorShadowLeading: {

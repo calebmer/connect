@@ -221,6 +221,7 @@ module.exports = {
     // development mode.
     new webpack.DefinePlugin({
       "process.env.NODE_ENV": dev ? '"development"' : '"production"',
+      "Platform.OS": '"web"',
     }),
     // Moment.js is an extremely popular library that bundles large locale files
     // by default due to how Webpack interprets its code. This is a practical
