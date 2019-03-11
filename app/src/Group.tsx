@@ -35,6 +35,8 @@ export function Group() {
   return (
     <View style={styles.container}>
       <Animated.View
+        // TODO: Scale background only instead of background and text? Only do
+        // this when we have a background image to test against.
         style={[styles.banner, {transform: [{scale: bannerScale}]}]}
       >
         <GroupBanner />
