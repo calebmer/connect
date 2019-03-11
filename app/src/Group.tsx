@@ -13,6 +13,8 @@ import {GroupPostPrompt} from "./GroupPostPrompt";
 import {GroupSectionTitle} from "./GroupSectionTitle";
 
 export function Group() {
+  const groupTitle = "Definitely Work";
+
   // On iOS you can scroll up which results in a negative value for `scrollY`.
   // When that happens we want to scale up our group banner so that it
   // fills in the extra space. That’s what the `bannerScale` value is for. It
@@ -40,10 +42,10 @@ export function Group() {
         // this when we have a background image to test against.
         style={[styles.banner, {transform: [{scale: bannerScale}]}]}
       >
-        <GroupBanner />
+        <GroupBanner title={groupTitle} />
       </Animated.View>
       <Animated.ScrollView
-        scrollEventThrottle={16}
+        scrollEventThrottle={1}
         onScrollBeginDrag={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
           if (offsetScrollY === null) {
             setOffsetScrollY(event.nativeEvent.contentOffset.y);
