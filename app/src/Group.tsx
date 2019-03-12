@@ -15,6 +15,8 @@ import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupItemInbox} from "./GroupItemInbox";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {GroupSectionHeader} from "./GroupSectionHeader";
+import {Route} from "./router";
+import {useNavigationTopBar} from "./useNavigationTopBar";
 
 const currentAccount = MockData.calebMeredith;
 
@@ -23,7 +25,7 @@ const AnimatedSectionList: SectionList<
   unknown
 > = Animated.createAnimatedComponent(SectionList);
 
-export function Group() {
+export function Group({route}: {route: Route}) {
   const groupTitle = "Definitely Work";
 
   // On iOS you can scroll up which results in a negative value for `scrollY`.
@@ -46,7 +48,10 @@ export function Group() {
           extrapolateRight: "clamp",
         });
 
-  const [showNavBar, setShowNavBar] = useState(false);
+  // Keep track of whether or not we should show the native top bar. We have a
+  // hook, `useNavigationTopBar()` that allows us to manage it.
+  const [showTopBar, setShowTopBar] = useState(false);
+  useNavigationTopBar({route, visible: showTopBar});
 
   const inboxSection: SectionListData<InboxItem> = {
     title: "Inbox",
@@ -103,18 +108,21 @@ export function Group() {
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {
+            // Always use the native driver for animations when possible. Except
+            // you get warnings when trying to use the native driver on web.
             useNativeDriver: Platform.OS !== "web",
+
             listener: (event: any) => {
-              // We should show the navbar when we’ve scrolled past 40% of the
+              // We should show the navbar when we’ve scrolled past X% of the
               // group banner’s height.
               const shouldShowNavBar =
                 event.nativeEvent.contentOffset.y + (offsetScrollY || 0) >=
-                GroupBanner.height * 0.25;
+                GroupBanner.height * 0.1;
 
               // If `shouldShowNavBar` is different from `showNavBar` then
               // enqueue an update to change `showNavBar`.
-              if (shouldShowNavBar !== showNavBar) {
-                setShowNavBar(shouldShowNavBar);
+              if (shouldShowNavBar !== showTopBar) {
+                setShowTopBar(shouldShowNavBar);
               }
             },
           },

@@ -56,7 +56,10 @@ export class RouteConfig<
  * component ID to navigate.
  */
 export class Route extends RouteBase {
-  private readonly componentID: string;
+  /**
+   * The component ID according to `react-native-navigation`.
+   */
+  public readonly componentID: string;
 
   constructor(componentID: string) {
     super();
