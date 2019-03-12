@@ -3,14 +3,26 @@ import {Platform, SafeAreaView, StyleSheet, Text, View} from "react-native";
 import React from "react";
 
 export function GroupBanner({title}: {title: string}) {
-  const titleNode = <Text style={styles.title}>{title}</Text>;
+  const titleNode = (
+    <Text
+      accessibilityRole={Platform.OS === "web" ? ("heading" as any) : undefined}
+      style={styles.title}
+    >
+      {title}
+    </Text>
+  );
 
   return Platform.OS === "ios" ? (
     <SafeAreaView style={styles.background}>
       <View style={styles.banner}>{titleNode}</View>
     </SafeAreaView>
   ) : (
-    <View style={[styles.background, styles.banner]}>{titleNode}</View>
+    <View
+      accessibilityRole={Platform.OS === "web" ? ("banner" as any) : "header"}
+      style={[styles.background, styles.banner]}
+    >
+      {titleNode}
+    </View>
   );
 }
 
