@@ -92,7 +92,7 @@ export const APISchema = Schema.namespace({
      * input because we use the authorization context to determine the
      * current profile.
      */
-    getCurrentAccount: Schema.method({
+    getCurrentAccountProfile: Schema.method({
       input: {},
       output: SchemaOutput.t<AccountProfile>(),
     }),

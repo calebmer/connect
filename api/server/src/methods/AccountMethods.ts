@@ -195,7 +195,7 @@ async function generateTokens(
  * input because we use the authorization context to determine the
  * current profile.
  */
-export function getCurrentAccount(
+export function getCurrentAccountProfile(
   _ctx: {},
   _accountID: AccountID,
 ): Promise<AccountProfile> {
