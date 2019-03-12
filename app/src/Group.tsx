@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     paddingVertical: Space.space1,
     paddingHorizontal: Space.space3,
     color: Color.grey6,
-    ...Font.sansBold,
+    ...Font.sans,
     ...Font.size3,
   },
   sectionSeparator: {
