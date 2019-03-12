@@ -58,20 +58,27 @@ type ClientNamespace<Schemas extends {readonly [key: string]: SchemaBase}> = {
 };
 
 /**
+ * Options for a client method request.
+ */
+type ClientMethodOptions = {
+  signal?: AbortSignal;
+};
+
+/**
  * The executor function for an authorized API method. If the API function takes
  * no input then there must be no parameter.
  */
 type ClientMethod<Input, Output> = {} extends Input
-  ? (() => Promise<Output>)
-  : ((input: Input) => Promise<Output>);
+  ? ((input?: undefined, options?: ClientMethodOptions) => Promise<Output>)
+  : ((input: Input, options?: ClientMethodOptions) => Promise<Output>);
 
 /**
  * The executor function for an unauthorized API method. If the API function
  * takes no input then there must be no parameter.
  */
 type ClientMethodUnauthorized<Input, Output> = {} extends Input
-  ? (() => Promise<Output>)
-  : ((input: Input) => Promise<Output>);
+  ? ((input?: undefined, options?: ClientMethodOptions) => Promise<Output>)
+  : ((input: Input, options?: ClientMethodOptions) => Promise<Output>);
 
 /**
  * Creates an API client based on the schema we were provided.
@@ -136,7 +143,10 @@ function createClientMethod<
   // The path to our method on the API server.
   const apiPath = `${config.url}/${path.join("/")}`;
 
-  return (async (input?: Input): Promise<Output> => {
+  return (async (
+    input?: Input,
+    options?: ClientMethodOptions,
+  ): Promise<Output> => {
     // Create the fetch configuration. We will edit this configuration over time
     // to produce our request.
     const headers: {[key: string]: string} = {};
@@ -154,6 +164,12 @@ function createClientMethod<
     if (accessToken !== undefined) {
       headers["Authorization"] = `Bearer ${accessToken}`;
       throw new Error("TODO: accessToken");
+    }
+
+    // If we were given an `AbortSignal` then make sure to add that to our
+    // `fetch()` configuration.
+    if (options !== undefined && options.signal !== undefined) {
+      init.signal = options.signal;
     }
 
     // All methods are executed with a `POST` request. HTTP semantics don’t
@@ -189,7 +205,10 @@ function createClientMethodUnauthorized<
   // The path to our method on the API server.
   const apiPath = `${config.url}/${path.join("/")}`;
 
-  return (async (input?: Input): Promise<Output> => {
+  return (async (
+    input?: Input,
+    options?: ClientMethodOptions,
+  ): Promise<Output> => {
     // Create the fetch configuration. We will edit this configuration over time
     // to produce our request.
     const headers: {[key: string]: string} = {};
@@ -199,6 +218,12 @@ function createClientMethodUnauthorized<
     if (input !== undefined) {
       headers["Content-Type"] = "application/json";
       init.body = JSON.stringify(input);
+    }
+
+    // If we were given an `AbortSignal` then make sure to add that to our
+    // `fetch()` configuration.
+    if (options !== undefined && options.signal !== undefined) {
+      init.signal = options.signal;
     }
 
     // All methods are executed with a `POST` request. HTTP semantics don’t
