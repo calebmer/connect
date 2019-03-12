@@ -38,19 +38,6 @@ export type APIClientConfig = {
 };
 
 /**
- * Used for authenticating an account with the API. The `APIAuth` object will
- * have a different implementation on every platform.
- */
-export interface APIAuth {
-  /**
-   * Get the access token for our API. If we return void then this platform
-   * does not use access tokens directly. For example, calls to the API from the
-   * web go through an API proxy that adds the access token from a cookie.
-   */
-  getAccessToken(): string | void;
-}
-
-/**
  * Creates the type for an API client based on its schema.
  */
 type Client<
@@ -71,19 +58,20 @@ type ClientNamespace<Schemas extends {readonly [key: string]: SchemaBase}> = {
 };
 
 /**
- * The executor function for an authorized API method.
+ * The executor function for an authorized API method. If the API function takes
+ * no input then there must be no parameter.
  */
-type ClientMethod<Input, Output> = (
-  auth: APIAuth,
-  input: Input,
-) => Promise<Output>;
+type ClientMethod<Input, Output> = {} extends Input
+  ? (() => Promise<Output>)
+  : ((input: Input) => Promise<Output>);
 
 /**
- * The executor function for an unauthorized API method.
+ * The executor function for an unauthorized API method. If the API function
+ * takes no input then there must be no parameter.
  */
-type ClientMethodUnauthorized<Input, Output> = (
-  input: Input,
-) => Promise<Output>;
+type ClientMethodUnauthorized<Input, Output> = {} extends Input
+  ? (() => Promise<Output>)
+  : ((input: Input) => Promise<Output>);
 
 /**
  * Creates an API client based on the schema we were provided.
@@ -145,26 +133,29 @@ function createClientMethod<Input extends JSONObjectValue, Output>(
   // The path to our method on the API server.
   const apiPath = `${config.url}/${path.join("/")}`;
 
-  return async (auth: APIAuth, input: Input) => {
-    // Create the headers object for an authorized client method.
-    const headers: {[key: string]: string} = {
-      "Content-Type": "application/json",
-    };
+  return (async (input?: Input): Promise<Output> => {
+    // Create the fetch configuration. We will edit this configuration over time
+    // to produce our request.
+    const headers: {[key: string]: string} = {};
+    const init: RequestInit = {method: "POST", headers};
+
+    // If we have some input, then make sure to add it to our request.
+    if (input !== undefined) {
+      headers["Content-Type"] = "application/json";
+      init.body = JSON.stringify(input);
+    }
 
     // Use our auth object to get the access token for our
     // `Authorization` header.
-    const accessToken = auth.getAccessToken();
+    const accessToken = "";
     if (accessToken !== undefined) {
       headers["Authorization"] = `Bearer ${accessToken}`;
+      throw new Error("TODO: accessToken");
     }
 
     // All methods are executed with a `POST` request. HTTP semantics don’t
     // matter a whole lot to our API.
-    const response = await fetch(apiPath, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(input),
-    });
+    const response = await fetch(apiPath, init);
 
     // Parse the response body as JSON. We trust our server to return the
     // correct response so cast to `Output` directly without validating.
@@ -177,7 +168,7 @@ function createClientMethod<Input extends JSONObjectValue, Output>(
     } else {
       throw new APIError(result.error.code);
     }
-  };
+  }) as ClientMethod<Input, Output>;
 }
 
 /**
@@ -192,14 +183,21 @@ function createClientMethodUnauthorized<Input extends JSONObjectValue, Output>(
   // The path to our method on the API server.
   const apiPath = `${config.url}/${path.join("/")}`;
 
-  return async (input: Input) => {
+  return (async (input?: Input): Promise<Output> => {
+    // Create the fetch configuration. We will edit this configuration over time
+    // to produce our request.
+    const headers: {[key: string]: string} = {};
+    const init: RequestInit = {method: "POST", headers: {}};
+
+    // If we have some input, then make sure to add it to our request.
+    if (input !== undefined) {
+      headers["Content-Type"] = "application/json";
+      init.body = JSON.stringify(input);
+    }
+
     // All methods are executed with a `POST` request. HTTP semantics don’t
     // matter a whole lot to our API.
-    const response = await fetch(apiPath, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(input),
-    });
+    const response = await fetch(apiPath, init);
 
     // Parse the response body as JSON. We trust our server to return the
     // correct response so cast to `Output` directly without validating.
@@ -212,5 +210,5 @@ function createClientMethodUnauthorized<Input extends JSONObjectValue, Output>(
     } else {
       throw new APIError(result.error.code);
     }
-  };
+  }) as ClientMethodUnauthorized<Input, Output>;
 }

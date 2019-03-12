@@ -279,3 +279,16 @@ test("POST /account/getCurrentAccountProfile", async () => {
     });
   expect(getCurrentAccountProfile).toHaveBeenCalledTimes(1);
 });
+
+test("POST /account/getCurrentAccountProfile - without input", async () => {
+  const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
+  await request(APIServer)
+    .post("/account/getCurrentAccountProfile")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .expect("Content-Type", /json/)
+    .expect(200, {
+      ok: true,
+      data: {works: true, accountID: 42},
+    });
+  expect(getCurrentAccountProfile).toHaveBeenCalledTimes(1);
+});
