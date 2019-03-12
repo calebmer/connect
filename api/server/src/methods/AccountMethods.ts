@@ -1,7 +1,14 @@
-import {APIError, APIErrorCode} from "@connect/api-client";
-import {AccessToken, AccessTokenGenerator} from "../entities/AccessToken";
-import {AccountCollection, AccountID} from "../entities/Account";
-import {RefreshToken, RefreshTokenCollection} from "../entities/RefreshToken";
+import {
+  APIError,
+  APIErrorCode,
+  AccessToken,
+  AccountID,
+  AccountProfile,
+  RefreshToken,
+} from "@connect/api-client";
+import {AccessTokenGenerator} from "../entities/AccessToken";
+import {AccountCollection} from "../entities/Account";
+import {RefreshTokenCollection} from "../entities/RefreshToken";
 import bcrypt from "bcrypt";
 
 /**
@@ -137,7 +144,8 @@ export async function refreshAccessToken(
 ): Promise<{
   readonly accessToken: AccessToken;
 }> {
-  // Fetch the refresh token from our database.
+  // Fetch the refresh token from our database. Since we are only given a
+  // string, up-cast to a refresh token. It won’t hurt to trust this input.
   const accountID = await ctx.refreshTokens.use(refreshToken);
 
   // If the refresh token does not exist then we can’t create a new
@@ -188,10 +196,8 @@ async function generateTokens(
  * current profile.
  */
 export function getCurrentAccount(
-  _ctx: {readonly accountID: AccountID},
-  {}: {},
-): Promise<{
-  readonly displayName: string;
-}> {
+  _ctx: {},
+  _accountID: AccountID,
+): Promise<AccountProfile> {
   throw new Error("TODO");
 }

@@ -1,4 +1,4 @@
-import {GroupRoute} from "./router";
+import {GroupRoute} from "./router/AllRoutes";
 import {Navigation} from "react-native-navigation";
 
 Navigation.events().registerAppLaunchedListener(() => {

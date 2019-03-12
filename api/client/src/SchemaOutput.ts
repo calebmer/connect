@@ -1,5 +1,3 @@
-import {JSONObjectValue} from "./JSONValue";
-
 // A private symbol used to create a phantom type.
 const phantom = Symbol();
 
@@ -15,7 +13,7 @@ const phantom = Symbol();
  * At runtime this type is the value `null`, but statically it carries around a
  * phantom type.
  */
-export type SchemaOutput<Value extends JSONObjectValue> = {
+export type SchemaOutput<Value> = {
   [phantom]: Value;
 };
 
@@ -23,7 +21,7 @@ export const SchemaOutput = {
   /**
    * Creates a `SchemaOutput` phantom type.
    */
-  t<Value extends JSONObjectValue>(): SchemaOutput<Value> {
+  t<Value>(): SchemaOutput<Value> {
     return null as any;
   },
 };

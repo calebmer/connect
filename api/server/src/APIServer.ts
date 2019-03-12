@@ -4,6 +4,7 @@ import {
   APIErrorCode,
   APIResult,
   APISchema,
+  AccountID,
   JSONObjectValue,
   SchemaBase,
   SchemaKind,
@@ -11,14 +12,14 @@ import {
   SchemaMethodUnauthorized,
   SchemaNamespace,
 } from "@connect/api-client";
-import {Context, ContextUnauthorized} from "./Context";
+import {AccessTokenData, AccessTokenGenerator} from "./entities/AccessToken";
 import {NextFunction, Request, Response} from "express";
-import {JWT_SECRET} from "./RunConfig";
+import {PGClient} from "./PGClient";
+import {PGContext} from "./PGContext";
 import chalk from "chalk";
 import express from "express";
 import jwt from "jsonwebtoken";
 import morgan from "morgan";
-import {withDatabase} from "./Database";
 
 /**
  * The HTTP server for our API. Powered by Express.
@@ -114,10 +115,7 @@ const authorizationHeaderRegex = /^\s*bearer\s+([a-z0-9\-._~+/]+=*)\s*$/i;
 /**
  * Initializes the server with a method that does not need authorization.
  */
-function initializeServerMethod<
-  Input extends JSONObjectValue,
-  Output extends JSONObjectValue
->(
+function initializeServerMethod<Input extends JSONObjectValue, Output>(
   path: ReadonlyArray<string>,
   definition: ServerMethod<Input, Output>,
   schema: SchemaMethod<Input, Output>,
@@ -127,41 +125,41 @@ function initializeServerMethod<
 
   // Register this method on our API server. When this method is executed we
   // will call the appropriate function.
-  APIServer.post(apiPath, (req, res, next) => {
-    // Get the authorization header. If there is no authorization header then
-    // the client is unauthorized and can’t continue.
-    const authorizationHeader = req.headers.authorization;
-    if (!authorizationHeader) {
-      res.statusCode = 401;
-      next(new APIError(APIErrorCode.UNAUTHORIZED));
-      return;
-    }
+  APIServer.post(apiPath, async (req, res, next) => {
+    try {
+      // Get the authorization header. If there is no authorization header then
+      // the client is unauthorized and can’t continue.
+      const authorizationHeader = req.headers.authorization;
+      if (!authorizationHeader) {
+        res.statusCode = 401;
+        next(new APIError(APIErrorCode.UNAUTHORIZED));
+        return;
+      }
 
-    // Parse the access token from the authorization header. If the
-    // authorization header is not in the correct “bearer” auth scheme then
-    // the client is unauthorized and can’t continue.
-    const match = authorizationHeaderRegex.exec(authorizationHeader);
-    if (!match) {
-      res.statusCode = 401;
-      next(new APIError(APIErrorCode.UNAUTHORIZED));
-      return;
-    }
+      // Parse the access token from the authorization header. If the
+      // authorization header is not in the correct “bearer” auth scheme then
+      // the client is unauthorized and can’t continue.
+      const match = authorizationHeaderRegex.exec(authorizationHeader);
+      if (!match) {
+        res.statusCode = 401;
+        next(new APIError(APIErrorCode.UNAUTHORIZED));
+        return;
+      }
 
-    // Next verify the JWT token using our shared JWT secret.
-    jwt.verify(match[1], JWT_SECRET, (error, accessToken) => {
-      // If we failed to verify the token then return an unauthorized API error.
-      // If the token was expired then return a token expired error code.
-      if (error) {
+      // Next verify the JWT token using our shared JWT secret.
+      let accessToken: AccessTokenData;
+      try {
+        accessToken = await AccessTokenGenerator.verify(match[1]);
+      } catch (error) {
+        // If we failed to verify the token then return an unauthorized API
+        // error. If the token was expired then return a token expired
+        // error code.
         res.statusCode = 401;
         let code = APIErrorCode.UNAUTHORIZED;
         if (error instanceof jwt.TokenExpiredError)
           code = APIErrorCode.ACCESS_TOKEN_EXPIRED;
-        next(new APIError(code));
-        return;
+        throw new APIError(code);
       }
-
-      // Get the account ID from our access token.
-      const accountID: number = (accessToken as any).id;
 
       // Get the input from our request body.
       const input: unknown = req.body;
@@ -173,23 +171,21 @@ function initializeServerMethod<
       }
 
       // Provides a database to our API method definition.
-      withDatabase(database => {
-        return definition(new Context({accountID, database}), input);
-      }).then(
-        output => {
-          // Construct the successful result of an API request.
-          const result: APIResult<Output> = {
-            ok: true,
-            data: output,
-          };
-          // Send the successful result to our client.
-          res.status(200).json(result);
-        },
+      const output = await PGClient.with(client => {
+        return definition(PGContext.get(client), accessToken.id, input);
+      });
 
-        // If the method failed then forward to our Express error handler!
-        error => next(error),
-      );
-    });
+      // Construct the successful result of an API request.
+      const result: APIResult<Output> = {
+        ok: true,
+        data: output,
+      };
+
+      // Send the successful result to our client.
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
   });
 }
 
@@ -198,7 +194,7 @@ function initializeServerMethod<
  */
 function initializeServerMethodUnauthorized<
   Input extends JSONObjectValue,
-  Output extends JSONObjectValue
+  Output
 >(
   path: ReadonlyArray<string>,
   definition: ServerMethodUnauthorized<Input, Output>,
@@ -209,33 +205,33 @@ function initializeServerMethodUnauthorized<
 
   // Register this method on our API server. When this method is executed we
   // will call the appropriate function.
-  APIServer.post(apiPath, (req, res, next) => {
-    // Get the input from our request body.
-    const input: unknown = req.body;
+  APIServer.post(apiPath, async (req, res, next) => {
+    try {
+      // Get the input from our request body.
+      const input: unknown = req.body;
 
-    // Validate that the input from our request body is correct. If the input
-    // is not correct then throw an API error.
-    if (!schema.input.validate(input)) {
-      throw new APIError(APIErrorCode.BAD_INPUT);
+      // Validate that the input from our request body is correct. If the input
+      // is not correct then throw an API error.
+      if (!schema.input.validate(input)) {
+        throw new APIError(APIErrorCode.BAD_INPUT);
+      }
+
+      // Execute our API method definition with a Postgres client instance.
+      const output = await PGClient.with(client => {
+        return definition(PGContext.get(client), input);
+      });
+
+      // Construct the successful result of an API request.
+      const result: APIResult<Output> = {
+        ok: true,
+        data: output,
+      };
+
+      // Send the successful result to our client.
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
     }
-
-    // Provides a database to our API method definition.
-    withDatabase(database => {
-      return definition(new ContextUnauthorized(database), input);
-    }).then(
-      output => {
-        // Construct the successful result of an API request.
-        const result: APIResult<Output> = {
-          ok: true,
-          data: output,
-        };
-        // Send the successful result to our client.
-        res.status(200).json(result);
-      },
-
-      // If the method failed then forward to our Express error handler!
-      error => next(error),
-    );
   });
 }
 
@@ -321,7 +317,8 @@ type ServerNamespace<Schemas extends {readonly [key: string]: SchemaBase}> = {
  * method input and some authorized context.
  */
 type ServerMethod<Input, Output> = (
-  ctx: Context,
+  ctx: PGContext,
+  accountID: AccountID,
   input: Input,
 ) => Promise<Output>;
 
@@ -330,6 +327,6 @@ type ServerMethod<Input, Output> = (
  * method input and some unauthorized context.
  */
 type ServerMethodUnauthorized<Input, Output> = (
-  ctx: ContextUnauthorized,
+  ctx: PGContext,
   input: Input,
 ) => Promise<Output>;

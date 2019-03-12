@@ -1,13 +1,6 @@
-import {AccountID} from "./Account";
+import {AccessToken, AccountID} from "@connect/api-client";
 import {JWT_SECRET} from "../RunConfig";
 import jwt from "jsonwebtoken";
-
-/**
- * The access token which is a short-lived JSON Web Token (JWT) an account may
- * use to access our API.
- */
-export type AccessToken = string & {readonly type: typeof AccessToken};
-declare const AccessToken: unique symbol;
 
 /**
  * The data carried around in an access token.

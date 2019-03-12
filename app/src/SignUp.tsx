@@ -10,9 +10,10 @@ import {
 } from "./atoms";
 import {Platform, StyleSheet, View} from "react-native";
 import React, {useRef, useState} from "react";
-import {Route, SignInRoute} from "./router";
 import {TextInput, TextInputInstance} from "./TextInput";
 import {API} from "./API";
+import {Route} from "./router/Route";
+import {SignInRoute} from "./router/AllRoutes";
 import {SignUpLayout} from "./SignUpLayout";
 import {displayErrorMessage} from "./ErrorMessage";
 
@@ -24,21 +25,21 @@ export function SignUp({
   signInRoute?: Route;
 }) {
   // References to text inputs.
-  const displayNameInput = useRef<TextInputInstance | null>(null);
+  const nameInput = useRef<TextInputInstance | null>(null);
   const emailInput = useRef<TextInputInstance | null>(null);
   const passwordInput = useRef<TextInputInstance | null>(null);
 
   // Input state variables.
-  const [displayName, setDisplayName] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   // Check if the display name is in a valid format.
-  let displayNameError: string | undefined;
-  if (displayName === "") {
-    displayNameError = "A name is required.";
-  } else if (displayName.length < 2) {
-    displayNameError = "Your name should have at least 2 characters.";
+  let nameError: string | undefined;
+  if (name === "") {
+    nameError = "A name is required.";
+  } else if (name.length < 2) {
+    nameError = "Your name should have at least 2 characters.";
   }
 
   // Check if the email is in a valid format.
@@ -60,7 +61,7 @@ export function SignUp({
 
   // Server error state variables.
   const [attempted, setAttempted] = useState(false);
-  const [displayNameServerError, setDisplayNameServerError] =
+  const [nameServerError, setNameServerError] =
     useState<string | undefined>(undefined); // prettier-ignore
   const [emailServerError, setEmailServerError] =
     useState<string | undefined>(undefined); // prettier-ignore
@@ -72,14 +73,14 @@ export function SignUp({
     setAttempted(true);
 
     // Reset server errors.
-    setDisplayNameServerError(undefined);
+    setNameServerError(undefined);
     setEmailServerError(undefined);
     setPasswordServerError(undefined);
 
     // Check client side errors. If we have any then focus the associated input.
     // Force the user to fix their errors before continuing.
-    if (displayNameError) {
-      if (displayNameInput.current) displayNameInput.current.focus();
+    if (nameError) {
+      if (nameInput.current) nameInput.current.focus();
       return;
     }
     if (emailError) {
@@ -97,11 +98,7 @@ export function SignUp({
 
     // Actually sign up!
     API.account
-      .signUp({
-        displayName,
-        email,
-        password,
-      })
+      .signUp({name, email, password})
       // If we got an error then resolve with that error instead of rejecting.
       .then(() => undefined, error => error)
       .then(error => {
@@ -116,8 +113,8 @@ export function SignUp({
             setEmailServerError(displayErrorMessage(error));
             if (emailInput.current) emailInput.current.focus();
           } else {
-            setDisplayNameServerError(displayErrorMessage(error));
-            if (displayNameInput.current) displayNameInput.current.focus();
+            setNameServerError(displayErrorMessage(error));
+            if (nameInput.current) nameInput.current.focus();
           }
         }
       });
@@ -134,14 +131,12 @@ export function SignUp({
         </BodyText>
       </View>
       <TextInput
-        ref={displayNameInput}
-        value={displayName}
-        onChangeText={setDisplayName}
+        ref={nameInput}
+        value={name}
+        onChangeText={setName}
         label="Name"
         placeholder="Taylor"
-        errorMessage={
-          attempted ? displayNameServerError || displayNameError : undefined
-        }
+        errorMessage={attempted ? nameServerError || nameError : undefined}
         autoCapitalize="words"
         autoComplete="given-name"
         textContentType="givenName"

@@ -1,5 +1,10 @@
 import {ClientBase, Pool} from "pg";
 
+// Throw an error if we try to use Postgres in a test environment.
+if (process.env.NODE_ENV === "test") {
+  throw new Error("Should not be using Postgres in tests.");
+}
+
 /**
  * A database connection pool. Connecting a new client on every request would be
  * to expensive, but only having one client for our entire server would mean all

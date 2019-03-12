@@ -1,7 +1,7 @@
 BEGIN;
 
 -- NOTE: They all have a password equal to exactly “password”.
-INSERT INTO account (id, display_name, email, password_hash) VALUES
+INSERT INTO account (id, name, email, password_hash) VALUES
   (1, 'Baruch', 'baruch@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
   (2, 'Caleb', 'caleb@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
   (3, 'Dominic', 'dominic@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
@@ -24,7 +24,7 @@ INSERT INTO account (id, display_name, email, password_hash) VALUES
 
 ALTER SEQUENCE account_id_seq RESTART WITH 20;
 
-INSERT INTO "group" (id, slug, display_name, owner_id) VALUES
+INSERT INTO "group" (id, slug, name, owner_id) VALUES
   (1, 'nohello', 'Definitely Work', 3),
   (2, 'dnd', 'D&D', 7),
   (3, 'coffeekit', 'CoffeeKit', 17);

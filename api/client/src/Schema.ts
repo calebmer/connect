@@ -28,7 +28,7 @@ export const Schema = {
    */
   method<
     Inputs extends {readonly [key: string]: SchemaInput<JSONValue>},
-    Output extends JSONObjectValue
+    Output
   >({
     input,
     output,
@@ -82,8 +82,8 @@ export const Schema = {
  */
 export type SchemaBase =
   | SchemaNamespace<{readonly [key: string]: SchemaBase}>
-  | SchemaMethod<JSONObjectValue, JSONObjectValue>
-  | SchemaMethodUnauthorized<JSONObjectValue, JSONObjectValue>;
+  | SchemaMethod<JSONObjectValue, unknown>
+  | SchemaMethodUnauthorized<JSONObjectValue, unknown>;
 
 /**
  * The kind of a schema.
@@ -108,10 +108,13 @@ export type SchemaNamespace<
 /**
  * A schema method will execute a function with its typed input against our
  * API server.
+ *
+ * TODO: Re-enable `extends JSONObjectValue`. Currently it triggers a TypeScript
+ * bug, see: https://github.com/Microsoft/TypeScript/issues/30345
  */
 export type SchemaMethod<
   Input extends JSONObjectValue,
-  Output extends JSONObjectValue
+  Output /* extends JSONObjectValue */
 > = {
   readonly kind: SchemaKind.METHOD;
   readonly input: SchemaInput<Input>;
@@ -125,7 +128,7 @@ export type SchemaMethod<
  */
 export type SchemaMethodUnauthorized<
   Input extends JSONObjectValue,
-  Output extends JSONObjectValue
+  Output /* extends JSONObjectValue */
 > = {
   readonly kind: SchemaKind.METHOD_UNAUTHORIZED;
   readonly input: SchemaInput<Input>;

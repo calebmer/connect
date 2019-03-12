@@ -1,13 +1,13 @@
 /* eslint-disable import/first */
 
+jest.mock("../PGContext", () => ({PGContext: {get: () => ({})}}));
+jest.mock("../PGClient", () => ({
+  PGClient: {with: (action: any) => action({})},
+}));
 jest.mock("../methods", () => ({
   account: {
-    signIn: jest.fn((_ctx, _input) => {
-      return Promise.resolve({works: true});
-    }),
-    getCurrentAccount: jest.fn((ctx, _input) => {
-      return Promise.resolve({works: true, accountID: ctx.accountID});
-    }),
+    signIn: jest.fn(() => ({works: true})),
+    getCurrentAccount: jest.fn((_, accountID) => ({works: true, accountID})),
   },
 }));
 
@@ -15,7 +15,6 @@ import * as methods from "../methods";
 import {APIErrorCode} from "@connect/api-client";
 import {APIServer} from "../APIServer";
 import {JWT_SECRET} from "../RunConfig";
-import fetch from "node-fetch";
 import jwt from "jsonwebtoken";
 import request from "supertest";
 

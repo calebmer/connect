@@ -1,9 +1,5 @@
-import {
-  AccountAuth,
-  AccountCollection,
-  AccountID,
-  AccountProfile,
-} from "../Account";
+import {AccountAuth, AccountCollection} from "../Account";
+import {AccountID, AccountProfile} from "@connect/api-client";
 import {PGClient} from "../../PGClient";
 
 export class PGAccountCollection implements AccountCollection {

@@ -1,11 +1,5 @@
-import {AccountID} from "./Account";
+import {AccountID, RefreshToken} from "@connect/api-client";
 import uuidV4 from "uuid/v4";
-
-/**
- * The refresh token which an account may use to generate a new access token.
- */
-export type RefreshToken = string & {readonly type: typeof RefreshToken};
-declare const RefreshToken: unique symbol;
 
 /**
  * Manages the creation and usage of refresh tokens.

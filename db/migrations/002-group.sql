@@ -21,7 +21,7 @@ CREATE TABLE "group" (
   slug TEXT NOT NULL UNIQUE,
   -- The display name for this group in plain text. No limitations on the
   -- display name unlike the group’s slug.
-  display_name TEXT NOT NULL,
+  name TEXT NOT NULL,
   -- The account which currently owns the group. Usually the account which
   -- created the group although ownership may be transferred.
   owner_id INT NOT NULL REFERENCES account(id),

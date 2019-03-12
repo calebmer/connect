@@ -10,10 +10,11 @@ import {
 } from "./atoms";
 import {Platform, StyleSheet, View} from "react-native";
 import React, {useRef, useState} from "react";
-import {Route, SignUpRoute} from "./router";
 import {TextInput, TextInputInstance} from "./TextInput";
 import {API} from "./API";
+import {Route} from "./router/Route";
 import {SignUpLayout} from "./SignUpLayout";
+import {SignUpRoute} from "./router/AllRoutes";
 import {displayErrorMessage} from "./ErrorMessage";
 
 export function SignIn({

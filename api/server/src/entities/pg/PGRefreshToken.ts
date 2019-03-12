@@ -1,6 +1,6 @@
-import {RefreshToken, RefreshTokenCollection} from "../RefreshToken";
-import {AccountID} from "../Account";
+import {AccountID, RefreshToken} from "@connect/api-client";
 import {PGClient} from "../../PGClient";
+import {RefreshTokenCollection} from "../RefreshToken";
 import uuidV4 from "uuid/v4";
 
 export class PGRefreshTokenCollection implements RefreshTokenCollection {

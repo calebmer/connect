@@ -14,7 +14,7 @@ CREATE TABLE account (
   --
   -- We recommend that people use their first name. This balances anonymity with
   -- real, authentic, names.
-  display_name TEXT NOT NULL,
+  name TEXT NOT NULL,
   -- A URL to some avatar image associated with this account. Could be of any
   -- size or format.
   avatar_url TEXT,

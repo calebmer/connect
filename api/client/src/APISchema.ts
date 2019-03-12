@@ -1,3 +1,5 @@
+import {AccessToken, RefreshToken} from "./types/TokenTypes";
+import {AccountProfile} from "./types/AccountTypes";
 import {Schema} from "./Schema";
 import {SchemaInput} from "./SchemaInput";
 import {SchemaOutput} from "./SchemaOutput";
@@ -23,13 +25,13 @@ export const APISchema = Schema.namespace({
      */
     signUp: Schema.unauthorizedMethod({
       input: {
-        displayName: SchemaInput.string,
+        name: SchemaInput.string,
         email: SchemaInput.string,
         password: SchemaInput.string,
       },
       output: SchemaOutput.t<{
-        readonly accessToken: string;
-        readonly refreshToken: string;
+        readonly accessToken: AccessToken;
+        readonly refreshToken: RefreshToken;
       }>(),
     }),
 
@@ -53,8 +55,8 @@ export const APISchema = Schema.namespace({
         password: SchemaInput.string,
       },
       output: SchemaOutput.t<{
-        readonly accessToken: string;
-        readonly refreshToken: string;
+        readonly accessToken: AccessToken;
+        readonly refreshToken: RefreshToken;
       }>(),
     }),
 
@@ -67,7 +69,7 @@ export const APISchema = Schema.namespace({
      */
     signOut: Schema.unauthorizedMethod({
       input: {
-        refreshToken: SchemaInput.string,
+        refreshToken: SchemaInput.string as SchemaInput<RefreshToken>,
       },
       output: SchemaOutput.t<{}>(),
     }),
@@ -78,10 +80,10 @@ export const APISchema = Schema.namespace({
      */
     refreshAccessToken: Schema.unauthorizedMethod({
       input: {
-        refreshToken: SchemaInput.string,
+        refreshToken: SchemaInput.string as SchemaInput<RefreshToken>,
       },
       output: SchemaOutput.t<{
-        readonly accessToken: string;
+        readonly accessToken: AccessToken;
       }>(),
     }),
 
@@ -92,9 +94,7 @@ export const APISchema = Schema.namespace({
      */
     getCurrentAccount: Schema.method({
       input: {},
-      output: SchemaOutput.t<{
-        readonly displayName: string;
-      }>(),
+      output: SchemaOutput.t<AccountProfile>(),
     }),
   }),
 });
