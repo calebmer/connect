@@ -15,6 +15,7 @@ import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupItemInbox} from "./GroupItemInbox";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {GroupSectionHeader} from "./GroupSectionHeader";
+import {NavbarNative} from "./NavbarNative";
 
 const currentAccount = MockData.calebMeredith;
 
@@ -46,7 +47,7 @@ export function Group() {
           extrapolateRight: "clamp",
         });
 
-  const [showNavBar, setShowNavBar] = useState(false);
+  const [showNavbar, setShowNavbar] = useState(false);
 
   const inboxSection: SectionListData<InboxItem> = {
     title: "Inbox",
@@ -75,6 +76,9 @@ export function Group() {
         <GroupBanner title={groupTitle} />
       </Animated.View>
 
+      {/* Include the navbar. */}
+      <NavbarNative hideBackground={!showNavbar} />
+
       {/* All the scrollable content in the group. This is a scroll view which
        * will scroll above the group banner. */}
       <AnimatedSectionList
@@ -85,7 +89,7 @@ export function Group() {
         // designs, so we have to jump through some hoops.
         ListHeaderComponent={GroupHeader}
         ListFooterComponent={GroupFooter}
-        stickySectionHeadersEnabled
+        stickySectionHeadersEnabled={false}
         renderSectionHeader={GroupSectionHeaderWrapper}
         SectionSeparatorComponent={GroupSectionSeparatorWrapper}
         ItemSeparatorComponent={GroupItemSeparator}
@@ -107,14 +111,14 @@ export function Group() {
             listener: (event: any) => {
               // We should show the navbar when we’ve scrolled past 40% of the
               // group banner’s height.
-              const shouldShowNavBar =
-                event.nativeEvent.contentOffset.y + (offsetScrollY || 0) >=
+              const shouldShowNavbar =
+                event.nativeEvent.contentOffset.y - (offsetScrollY || 0) >=
                 GroupBanner.height * 0.25;
 
-              // If `shouldShowNavBar` is different from `showNavBar` then
-              // enqueue an update to change `showNavBar`.
-              if (shouldShowNavBar !== showNavBar) {
-                setShowNavBar(shouldShowNavBar);
+              // If `shouldShowNavbar` is different from `showNavbar` then
+              // enqueue an update to change `showNavbar`.
+              if (shouldShowNavbar !== showNavbar) {
+                setShowNavbar(shouldShowNavbar);
               }
             },
           },
@@ -222,7 +226,7 @@ const styles = StyleSheet.create({
   footerSpace: {height: sectionMargin / 2},
   separator: {
     height: Border.width1,
-    backgroundColor: "hsl(0, 0%, 90%)",
+    backgroundColor: Color.grey1,
   },
   sectionSeparator: {
     overflow: "hidden",
