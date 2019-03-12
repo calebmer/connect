@@ -46,6 +46,8 @@ export function Group() {
           extrapolateRight: "clamp",
         });
 
+  const [showNavBar, setShowNavBar] = useState(false);
+
   const inboxSection: SectionListData<InboxItem> = {
     title: "Inbox",
     data: MockData.inbox,
@@ -100,7 +102,22 @@ export function Group() {
         }}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: Platform.OS !== "web"},
+          {
+            useNativeDriver: Platform.OS !== "web",
+            listener: (event: any) => {
+              // We should show the navbar when we’ve scrolled past 40% of the
+              // group banner’s height.
+              const shouldShowNavBar =
+                event.nativeEvent.contentOffset.y + (offsetScrollY || 0) >=
+                GroupBanner.height * 0.25;
+
+              // If `shouldShowNavBar` is different from `showNavBar` then
+              // enqueue an update to change `showNavBar`.
+              if (shouldShowNavBar !== showNavBar) {
+                setShowNavBar(shouldShowNavBar);
+              }
+            },
+          },
         )}
       />
     </View>
