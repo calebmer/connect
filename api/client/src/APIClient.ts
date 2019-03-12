@@ -193,7 +193,7 @@ function createClientMethodUnauthorized<
     // Create the fetch configuration. We will edit this configuration over time
     // to produce our request.
     const headers: {[key: string]: string} = {};
-    const init: RequestInit = {method: "POST", headers: {}};
+    const init: RequestInit = {method: "POST", headers};
 
     // If we have some input, then make sure to add it to our request.
     if (input !== undefined) {

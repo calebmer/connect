@@ -24,6 +24,7 @@ export const APISchema = Schema.namespace({
      * Also signs the person into their newly created account.
      */
     signUp: Schema.unauthorizedMethod({
+      safe: false,
       input: {
         name: SchemaInput.string,
         email: SchemaInput.string,
@@ -50,6 +51,7 @@ export const APISchema = Schema.namespace({
      * [1]: https://auth0.com/learn/refresh-tokens
      */
     signIn: Schema.unauthorizedMethod({
+      safe: false,
       input: {
         email: SchemaInput.string,
         password: SchemaInput.string,
@@ -68,6 +70,7 @@ export const APISchema = Schema.namespace({
      * access token. The access token will eventually expire.
      */
     signOut: Schema.unauthorizedMethod({
+      safe: false,
       input: {
         refreshToken: SchemaInput.string as SchemaInput<RefreshToken>,
       },
@@ -79,6 +82,7 @@ export const APISchema = Schema.namespace({
      * used when you have an expired access token and you need to get a new one.
      */
     refreshAccessToken: Schema.unauthorizedMethod({
+      safe: false,
       input: {
         refreshToken: SchemaInput.string as SchemaInput<RefreshToken>,
       },
@@ -93,6 +97,7 @@ export const APISchema = Schema.namespace({
      * current profile.
      */
     getCurrentAccountProfile: Schema.method({
+      safe: true,
       input: {},
       output: SchemaOutput.t<AccountProfile>(),
     }),

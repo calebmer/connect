@@ -27,20 +27,25 @@ export const Schema = {
    * the result.
    */
   method<
+    Safe extends boolean,
     Inputs extends {readonly [key: string]: SchemaInput<JSONValue>},
     Output extends JSONObjectValue
   >({
+    safe,
     input,
     output,
   }: {
+    safe: Safe;
     input: Inputs;
     output: SchemaOutput<Output>;
   }): SchemaMethod<
     {readonly [Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>},
-    Output
+    Output,
+    Safe
   > {
     return {
       kind: SchemaKind.METHOD,
+      safe,
       input: SchemaInput.object(input),
       output,
     };
@@ -53,20 +58,25 @@ export const Schema = {
    * the result.
    */
   unauthorizedMethod<
+    Safe extends boolean,
     Inputs extends {readonly [key: string]: SchemaInput<JSONValue>},
     Output extends JSONObjectValue
   >({
+    safe,
     input,
     output,
   }: {
+    safe: Safe;
     input: Inputs;
     output: SchemaOutput<Output>;
   }): SchemaMethodUnauthorized<
     {readonly [Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>},
-    Output
+    Output,
+    Safe
   > {
     return {
       kind: SchemaKind.METHOD_UNAUTHORIZED,
+      safe,
       input: SchemaInput.object(input),
       output,
     };
@@ -111,9 +121,11 @@ export type SchemaNamespace<
  */
 export type SchemaMethod<
   Input extends JSONObjectValue,
-  Output extends JSONObjectValue
+  Output extends JSONObjectValue,
+  Safe extends boolean = boolean
 > = {
   readonly kind: SchemaKind.METHOD;
+  readonly safe: Safe;
   readonly input: SchemaInput<Input>;
   readonly output: SchemaOutput<Output>;
 };
@@ -125,9 +137,11 @@ export type SchemaMethod<
  */
 export type SchemaMethodUnauthorized<
   Input extends JSONObjectValue,
-  Output extends JSONObjectValue
+  Output extends JSONObjectValue,
+  Safe extends boolean = boolean
 > = {
   readonly kind: SchemaKind.METHOD_UNAUTHORIZED;
+  readonly safe: Safe;
   readonly input: SchemaInput<Input>;
   readonly output: SchemaOutput<Output>;
 };
