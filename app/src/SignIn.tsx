@@ -11,7 +11,7 @@ import {
 import {Platform, StyleSheet, View} from "react-native";
 import React, {useRef, useState} from "react";
 import {TextInput, TextInputInstance} from "./TextInput";
-import {API} from "./API";
+import {API} from "./api/API";
 import {Route} from "./router/Route";
 import {SignUpLayout} from "./SignUpLayout";
 import {SignUpRoute} from "./router/AllRoutes";
@@ -80,10 +80,7 @@ export function SignIn({
 
     // Actually sign up!
     API.account
-      .signIn({
-        email,
-        password,
-      })
+      .signIn({email, password})
       // If we got an error then resolve with that error instead of rejecting.
       .then(() => undefined, error => error)
       .then(error => {

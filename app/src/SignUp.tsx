@@ -11,7 +11,7 @@ import {
 import {Platform, StyleSheet, View} from "react-native";
 import React, {useRef, useState} from "react";
 import {TextInput, TextInputInstance} from "./TextInput";
-import {API} from "./API";
+import {API} from "./api/API";
 import {Route} from "./router/Route";
 import {SignInRoute} from "./router/AllRoutes";
 import {SignUpLayout} from "./SignUpLayout";

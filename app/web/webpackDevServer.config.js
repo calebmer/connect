@@ -50,5 +50,11 @@ module.exports = {
     app.use(evalSourceMapMiddleware(server));
     // This lets us open files from the runtime error overlay.
     app.use(errorOverlayMiddleware());
+
+    // Add our API proxy to the Webpack Dev Server.
+    const {APIProxy} = require("./lib/APIProxy");
+    app.use("/api", (req, res) => {
+      APIProxy(req, res, req.url);
+    });
   },
 };
