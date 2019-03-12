@@ -23,7 +23,7 @@ export const APIClient = {
    * definition, and find references from `APISchema` all for free!
    */
   create(config: APIClientConfig): APIClient {
-    return createClient(config, [], APISchema) as any;
+    return buildClient(config, [], APISchema) as any;
   },
 };
 
@@ -47,7 +47,7 @@ type Client<
   : Schema extends SchemaMethod<infer Input, infer Output>
   ? ClientMethod<Input, Output>
   : Schema extends SchemaMethodUnauthorized<infer Input, infer Output>
-  ? ClientMethodUnauthorized<Input, Output>
+  ? ClientMethod<Input, Output>
   : never;
 
 /**
@@ -65,48 +65,39 @@ type ClientMethodOptions = {
 };
 
 /**
- * The executor function for an authorized API method. If the API function takes
- * no input then there must be no parameter.
+ * The executor function for an authorized or unauthorized API method. If the
+ * API function takes no input then there must be no parameter.
  */
 type ClientMethod<Input, Output> = {} extends Input
   ? ((input?: undefined, options?: ClientMethodOptions) => Promise<Output>)
   : ((input: Input, options?: ClientMethodOptions) => Promise<Output>);
 
 /**
- * The executor function for an unauthorized API method. If the API function
- * takes no input then there must be no parameter.
- */
-type ClientMethodUnauthorized<Input, Output> = {} extends Input
-  ? ((input?: undefined, options?: ClientMethodOptions) => Promise<Output>)
-  : ((input: Input, options?: ClientMethodOptions) => Promise<Output>);
-
-/**
  * Creates an API client based on the schema we were provided.
  */
-function createClient(
+function buildClient(
   config: APIClientConfig,
   path: Array<string>,
   schema: SchemaBase,
 ): Client<SchemaBase> {
   switch (schema.kind) {
     case SchemaKind.NAMESPACE:
-      return createClientNamespace(config, path, schema);
+      return buildClientNamespace(config, path, schema);
     case SchemaKind.METHOD:
-      return createClientMethod(config, path, schema);
     case SchemaKind.METHOD_UNAUTHORIZED:
-      return createClientMethodUnauthorized(config, path, schema);
+      return buildClientMethod(config, path, schema);
     default: {
       const never: never = schema;
-      return never;
+      throw new Error(`Unrecognized schema kind: ${never["kind"]}`);
     }
   }
 }
 
 /**
- * Creates our API client for a namespace schema. Mirrors the structure of the
- * namespace and recursively calls `createClient()`.
+ * Builds our API client for a namespace schema. Mirrors the structure of the
+ * namespace and recursively calls `buildClient()`.
  */
-function createClientNamespace<
+function buildClientNamespace<
   Schemas extends {readonly [key: string]: SchemaBase}
 >(
   config: APIClientConfig,
@@ -121,7 +112,7 @@ function createClientNamespace<
   // our client.
   for (const [key, schema] of Object.entries(namespaceSchema.schemas)) {
     path.push(key);
-    client[key] = createClient(config, path, schema);
+    client[key] = buildClient(config, path, schema);
     path.pop();
   }
 
@@ -129,19 +120,22 @@ function createClientNamespace<
 }
 
 /**
- * Creates an executor function for an unauthorized method using the current
+ * Build an executor function for an unauthorized method using the current
  * API schema path and the actual schema for this method.
  */
-function createClientMethod<
+function buildClientMethod<
   Input extends JSONObjectValue,
   Output extends JSONObjectValue
 >(
   config: APIClientConfig,
   path: Array<string>,
-  _schema: SchemaMethod<Input, Output>,
+  schema: SchemaMethod<Input, Output> | SchemaMethodUnauthorized<Input, Output>,
 ): ClientMethod<Input, Output> {
   // The path to our method on the API server.
   const apiPath = `${config.url}/${path.join("/")}`;
+
+  // Is this an unauthorized method?
+  const unauthorized = schema.kind === SchemaKind.METHOD_UNAUTHORIZED;
 
   return (async (
     input?: Input,
@@ -158,12 +152,14 @@ function createClientMethod<
       init.body = JSON.stringify(input);
     }
 
-    // Use our auth object to get the access token for our
-    // `Authorization` header.
-    const accessToken = "";
-    if (accessToken !== undefined) {
-      headers["Authorization"] = `Bearer ${accessToken}`;
-      throw new Error("TODO: accessToken");
+    if (unauthorized === false) {
+      // Use our auth object to get the access token for our
+      // `Authorization` header.
+      const accessToken = "";
+      if (accessToken !== undefined) {
+        headers["Authorization"] = `Bearer ${accessToken}`;
+        throw new Error("TODO: accessToken");
+      }
     }
 
     // If we were given an `AbortSignal` then make sure to add that to our
@@ -188,58 +184,4 @@ function createClientMethod<
       throw new APIError(result.error.code);
     }
   }) as ClientMethod<Input, Output>;
-}
-
-/**
- * Creates an executor function for an unauthorized method using the current
- * API schema path and the actual schema for this method.
- */
-function createClientMethodUnauthorized<
-  Input extends JSONObjectValue,
-  Output extends JSONObjectValue
->(
-  config: APIClientConfig,
-  path: Array<string>,
-  _schema: SchemaMethodUnauthorized<Input, Output>,
-): ClientMethodUnauthorized<Input, Output> {
-  // The path to our method on the API server.
-  const apiPath = `${config.url}/${path.join("/")}`;
-
-  return (async (
-    input?: Input,
-    options?: ClientMethodOptions,
-  ): Promise<Output> => {
-    // Create the fetch configuration. We will edit this configuration over time
-    // to produce our request.
-    const headers: {[key: string]: string} = {};
-    const init: RequestInit = {method: "POST", headers};
-
-    // If we have some input, then make sure to add it to our request.
-    if (input !== undefined) {
-      headers["Content-Type"] = "application/json";
-      init.body = JSON.stringify(input);
-    }
-
-    // If we were given an `AbortSignal` then make sure to add that to our
-    // `fetch()` configuration.
-    if (options !== undefined && options.signal !== undefined) {
-      init.signal = options.signal;
-    }
-
-    // All methods are executed with a `POST` request. HTTP semantics don’t
-    // matter a whole lot to our API.
-    const response = await fetch(apiPath, init);
-
-    // Parse the response body as JSON. We trust our server to return the
-    // correct response so cast to `Output` directly without validating.
-    const result: APIResult<Output> = await response.json();
-
-    // If the response is ok then return our response data. If the response is
-    // not ok then throw a new `APIError` with the error code.
-    if (result.ok) {
-      return result.data;
-    } else {
-      throw new APIError(result.error.code);
-    }
-  }) as ClientMethodUnauthorized<Input, Output>;
 }
