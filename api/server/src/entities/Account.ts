@@ -69,6 +69,12 @@ export class MockAccountCollection implements AccountCollection {
   private readonly accounts: Array<MockAccountData> = [];
   private readonly accountByEmail = new Map<string, MockAccountData>();
 
+  constructor() {
+    if (process.env.NODE_ENV !== "test") {
+      throw new Error("Cannot use mocks outside of a test environment.");
+    }
+  }
+
   async register({
     name,
     email,
