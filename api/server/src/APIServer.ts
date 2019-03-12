@@ -115,7 +115,10 @@ const authorizationHeaderRegex = /^\s*bearer\s+([a-z0-9\-._~+/]+=*)\s*$/i;
 /**
  * Initializes the server with a method that does not need authorization.
  */
-function initializeServerMethod<Input extends JSONObjectValue, Output>(
+function initializeServerMethod<
+  Input extends JSONObjectValue,
+  Output extends JSONObjectValue
+>(
   path: ReadonlyArray<string>,
   definition: ServerMethod<Input, Output>,
   schema: SchemaMethod<Input, Output>,
@@ -194,7 +197,7 @@ function initializeServerMethod<Input extends JSONObjectValue, Output>(
  */
 function initializeServerMethodUnauthorized<
   Input extends JSONObjectValue,
-  Output
+  Output extends JSONObjectValue
 >(
   path: ReadonlyArray<string>,
   definition: ServerMethodUnauthorized<Input, Output>,

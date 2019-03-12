@@ -125,7 +125,10 @@ function createClientNamespace<
  * Creates an executor function for an unauthorized method using the current
  * API schema path and the actual schema for this method.
  */
-function createClientMethod<Input extends JSONObjectValue, Output>(
+function createClientMethod<
+  Input extends JSONObjectValue,
+  Output extends JSONObjectValue
+>(
   config: APIClientConfig,
   path: Array<string>,
   _schema: SchemaMethod<Input, Output>,
@@ -175,7 +178,10 @@ function createClientMethod<Input extends JSONObjectValue, Output>(
  * Creates an executor function for an unauthorized method using the current
  * API schema path and the actual schema for this method.
  */
-function createClientMethodUnauthorized<Input extends JSONObjectValue, Output>(
+function createClientMethodUnauthorized<
+  Input extends JSONObjectValue,
+  Output extends JSONObjectValue
+>(
   config: APIClientConfig,
   path: Array<string>,
   _schema: SchemaMethodUnauthorized<Input, Output>,

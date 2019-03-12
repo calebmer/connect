@@ -8,7 +8,7 @@ declare const AccountID: unique symbol;
  * The public profile of an account. Does not contain private information like
  * email address and password.
  */
-export interface AccountProfile {
+export type AccountProfile = {
   readonly id: AccountID;
 
   /**
@@ -23,4 +23,4 @@ export interface AccountProfile {
    * An image URL for this account’s avatar.
    */
   readonly avatarURL: string | null;
-}
+};
