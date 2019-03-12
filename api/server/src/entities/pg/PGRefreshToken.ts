@@ -6,7 +6,7 @@ import uuidV4 from "uuid/v4";
 export class PGRefreshTokenCollection implements RefreshTokenCollection {
   constructor(private readonly client: PGClient) {}
 
-  async create(accountID: AccountID): Promise<RefreshToken> {
+  async generate(accountID: AccountID): Promise<RefreshToken> {
     const refreshToken = uuidV4() as RefreshToken;
     await this.client.query(
       "INSERT INTO refresh_token (token, account_id) VALUES ($1, $2)",
@@ -15,6 +15,11 @@ export class PGRefreshTokenCollection implements RefreshTokenCollection {
     return refreshToken;
   }
 
+  /**
+   * When we use a refresh token update the `last_used_at` column. By updating
+   * `last_used_at` we can tell, roughly, the last hour or so the associated
+   * account was active.
+   */
   async use(refreshToken: RefreshToken): Promise<AccountID | undefined> {
     const {
       rows: [row],

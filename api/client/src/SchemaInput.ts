@@ -60,8 +60,9 @@ export class SchemaInput<Value extends JSONValue> {
    * Accepts only object values that have matching keys with values that pass
    * the provided `SchemaInput` for that key.
    *
-   * If the object value has extra keys we ignore them. This is the same as how
-   * TypeScript object type checking works.
+   * If the object value has extra keys then we fail validation because of
+   * security concerns. Our code may be written to not expect extra properties
+   * so extra properties are an injection vector.
    */
   static object<
     Inputs extends {readonly [key: string]: SchemaInput<JSONValue>}
@@ -70,12 +71,22 @@ export class SchemaInput<Value extends JSONValue> {
   ): SchemaInput<{[Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>}> {
     return new SchemaInput(
       (value): value is any => {
+        // Make sure the value is an object but not an array.
         if (typeof value !== "object") return false;
         if (value === null) return false;
         if (Array.isArray(value)) return false;
+
+        // Check to make sure that all of our inputs have a valid object key.
         for (const [key, input] of Object.entries(inputs)) {
           if (!input.validate((value as any)[key])) return false;
         }
+
+        // If the value has a property that does not exist in our inputs then
+        // fail the validation.
+        for (const key of Object.keys(value)) {
+          if (inputs[key] === undefined) return false;
+        }
+
         return true;
       },
     );

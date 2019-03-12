@@ -14,7 +14,7 @@ export interface RefreshTokenCollection {
   /**
    * Creates a new refresh token for the provided account.
    */
-  create(id: AccountID): Promise<RefreshToken>;
+  generate(id: AccountID): Promise<RefreshToken>;
 
   /**
    * Mark a refresh token as used and return the account that the refresh token
@@ -32,7 +32,7 @@ export class MockRefreshTokenCollection implements RefreshTokenCollection {
     }
   }
 
-  async create(id: AccountID): Promise<RefreshToken> {
+  async generate(id: AccountID): Promise<RefreshToken> {
     const refreshToken = uuidV4() as RefreshToken;
     this.refreshTokens.set(refreshToken, id);
     return refreshToken;

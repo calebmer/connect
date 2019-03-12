@@ -8,6 +8,11 @@
 // Source: https://twitter.com/Nick_Craver/status/1102193050095374337
 
 /**
+ * The port that our application runs on.
+ */
+export const PORT = 4000;
+
+/**
  * The secret we use to sign our JSON Web Tokens (JWT). In development and test
  * environments we use the super secret “`secret`” token. In production we need
  * a real secret from our environment variables.

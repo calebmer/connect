@@ -1,3 +1,3 @@
-import * as account from "./Account";
+import * as account from "./AccountMethods";
 
 export {account};

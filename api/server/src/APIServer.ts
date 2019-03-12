@@ -127,12 +127,12 @@ function initializeServerMethod<
 
   // Register this method on our API server. When this method is executed we
   // will call the appropriate function.
-  APIServer.post(apiPath, (request, response, next) => {
+  APIServer.post(apiPath, (req, res, next) => {
     // Get the authorization header. If there is no authorization header then
     // the client is unauthorized and can’t continue.
-    const authorizationHeader = request.headers.authorization;
+    const authorizationHeader = req.headers.authorization;
     if (!authorizationHeader) {
-      response.statusCode = 401;
+      res.statusCode = 401;
       next(new APIError(APIErrorCode.UNAUTHORIZED));
       return;
     }
@@ -142,7 +142,7 @@ function initializeServerMethod<
     // the client is unauthorized and can’t continue.
     const match = authorizationHeaderRegex.exec(authorizationHeader);
     if (!match) {
-      response.statusCode = 401;
+      res.statusCode = 401;
       next(new APIError(APIErrorCode.UNAUTHORIZED));
       return;
     }
@@ -152,7 +152,7 @@ function initializeServerMethod<
       // If we failed to verify the token then return an unauthorized API error.
       // If the token was expired then return a token expired error code.
       if (error) {
-        response.statusCode = 401;
+        res.statusCode = 401;
         let code = APIErrorCode.UNAUTHORIZED;
         if (error instanceof jwt.TokenExpiredError)
           code = APIErrorCode.ACCESS_TOKEN_EXPIRED;
@@ -164,7 +164,7 @@ function initializeServerMethod<
       const accountID: number = (accessToken as any).id;
 
       // Get the input from our request body.
-      const input: unknown = request.body;
+      const input: unknown = req.body;
 
       // Validate that the input from our request body is correct. If the input
       // is not correct then throw an API error.
@@ -183,7 +183,7 @@ function initializeServerMethod<
             data: output,
           };
           // Send the successful result to our client.
-          response.status(200).json(result);
+          res.status(200).json(result);
         },
 
         // If the method failed then forward to our Express error handler!
@@ -209,9 +209,9 @@ function initializeServerMethodUnauthorized<
 
   // Register this method on our API server. When this method is executed we
   // will call the appropriate function.
-  APIServer.post(apiPath, (request, response, next) => {
+  APIServer.post(apiPath, (req, res, next) => {
     // Get the input from our request body.
-    const input: unknown = request.body;
+    const input: unknown = req.body;
 
     // Validate that the input from our request body is correct. If the input
     // is not correct then throw an API error.
@@ -230,7 +230,7 @@ function initializeServerMethodUnauthorized<
           data: output,
         };
         // Send the successful result to our client.
-        response.status(200).json(result);
+        res.status(200).json(result);
       },
 
       // If the method failed then forward to our Express error handler!
@@ -240,21 +240,16 @@ function initializeServerMethodUnauthorized<
 }
 
 // Add a fallback handler for any unrecognized method.
-APIServer.use((_request: Request, response: Response) => {
-  response.statusCode = 404;
+APIServer.use((_req: Request, res: Response) => {
+  res.statusCode = 404;
   throw new APIError(APIErrorCode.UNRECOGNIZED_METHOD);
 });
 
 // Add an error handler.
 APIServer.use(
-  (
-    error: unknown,
-    _request: Request,
-    response: Response,
-    next: NextFunction,
-  ) => {
+  (error: unknown, _req: Request, res: Response, next: NextFunction) => {
     // If the headers have already been sent, let Express handle the error.
-    if (response.headersSent) {
+    if (res.headersSent) {
       next(error);
       return;
     }
@@ -269,8 +264,8 @@ APIServer.use(
     // If the response status code is not an error status code then we need to
     // set one. If the error is an instance of `APIError` then the error is the
     // client’s fault (400) otherwise it’s our fault (500).
-    if (!(response.statusCode >= 400 && response.statusCode < 600)) {
-      response.statusCode =
+    if (!(res.statusCode >= 400 && res.statusCode < 600)) {
+      res.statusCode =
         error instanceof APIError
           ? 400
           : (error as any).statusCode
@@ -294,7 +289,7 @@ APIServer.use(
     }
 
     // Send our error response!
-    response.json(result);
+    res.json(result);
   },
 );
 
