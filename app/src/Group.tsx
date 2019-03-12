@@ -5,16 +5,16 @@ import {
   SectionList,
   SectionListData,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
-import {Border, Color, Shadow, Space} from "./atoms";
+import {Border, Color, Font, Shadow, Space} from "./atoms";
 import {InboxItem, Post} from "./MockData";
-import React, {useState} from "react";
+import React, {ReactNode, useState} from "react";
 import {GroupBanner} from "./GroupBanner";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupItemInbox} from "./GroupItemInbox";
 import {GroupPostPrompt} from "./GroupPostPrompt";
-import {GroupSectionHeader} from "./GroupSectionHeader";
 import {NavbarNative} from "./NavbarNative";
 
 const currentAccount = MockData.calebMeredith;
@@ -88,9 +88,8 @@ export function Group() {
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
         ListHeaderComponent={GroupHeader}
-        ListFooterComponent={GroupFooter}
         stickySectionHeadersEnabled={false}
-        renderSectionHeader={GroupSectionHeaderWrapper}
+        renderSectionHeader={GroupSectionHeader}
         SectionSeparatorComponent={GroupSectionSeparatorWrapper}
         ItemSeparatorComponent={GroupItemSeparator}
         // Watch scroll events and keep track of:
@@ -130,46 +129,27 @@ export function Group() {
 
 function GroupHeader() {
   return (
-    <>
-      <View style={styles.header}>
-        <GroupPostPrompt account={currentAccount} />
-        <View style={styles.headerSpace} />
-        <GroupSectionSeparator isLeading noBackground />
-      </View>
-    </>
+    <View style={styles.header}>
+      <GroupPostPrompt account={currentAccount} />
+    </View>
   );
 }
 
-function GroupFooter() {
-  return <View style={styles.footerSpace} />;
-}
-
-function GroupSectionHeaderWrapper({
+function GroupSectionHeader({
   section: {title},
 }: {
   section: SectionListData<unknown>;
 }) {
   return (
-    <>
-      <GroupSectionHeader title={title} />
-      <GroupItemSeparator />
-    </>
+    <View style={styles.sectionHeader}>
+      <GroupSectionSeparator isLeading />
+      <Text style={styles.sectionHeaderText}>{title}</Text>
+    </View>
   );
 }
 
-function GroupSectionSeparatorWrapper({
-  leadingItem,
-  trailingSection,
-}: {
-  leadingItem?: unknown;
-  trailingSection?: unknown;
-}) {
-  return leadingItem !== undefined && trailingSection !== undefined ? (
-    <>
-      <GroupSectionSeparator isTrailing />
-      <GroupSectionSeparator isLeading />
-    </>
-  ) : leadingItem !== undefined ? (
+function GroupSectionSeparatorWrapper({leadingItem}: {leadingItem?: unknown}) {
+  return leadingItem !== undefined ? (
     <GroupSectionSeparator isTrailing />
   ) : null;
 }
@@ -178,10 +158,12 @@ function GroupSectionSeparator({
   isLeading,
   isTrailing,
   noBackground,
+  children,
 }: {
   isLeading?: boolean;
   isTrailing?: boolean;
   noBackground?: boolean;
+  children?: ReactNode;
 }) {
   return (
     <View
@@ -192,6 +174,7 @@ function GroupSectionSeparator({
     >
       {isLeading && <View style={styles.sectionSeparatorShadowLeading} />}
       {isTrailing && <View style={styles.sectionSeparatorShadowTrailing} />}
+      {children}
     </View>
   );
 }
@@ -201,7 +184,7 @@ function GroupItemSeparator() {
 }
 
 const backgroundColor = Color.grey0;
-const sectionMargin = Space.space6;
+const sectionMargin = Space.space5;
 
 const styles = StyleSheet.create({
   container: {
@@ -220,33 +203,46 @@ const styles = StyleSheet.create({
   },
   header: {
     marginTop: GroupBanner.height,
+    paddingBottom: sectionMargin,
     backgroundColor,
   },
-  headerSpace: {height: sectionMargin / 2},
-  footerSpace: {height: sectionMargin / 2},
   separator: {
     height: Border.width1,
     backgroundColor: Color.grey1,
   },
+  sectionHeader: {
+    justifyContent: "flex-end",
+    height: Font.size3.lineHeight + Space.space1 * 2,
+    backgroundColor,
+  },
+  sectionHeaderText: {
+    position: "absolute",
+    bottom: 0,
+    paddingVertical: Space.space1,
+    paddingHorizontal: Space.space3,
+    color: Color.grey6,
+    ...Font.sansBold,
+    ...Font.size3,
+  },
   sectionSeparator: {
     overflow: "hidden",
-    height: sectionMargin / 2,
+    minHeight: sectionMargin,
   },
   sectionSeparatorBackground: {
     backgroundColor,
   },
   sectionSeparatorShadowLeading: {
     position: "relative",
-    top: sectionMargin / 2,
-    height: sectionMargin / 2,
-    backgroundColor: "white",
+    top: sectionMargin,
+    height: sectionMargin,
+    backgroundColor: Color.white,
     ...Shadow.elevation1,
   },
   sectionSeparatorShadowTrailing: {
     position: "relative",
-    top: -sectionMargin / 2,
-    height: sectionMargin / 2,
-    backgroundColor: "white",
+    top: -sectionMargin,
+    height: sectionMargin,
+    backgroundColor: Color.white,
     ...Shadow.elevation1,
   },
 });

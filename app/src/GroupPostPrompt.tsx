@@ -16,16 +16,16 @@ export function GroupPostPrompt({account}: {account: Account}) {
   );
 }
 
-GroupPostPrompt.borderRadius = Border.radius1;
+const borderRadius = Border.radius1;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: -GroupPostPrompt.borderRadius,
+    marginTop: -borderRadius,
     flexDirection: "row",
     alignItems: "center",
     paddingRight: Space.space4,
     backgroundColor: Color.white,
-    borderRadius: GroupPostPrompt.borderRadius,
+    borderRadius: borderRadius,
     ...Shadow.elevation2,
   },
   icon: {
