@@ -29,5 +29,10 @@ export class Route extends RouteBase {
     partialProps: Partial<Pick<NextProps, Exclude<keyof NextProps, "route">>>,
   ): void;
 
-  public _popTo(): void;
+  protected _popTo(): void;
+
+  protected _swapRoot<NextProps extends {readonly route: RouteBase}>(
+    nextRoute: RouteConfigBase<NextProps>,
+    partialProps: Partial<Pick<NextProps, Exclude<keyof NextProps, "route">>>,
+  ): void;
 }

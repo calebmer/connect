@@ -121,4 +121,15 @@ export class Route extends RouteBase {
   protected _popTo() {
     this.push(this.config, {});
   }
+
+  /**
+   * Calls `_push()` instead of resetting browser history which would be totally
+   * unexpected by the user.
+   */
+  protected _swapRoot<NextProps extends {readonly route: RouteBase}>(
+    nextRoute: RouteConfig<NextProps>,
+    partialProps: Partial<Pick<NextProps, Exclude<keyof NextProps, "route">>>,
+  ): void {
+    this._push(nextRoute, partialProps);
+  }
 }

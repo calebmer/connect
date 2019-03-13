@@ -79,4 +79,18 @@ export class Route extends RouteBase {
   protected _popTo() {
     Navigation.popTo(this.componentID);
   }
+
+  /**
+   * Resets the native navigation stack to a stack with only a single component.
+   * The provided component.
+   */
+  protected _swapRoot<NextProps extends {readonly route: RouteBase}>(
+    nextRoute: RouteConfig<NextProps>,
+    partialProps: Partial<Omit<NextProps, "route">>,
+  ) {
+    Navigation.setStackRoot(
+      this.componentID,
+      nextRoute.getLayout(partialProps),
+    );
+  }
 }

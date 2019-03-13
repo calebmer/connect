@@ -16,7 +16,7 @@ export function AccountTest({route}: {route: Route}) {
   function handleSignOut() {
     API.account
       .signOut({refreshToken: "" as any}) // NOTE: sign-out is handled by our native/web API proxy.
-      .then(() => route.push(SignInRoute, {}));
+      .then(() => route.swapRoot(SignInRoute, {}));
   }
 
   return (

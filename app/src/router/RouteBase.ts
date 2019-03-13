@@ -234,8 +234,6 @@ export abstract class RouteBase {
     nextRoute: RouteConfigBase<NextProps>,
     partialProps: Partial<Omit<NextProps, "route">>,
   ) {
-    // Wait for the next route’s component to load before pushing the
-    // next route.
     nextRoute.waitForComponent(() => {
       this._push(nextRoute, partialProps);
     });
@@ -270,7 +268,34 @@ export abstract class RouteBase {
   }
 
   /**
-   * Internal implementation of `popTo()`.
+   * Internal implementation of `popTo()` which child classes should override.
    */
   protected abstract _popTo(): void;
+
+  /**
+   * Reset the current navigation stack to the provided route. Removes old
+   * routes so that they can’t be popped back to.
+   *
+   * On web, this will `push()` instead of resetting browser history. Since
+   * resetting browser history is unexpected for web platform users. If we want
+   * a method that actually resets history we might implement an
+   * `actuallySwapRoot()` method in the future.
+   */
+  public swapRoot<NextProps extends {readonly route: RouteBase}>(
+    nextRoute: RouteConfigBase<NextProps>,
+    partialProps: Partial<Omit<NextProps, "route">>,
+  ) {
+    nextRoute.waitForComponent(() => {
+      this._swapRoot(nextRoute, partialProps);
+    });
+  }
+
+  /**
+   * Internal implementation of `swapRoot()` which child classes
+   * should override.
+   */
+  protected abstract _swapRoot<NextProps extends {readonly route: RouteBase}>(
+    nextRoute: RouteConfigBase<NextProps>,
+    partialProps: Partial<Omit<NextProps, "route">>,
+  ): void;
 }
