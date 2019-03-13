@@ -128,10 +128,11 @@ export async function signIn(
  * sign back in.
  */
 export async function signOut(
-  _ctx: {},
-  _input: {readonly refreshToken: RefreshToken},
+  ctx: {readonly refreshTokens: RefreshTokenCollection},
+  input: {readonly refreshToken: RefreshToken},
 ): Promise<{}> {
-  throw new Error("TODO");
+  await ctx.refreshTokens.destroy(input.refreshToken);
+  return {};
 }
 
 /**

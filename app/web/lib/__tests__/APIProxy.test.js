@@ -583,3 +583,56 @@ describe("/account/signUp", () => {
       .expect(400, {ok: false, error: {code: "SIGN_UP_EMAIL_ALREADY_USED"}});
   });
 });
+
+describe("/account/signOut", () => {
+  test("will always expire the token cookies", async () => {
+    await request(APIProxy)
+      .post("/account/signOut")
+      .send({refreshToken: ""})
+      .expect("Content-Type", "application/json")
+      .expect(
+        "Set-Cookie",
+        "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict,refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
+      )
+      .expect(200, {ok: true, data: {}});
+  });
+
+  test("will send a refresh token cookie to the API", async () => {
+    nock(API_URL)
+      .post("/account/signOut")
+      .reply(200, {ok: true, data: {}}, {"Content-Type": "application/json"});
+
+    await request(APIProxy)
+      .post("/account/signOut")
+      .set("Cookie", "refresh_token=yolo; access_token=swag")
+      .send({refreshToken: ""})
+      .expect("Content-Type", "application/json")
+      .expect(
+        "Set-Cookie",
+        "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict,refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
+      )
+      .expect(200, {ok: true, data: {}});
+  });
+
+  test("will still clear cookies even if the API fails", async () => {
+    nock(API_URL)
+      .post("/account/signOut")
+      .reply(
+        500,
+        {ok: false, error: {code: "UNKNOWN"}},
+        {"Content-Type": "application/json"},
+      );
+
+    await request(APIProxy)
+      .post("/account/signOut")
+      .set("Cookie", "refresh_token=yolo; access_token=swag")
+      .send({refreshToken: ""})
+      .ok(() => true)
+      .expect("Content-Type", "application/json")
+      .expect(
+        "Set-Cookie",
+        "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict,refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
+      )
+      .expect(500, {ok: false, error: {code: "UNKNOWN"}});
+  });
+});

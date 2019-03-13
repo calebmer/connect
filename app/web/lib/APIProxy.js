@@ -46,14 +46,17 @@ const apiClient = got.extend({
  * with the API.
  */
 function APIProxy(req, res, pathname) {
-  if (
-    req.method === "POST" &&
-    (pathname === "/account/signUp" || pathname === "/account/signIn")
-  ) {
-    proxySignInRequest(req, res, pathname);
-  } else {
-    proxyRequest(req, res, pathname);
+  if (req.method === "POST") {
+    if (pathname === "/account/signUp" || pathname === "/account/signIn") {
+      proxySignInRequest(req, res, pathname);
+      return;
+    }
+    if (pathname === "/account/signOut") {
+      proxySignOutRequest(req, res);
+      return;
+    }
   }
+  proxyRequest(req, res, pathname);
 }
 
 module.exports = {
@@ -291,6 +294,60 @@ async function proxySignInRequest(req, res, pathname) {
   }
 }
 
+/**
+ * Proxies a request to sign the person out. Handles the destroying of access
+ * tokens and the cookies which contain them.
+ *
+ * NOTE: We ignore the refresh token given to us by our API client, instead
+ * using the stored in a cookie.
+ */
+async function proxySignOutRequest(req, res) {
+  try {
+    // Parse the refresh token from our cookie header.
+    const cookieHeader = req.headers.cookie;
+    let refreshToken;
+    if (cookieHeader !== undefined) {
+      const result = cookie.parse(cookieHeader);
+      refreshToken = result.refresh_token;
+    }
+
+    // No matter whether our not our API request to sign out succeeds or fails,
+    // we must expire the access token and refresh token cookies. So set
+    // those headers.
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Set-Cookie", [
+      cookie.serialize("access_token", "", cookieExpireSettings),
+      cookie.serialize("refresh_token", "", cookieExpireSettings),
+    ]);
+
+    // If we have a refresh token then send it to our actual API so that the
+    // refresh token may be destroyed.
+    if (refreshToken !== undefined) {
+      const apiResponse = await apiClient.post("/account/signOut", {
+        body: {refreshToken},
+      });
+
+      // If the sign out request failed then forward the result to our response.
+      if (apiResponse.body.ok !== true) {
+        res.statusCode = apiResponse.statusCode;
+        res.write(JSON.stringify(apiResponse.body));
+        res.end();
+        return;
+      }
+    }
+
+    // If we succeeded then send an ok response back down to our client.
+    res.statusCode = 200;
+    res.write(JSON.stringify({ok: true, data: {}}));
+    res.end();
+  } catch (error) {
+    handleError(res, error);
+  }
+}
+
+/**
+ * Handles an error and sends that error to our response.
+ */
 function handleError(res, error) {
   // Log the error for debugging purposes.
   // eslint-disable-next-line no-console

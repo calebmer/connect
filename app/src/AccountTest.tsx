@@ -1,18 +1,36 @@
+import {BodyText, MetaLinkText} from "./atoms";
 import React, {useEffect, useState} from "react";
-import {Text, View} from "react-native";
+import {SafeAreaView, TouchableOpacity, View} from "react-native";
 import {API} from "./api/API";
 import {AccountProfile} from "@connect/api-client";
+import {Route} from "./router/Route";
+import {SignInRoute} from "./router/AllRoutes";
 
-export function AccountTest() {
+export function AccountTest({route}: {route: Route}) {
   const [account, setAccount] = useState<undefined | AccountProfile>();
 
   useEffect(() => {
     API.account.getCurrentAccountProfile().then(setAccount);
   }, []);
 
+  function handleSignOut() {
+    API.account
+      .signOut({refreshToken: "" as any}) // NOTE: sign-out is handled by our native/web API proxy.
+      .then(() => route.push(SignInRoute, {}));
+  }
+
   return (
-    <View style={{padding: 20}}>
-      {account && <Text>Hello {account.name}</Text>}
-    </View>
+    <SafeAreaView>
+      <View style={{padding: 20}}>
+        {account && (
+          <>
+            <BodyText>Hello {account.name}</BodyText>
+            <TouchableOpacity onPress={handleSignOut}>
+              <MetaLinkText>Sign Out</MetaLinkText>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    </SafeAreaView>
   );
 }

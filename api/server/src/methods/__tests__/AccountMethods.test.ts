@@ -3,6 +3,7 @@ import {
   getCurrentAccountProfile,
   refreshAccessToken,
   signIn,
+  signOut,
   signUp,
 } from "../AccountMethods";
 import {AccessTokenGenerator} from "../../entities/AccessToken";
@@ -210,6 +211,35 @@ describe("signIn", () => {
       iat: expect.any(Number),
       id: accountID,
     });
+  });
+});
+
+describe("signOut", () => {
+  test("noop if the token does not exist", async () => {
+    const refreshTokens = new MockRefreshTokenCollection();
+
+    await signOut({refreshTokens}, {refreshToken: "yolo" as any});
+  });
+
+  test("prevents a refresh token from being used again", async () => {
+    const accounts = new MockAccountCollection();
+    const refreshTokens = new MockRefreshTokenCollection();
+    const {refreshToken} = await signUp(
+      {accounts, refreshTokens},
+      {name: testName, email: testEmail, password: "qwerty"},
+    );
+
+    await refreshAccessToken({refreshTokens}, {refreshToken});
+    await signOut({refreshTokens}, {refreshToken});
+    let error: any;
+    try {
+      await refreshAccessToken({refreshTokens}, {refreshToken});
+    } catch (e) {
+      error = e;
+    }
+
+    expect(error).toBeInstanceOf(APIError);
+    expect(error.code).toBe(APIErrorCode.REFRESH_TOKEN_INVALID);
   });
 });
 

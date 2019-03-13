@@ -15,6 +15,12 @@ export interface RefreshTokenCollection {
    * is for. If no such refresh token exists then return undefined.
    */
   use(token: RefreshToken): Promise<AccountID | undefined>;
+
+  /**
+   * Destroys a refresh token so that it may never be used to generate a new
+   * access token again!
+   */
+  destroy(token: RefreshToken): Promise<void>;
 }
 
 export class MockRefreshTokenCollection implements RefreshTokenCollection {
@@ -34,5 +40,9 @@ export class MockRefreshTokenCollection implements RefreshTokenCollection {
 
   async use(token: RefreshToken): Promise<AccountID | undefined> {
     return this.refreshTokens.get(token);
+  }
+
+  async destroy(token: RefreshToken): Promise<void> {
+    this.refreshTokens.delete(token);
   }
 }

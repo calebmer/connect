@@ -20,17 +20,23 @@ export class PGRefreshTokenCollection implements RefreshTokenCollection {
    * `last_used_at` we can tell, roughly, the last hour or so the associated
    * account was active.
    */
-  async use(refreshToken: RefreshToken): Promise<AccountID | undefined> {
+  async use(token: RefreshToken): Promise<AccountID | undefined> {
     const {
       rows: [row],
     } = await this.client.query(
       "UPDATE refresh_token SET last_used_at = now() WHERE token = $1 RETURNING account_id",
-      [refreshToken],
+      [token],
     );
     if (row === undefined) {
       return undefined;
     } else {
       return row.account_id;
     }
+  }
+
+  async destroy(token: RefreshToken): Promise<void> {
+    await this.client.query("DELETE FROM refresh_token WHERE token = $1", [
+      token,
+    ]);
   }
 }
