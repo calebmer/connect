@@ -165,10 +165,7 @@ function buildClientMethod<
     // safe method then add the input as a JSON post body.
     if (input !== undefined) {
       if (schema.safe === true) {
-        const query = queryStringSerialize(input);
-        if (query !== "") {
-          url += `?${query}`;
-        }
+        url += queryStringSerialize(input);
       } else {
         headers["Content-Type"] = "application/json";
         init.body = JSON.stringify(input);
@@ -248,5 +245,5 @@ function queryStringSerialize<Input extends JSONObjectValue>(
       query.push(`${encodedKey}=${encodedValue}`);
     }
   }
-  return query.join("&");
+  return query.length > 0 ? "?" + query.join("&") : "";
 }
