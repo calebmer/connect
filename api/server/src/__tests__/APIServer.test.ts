@@ -6,11 +6,13 @@ jest.mock("../PGClient", () => ({
 }));
 jest.mock("../methods", () => ({
   account: {
-    signIn: jest.fn(() => ({works: true})),
-    getCurrentAccountProfile: jest.fn((_, accountID) => ({
-      works: true,
-      accountID,
-    })),
+    signIn: jest.fn(() => Promise.resolve({works: true})),
+    getCurrentAccountProfile: jest.fn((_, accountID) =>
+      Promise.resolve({
+        works: true,
+        accountID,
+      }),
+    ),
   },
 }));
 
@@ -96,7 +98,7 @@ test("POST /account/signIn - with invalid JSON input", async () => {
     .expect("Content-Type", /json/)
     .expect(400, {
       ok: false,
-      error: {code: APIErrorCode.UNKNOWN},
+      error: {code: APIErrorCode.BAD_INPUT},
     });
   expect(signIn).not.toHaveBeenCalled();
 });
@@ -110,7 +112,7 @@ test("POST /account/signIn - with string input", async () => {
     .expect("Content-Type", /json/)
     .expect(400, {
       ok: false,
-      error: {code: APIErrorCode.UNKNOWN},
+      error: {code: APIErrorCode.BAD_INPUT},
     });
   expect(signIn).not.toHaveBeenCalled();
 });
@@ -183,9 +185,9 @@ test("POST /account/signIn - with extra input", async () => {
   expect(signIn).not.toHaveBeenCalled();
 });
 
-test("GET /account/getCurrentAccountProfile", async () => {
+test("POST /account/getCurrentAccountProfile", async () => {
   await request(APIServer)
-    .get("/account/getCurrentAccountProfile")
+    .post("/account/getCurrentAccountProfile")
     .ok(() => true)
     .expect("Content-Type", /json/)
     .expect(404, {
@@ -195,9 +197,9 @@ test("GET /account/getCurrentAccountProfile", async () => {
   expect(getCurrentAccountProfile).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentAccountProfile - without authorization", async () => {
+test("GET /account/getCurrentAccountProfile - without authorization", async () => {
   await request(APIServer)
-    .post("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentAccountProfile")
     .send({})
     .ok(() => true)
     .expect("Content-Type", /json/)
@@ -208,9 +210,9 @@ test("POST /account/getCurrentAccountProfile - without authorization", async () 
   expect(getCurrentAccountProfile).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentAccountProfile - incorrect authorization header", async () => {
+test("GET /account/getCurrentAccountProfile - incorrect authorization header", async () => {
   await request(APIServer)
-    .post("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentAccountProfile")
     .set("Authorization", "Bear foobar")
     .send({})
     .ok(() => true)
@@ -222,9 +224,9 @@ test("POST /account/getCurrentAccountProfile - incorrect authorization header", 
   expect(getCurrentAccountProfile).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentAccountProfile - malformed JWT", async () => {
+test("GET /account/getCurrentAccountProfile - malformed JWT", async () => {
   await request(APIServer)
-    .post("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentAccountProfile")
     .set("Authorization", "Bearer foobar")
     .send({})
     .ok(() => true)
@@ -236,10 +238,10 @@ test("POST /account/getCurrentAccountProfile - malformed JWT", async () => {
   expect(getCurrentAccountProfile).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentAccountProfile - bad signature JWT", async () => {
+test("GET /account/getCurrentAccountProfile - bad signature JWT", async () => {
   const accessToken = jwt.sign({id: 42}, "secret-secret-cats");
   await request(APIServer)
-    .post("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentAccountProfile")
     .set("Authorization", `Bearer ${accessToken}`)
     .send({})
     .ok(() => true)
@@ -251,10 +253,10 @@ test("POST /account/getCurrentAccountProfile - bad signature JWT", async () => {
   expect(getCurrentAccountProfile).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentAccountProfile - expired JWT", async () => {
+test("GET /account/getCurrentAccountProfile - expired JWT", async () => {
   const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "-1d"});
   await request(APIServer)
-    .post("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentAccountProfile")
     .set("Authorization", `Bearer ${accessToken}`)
     .send({})
     .ok(() => true)
@@ -266,10 +268,10 @@ test("POST /account/getCurrentAccountProfile - expired JWT", async () => {
   expect(getCurrentAccountProfile).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentAccountProfile", async () => {
+test("GET /account/getCurrentAccountProfile", async () => {
   const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
   await request(APIServer)
-    .post("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentAccountProfile")
     .set("Authorization", `Bearer ${accessToken}`)
     .send({})
     .expect("Content-Type", /json/)
@@ -280,10 +282,10 @@ test("POST /account/getCurrentAccountProfile", async () => {
   expect(getCurrentAccountProfile).toHaveBeenCalledTimes(1);
 });
 
-test("POST /account/getCurrentAccountProfile - without input", async () => {
+test("GET /account/getCurrentAccountProfile - without input", async () => {
   const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
   await request(APIServer)
-    .post("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentAccountProfile")
     .set("Authorization", `Bearer ${accessToken}`)
     .expect("Content-Type", /json/)
     .expect(200, {

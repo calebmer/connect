@@ -137,8 +137,8 @@ function buildClientMethod<
   path: Array<string>,
   schema: SchemaMethod<Input, Output> | SchemaMethodUnauthorized<Input, Output>,
 ): ClientMethod<Input, Output> {
-  // The path to our method on the API server.
-  const apiPath = `${config.url}/${path.join("/")}`;
+  // The url to our method on the API server.
+  const apiUrl = `${config.url}/${path.join("/")}`;
 
   // Is this an unauthorized method?
   const unauthorized = schema.kind === SchemaKind.METHOD_UNAUTHORIZED;
@@ -147,15 +147,32 @@ function buildClientMethod<
     input?: Input,
     options?: ClientMethodOptions,
   ): Promise<Output> => {
+    // We may update the url and give it a query if this is a safe HTTP request
+    // with some input.
+    let url = apiUrl;
+
     // Create the fetch configuration. We will edit this configuration over time
     // to produce our request.
     const headers: {[key: string]: string} = {};
-    const init: RequestInit = {method: "POST", headers};
+    const init: RequestInit = {
+      // Use the `GET` method for safe requests.
+      method: schema.safe === true ? "GET" : "POST",
+      headers,
+    };
 
-    // If we have some input, then make sure to add it to our request.
+    // If we have some input, then make sure to add it to our request. If this
+    // is a safe method then add the input to the URL query. If this is not a
+    // safe method then add the input as a JSON post body.
     if (input !== undefined) {
-      headers["Content-Type"] = "application/json";
-      init.body = JSON.stringify(input);
+      if (schema.safe === true) {
+        const query = queryStringSerialize(input);
+        if (query !== "") {
+          url += `?${query}`;
+        }
+      } else {
+        headers["Content-Type"] = "application/json";
+        init.body = JSON.stringify(input);
+      }
     }
 
     if (unauthorized === false) {
@@ -181,7 +198,7 @@ function buildClientMethod<
 
     // All methods are executed with a `POST` request. HTTP semantics don’t
     // matter a whole lot to our API.
-    const response = await fetch(apiPath, init);
+    const response = await fetch(url, init);
 
     // Parse the response body as JSON. We trust our server to return the
     // correct response so cast to `Output` directly without validating.
@@ -195,4 +212,41 @@ function buildClientMethod<
       throw new APIError(result.error.code);
     }
   }) as ClientMethod<Input, Output>;
+}
+
+/**
+ * Serializes an input JSON object to a query string. We know the input value
+ * is an object so we don’t need to support non-object inputs. Encodes both the
+ * key and value as URI components. We first stringify the value to JSON.
+ *
+ * If a one of the properties is an array then we add that property multiple
+ * times to the query string. For example:
+ *
+ * ```
+ * {a: 1, b: [2, 3, 4]}
+ * ```
+ *
+ * Would serialize into:
+ *
+ * ```
+ * ?a=1&b=2&b=3&b=4
+ * ```
+ */
+function queryStringSerialize<Input extends JSONObjectValue>(
+  input: Input,
+): string {
+  const query: Array<string> = [];
+  for (const [key, value] of Object.entries(input)) {
+    const encodedKey = encodeURIComponent(key);
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        const encodedValue = encodeURIComponent(JSON.stringify(value[i]));
+        query.push(`${encodedKey}=${encodedValue}`);
+      }
+    } else {
+      const encodedValue = encodeURIComponent(JSON.stringify(value));
+      query.push(`${encodedKey}=${encodedValue}`);
+    }
+  }
+  return query.join("&");
 }
