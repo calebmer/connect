@@ -228,14 +228,14 @@ const styles = StyleSheet.create({
     top: sectionMargin,
     height: sectionMargin,
     backgroundColor: Color.white,
-    ...Shadow.elevation1,
+    ...Shadow.elevation0,
   },
   sectionSeparatorShadowTrailing: {
     position: "relative",
     top: -sectionMargin,
     height: sectionMargin,
     backgroundColor: Color.white,
-    ...Shadow.elevation1,
+    ...Shadow.elevation0,
   },
   sectionVerticalPadding: {
     height: GroupItem.padding,

@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     paddingVertical: AccountSignature.padding,
     backgroundColor: Color.white,
     borderRadius: borderRadius,
-    ...Shadow.elevation2,
+    ...Shadow.elevation0,
   },
   icon: {
     width: Space.space4,

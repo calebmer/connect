@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: Color.white,
-    ...Shadow.elevation2,
+    ...Shadow.elevation1,
   },
   navbar: {
     height: NavbarNative.height,
