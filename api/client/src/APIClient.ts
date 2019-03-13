@@ -7,6 +7,7 @@ import {
   SchemaNamespace,
 } from "./Schema";
 import {APISchema} from "./APISchema";
+import {AccessToken} from "./types/TokenTypes";
 import {JSONObjectValue} from "./JSONValue";
 
 /**
@@ -35,6 +36,11 @@ export type APIClientConfig = {
    * The root url for our API client.
    */
   readonly url: string;
+  /**
+   * Fetches an access token to be used for authenticating with our API. May
+   * return the access token either synchronously or asynchronously.
+   */
+  readonly auth?: () => AccessToken | null | Promise<AccessToken | null>;
 };
 
 /**
@@ -153,12 +159,17 @@ function buildClientMethod<
     }
 
     if (unauthorized === false) {
-      // Use our auth object to get the access token for our
-      // `Authorization` header.
-      const accessToken = "";
-      if (accessToken !== undefined) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-        throw new Error("TODO: accessToken");
+      // If an authentication function was provided then use it to fetch our
+      // access token and set it as our `Authorization` header. The access token
+      // may be returned synchronously.
+      if (config.auth !== undefined) {
+        let accessToken = config.auth();
+        if (accessToken instanceof Promise) {
+          accessToken = await accessToken;
+        }
+        if (accessToken !== null) {
+          headers["Authorization"] = `Bearer ${accessToken}`;
+        }
       }
     }
 
