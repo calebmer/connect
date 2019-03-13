@@ -91,7 +91,6 @@ export function Group() {
         stickySectionHeadersEnabled={false}
         renderSectionHeader={GroupSectionHeader}
         SectionSeparatorComponent={GroupSectionSeparatorWrapper}
-        ItemSeparatorComponent={GroupItemSeparator}
         // Watch scroll events and keep track of:
         //
         // - The starting Y offset for our scroll view.
@@ -179,10 +178,6 @@ function GroupSectionSeparator({
   );
 }
 
-function GroupItemSeparator() {
-  return <View style={styles.separator} />;
-}
-
 const backgroundColor = Color.grey0;
 const sectionMargin = Space.space5;
 
@@ -205,10 +200,6 @@ const styles = StyleSheet.create({
     marginTop: GroupBanner.height,
     paddingBottom: sectionMargin,
     backgroundColor,
-  },
-  separator: {
-    height: Border.width1,
-    backgroundColor: Color.grey1,
   },
   sectionHeader: {
     justifyContent: "flex-end",
