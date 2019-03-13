@@ -1,4 +1,5 @@
 import {APIError, APIErrorCode} from "@connect/api-client";
+import {AccountTestRoute, SignUpRoute} from "./router/AllRoutes";
 import {
   BodyText,
   Button,
@@ -14,7 +15,6 @@ import {TextInput, TextInputInstance} from "./TextInput";
 import {API} from "./api/API";
 import {Route} from "./router/Route";
 import {SignUpLayout} from "./SignUpLayout";
-import {SignUpRoute} from "./router/AllRoutes";
 import {displayErrorMessage} from "./ErrorMessage";
 
 export function SignIn({
@@ -85,7 +85,8 @@ export function SignIn({
       .then(() => undefined, error => error)
       .then(error => {
         if (error === undefined) {
-          // TODO
+          // Navigate into the app after successfully signing in!
+          route.push(AccountTestRoute, {});
         } else {
           // If we got an error then decide which input to display the error on.
           if (

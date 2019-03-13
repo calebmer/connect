@@ -1,4 +1,5 @@
 import {APIError, APIErrorCode} from "@connect/api-client";
+import {AccountTestRoute, SignInRoute} from "./router/AllRoutes";
 import {
   BodyText,
   Button,
@@ -13,7 +14,6 @@ import React, {useRef, useState} from "react";
 import {TextInput, TextInputInstance} from "./TextInput";
 import {API} from "./api/API";
 import {Route} from "./router/Route";
-import {SignInRoute} from "./router/AllRoutes";
 import {SignUpLayout} from "./SignUpLayout";
 import {displayErrorMessage} from "./ErrorMessage";
 
@@ -103,7 +103,8 @@ export function SignUp({
       .then(() => undefined, error => error)
       .then(error => {
         if (error === undefined) {
-          // TODO
+          // Navigate into the app after successfully signing in!
+          route.push(AccountTestRoute, {});
         } else {
           // Set server error.
           if (

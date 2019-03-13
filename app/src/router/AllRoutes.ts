@@ -15,6 +15,12 @@ export const SignUpRoute = new RouteConfig({
   defaultProps: {},
 });
 
+export const AccountTestRoute = new RouteConfig({
+  path: "/account",
+  component: () => import("../AccountTest").then(m => m.AccountTest),
+  defaultProps: {},
+});
+
 export const GroupRoute = new RouteConfig({
   path: "/group/nohello",
   component: () => import("../Group").then(m => m.Group),

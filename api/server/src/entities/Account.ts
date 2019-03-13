@@ -76,10 +76,28 @@ export class MockAccountCollection implements AccountCollection {
   }
 
   async getAuth(email: string): Promise<AccountAuth | undefined> {
-    return this.accountByEmail.get(email);
+    const account = this.accountByEmail.get(email);
+    if (account === undefined) {
+      return undefined;
+    } else {
+      return {
+        id: account.id,
+        email: account.email,
+        passwordHash: account.passwordHash,
+      };
+    }
   }
 
   async getProfile(id: AccountID): Promise<AccountProfile | undefined> {
-    return this.accounts[id];
+    const account = this.accounts[id];
+    if (account === undefined) {
+      return undefined;
+    } else {
+      return {
+        id: account.id,
+        name: account.name,
+        avatarURL: account.avatarURL,
+      };
+    }
   }
 }

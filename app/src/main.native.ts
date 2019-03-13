@@ -1,5 +1,5 @@
-import {GroupRoute} from "./router/AllRoutes";
 import {Navigation} from "react-native-navigation";
+import {SignInRoute} from "./router/AllRoutes";
 
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setDefaultOptions({
@@ -11,7 +11,7 @@ Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({
     root: {
       stack: {
-        children: [(GroupRoute as any).getLayout({})],
+        children: [(SignInRoute as any).getLayout({})],
       },
     },
   });

@@ -26,6 +26,11 @@ export enum APIErrorCode {
   UNAUTHORIZED = "UNAUTHORIZED",
 
   /**
+   * The requested resource could not be found.
+   */
+  NOT_FOUND = "NOT_FOUND",
+
+  /**
    * A person’s access token expired. They should use their refresh token to get
    * a new one.
    */

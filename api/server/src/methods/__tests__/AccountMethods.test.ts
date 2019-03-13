@@ -1,5 +1,10 @@
 import {APIError, APIErrorCode, RefreshToken} from "@connect/api-client";
-import {refreshAccessToken, signIn, signUp} from "../AccountMethods";
+import {
+  getCurrentAccountProfile,
+  refreshAccessToken,
+  signIn,
+  signUp,
+} from "../AccountMethods";
 import {AccessTokenGenerator} from "../../entities/AccessToken";
 import {MockAccountCollection} from "../../entities/Account";
 import {MockRefreshTokenCollection} from "../../entities/RefreshToken";
@@ -244,6 +249,39 @@ describe("refreshAccessToken", () => {
       exp: expect.any(Number),
       iat: expect.any(Number),
       id: accountID,
+    });
+  });
+});
+
+describe("getCurrentAccountProfile", () => {
+  test("throws if the account does not exist", async () => {
+    const accounts = new MockAccountCollection();
+
+    let error: any;
+    try {
+      await getCurrentAccountProfile({accounts}, 42 as any);
+    } catch (e) {
+      error = e;
+    }
+
+    expect(error).toBeInstanceOf(APIError);
+    expect(error.code).toBe(APIErrorCode.NOT_FOUND);
+  });
+
+  test("gets the account profile if one exists", async () => {
+    const accounts = new MockAccountCollection();
+    const accountID = await accounts.register({
+      name: testName,
+      email: testEmail,
+      passwordHash: "",
+    });
+
+    const account = await getCurrentAccountProfile({accounts}, accountID!);
+
+    expect(account).toEqual({
+      id: accountID,
+      name: testName,
+      avatarURL: null,
     });
   });
 });

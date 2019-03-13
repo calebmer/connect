@@ -195,9 +195,13 @@ async function generateTokens(
  * input because we use the authorization context to determine the
  * current profile.
  */
-export function getCurrentAccountProfile(
-  _ctx: {},
-  _accountID: AccountID,
+export async function getCurrentAccountProfile(
+  ctx: {readonly accounts: AccountCollection},
+  accountID: AccountID,
 ): Promise<AccountProfile> {
-  throw new Error("TODO");
+  const account = await ctx.accounts.getProfile(accountID);
+  if (account === undefined) {
+    throw new APIError(APIErrorCode.NOT_FOUND);
+  }
+  return account;
 }
