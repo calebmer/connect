@@ -19,10 +19,12 @@ export function GroupItem({
 }
 
 GroupItem.height = AccountSignature.minHeight;
+GroupItem.padding = AccountSignature.padding;
+GroupItem.backgroundColor = Color.white;
 
 const styles = StyleSheet.create({
   item: {
     height: GroupItem.height,
-    backgroundColor: Color.white,
+    backgroundColor: GroupItem.backgroundColor,
   },
 });

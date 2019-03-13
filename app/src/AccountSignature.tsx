@@ -22,14 +22,14 @@ export function AccountSignature({
   );
 }
 
-AccountSignature.padding = Space.space3;
-AccountSignature.minHeight = AccountAvatar.size + AccountSignature.padding * 2;
+AccountSignature.padding = Space.space2;
+AccountSignature.minHeight = AccountAvatar.size;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "row",
-    padding: AccountSignature.padding,
+    paddingHorizontal: AccountSignature.padding,
   },
   body: {
     flex: 1,

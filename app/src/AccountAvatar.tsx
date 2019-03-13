@@ -11,7 +11,7 @@ export function AccountAvatar({account}: {account: Account}) {
   );
 }
 
-AccountAvatar.size = Space.space6;
+AccountAvatar.size = Space.space5;
 
 const styles = StyleSheet.create({
   container: {

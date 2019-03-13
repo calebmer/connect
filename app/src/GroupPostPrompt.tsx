@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingRight: Space.space4,
+    paddingVertical: AccountSignature.padding,
     backgroundColor: Color.white,
     borderRadius: borderRadius,
     ...Shadow.elevation2,

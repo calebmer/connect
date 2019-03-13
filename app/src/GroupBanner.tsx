@@ -27,7 +27,7 @@ export function GroupBanner({title}: {title: string}) {
 }
 
 GroupBanner.maxWidth = Space.space14;
-GroupBanner.height = Space.space11;
+GroupBanner.height = Space.space9;
 
 const styles = StyleSheet.create({
   background: {
@@ -45,6 +45,6 @@ const styles = StyleSheet.create({
     color: Color.yellow9,
     textAlign: "center",
     ...Font.sansBold,
-    ...Font.size6,
+    ...Font.size5,
   },
 });

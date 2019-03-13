@@ -16,6 +16,7 @@ import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupItemInbox} from "./GroupItemInbox";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {NavbarNative} from "./NavbarNative";
+import {GroupItem} from "./GroupItem";
 
 const currentAccount = MockData.calebMeredith;
 
@@ -91,6 +92,7 @@ export function Group() {
         stickySectionHeadersEnabled={false}
         renderSectionHeader={GroupSectionHeader}
         SectionSeparatorComponent={GroupSectionSeparatorWrapper}
+        ItemSeparatorComponent={GroupItemSeparator}
         // Watch scroll events and keep track of:
         //
         // - The starting Y offset for our scroll view.
@@ -111,7 +113,7 @@ export function Group() {
               // group banner’s height.
               const shouldShowNavbar =
                 event.nativeEvent.contentOffset.y - (offsetScrollY || 0) >=
-                GroupBanner.height * 0.25;
+                GroupBanner.height * 0.1;
 
               // If `shouldShowNavbar` is different from `showNavbar` then
               // enqueue an update to change `showNavbar`.
@@ -140,46 +142,47 @@ function GroupSectionHeader({
   section: SectionListData<unknown>;
 }) {
   return (
-    <View style={styles.sectionHeader}>
-      <GroupSectionSeparator isLeading />
-      <Text style={styles.sectionHeaderText}>{title}</Text>
-    </View>
+    <>
+      <View style={styles.sectionHeader}>
+        <GroupSectionSeparator isLeading />
+        <Text style={styles.sectionHeaderText}>{title}</Text>
+      </View>
+    </>
   );
 }
 
 function GroupSectionSeparatorWrapper({leadingItem}: {leadingItem?: unknown}) {
-  return leadingItem !== undefined ? (
-    <GroupSectionSeparator isTrailing />
-  ) : null;
+  return (
+    <>
+      <View style={styles.sectionVerticalPadding} />
+      {leadingItem !== undefined && <GroupSectionSeparator isTrailing />}
+    </>
+  );
 }
 
 function GroupSectionSeparator({
   isLeading,
   isTrailing,
-  noBackground,
-  children,
 }: {
   isLeading?: boolean;
   isTrailing?: boolean;
-  noBackground?: boolean;
-  children?: ReactNode;
 }) {
   return (
-    <View
-      style={[
-        styles.sectionSeparator,
-        !noBackground && styles.sectionSeparatorBackground,
-      ]}
-    >
+    <View style={styles.sectionSeparator}>
       {isLeading && <View style={styles.sectionSeparatorShadowLeading} />}
       {isTrailing && <View style={styles.sectionSeparatorShadowTrailing} />}
-      {children}
     </View>
   );
 }
 
+function GroupItemSeparator() {
+  return <View style={styles.itemSeparator} />;
+}
+
 const backgroundColor = Color.grey0;
-const sectionMargin = Space.space5;
+const sectionMargin = Space.space3;
+const sectionHeaderFont = Font.size2;
+const sectionHeaderPaddingVertical = Space.space0;
 
 const styles = StyleSheet.create({
   container: {
@@ -203,23 +206,21 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     justifyContent: "flex-end",
-    height: Font.size3.lineHeight + Space.space1 * 2,
+    height: sectionHeaderFont.lineHeight + sectionHeaderPaddingVertical * 2,
     backgroundColor,
   },
   sectionHeaderText: {
     position: "absolute",
     bottom: 0,
-    paddingVertical: Space.space1,
-    paddingHorizontal: Space.space3,
+    paddingVertical: sectionHeaderPaddingVertical,
+    paddingHorizontal: GroupItem.padding,
     color: Color.grey6,
     ...Font.sans,
-    ...Font.size3,
+    ...sectionHeaderFont,
   },
   sectionSeparator: {
     overflow: "hidden",
     minHeight: sectionMargin,
-  },
-  sectionSeparatorBackground: {
     backgroundColor,
   },
   sectionSeparatorShadowLeading: {
@@ -235,5 +236,13 @@ const styles = StyleSheet.create({
     height: sectionMargin,
     backgroundColor: Color.white,
     ...Shadow.elevation1,
+  },
+  sectionVerticalPadding: {
+    height: GroupItem.padding,
+    backgroundColor: GroupItem.backgroundColor,
+  },
+  itemSeparator: {
+    height: Space.space3,
+    backgroundColor: GroupItem.backgroundColor,
   },
 });
