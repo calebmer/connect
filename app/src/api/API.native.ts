@@ -1,6 +1,6 @@
 import {APIClient, AccessToken, RefreshToken} from "@connect/api-client";
 import {API_URL} from "../RunConfig";
-import {AsyncStorage} from "react-native";
+import AsyncStorage from "@react-native-community/async-storage";
 import jwtDecode from "jwt-decode";
 
 /**
