@@ -265,5 +265,12 @@ export abstract class RouteBase {
    * that actually pops on both native and web we might implement an
    * `actuallyPopTo()` method in the future.
    */
-  public abstract popTo(): void;
+  public popTo(): void {
+    this._popTo();
+  }
+
+  /**
+   * Internal implementation of `popTo()`.
+   */
+  protected abstract _popTo(): void;
 }

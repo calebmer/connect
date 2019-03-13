@@ -118,7 +118,7 @@ export class Route extends RouteBase {
    * `actuallyPopTo()` method which pops on both platforms instead of using an
    * intelligent default on web.
    */
-  public popTo() {
+  protected _popTo() {
     this.push(this.config, {});
   }
 }

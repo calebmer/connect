@@ -76,7 +76,7 @@ export class Route extends RouteBase {
   /**
    * Pops routes off the navigation stack until we return to this route.
    */
-  public popTo() {
+  protected _popTo() {
     Navigation.popTo(this.componentID);
   }
 }
