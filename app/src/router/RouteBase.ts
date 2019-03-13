@@ -151,6 +151,56 @@ export abstract class RouteConfigBase<
   public hasComponentLoaded(): boolean {
     return this.componentState.status === 2 || this.componentState.status === 3;
   }
+
+  /**
+   * Waits for the route’s component to load before executing an action, but
+   * only wait for 100ms. A user won’t be able to notice a stall of 100ms or
+   * less. Any delay longer then that and the interface no longer
+   * feels responsive.
+   */
+  public waitForComponent(action: () => void) {
+    // If the component has already loaded then immediately execute the action.
+    if (this.hasComponentLoaded()) {
+      action();
+      return;
+    }
+
+    // NOTE: We shouldn’t need this when React Concurrent Mode and Suspense are
+    // fully released. However, for now this is necessary to get the
+    // same experience.
+
+    // Did we time out while waiting for the next route to load?
+    let timedOut = false;
+
+    // We want to wait until our route has loaded before we move on to the next
+    // route. However, on slow networks we also want to feel responsive. [At
+    // 100ms it starts to feel like the app isn’t responsive][1], so if our
+    // route component does not load within 100ms push the new route and display
+    // the loading fallback.
+    //
+    // [1]: https://developers.google.com/web/fundamentals/performance/rail
+    const timeoutID = setTimeout(() => {
+      timedOut = true;
+      action();
+    }, 100);
+
+    // Load the next route’s component. If we resolve before our timeout then
+    // immediately push our next route and clear our timer.
+    this.loadComponent().then(
+      () => {
+        if (!timedOut) {
+          clearTimeout(timeoutID);
+          action();
+        }
+      },
+      () => {
+        if (!timedOut) {
+          clearTimeout(timeoutID);
+          action();
+        }
+      },
+    );
+  }
 }
 
 /**
@@ -184,47 +234,11 @@ export abstract class RouteBase {
     nextRoute: RouteConfigBase<NextProps>,
     partialProps: Partial<Omit<NextProps, "route">>,
   ) {
-    // If the route has already loaded then immediately push the next route.
-    if (nextRoute.hasComponentLoaded()) {
+    // Wait for the next route’s component to load before pushing the
+    // next route.
+    nextRoute.waitForComponent(() => {
       this._push(nextRoute, partialProps);
-      return;
-    }
-
-    // NOTE: We shouldn’t need this when React Concurrent Mode and Suspense are
-    // fully released. However, for now this is necessary to get the
-    // same experience.
-
-    // Did we time out while waiting for the next route to load?
-    let timedOut = false;
-
-    // We want to wait until our route has loaded before we move on to the next
-    // route. However, on slow networks we also want to feel responsive. [At
-    // 100ms it starts to feel like the app isn’t responsive][1], so if our
-    // route component does not load within 100ms push the new route and display
-    // the loading fallback.
-    //
-    // [1]: https://developers.google.com/web/fundamentals/performance/rail
-    const timeoutID = setTimeout(() => {
-      timedOut = true;
-      this._push(nextRoute, partialProps);
-    }, 100);
-
-    // Load the next route’s component. If we resolve before our timeout then
-    // immediately push our next route and clear our timer.
-    nextRoute.loadComponent().then(
-      () => {
-        if (!timedOut) {
-          clearTimeout(timeoutID);
-          this._push(nextRoute, partialProps);
-        }
-      },
-      () => {
-        if (!timedOut) {
-          clearTimeout(timeoutID);
-          this._push(nextRoute, partialProps);
-        }
-      },
-    );
+    });
   }
 
   /**
