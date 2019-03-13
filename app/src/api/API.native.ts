@@ -73,8 +73,8 @@ async function refreshAccessToken(
     accessToken = data.accessToken;
   } catch (error) {
     // If we fail to refresh our access token then sign the user out!
-    await AsyncStorage.multiRemove([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
     currentState = null;
+    await AsyncStorage.multiRemove([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
     throw error;
   }
 
@@ -109,4 +109,32 @@ const signUp = API.account.signUp;
     [REFRESH_TOKEN_KEY, refreshToken],
   ]);
   return {accessToken: "", refreshToken: ""};
+};
+
+// Override `API.account.signOut` so that we send the refresh token from our
+// local storage to the API and so that we purge our local state of all API
+// request tokens.
+//
+// Ignore the input. We will be using the refresh token from our local storage.
+const signOut = API.account.signOut;
+(API as any).account.signOut = async (_input: any, options: any) => {
+  // Get the current refresh token from our state.
+  let refreshToken: RefreshToken | undefined;
+  if (currentState !== null) {
+    refreshToken = currentState.refreshToken;
+  }
+
+  // Clear our current state and async storage of all API tokens whether or not
+  // our actual API request fails or succeeds.
+  currentState = null;
+  await AsyncStorage.multiRemove([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
+
+  // Send a request to our API to destroy the refresh token using our original
+  // `signOut` method before we wrapped it in this function.
+  if (refreshToken !== undefined) {
+    await signOut({refreshToken}, options);
+  }
+
+  // Successfully signed out!
+  return {};
 };
