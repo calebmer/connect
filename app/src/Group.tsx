@@ -8,15 +8,15 @@ import {
   Text,
   View,
 } from "react-native";
-import {Border, Color, Font, Shadow, Space} from "./atoms";
+import {Color, Font, Shadow, Space} from "./atoms";
 import {InboxItem, Post} from "./MockData";
-import React, {ReactNode, useState} from "react";
+import React, {useState} from "react";
 import {GroupBanner} from "./GroupBanner";
+import {GroupItem} from "./GroupItem";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupItemInbox} from "./GroupItemInbox";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {NavbarNative} from "./NavbarNative";
-import {GroupItem} from "./GroupItem";
 
 const currentAccount = MockData.calebMeredith;
 
@@ -43,7 +43,7 @@ export function Group() {
       ? 1
       : scrollY.interpolate({
           inputRange: [-GroupBanner.height, 0].map(y => y + offsetScrollY),
-          outputRange: [2.7, 1], // NOTE: I would expect this number to be 2 and not 2.7, but experimental evidence proves otherwise.
+          outputRange: [2.8, 1], // NOTE: I would expect this number to be 2 and not 2.8, but experimental evidence proves otherwise.
           extrapolateLeft: "extend",
           extrapolateRight: "clamp",
         });
@@ -98,7 +98,7 @@ export function Group() {
         // - The starting Y offset for our scroll view.
         // - An animated value representing the scroll Y position.
         // - Whether or not we should show our navbar on mobile devices.
-        scrollEventThrottle={16}
+        scrollEventThrottle={1}
         onScrollBeginDrag={event => {
           if (offsetScrollY === null) {
             setOffsetScrollY(event.nativeEvent.contentOffset.y);
@@ -181,8 +181,6 @@ function GroupItemSeparator() {
 
 const backgroundColor = Color.grey0;
 const sectionMargin = Space.space3;
-const sectionHeaderFont = Font.size2;
-const sectionHeaderPaddingVertical = Space.space0;
 
 const styles = StyleSheet.create({
   container: {
@@ -206,17 +204,17 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     justifyContent: "flex-end",
-    height: sectionHeaderFont.lineHeight + sectionHeaderPaddingVertical * 2,
+    height: Font.size1.lineHeight + Space.space0 / 2,
     backgroundColor,
   },
   sectionHeaderText: {
     position: "absolute",
     bottom: 0,
-    paddingVertical: sectionHeaderPaddingVertical,
     paddingHorizontal: GroupItem.padding,
+    paddingBottom: Space.space0 / 2,
     color: Color.grey6,
     ...Font.sans,
-    ...sectionHeaderFont,
+    ...Font.size1,
   },
   sectionSeparator: {
     overflow: "hidden",
@@ -242,7 +240,7 @@ const styles = StyleSheet.create({
     backgroundColor: GroupItem.backgroundColor,
   },
   itemSeparator: {
-    height: Space.space3,
+    height: GroupItem.padding,
     backgroundColor: GroupItem.backgroundColor,
   },
 });

@@ -8,27 +8,33 @@ interface TextProps extends NativeTextProps {
 }
 
 export function BodyText(props: TextProps) {
-  return <Text {...props} style={styles.body} />;
+  return <Text {...props} style={[props.style, styles.body]} />;
 }
 
 export function BodyItalicText(props: TextProps) {
-  return <Text {...props} style={[styles.body, Font.serifItalic]} />;
+  return (
+    <Text {...props} style={[props.style, styles.body, Font.serifItalic]} />
+  );
 }
 
 export function LabelText(props: TextProps) {
-  return <Text {...props} style={styles.label} numberOfLines={1} />;
+  return (
+    <Text {...props} style={[props.style, styles.label]} numberOfLines={1} />
+  );
 }
 
 export function TitleText(props: TextProps) {
-  return <Text {...props} style={styles.title} />;
+  return <Text {...props} style={[props.style, styles.title]} />;
 }
 
 export function MetaText(props: TextProps) {
-  return <Text {...props} style={styles.meta} />;
+  return <Text {...props} style={[props.style, styles.meta]} />;
 }
 
 export function MetaLinkText(props: TextProps) {
-  return <Text {...props} style={[styles.meta, styles.metaLink]} />;
+  return (
+    <Text {...props} style={[props.style, styles.meta, styles.metaLink]} />
+  );
 }
 
 const styles = StyleSheet.create({

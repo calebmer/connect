@@ -1,8 +1,8 @@
+import {Color, Font} from "./atoms";
 import React, {ReactNode} from "react";
 import {StyleSheet, View} from "react-native";
 import {Account} from "./MockData";
 import {AccountSignature} from "./AccountSignature";
-import {Color} from "./atoms";
 
 export function GroupItem({
   account,
@@ -18,13 +18,11 @@ export function GroupItem({
   );
 }
 
-GroupItem.height = AccountSignature.minHeight;
 GroupItem.padding = AccountSignature.padding;
 GroupItem.backgroundColor = Color.white;
 
 const styles = StyleSheet.create({
   item: {
-    height: GroupItem.height,
     backgroundColor: GroupItem.backgroundColor,
   },
 });

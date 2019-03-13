@@ -11,13 +11,13 @@ export function NavbarNative({hideBackground}: {hideBackground?: boolean}) {
     if (hideBackground) {
       Animated.timing(backgroundOpacity, {
         toValue: 0,
-        duration: 200,
+        duration: 180,
         useNativeDriver: true,
       }).start();
     } else {
       Animated.timing(backgroundOpacity, {
         toValue: 1,
-        duration: 200,
+        duration: 180,
         useNativeDriver: true,
       }).start();
     }

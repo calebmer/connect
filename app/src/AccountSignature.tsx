@@ -22,8 +22,7 @@ export function AccountSignature({
   );
 }
 
-AccountSignature.padding = Space.space2;
-AccountSignature.minHeight = AccountAvatar.size;
+AccountSignature.padding = Space.space3;
 
 const styles = StyleSheet.create({
   container: {

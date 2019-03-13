@@ -1,4 +1,4 @@
-import {BodyText, Border, Color, Shadow, Space} from "./atoms";
+import {BodyText, Color, Shadow, Space} from "./atoms";
 import {StyleSheet, View} from "react-native";
 import {Account} from "./MockData";
 import {AccountSignature} from "./AccountSignature";
@@ -16,17 +16,13 @@ export function GroupPostPrompt({account}: {account: Account}) {
   );
 }
 
-const borderRadius = Border.radius1;
-
 const styles = StyleSheet.create({
   container: {
-    marginTop: -borderRadius,
     flexDirection: "row",
     alignItems: "center",
     paddingRight: Space.space4,
     paddingVertical: AccountSignature.padding,
     backgroundColor: Color.white,
-    borderRadius: borderRadius,
     ...Shadow.elevation0,
   },
   icon: {
