@@ -53,19 +53,19 @@ export const size0 = {
 };
 export const size1 = {
   fontSize: 14,
-  lineHeight: 23,
+  lineHeight: 22,
 };
 export const size2 = {
   fontSize: 16,
-  lineHeight: 23,
+  lineHeight: 22,
 };
 export const size3 = {
   fontSize: 18,
-  lineHeight: 23,
+  lineHeight: 22,
 };
 export const size4 = {
-  fontSize: 23,
-  lineHeight: 23,
+  fontSize: 22,
+  lineHeight: 22,
 };
 export const size5 = {
   fontSize: 36,

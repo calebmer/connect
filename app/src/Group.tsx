@@ -34,10 +34,12 @@ export function Group() {
   // translates a negative scroll offset into a scale transformation.
   //
   // There’s some weirdness on iOS where where `scrollY` starts at some negative
-  // value like -44 on an iPhone X instead of 0, so we record the first value of
-  // `scrollY` and use it as an offset.
+  // value like -20 (or -44 on an iPhone X) instead of 0, so we record the first
+  // value of `scrollY` and use it as an offset.
   const [scrollY] = useState(new Animated.Value(0));
-  const [offsetScrollY, setOffsetScrollY] = useState<null | number>(null);
+  const [offsetScrollY, setOffsetScrollY] = useState<null | number>(
+    Platform.OS === "ios" ? null : 0,
+  );
   const bannerScale =
     offsetScrollY === null
       ? 1
@@ -99,21 +101,21 @@ export function Group() {
         // - An animated value representing the scroll Y position.
         // - Whether or not we should show our navbar on mobile devices.
         scrollEventThrottle={1}
-        onScrollBeginDrag={event => {
-          if (offsetScrollY === null) {
-            setOffsetScrollY(event.nativeEvent.contentOffset.y);
-          }
-        }}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {
             useNativeDriver: Platform.OS !== "web",
             listener: (event: any) => {
+              // If we don’t yet have an `offsetScrollY` value then set one!
+              if (offsetScrollY === null) {
+                setOffsetScrollY(event.nativeEvent.contentOffset.y);
+              }
+
               // We should show the navbar when we’ve scrolled past 40% of the
               // group banner’s height.
               const shouldShowNavbar =
                 event.nativeEvent.contentOffset.y - (offsetScrollY || 0) >=
-                GroupBanner.height * 0.1;
+                GroupBanner.height * 0.25;
 
               // If `shouldShowNavbar` is different from `showNavbar` then
               // enqueue an update to change `showNavbar`.

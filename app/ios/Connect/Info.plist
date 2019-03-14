@@ -41,10 +41,10 @@
 	<string></string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Merriweather-Bold.ttf</string>
-		<string>Merriweather-BoldItalic.ttf</string>
-		<string>Merriweather-Italic.ttf</string>
-		<string>Merriweather-Regular.ttf</string>
+		<string>Faustina-Bold.ttf</string>
+		<string>Faustina-BoldItalic.ttf</string>
+		<string>Faustina-Italic.ttf</string>
+		<string>Faustina-Regular.ttf</string>
 		<string>WorkSans-Bold.ttf</string>
 		<string>WorkSans-Regular.ttf</string>
 	</array>

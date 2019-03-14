@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     color: Color.black,
     ...Font.serifBold,
     ...Font.size2,
-    lineHeight: undefined,
+    lineHeight: Font.size2.fontSize,
   },
   title: {
     color: Color.black,
