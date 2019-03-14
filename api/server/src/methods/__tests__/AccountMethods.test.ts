@@ -1,6 +1,6 @@
 import {APIError, APIErrorCode, RefreshToken} from "@connect/api-client";
 import {
-  getCurrentAccountProfile,
+  getCurrentProfile,
   refreshAccessToken,
   signIn,
   signOut,
@@ -283,13 +283,13 @@ describe("refreshAccessToken", () => {
   });
 });
 
-describe("getCurrentAccountProfile", () => {
+describe("getCurrentProfile", () => {
   test("throws if the account does not exist", async () => {
     const accounts = new MockAccountCollection();
 
     let error: any;
     try {
-      await getCurrentAccountProfile({accounts}, 42 as any);
+      await getCurrentProfile({accounts}, 42 as any);
     } catch (e) {
       error = e;
     }
@@ -306,7 +306,7 @@ describe("getCurrentAccountProfile", () => {
       passwordHash: "",
     });
 
-    const account = await getCurrentAccountProfile({accounts}, accountID!);
+    const account = await getCurrentProfile({accounts}, accountID!);
 
     expect(account).toEqual({
       id: accountID,

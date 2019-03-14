@@ -10,7 +10,7 @@ export function AccountTest({route}: {route: Route}) {
   const [account, setAccount] = useState<undefined | AccountProfile>();
 
   useEffect(() => {
-    API.account.getCurrentAccountProfile().then(setAccount);
+    API.account.getCurrentProfile().then(setAccount);
   }, []);
 
   function handleSignOut() {

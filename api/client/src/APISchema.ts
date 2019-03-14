@@ -11,9 +11,6 @@ import {SchemaOutput} from "./SchemaOutput";
  * the idea.
  */
 export const APISchema = Schema.namespace({
-  /**
-   * Operations related to the administration of a person’s account.
-   */
   account: Schema.namespace({
     /**
      * Registers a new account which can be used to access our service.
@@ -96,7 +93,7 @@ export const APISchema = Schema.namespace({
      * input because we use the authorization context to determine the
      * current profile.
      */
-    getCurrentAccountProfile: Schema.method({
+    getCurrentProfile: Schema.method({
       safe: true,
       input: {},
       output: SchemaOutput.t<AccountProfile>(),

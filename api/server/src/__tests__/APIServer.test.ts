@@ -7,7 +7,7 @@ jest.mock("../PGClient", () => ({
 jest.mock("../methods", () => ({
   account: {
     signIn: jest.fn(() => Promise.resolve({works: true})),
-    getCurrentAccountProfile: jest.fn((_, accountID) =>
+    getCurrentProfile: jest.fn((_, accountID) =>
       Promise.resolve({
         works: true,
         accountID,
@@ -25,9 +25,8 @@ import request from "supertest";
 
 const signIn: jest.Mock<typeof methods.account.signIn> = methods.account
   .signIn as any;
-const getCurrentAccountProfile: jest.Mock<
-  typeof methods.account.signIn
-> = methods.account.getCurrentAccountProfile as any;
+const getCurrentProfile: jest.Mock<typeof methods.account.signIn> = methods
+  .account.getCurrentProfile as any;
 
 test("GET /", async () => {
   await request(APIServer)
@@ -185,21 +184,21 @@ test("POST /account/signIn - with extra input", async () => {
   expect(signIn).not.toHaveBeenCalled();
 });
 
-test("POST /account/getCurrentAccountProfile", async () => {
+test("POST /account/getCurrentProfile", async () => {
   await request(APIServer)
-    .post("/account/getCurrentAccountProfile")
+    .post("/account/getCurrentProfile")
     .ok(() => true)
     .expect("Content-Type", /json/)
     .expect(404, {
       ok: false,
       error: {code: APIErrorCode.UNRECOGNIZED_METHOD},
     });
-  expect(getCurrentAccountProfile).not.toHaveBeenCalled();
+  expect(getCurrentProfile).not.toHaveBeenCalled();
 });
 
-test("GET /account/getCurrentAccountProfile - without authorization", async () => {
+test("GET /account/getCurrentProfile - without authorization", async () => {
   await request(APIServer)
-    .get("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentProfile")
     .send({})
     .ok(() => true)
     .expect("Content-Type", /json/)
@@ -207,12 +206,12 @@ test("GET /account/getCurrentAccountProfile - without authorization", async () =
       ok: false,
       error: {code: APIErrorCode.UNAUTHORIZED},
     });
-  expect(getCurrentAccountProfile).not.toHaveBeenCalled();
+  expect(getCurrentProfile).not.toHaveBeenCalled();
 });
 
-test("GET /account/getCurrentAccountProfile - incorrect authorization header", async () => {
+test("GET /account/getCurrentProfile - incorrect authorization header", async () => {
   await request(APIServer)
-    .get("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentProfile")
     .set("Authorization", "Bear foobar")
     .send({})
     .ok(() => true)
@@ -221,12 +220,12 @@ test("GET /account/getCurrentAccountProfile - incorrect authorization header", a
       ok: false,
       error: {code: APIErrorCode.UNAUTHORIZED},
     });
-  expect(getCurrentAccountProfile).not.toHaveBeenCalled();
+  expect(getCurrentProfile).not.toHaveBeenCalled();
 });
 
-test("GET /account/getCurrentAccountProfile - malformed JWT", async () => {
+test("GET /account/getCurrentProfile - malformed JWT", async () => {
   await request(APIServer)
-    .get("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentProfile")
     .set("Authorization", "Bearer foobar")
     .send({})
     .ok(() => true)
@@ -235,13 +234,13 @@ test("GET /account/getCurrentAccountProfile - malformed JWT", async () => {
       ok: false,
       error: {code: APIErrorCode.UNAUTHORIZED},
     });
-  expect(getCurrentAccountProfile).not.toHaveBeenCalled();
+  expect(getCurrentProfile).not.toHaveBeenCalled();
 });
 
-test("GET /account/getCurrentAccountProfile - bad signature JWT", async () => {
+test("GET /account/getCurrentProfile - bad signature JWT", async () => {
   const accessToken = jwt.sign({id: 42}, "secret-secret-cats");
   await request(APIServer)
-    .get("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentProfile")
     .set("Authorization", `Bearer ${accessToken}`)
     .send({})
     .ok(() => true)
@@ -250,13 +249,13 @@ test("GET /account/getCurrentAccountProfile - bad signature JWT", async () => {
       ok: false,
       error: {code: APIErrorCode.UNAUTHORIZED},
     });
-  expect(getCurrentAccountProfile).not.toHaveBeenCalled();
+  expect(getCurrentProfile).not.toHaveBeenCalled();
 });
 
-test("GET /account/getCurrentAccountProfile - expired JWT", async () => {
+test("GET /account/getCurrentProfile - expired JWT", async () => {
   const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "-1d"});
   await request(APIServer)
-    .get("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentProfile")
     .set("Authorization", `Bearer ${accessToken}`)
     .send({})
     .ok(() => true)
@@ -265,13 +264,13 @@ test("GET /account/getCurrentAccountProfile - expired JWT", async () => {
       ok: false,
       error: {code: APIErrorCode.ACCESS_TOKEN_EXPIRED},
     });
-  expect(getCurrentAccountProfile).not.toHaveBeenCalled();
+  expect(getCurrentProfile).not.toHaveBeenCalled();
 });
 
-test("GET /account/getCurrentAccountProfile", async () => {
+test("GET /account/getCurrentProfile", async () => {
   const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
   await request(APIServer)
-    .get("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentProfile")
     .set("Authorization", `Bearer ${accessToken}`)
     .send({})
     .expect("Content-Type", /json/)
@@ -279,18 +278,18 @@ test("GET /account/getCurrentAccountProfile", async () => {
       ok: true,
       data: {works: true, accountID: 42},
     });
-  expect(getCurrentAccountProfile).toHaveBeenCalledTimes(1);
+  expect(getCurrentProfile).toHaveBeenCalledTimes(1);
 });
 
-test("GET /account/getCurrentAccountProfile - without input", async () => {
+test("GET /account/getCurrentProfile - without input", async () => {
   const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
   await request(APIServer)
-    .get("/account/getCurrentAccountProfile")
+    .get("/account/getCurrentProfile")
     .set("Authorization", `Bearer ${accessToken}`)
     .expect("Content-Type", /json/)
     .expect(200, {
       ok: true,
       data: {works: true, accountID: 42},
     });
-  expect(getCurrentAccountProfile).toHaveBeenCalledTimes(1);
+  expect(getCurrentProfile).toHaveBeenCalledTimes(1);
 });
