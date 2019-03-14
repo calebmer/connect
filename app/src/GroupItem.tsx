@@ -1,8 +1,8 @@
-import {Color, Font} from "./atoms";
 import React, {ReactNode} from "react";
 import {StyleSheet, View} from "react-native";
 import {Account} from "./MockData";
 import {AccountSignature} from "./AccountSignature";
+import {Color} from "./atoms";
 
 export function GroupItem({
   account,

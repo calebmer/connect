@@ -1,5 +1,6 @@
 import {AccessToken, RefreshToken} from "./types/TokenTypes";
 import {AccountProfile} from "./types/AccountTypes";
+import {Group} from "./types/GroupTypes";
 import {Schema} from "./Schema";
 import {SchemaInput} from "./SchemaInput";
 import {SchemaOutput} from "./SchemaOutput";
@@ -97,6 +98,19 @@ export const APISchema = Schema.namespace({
       safe: true,
       input: {},
       output: SchemaOutput.t<AccountProfile>(),
+    }),
+  }),
+
+  group: Schema.namespace({
+    /**
+     * Fetches a group by its slug which was likely taken from a URL. If a group
+     * with the provided slug exists but the signed in account is not a member
+     * of that group then we return null.
+     */
+    getBySlug: Schema.method({
+      safe: true,
+      input: {slug: SchemaInput.string},
+      output: SchemaOutput.t<{readonly group: Group | null}>(),
     }),
   }),
 });

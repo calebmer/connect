@@ -14,6 +14,7 @@ jest.mock("../methods", () => ({
       }),
     ),
   },
+  group: {},
 }));
 
 import * as methods from "../methods";

@@ -1,7 +1,7 @@
 import {AccountID, AccountProfile} from "@connect/api-client";
 
 /**
- * Provides an interface to manage a collection of accounts.
+ * Manage a collection of accounts.
  */
 export interface AccountCollection {
   /**

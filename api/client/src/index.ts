@@ -5,4 +5,5 @@ export * from "./JSONValue";
 export * from "./Schema";
 export * from "./SchemaInput";
 export * from "./types/AccountTypes";
+export * from "./types/GroupTypes";
 export * from "./types/TokenTypes";
