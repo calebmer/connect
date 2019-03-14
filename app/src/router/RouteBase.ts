@@ -1,3 +1,4 @@
+import {PathBase, PathPattern, PathVariableProps} from "./Path";
 import React from "react";
 
 // Utility type for removing keys from an object.
@@ -11,7 +12,8 @@ type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
  * implementation lives in `Route.native.ts` and `Route.web.ts`.
  */
 export abstract class RouteConfigBase<
-  Props extends {readonly route: RouteBase}
+  Path extends PathBase,
+  Props extends {readonly route: RouteBase} & PathVariableProps<Path>
 > {
   /**
    * The URL path this route is registered on. If you enter this path into a
@@ -20,19 +22,7 @@ export abstract class RouteConfigBase<
    * This path should be globally unique since we will globally register our
    * route with this path.
    */
-  public readonly path: string;
-
-  /**
-   * The props we will use to render this route if no other props are provided
-   * during navigation.
-   *
-   * The props of a component might include some session data. For instance,
-   * knowledge about who pushed a component to the navigation stack. If a
-   * client navigates out-of-the-blue to this route we won’t expect them to
-   * provide detailed runtime bookkeeping props. Instead we will use our
-   * default props to satisfy our component.
-   */
-  protected readonly defaultProps: Omit<Props, "route">;
+  public readonly path: PathPattern<Path>;
 
   /**
    * The state of our lazily loaded component. As the component loads we will
@@ -44,26 +34,17 @@ export abstract class RouteConfigBase<
   constructor({
     path,
     component,
-    defaultProps,
   }: {
-    /**
-     * The path this route is registered on. If a client navigates to this path
-     * then we will display the route’s component.
-     */
-    readonly path: string;
-    /**
-     * The component rendered by this route. We force the component to be a
-     * promise to encourage code splitting with `import()`.
-     */
+    readonly path: PathPattern<Path>;
+
+    // NOTE: We force the component to be a promise to encourage code splitting
+    // with `import()`.
+    //
+    // NOTE: If there’s a required prop that is not `{route: RouteBase}` or
+    // `PathVariableProps<Path>` then expect this function to error!
     readonly component: () => Promise<React.ComponentType<Props>>;
-    /**
-     * The props we will use to render this route if no other props are provided
-     * during navigation.
-     */
-    readonly defaultProps: Omit<Props, "route">;
   }) {
     this.path = path;
-    this.defaultProps = defaultProps;
     this.componentState = {status: 0, result: component};
 
     /**
@@ -224,18 +205,30 @@ type LazyComponentState<T> =
 export abstract class RouteBase {
   /**
    * Pushes a new route to our navigation stack. The new route will be displayed
-   * to the user.
+   * to the user. We wait a little bit for the next route’s component to load,
+   * Suspense style, before progressing to the next route.
    *
    * The props object is “partial” which means all the props are optional. If
    * a required prop is not provided then we will use the value from
    * `defaultProps` when the route was configured.
+   *
+   * However, the path variable props are _always_ required. How to think
+   * about this:
+   *
+   * 1. Required props that are not path variable props are optional and will be
+   *    provided by `defaultProps`.
+   * 2. Path variable props must always be provided when navigating to a
+   *    new route.
    */
-  public push<NextProps extends {readonly route: RouteBase}>(
-    nextRoute: RouteConfigBase<NextProps>,
-    partialProps: Partial<Omit<NextProps, "route">>,
+  public push<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
   ) {
     nextRoute.waitForComponent(() => {
-      this._push(nextRoute, partialProps);
+      this._push(nextRoute, props);
     });
   }
 
@@ -244,9 +237,12 @@ export abstract class RouteBase {
    * override this function and not `push()` which handles some
    * Suspense-y stuff.
    */
-  protected abstract _push<NextProps extends {readonly route: RouteBase}>(
-    nextRoute: RouteConfigBase<NextProps>,
-    partialProps: Partial<Omit<NextProps, "route">>,
+  protected abstract _push<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
   ): void;
 
   /**
@@ -281,12 +277,15 @@ export abstract class RouteBase {
    * a method that actually resets history we might implement an
    * `actuallySwapRoot()` method in the future.
    */
-  public swapRoot<NextProps extends {readonly route: RouteBase}>(
-    nextRoute: RouteConfigBase<NextProps>,
-    partialProps: Partial<Omit<NextProps, "route">>,
+  public swapRoot<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
   ) {
     nextRoute.waitForComponent(() => {
-      this._swapRoot(nextRoute, partialProps);
+      this._swapRoot(nextRoute, props);
     });
   }
 
@@ -294,8 +293,11 @@ export abstract class RouteBase {
    * Internal implementation of `swapRoot()` which child classes
    * should override.
    */
-  protected abstract _swapRoot<NextProps extends {readonly route: RouteBase}>(
-    nextRoute: RouteConfigBase<NextProps>,
-    partialProps: Partial<Omit<NextProps, "route">>,
+  protected abstract _swapRoot<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
   ): void;
 }

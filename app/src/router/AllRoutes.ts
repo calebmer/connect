@@ -1,28 +1,25 @@
 // NOTE: The file name starts with “All” so that it appears first in an
 // alphabetically sorted list.
 
+import {Path} from "./Path";
 import {RouteConfig} from "./Route";
 
 export const SignInRoute = new RouteConfig({
-  path: "/sign-in",
+  path: Path.create("sign-in"),
   component: () => import("../SignIn").then(m => m.SignIn),
-  defaultProps: {},
 });
 
 export const SignUpRoute = new RouteConfig({
-  path: "/sign-up",
+  path: Path.create("sign-up"),
   component: () => import("../SignUp").then(m => m.SignUp),
-  defaultProps: {},
 });
 
 export const AccountTestRoute = new RouteConfig({
-  path: "/account",
+  path: Path.create("account"),
   component: () => import("../AccountTest").then(m => m.AccountTest),
-  defaultProps: {},
 });
 
 export const GroupRoute = new RouteConfig({
-  path: "/group/nohello",
+  path: Path.create("group", Path.variable("slug")),
   component: () => import("../Group").then(m => m.Group),
-  defaultProps: {},
 });

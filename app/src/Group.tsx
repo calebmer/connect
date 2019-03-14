@@ -25,7 +25,9 @@ const AnimatedSectionList: SectionList<
   unknown
 > = Animated.createAnimatedComponent(SectionList);
 
-export function Group() {
+export function Group({slug}: {slug: string}) {
+  console.log(slug);
+
   const groupTitle = "Definitely Work";
 
   // On iOS you can scroll up which results in a negative value for `scrollY`.

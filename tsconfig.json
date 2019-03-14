@@ -4,7 +4,6 @@
     "target": "esnext",
     "module": "esnext",
     "sourceMap": true,
-    "skipLibCheck": true,
     "moduleResolution": "node",
     "jsx": "react-native",
     "lib": ["esnext"],

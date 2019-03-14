@@ -1,4 +1,5 @@
 import {History, Location} from "history";
+import {PathBase, PathPattern, PathVariableProps} from "./Path";
 import React, {ReactElement} from "react";
 import {RouteBase, RouteConfigBase} from "./RouteBase";
 import createBrowserHistory from "history/createBrowserHistory";
@@ -13,23 +14,34 @@ type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 export const history: History<undefined> = createBrowserHistory();
 
 /**
- * A map from paths to the component rendered at that path.
+ * All of the routes registered in our application.
  */
-const routeMap = new Map<string, React.ComponentType<{}>>();
+const routes: Array<{
+  readonly path: PathPattern<PathBase>;
+  readonly Component: React.ComponentType<PathVariableProps<PathBase>>;
+}> = [];
 
 /**
  * Finds the appropriate component to render for the provided location and
  * creates a React element for that component. Returns undefined if no route
  * matches the provided location.
+ *
+ * TODO: Currently this is O(n) where n is the number of routes we have. We
+ * could improve performance with a route map. Right now n is small, though, so
+ * we don’t bother. We will need to bother in the future when we have lots
+ * of routes.
  */
 export function getRoute(
   location: Location<undefined>,
 ): ReactElement<unknown> | undefined {
-  const Component = routeMap.get(location.pathname);
-  if (Component === undefined) {
-    return undefined;
+  for (let i = 0; i < routes.length; i++) {
+    const {path, Component} = routes[i];
+    const variables = path.parse(location.pathname);
+    if (variables !== undefined) {
+      return React.createElement(Component, variables);
+    }
   }
-  return React.createElement(Component, null);
+  return undefined;
 }
 
 /**
@@ -37,32 +49,25 @@ export function getRoute(
  * the route to render based on the URL.
  */
 export class RouteConfig<
-  Props extends {readonly route: RouteBase}
-> extends RouteConfigBase<Props> {
+  Path extends PathBase,
+  Props extends {readonly route: RouteBase} & PathVariableProps<Path>
+> extends RouteConfigBase<Path, Props> {
   /**
    * Registers a component to our route map. Throws an error if the path already
    * exists in our route map.
    */
   protected registerComponent(LazyComponent: React.ComponentType<Props>) {
-    // Throw an error if the route already exists in our route map.
-    if (routeMap.has(this.path)) {
-      throw new Error(
-        `A route with path "${this.path}" was already registered.`,
-      );
-    }
-
     // Setup the variables that use our route config.
-    const defaultProps = this.defaultProps;
     const route = new Route(this);
 
     /**
      * Our route component renders the lazy component with our default props and
      * route object.
      */
-    function RouteRoot() {
+    function RouteRoot(props: PathVariableProps<Path>) {
       // Create the lazy component element with all the appropriate props.
       const element = React.createElement(LazyComponent, {
-        ...defaultProps,
+        ...props,
         route,
       } as any);
 
@@ -72,14 +77,14 @@ export class RouteConfig<
     }
 
     // Actually register our component.
-    routeMap.set(this.path, RouteRoot);
+    routes.push({path: this.path, Component: RouteRoot});
   }
 }
 
 export class Route extends RouteBase {
-  private readonly config: RouteConfig<any>;
+  private readonly config: RouteConfig<any, any>;
 
-  constructor(config: RouteConfig<any>) {
+  constructor(config: RouteConfig<any, any>) {
     super();
     this.config = config;
   }
@@ -96,12 +101,16 @@ export class Route extends RouteBase {
    * _any_ props instead of just serializable props. Instead of fixing this we
    * choose to ignore props for now.
    */
-  protected _push<NextProps extends {readonly route: RouteBase}>(
-    nextRoute: RouteConfig<NextProps>,
-    _partialProps: Partial<Omit<NextProps, "route">>,
+  protected _push<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfig<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
   ) {
-    // TODO: Implement `partialProps`.
-    history.push(nextRoute.path);
+    // TODO: Implement passing `partialProps` to the new component. Right now
+    // we only use the required props to print the next path.
+    history.push(nextRoute.path.print(props as NextProps));
   }
 
   /**
@@ -126,10 +135,13 @@ export class Route extends RouteBase {
    * Calls `_push()` instead of resetting browser history which would be totally
    * unexpected by the user.
    */
-  protected _swapRoot<NextProps extends {readonly route: RouteBase}>(
-    nextRoute: RouteConfig<NextProps>,
-    partialProps: Partial<Pick<NextProps, Exclude<keyof NextProps, "route">>>,
+  protected _swapRoot<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfig<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
   ): void {
-    this._push(nextRoute, partialProps);
+    this._push(nextRoute, props);
   }
 }

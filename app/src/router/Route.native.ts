@@ -1,4 +1,5 @@
 import {Layout, Navigation} from "react-native-navigation";
+import {PathBase, PathVariableProps} from "./Path";
 import {RouteBase, RouteConfigBase} from "./RouteBase";
 import React from "react";
 
@@ -10,26 +11,22 @@ type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
  * options we’ll pass to `react-native-navigation` when rendering the route.
  */
 export class RouteConfig<
-  Props extends {readonly route: RouteBase}
-> extends RouteConfigBase<Props> {
+  Path extends PathBase,
+  Props extends {readonly route: RouteBase} & PathVariableProps<Path>
+> extends RouteConfigBase<Path, Props> {
   /**
    * Registers the component with `react-native-navigation`. Converts a
    * `componentId` into a `Route`.
    */
   protected registerComponent(LazyComponent: React.ComponentType<Props>): void {
-    const defaultProps = this.defaultProps;
-
     // Register the navigation component at our route’s path.
-    Navigation.registerComponent(this.path, () => {
+    Navigation.registerComponent(this.path.getID(), () => {
       return function RouteRoot({componentId, ...props}) {
         // Create the lazy component element with all the appropriate props.
         // Make sure to use the default props object in case some of our
         // required props were not provided!
-        const element = React.createElement(LazyComponent, {
-          ...defaultProps,
-          ...props,
-          route: new Route(componentId),
-        });
+        props.route = new Route(componentId);
+        const element = React.createElement(LazyComponent, props);
 
         // We need to wrap our lazy component in `<React.Suspense>` to handle
         // the `LazyComponent` suspend.
@@ -41,11 +38,11 @@ export class RouteConfig<
   /**
    * Gets the `react-native-navigation` layout.
    */
-  public getLayout(partialProps: Partial<Omit<Props, "route">>): Layout {
+  public getLayout(props: Omit<Props, "route">): Layout {
     return {
       component: {
-        name: this.path,
-        passProps: partialProps,
+        name: this.path.getID(),
+        passProps: props,
       },
     };
   }
@@ -66,11 +63,14 @@ export class Route extends RouteBase {
   /**
    * Pushes a new route to our navigation stack.
    */
-  protected _push<NextProps extends {readonly route: RouteBase}>(
-    nextRoute: RouteConfig<NextProps>,
-    partialProps: Partial<Omit<NextProps, "route">>,
+  protected _push<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfig<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
   ) {
-    Navigation.push(this.componentID, nextRoute.getLayout(partialProps));
+    Navigation.push(this.componentID, nextRoute.getLayout(props));
   }
 
   /**
@@ -84,13 +84,13 @@ export class Route extends RouteBase {
    * Resets the native navigation stack to a stack with only a single component.
    * The provided component.
    */
-  protected _swapRoot<NextProps extends {readonly route: RouteBase}>(
-    nextRoute: RouteConfig<NextProps>,
-    partialProps: Partial<Omit<NextProps, "route">>,
+  protected _swapRoot<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfig<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
   ) {
-    Navigation.setStackRoot(
-      this.componentID,
-      nextRoute.getLayout(partialProps),
-    );
+    Navigation.setStackRoot(this.componentID, nextRoute.getLayout(props));
   }
 }

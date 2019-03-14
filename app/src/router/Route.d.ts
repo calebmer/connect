@@ -1,13 +1,18 @@
+import {PathBase, PathVariableProps} from "./Path";
 import {RouteBase, RouteConfigBase} from "./RouteBase";
 import React from "react";
+
+// Utility type for removing keys from an object.
+type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
 /**
  * Configuration for a route that uses stack-based navigation. We can use the
  * configuration to create a new route.
  */
 export class RouteConfig<
-  Props extends {readonly route: Route}
-> extends RouteConfigBase<Props> {
+  Path extends PathBase,
+  Props extends {readonly route: RouteBase} & PathVariableProps<Path>
+> extends RouteConfigBase<Path, Props> {
   /**
    * Performs some side-effects during construction to globally register our
    * route’s component.
@@ -24,15 +29,21 @@ export class RouteConfig<
 export class Route extends RouteBase {
   private constructor(...args: Array<unknown>);
 
-  protected _push<NextProps extends {readonly route: RouteBase}>(
-    nextRoute: RouteConfigBase<NextProps>,
-    partialProps: Partial<Pick<NextProps, Exclude<keyof NextProps, "route">>>,
+  protected _push<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
   ): void;
 
   protected _popTo(): void;
 
-  protected _swapRoot<NextProps extends {readonly route: RouteBase}>(
-    nextRoute: RouteConfigBase<NextProps>,
-    partialProps: Partial<Pick<NextProps, Exclude<keyof NextProps, "route">>>,
+  protected _swapRoot<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
   ): void;
 }
