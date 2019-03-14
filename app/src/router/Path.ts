@@ -84,10 +84,13 @@ export const Path = {
         let path = "";
         for (let i = 0; i < pathPattern.length; i++) {
           const pathPatternPart = pathPattern[i];
+          path += "/";
           if (typeof pathPatternPart === "string") {
-            path += "/" + pathPatternPart;
+            path += encodeURIComponent(pathPatternPart);
           } else {
-            path += "/" + (variables as any)[pathPatternPart.variable];
+            path += encodeURIComponent(
+              (variables as any)[pathPatternPart.variable],
+            );
           }
         }
         return path;
