@@ -1,14 +1,20 @@
 import {
   AccountID,
-  DateTime,
   Group,
   GroupID,
   GroupMembership,
   Post,
+  PostCursor,
 } from "@connect/api-client";
 import {GroupCollection} from "../Group";
 import {PGClient} from "../../PGClient";
+import {PGPagination} from "../../PGPagination";
 import {sql} from "../../PGSQL";
+
+const PGPostPagination = new PGPagination(sql`post`, [
+  {column: sql`published_at`, descending: true},
+  {column: sql`id`},
+]);
 
 export class PGGroupCollection implements GroupCollection {
   constructor(private readonly client: PGClient) {}
@@ -84,20 +90,13 @@ export class PGGroupCollection implements GroupCollection {
 
   async getPosts(
     membership: GroupMembership,
-    range: {after: DateTime | null; first: number},
+    range: {limit: number; after: PostCursor | null},
   ): Promise<ReadonlyArray<Post>> {
-    const conditions = [sql`group_id = ${membership.groupID}`];
-    if (range.after !== null)
-      conditions.push(sql`published_at < ${range.after}`);
-
-    const {rows} = await this.client.query(
-      sql`
-        SELECT id, author_id, published_at, content FROM post
-        WHERE ${sql.join(conditions, sql` AND `)}
-        ORDER BY published_at LIMIT ${range.first}
-      `,
-    );
-
+    const {rows} = await PGPostPagination.query(this.client, {
+      selection: sql`id, author_id, published_at, content`,
+      extraCondition: sql`group_id = ${membership.groupID}`,
+      range,
+    });
     return rows.map(row => ({
       id: row.id,
       groupID: membership.groupID,

@@ -1,4 +1,10 @@
-import {AccountID, DateTime, GroupID} from "@connect/api-client";
+import {
+  APIError,
+  APIErrorCode,
+  AccountID,
+  DateTime,
+  GroupID,
+} from "@connect/api-client";
 import {MockGroupCollection} from "../../entities/Group";
 import {getBySlug} from "../Group";
 
@@ -18,9 +24,15 @@ describe("getBySlug", () => {
       },
     ]);
 
-    const group = await getBySlug({groups}, accountID1, {slug: "b"});
+    let error: any;
+    try {
+      await getBySlug({groups}, accountID1, {slug: "b"});
+    } catch (e) {
+      error = e;
+    }
 
-    expect(group).toEqual({group: null});
+    expect(error).toBeInstanceOf(APIError);
+    expect(error.code).toBe(APIErrorCode.NOT_FOUND);
   });
 
   test("will not return a group if the account is not a member", async () => {
@@ -28,9 +40,15 @@ describe("getBySlug", () => {
       {group: {id: groupID1, slug: "a", name: "A"}, memberships: [], posts: []},
     ]);
 
-    const group = await getBySlug({groups}, accountID1, {slug: "a"});
+    let error: any;
+    try {
+      await getBySlug({groups}, accountID1, {slug: "a"});
+    } catch (e) {
+      error = e;
+    }
 
-    expect(group).toEqual({group: null});
+    expect(error).toBeInstanceOf(APIError);
+    expect(error.code).toBe(APIErrorCode.NOT_FOUND);
   });
 
   test("will not return a group if the account is a member of a different group", async () => {
@@ -44,9 +62,15 @@ describe("getBySlug", () => {
       },
     ]);
 
-    const group = await getBySlug({groups}, accountID1, {slug: "a"});
+    let error: any;
+    try {
+      await getBySlug({groups}, accountID1, {slug: "a"});
+    } catch (e) {
+      error = e;
+    }
 
-    expect(group).toEqual({group: null});
+    expect(error).toBeInstanceOf(APIError);
+    expect(error.code).toBe(APIErrorCode.NOT_FOUND);
   });
 
   test("will not return a group the account is a member of", async () => {

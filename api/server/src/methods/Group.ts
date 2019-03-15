@@ -2,9 +2,9 @@ import {
   APIError,
   APIErrorCode,
   AccountID,
-  DateTime,
   Group,
   GroupID,
+  PostCursor,
 } from "@connect/api-client";
 import {GroupCollection} from "../entities/Group";
 import {Post} from "@connect/api-client";
@@ -37,8 +37,8 @@ export async function getPosts(
   accountID: AccountID,
   input: {
     readonly id: GroupID;
-    readonly after: DateTime | null;
-    readonly first: number;
+    readonly after: PostCursor | null;
+    readonly limit: number;
   },
 ): Promise<{
   readonly posts: ReadonlyArray<Post>;

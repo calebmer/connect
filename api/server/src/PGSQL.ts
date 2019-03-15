@@ -26,7 +26,11 @@ const sqlQuery = Symbol("sql.query");
  *
  * [1]: https://en.wikipedia.org/wiki/SQL_injection
  */
-export type SQLQuery = SQLQueryTemplate | SQLQueryValue | SQLQueryJoin;
+export type SQLQuery =
+  | SQLQueryTemplate
+  | SQLQueryValue
+  | SQLQueryJoin
+  | SQLQueryRaw;
 
 /**
  * A type of a SQL query created by a template string.
@@ -57,6 +61,16 @@ type SQLQueryJoin = {
   readonly type: "JOIN";
   readonly queries: ReadonlyArray<SQLQuery>;
   readonly joiner: SQLQuery | undefined;
+};
+
+/**
+ * Dangerously injects **raw SQL** into our query. Only use this if you are 100%
+ * sure that the SQL does not contain arbitrary user input.
+ */
+type SQLQueryRaw = {
+  readonly $$typeof: typeof sqlQuery;
+  readonly type: "RAW";
+  readonly text: string;
 };
 
 /**
@@ -101,6 +115,20 @@ sql.value = function value(value: unknown): SQLQuery {
 };
 
 /**
+ * Dangerously injects a **RAW SQL STRING** into your SQL query. Only use this
+ * when you are 100% sure that the raw SQL string does not come from user input.
+ */
+sql.dangerouslyInjectRawString = function dangerouslyInjectRawString(
+  text: string,
+): SQLQuery {
+  return {
+    $$typeof: sqlQuery,
+    type: "RAW",
+    text,
+  };
+};
+
+/**
  * Joins a list of SQL queries together into one with an optional joiner query.
  */
 sql.join = function join(
@@ -114,6 +142,11 @@ sql.join = function join(
     joiner,
   };
 };
+
+/**
+ * Empty SQL query.
+ */
+sql.empty = sql``;
 
 /**
  * Compiles a `SQLQuery` into a query object we can provide to the `pg` module.
@@ -182,6 +215,11 @@ sql.compile = function compile(initialQuery: SQLQuery): string | QueryConfig {
             stack.push(query.joiner);
           }
         }
+        break;
+      }
+
+      case "RAW": {
+        text += query.text;
         break;
       }
 

@@ -1,8 +1,8 @@
 import {AccessToken, RefreshToken} from "./entities/Tokens";
 import {DateTime, Group, GroupID} from "./entities/Group";
+import {Post, PostCursor} from "./entities/Post";
 import {AccountProfile} from "./entities/Account";
 import {Comment} from "./entities/Comment";
-import {Post} from "./entities/Post";
 import {Schema} from "./Schema";
 import {SchemaInput} from "./SchemaInput";
 import {SchemaOutput} from "./SchemaOutput";
@@ -126,17 +126,15 @@ export const APISchema = Schema.namespace({
      * If the person is not a member of the group or the group does not exist,
      * we will throw a “not found” error.
      *
-     * Uses cursor-based pagination to only view a subset of the feed. We
-     * require `first` to be provide so as not to fetch an unlimited number
-     * of posts. The result lets us know if we can fetch another page in
-     * the feed.
+     * Uses cursor based pagination to only select a subset of posts. We always
+     * require a limit to avoid selecting the entire table.
      */
     getPosts: Schema.method({
       safe: true,
       input: {
         id: SchemaInput.number<GroupID>(),
-        after: SchemaInput.string<DateTime>().optional(),
-        first: SchemaInput.number(),
+        limit: SchemaInput.number(),
+        after: SchemaInput.string<PostCursor>().optional(),
       },
       output: SchemaOutput.t<{
         readonly posts: ReadonlyArray<Post>;

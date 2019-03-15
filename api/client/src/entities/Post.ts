@@ -1,9 +1,15 @@
 import {DateTime, GroupID} from "./Group";
 import {AccountID} from "./Account";
+import {Cursor} from "../Cursor";
 
 /** A unique type which is used as an identifier for posts. */
-export type PostID = number & {readonly type: typeof PostID};
+export type PostID = number & {readonly _type: typeof PostID};
 declare const PostID: unique symbol;
+
+/**
+ * The cursor for a post in a list ordered by the post’s `publishedAt` date.
+ */
+export type PostCursor = Cursor<[DateTime, PostID]>;
 
 /**
  * An account may post some message in a group to start a conversation or share

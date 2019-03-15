@@ -1,7 +1,7 @@
 import {AccountID} from "./Account";
 
 /** A unique type which is used as an identifier for groups. */
-export type GroupID = number & {readonly type: typeof GroupID};
+export type GroupID = number & {readonly _type: typeof GroupID};
 declare const GroupID: unique symbol;
 
 /**
@@ -54,5 +54,5 @@ export type GroupMembership = {
  * [1]: https://en.wikipedia.org/wiki/ISO_8601
  * [2]: https://xkcd.com/1179
  */
-export type DateTime = string & {readonly type: typeof DateTime};
+export type DateTime = string & {readonly _type: typeof DateTime};
 declare const DateTime: unique symbol;

@@ -1,10 +1,10 @@
 import {
   AccountID,
-  DateTime,
   Group,
   GroupID,
   GroupMembership,
   Post,
+  PostCursor,
 } from "@connect/api-client";
 
 /**
@@ -56,7 +56,7 @@ export interface GroupCollection {
    */
   getPosts(
     membership: GroupMembership,
-    range: {after: DateTime | null; first: number},
+    range: {limit: number; after: PostCursor | null},
   ): Promise<ReadonlyArray<Post>>;
 }
 
@@ -72,13 +72,9 @@ export class MockGroupCollection implements GroupCollection {
   private readonly groupBySlug = new Map<string, MockGroupData>();
 
   constructor(initialGroups: Array<MockGroupData>) {
-    this.groups = initialGroups.map(({group, memberships, posts}) => ({
-      group,
-      memberships,
-      // Make sure that the posts are sorted so that the last post to be
-      // published comes last in the array.
-      posts: posts.sort(),
-    }));
+    // NOTE: Posts may not be sorted correctly. This is just a mock, handling
+    // sorting gets boring.
+    this.groups = initialGroups;
     for (const data of this.groups) {
       this.groupBySlug.set(data.group.slug, data);
     }
@@ -110,28 +106,8 @@ export class MockGroupCollection implements GroupCollection {
     return this.groups[membership.groupID].group;
   }
 
-  async getPosts(
-    membership: GroupMembership,
-    range: {after: DateTime | null; first: number},
-  ): Promise<ReadonlyArray<Post>> {
-    const allPosts = this.groups[membership.groupID].posts;
-    const posts: Array<Post> = [];
-
-    let startIndex = allPosts.length - 1;
-    if (range.after != null) {
-      for (; startIndex >= 0; startIndex--) {
-        if (allPosts[startIndex].publishedAt < range.after) {
-          break;
-        }
-      }
-    }
-
-    for (let n = 0; n < range.first; n++) {
-      const i = startIndex - n;
-      if (i < 0) break;
-      posts.push(allPosts[i]);
-    }
-
-    return posts;
+  // NOTE: Ignore the range. This is just a mock, handling ranges gets boring.
+  async getPosts(membership: GroupMembership): Promise<ReadonlyArray<Post>> {
+    return [...this.groups[membership.groupID].posts].reverse();
   }
 }

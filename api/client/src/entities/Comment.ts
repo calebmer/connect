@@ -3,7 +3,7 @@ import {DateTime} from "./Group";
 import {PostID} from "./Post";
 
 /** A unique type which is used as an identifier for comments. */
-export type CommentID = number & {readonly type: typeof CommentID};
+export type CommentID = number & {readonly _type: typeof CommentID};
 declare const CommentID: unique symbol;
 
 /**
