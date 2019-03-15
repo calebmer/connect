@@ -7856,10 +7856,22 @@ pg-int8@1.0.1:
   resolved "https://registry.yarnpkg.com/pg-int8/-/pg-int8-1.0.1.tgz#943bd463bf5b71b4170115f80f8efc9a0c0eb78c"
   integrity sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==
 
+pg-minify@^0.4.1:
+  version "0.4.5"
+  resolved "https://registry.yarnpkg.com/pg-minify/-/pg-minify-0.4.5.tgz#d3e92fb690f9283b8a37866e4566fce9fed26150"
+  integrity sha512-ev7PZ4ySzTnNPaeIJQx4f94ubqbv2C48lpXcYLPzPD4dbnKxzvC+3vNlZZ8HYx9JV37AxaLlY/LzrpFBgBslYQ==
+
 pg-pool@^2.0.4:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/pg-pool/-/pg-pool-2.0.6.tgz#7b561a482feb0a0e599b58b5137fd2db3ad8111c"
   integrity sha512-hod2zYQxM8Gt482q+qONGTYcg/qVcV32VHVPtktbBJs0us3Dj7xibISw0BAAXVMCzt8A/jhfJvpZaxUlqtqs0g==
+
+pg-sql@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/pg-sql/-/pg-sql-1.1.0.tgz#1271608aff8b1ecd87b4f63f413184d9fc345703"
+  integrity sha1-EnFgiv+LHs2HtPY/QTGE2fw0VwM=
+  dependencies:
+    pg-minify "^0.4.1"
 
 pg-types@~2.0.0:
   version "2.0.0"

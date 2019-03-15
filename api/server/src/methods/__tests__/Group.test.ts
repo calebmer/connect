@@ -14,6 +14,7 @@ describe("getBySlug", () => {
       {
         group: {id: groupID1, slug: "a", name: "A"},
         memberships: [{groupID: groupID1, accountID: accountID1, joinedAt}],
+        posts: [],
       },
     ]);
 
@@ -24,7 +25,7 @@ describe("getBySlug", () => {
 
   test("will not return a group if the account is not a member", async () => {
     const groups = new MockGroupCollection([
-      {group: {id: groupID1, slug: "a", name: "A"}, memberships: []},
+      {group: {id: groupID1, slug: "a", name: "A"}, memberships: [], posts: []},
     ]);
 
     const group = await getBySlug({groups}, accountID1, {slug: "a"});
@@ -35,10 +36,11 @@ describe("getBySlug", () => {
   test("will not return a group if the account is a member of a different group", async () => {
     const joinedAt = new Date().toISOString() as DateTime;
     const groups = new MockGroupCollection([
-      {group: {id: groupID1, slug: "a", name: "A"}, memberships: []},
+      {group: {id: groupID1, slug: "a", name: "A"}, memberships: [], posts: []},
       {
         group: {id: groupID2, slug: "b", name: "B"},
         memberships: [{groupID: groupID2, accountID: accountID1, joinedAt}],
+        posts: [],
       },
     ]);
 
@@ -50,10 +52,11 @@ describe("getBySlug", () => {
   test("will not return a group the account is a member of", async () => {
     const joinedAt = new Date().toISOString() as DateTime;
     const groups = new MockGroupCollection([
-      {group: {id: groupID1, slug: "a", name: "A"}, memberships: []},
+      {group: {id: groupID1, slug: "a", name: "A"}, memberships: [], posts: []},
       {
         group: {id: groupID2, slug: "b", name: "B"},
         memberships: [{groupID: groupID2, accountID: accountID1, joinedAt}],
+        posts: [],
       },
     ]);
 

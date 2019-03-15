@@ -6,4 +6,5 @@ export * from "./Schema";
 export * from "./SchemaInput";
 export * from "./entities/Account";
 export * from "./entities/Group";
+export * from "./entities/Post";
 export * from "./entities/Tokens";

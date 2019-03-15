@@ -1,6 +1,4 @@
-/**
- * A unique type which is used as an identifier for accounts.
- */
+/** A unique type which is used as an identifier for accounts. */
 export type AccountID = number & {readonly type: typeof AccountID};
 declare const AccountID: unique symbol;
 

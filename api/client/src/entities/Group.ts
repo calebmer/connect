@@ -1,8 +1,6 @@
 import {AccountID} from "./Account";
 
-/**
- * A unique type which is used as an identifier for groups.
- */
+/** A unique type which is used as an identifier for groups. */
 export type GroupID = number & {readonly type: typeof GroupID};
 declare const GroupID: unique symbol;
 

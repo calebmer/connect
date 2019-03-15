@@ -1,6 +1,7 @@
 import {AccessToken, RefreshToken} from "./entities/Tokens";
+import {DateTime, Group, GroupID} from "./entities/Group";
 import {AccountProfile} from "./entities/Account";
-import {Group} from "./entities/Group";
+import {Post} from "./entities/Post";
 import {Schema} from "./Schema";
 import {SchemaInput} from "./SchemaInput";
 import {SchemaOutput} from "./SchemaOutput";
@@ -24,9 +25,9 @@ export const APISchema = Schema.namespace({
     signUp: Schema.unauthorizedMethod({
       safe: false,
       input: {
-        name: SchemaInput.string,
-        email: SchemaInput.string,
-        password: SchemaInput.string,
+        name: SchemaInput.string(),
+        email: SchemaInput.string(),
+        password: SchemaInput.string(),
       },
       output: SchemaOutput.t<{
         readonly accessToken: AccessToken;
@@ -51,8 +52,8 @@ export const APISchema = Schema.namespace({
     signIn: Schema.unauthorizedMethod({
       safe: false,
       input: {
-        email: SchemaInput.string,
-        password: SchemaInput.string,
+        email: SchemaInput.string(),
+        password: SchemaInput.string(),
       },
       output: SchemaOutput.t<{
         readonly accessToken: AccessToken;
@@ -70,7 +71,7 @@ export const APISchema = Schema.namespace({
     signOut: Schema.unauthorizedMethod({
       safe: false,
       input: {
-        refreshToken: SchemaInput.string as SchemaInput<RefreshToken>,
+        refreshToken: SchemaInput.string<RefreshToken>(),
       },
       output: SchemaOutput.t<{}>(),
     }),
@@ -82,7 +83,7 @@ export const APISchema = Schema.namespace({
     refreshAccessToken: Schema.unauthorizedMethod({
       safe: false,
       input: {
-        refreshToken: SchemaInput.string as SchemaInput<RefreshToken>,
+        refreshToken: SchemaInput.string<RefreshToken>(),
       },
       output: SchemaOutput.t<{
         readonly accessToken: AccessToken;
@@ -106,14 +107,38 @@ export const APISchema = Schema.namespace({
   group: Schema.namespace({
     /**
      * Fetches a group by its slug which was likely taken from a URL. If a group
-     * with the provided slug exists but the signed in account is not a member
-     * of that group then we return null.
+     * does not exist or our account is not a member of that group we throw
+     * a “not found” error.
      */
     getBySlug: Schema.method({
       safe: true,
-      input: {slug: SchemaInput.string},
+      input: {
+        slug: SchemaInput.string(),
+      },
       output: SchemaOutput.t<{
-        readonly group: Group | null;
+        readonly group: Group;
+      }>(),
+    }),
+
+    /**
+     * Gets a list of the posts in a group in reverse chronological order.
+     * If the person is not a member of the group or the group does not exist,
+     * we will throw a “not found” error.
+     *
+     * Uses cursor-based pagination to only view a subset of the feed. We
+     * require `first` to be provide so as not to fetch an unlimited number
+     * of posts. The result lets us know if we can fetch another page in
+     * the feed.
+     */
+    getPosts: Schema.method({
+      safe: true,
+      input: {
+        id: SchemaInput.number<GroupID>(),
+        after: SchemaInput.string<DateTime>().optional(),
+        first: SchemaInput.number(),
+      },
+      output: SchemaOutput.t<{
+        readonly posts: ReadonlyArray<Post>;
       }>(),
     }),
   }),

@@ -339,6 +339,9 @@ APIServer.use(
           case APIErrorCode.ACCESS_TOKEN_EXPIRED:
             res.statusCode = 401;
             break;
+          case APIErrorCode.NOT_FOUND:
+            res.statusCode = 404;
+            break;
           default:
             res.statusCode = 400;
             break;

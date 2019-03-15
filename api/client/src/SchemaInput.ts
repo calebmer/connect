@@ -9,6 +9,9 @@ export class SchemaInput<Value extends JSONValue> {
    */
   readonly validate: (value: unknown) => value is Value;
 
+  /** An optional variant of this `SchemaInput`. */
+  private _optional: SchemaInput<Value | null> | undefined = undefined;
+
   private constructor(validate: (value: unknown) => value is Value) {
     this.validate = validate;
   }
@@ -20,19 +23,33 @@ export class SchemaInput<Value extends JSONValue> {
     (value): value is boolean => typeof value === "boolean",
   );
 
-  /**
-   * Accepts only number values.
-   */
-  static number = new SchemaInput<number>(
+  private static _number = new SchemaInput<number>(
     (value): value is number => typeof value === "number",
   );
 
-  /**
-   * Accepts only string values.
-   */
-  static string = new SchemaInput<string>(
+  private static _string = new SchemaInput<string>(
     (value): value is string => typeof value === "string",
   );
+
+  /**
+   * Accepts only number values.
+   *
+   * Allows the caller to pass a type argument to treat the input as some kind
+   * of special type.
+   */
+  static number<Value extends number>(): SchemaInput<Value> {
+    return this._number as SchemaInput<Value>;
+  }
+
+  /**
+   * Accepts only string values.
+   *
+   * Allows the caller to pass a type argument to treat the input as some kind
+   * of special type.
+   */
+  static string<Value extends string>(): SchemaInput<Value> {
+    return this._string as SchemaInput<Value>;
+  }
 
   /**
    * Accepts only array values where each array element passes the
@@ -91,11 +108,29 @@ export class SchemaInput<Value extends JSONValue> {
       },
     );
   }
+
+  /**
+   * Gets an optional variant of this schema input where we may have either the
+   * `Value` or `null`.
+   *
+   * **NOTE:** Optional intentionally uses `null` instead of `undefined`. JSON
+   * does not have a representation for `undefined` so its behavior is
+   * inconsistent. See `JSONValue` for more information.
+   */
+  optional(): SchemaInput<Value | null> {
+    if (this._optional === undefined) {
+      const schema = new SchemaInput<Value | null>(
+        (value): value is Value | null =>
+          value === null || this.validate(value),
+      );
+      schema._optional = schema;
+      this._optional = schema;
+    }
+    return this._optional;
+  }
 }
 
-/**
- * Gets the value from a `SchemaInput`.
- */
+/** Gets the value from a `SchemaInput` type. */
 export type SchemaInputValue<
   Type extends SchemaInput<JSONValue>
 > = Type extends SchemaInput<infer Value> ? Value : never;
