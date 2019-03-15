@@ -8,7 +8,7 @@ import {
 } from "@connect/api-client";
 import {GroupCollection} from "../Group";
 import {PGClient} from "../../PGClient";
-import {sql} from "pg-sql";
+import {sql} from "../../PGSQL";
 
 export class PGGroupCollection implements GroupCollection {
   constructor(private readonly client: PGClient) {}
@@ -20,8 +20,10 @@ export class PGGroupCollection implements GroupCollection {
     const {
       rows: [row],
     } = await this.client.query(
-      "SELECT joined_at FROM group_member WHERE account_id = $1 AND group_id = $2",
-      [accountID, groupID],
+      sql`
+        SELECT joined_at FROM group_member
+        WHERE account_id = ${accountID} AND group_id = ${groupID}
+      `,
     );
     if (row === undefined) {
       return undefined;
@@ -44,10 +46,12 @@ export class PGGroupCollection implements GroupCollection {
     const {
       rows: [row],
     } = await this.client.query(
-      "SELECT group_member.group_id, group_member.joined_at FROM group_member " +
-        'LEFT JOIN "group" ON "group".id = group_member.group_id ' +
-        'WHERE group_member.account_id = $1 AND "group".slug = $2',
-      [accountID, groupSlug],
+      sql`
+        SELECT group_member.group_id, group_member.joined_at
+        FROM group_member
+        LEFT JOIN "group" ON "group".id = group_member.group_id
+        WHERE group_member.account_id = ${accountID} AND "group".slug = ${groupSlug}
+      `,
     );
     if (row === undefined) {
       return undefined;
@@ -64,8 +68,7 @@ export class PGGroupCollection implements GroupCollection {
     const {
       rows: [row],
     } = await this.client.query(
-      'SELECT slug, name FROM "group" WHERE id = $1',
-      [membership.groupID],
+      sql`SELECT slug, name FROM "group" WHERE id = ${membership.groupID}`,
     );
     if (row === undefined) {
       throw new Error(
@@ -83,15 +86,16 @@ export class PGGroupCollection implements GroupCollection {
     membership: GroupMembership,
     range: {after: DateTime | null; first: number},
   ): Promise<ReadonlyArray<Post>> {
-    const conditions = [sql`group_id = ${sql.value(membership.groupID)}`];
+    const conditions = [sql`group_id = ${membership.groupID}`];
     if (range.after !== null)
-      conditions.push(sql`published_at < ${sql.value(range.after)}`);
+      conditions.push(sql`published_at < ${range.after}`);
 
     const {rows} = await this.client.query(
-      sql`SELECT id, author_id, published_at, content FROM post WHERE ${sql.join(
-        conditions,
-        " AND ",
-      )} ORDER BY published_at LIMIT ${sql.value(range.first)}`,
+      sql`
+        SELECT id, author_id, published_at, content FROM post
+        WHERE ${sql.join(conditions, sql` AND `)}
+        ORDER BY published_at LIMIT ${range.first}
+      `,
     );
 
     return rows.map(row => ({

@@ -1,6 +1,7 @@
 import {AccountID, RefreshToken} from "@connect/api-client";
 import {PGClient} from "../../PGClient";
 import {RefreshTokenCollection} from "../Tokens";
+import {sql} from "../../PGSQL";
 import uuidV4 from "uuid/v4";
 
 export class PGRefreshTokenCollection implements RefreshTokenCollection {
@@ -9,8 +10,7 @@ export class PGRefreshTokenCollection implements RefreshTokenCollection {
   async generate(accountID: AccountID): Promise<RefreshToken> {
     const refreshToken = uuidV4() as RefreshToken;
     await this.client.query(
-      "INSERT INTO refresh_token (token, account_id) VALUES ($1, $2)",
-      [refreshToken, accountID],
+      sql`INSERT INTO refresh_token (token, account_id) VALUES (${refreshToken}, ${accountID})`,
     );
     return refreshToken;
   }
@@ -24,8 +24,7 @@ export class PGRefreshTokenCollection implements RefreshTokenCollection {
     const {
       rows: [row],
     } = await this.client.query(
-      "UPDATE refresh_token SET last_used_at = now() WHERE token = $1 RETURNING account_id",
-      [token],
+      sql`UPDATE refresh_token SET last_used_at = now() WHERE token = ${token} RETURNING account_id`,
     );
     if (row === undefined) {
       return undefined;
@@ -35,8 +34,8 @@ export class PGRefreshTokenCollection implements RefreshTokenCollection {
   }
 
   async destroy(token: RefreshToken): Promise<void> {
-    await this.client.query("DELETE FROM refresh_token WHERE token = $1", [
-      token,
-    ]);
+    await this.client.query(
+      sql`DELETE FROM refresh_token WHERE token = ${token}`,
+    );
   }
 }

@@ -1,4 +1,5 @@
-import {ClientBase, Pool} from "pg";
+import {ClientBase, Pool, QueryResult} from "pg";
+import {SQLQuery, sql} from "./PGSQL";
 
 // Throw an error if we try to use Postgres in a test environment.
 if (process.env.NODE_ENV === "test") {
@@ -19,6 +20,7 @@ const pool = new Pool();
 // Whenever the pool newly connects a client this event is called and we can run
 // some setup commands.
 pool.on("connect", client => {
+  // Set the search path to our project’s database schema.
   client.query("SET search_path = connect");
 });
 
@@ -33,21 +35,29 @@ pool.on("error", (error, _client) => {
 /**
  * A Postgres database client which we may directly execute SQL queries against.
  */
-export interface PGClient extends ClientBase {}
-
-export const PGClient = {
+export class PGClient {
   /**
    * Executes an action with a Postgres client from our connection pool. Once
    * the action finishes we release the client back to our pool.
    */
-  async with<T>(action: (client: PGClient) => Promise<T>): Promise<T> {
+  static async with<T>(action: (client: PGClient) => Promise<T>): Promise<T> {
     const client = await pool.connect();
     let result: T;
     try {
-      result = await action(client);
+      result = await action(new PGClient(client));
     } finally {
       client.release();
     }
     return result;
-  },
-};
+  }
+
+  private constructor(private readonly client: ClientBase) {}
+
+  /**
+   * Executes a SQL query. We require a `SQLQuery` object to prevent SQL
+   * injection attacks entirely.
+   */
+  query(query: SQLQuery): Promise<QueryResult> {
+    return this.client.query(sql.compile(query));
+  }
+}
