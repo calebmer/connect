@@ -192,7 +192,44 @@ sql.compile = function compile(initialQuery: SQLQuery): string | QueryConfig {
     }
   }
 
+  // Clean up the query text for debugging purposes.
+  text = cleanQueryText(text);
+
   // Return the final query config. If there are no values only return the
   // query text.
   return values.length === 0 ? text : {text, values};
 };
+
+/**
+ * Cleans up the text of a query by removing extra indentation that exists in
+ * the source code but nowhere else.
+ *
+ * No promises that this adheres to the SQL standard! We may remove intentional
+ * space from string literals.
+ *
+ * **TODO:** We could do this at build-time with a Babel plugin.
+ */
+function cleanQueryText(source: string): string {
+  let text = "";
+
+  let i = 0;
+  while (i < source.length) {
+    const c = source[i];
+
+    if (c === "\n") {
+      const first = i === 0;
+      i++;
+      while (i < source.length && source[i] === " ") {
+        i++;
+      }
+      if (!first && i < source.length) {
+        text += " ";
+      }
+    } else {
+      text += c;
+      i++;
+    }
+  }
+
+  return text;
+}
