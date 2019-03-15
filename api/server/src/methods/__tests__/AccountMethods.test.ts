@@ -306,7 +306,7 @@ describe("getCurrentProfile", () => {
       passwordHash: "",
     });
 
-    const account = await getCurrentProfile({accounts}, accountID!);
+    const {account} = await getCurrentProfile({accounts}, accountID!);
 
     expect(account).toEqual({
       id: accountID,

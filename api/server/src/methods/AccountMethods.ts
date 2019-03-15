@@ -199,10 +199,12 @@ async function generateTokens(
 export async function getCurrentProfile(
   ctx: {readonly accounts: AccountCollection},
   accountID: AccountID,
-): Promise<AccountProfile> {
+): Promise<{
+  readonly account: AccountProfile;
+}> {
   const account = await ctx.accounts.getProfile(accountID);
   if (account === undefined) {
     throw new APIError(APIErrorCode.NOT_FOUND);
   }
-  return account;
+  return {account};
 }

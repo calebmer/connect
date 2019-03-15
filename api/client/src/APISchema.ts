@@ -97,7 +97,9 @@ export const APISchema = Schema.namespace({
     getCurrentProfile: Schema.method({
       safe: true,
       input: {},
-      output: SchemaOutput.t<AccountProfile>(),
+      output: SchemaOutput.t<{
+        readonly account: AccountProfile;
+      }>(),
     }),
   }),
 
@@ -110,7 +112,9 @@ export const APISchema = Schema.namespace({
     getBySlug: Schema.method({
       safe: true,
       input: {slug: SchemaInput.string},
-      output: SchemaOutput.t<{readonly group: Group | null}>(),
+      output: SchemaOutput.t<{
+        readonly group: Group | null;
+      }>(),
     }),
   }),
 });
