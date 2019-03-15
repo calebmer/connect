@@ -1,6 +1,7 @@
 import {AccessToken, RefreshToken} from "./entities/Tokens";
 import {DateTime, Group, GroupID} from "./entities/Group";
 import {AccountProfile} from "./entities/Account";
+import {Comment} from "./entities/Comment";
 import {Post} from "./entities/Post";
 import {Schema} from "./Schema";
 import {SchemaInput} from "./SchemaInput";
@@ -139,6 +140,28 @@ export const APISchema = Schema.namespace({
       },
       output: SchemaOutput.t<{
         readonly posts: ReadonlyArray<Post>;
+      }>(),
+    }),
+  }),
+
+  post: Schema.namespace({
+    /**
+     * All of the comment replies to a post. Sorted by the time they were posted
+     * with the first comments at the beginning of the list.
+     *
+     * **TODO:** It should also be easy to read the latest comments. Not just
+     * the earliest comments. For example, if someone is participating in a
+     * discussion then they’ll want to see the most up-to-date comments.
+     */
+    getComments: Schema.method({
+      safe: true,
+      input: {
+        id: SchemaInput.number<GroupID>(),
+        after: SchemaInput.string<DateTime>().optional(),
+        first: SchemaInput.number(),
+      },
+      output: SchemaOutput.t<{
+        readonly comments: ReadonlyArray<Comment>;
       }>(),
     }),
   }),

@@ -15,6 +15,11 @@ CREATE TABLE post (
   published_at TIMESTAMP NOT NULL DEFAULT now()
 );
 
--- Very important index for fetching all the posts from a group in reverse
--- chronological order.
-CREATE INDEX post_group_created_at ON post (group_id, published_at);
+-- Very important index for fetching posts in chronological order. Index by:
+--
+-- * `group_id` so that we can easily find all the posts for a
+--   particular group.
+-- * `published_at` so that we can fetch the posts for a group in
+--   chronological order.
+-- * `id` to disambiguate two posts which were posted at the exact same time.
+CREATE INDEX post_published_at ON post (group_id, published_at, id);

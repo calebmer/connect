@@ -9,7 +9,16 @@ CREATE TABLE comment (
   author_id INT NOT NULL REFERENCES account(id),
   -- The contents of this comment with markdown formatting.
   content TEXT NOT NULL,
-  -- The time this comment was created. Could be different from the last time
+  -- The time this comment was posted. Could be different from the last time
   -- this comment was updated.
-  created_at TIMESTAMP NOT NULL DEFAULT now()
+  posted_at TIMESTAMP NOT NULL DEFAULT now()
 );
+
+-- Very important index for fetching comments in chronological order. Index by:
+--
+-- * `post_id` so that we can easily find all the comments for a
+--   particular post.
+-- * `posted_at` so that we can fetch the comments for a post in
+--   chronological order.
+-- * `id` to disambiguate two comments which were posted at the exact same time.
+CREATE INDEX comment_posted_at ON comment (post_id, posted_at, id);
