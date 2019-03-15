@@ -7,7 +7,8 @@ export type PostID = number & {readonly _type: typeof PostID};
 declare const PostID: unique symbol;
 
 /**
- * The cursor for a post in a list ordered by the post’s `publishedAt` date.
+ * A cursor represents the position of a post in a list ordered by the post’s
+ * `publishedAt` date.
  */
 export type PostCursor = Cursor<[DateTime, PostID]>;
 

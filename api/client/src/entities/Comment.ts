@@ -1,10 +1,17 @@
 import {AccountID} from "./Account";
+import {Cursor} from "../Cursor";
 import {DateTime} from "./Group";
 import {PostID} from "./Post";
 
 /** A unique type which is used as an identifier for comments. */
 export type CommentID = number & {readonly _type: typeof CommentID};
 declare const CommentID: unique symbol;
+
+/**
+ * A cursor represents the position of a comment in a list ordered by the
+ * comment’s `postedAt` date.
+ */
+export type CommentCursor = Cursor<[DateTime, CommentID]>;
 
 /**
  * The type of a comment which is a reply to some post.

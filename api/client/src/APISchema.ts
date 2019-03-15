@@ -1,6 +1,6 @@
 import {AccessToken, RefreshToken} from "./entities/Tokens";
 import {DateTime, Group, GroupID} from "./entities/Group";
-import {Post, PostCursor} from "./entities/Post";
+import {Post, PostCursor, PostID} from "./entities/Post";
 import {AccountProfile} from "./entities/Account";
 import {Comment} from "./entities/Comment";
 import {Schema} from "./Schema";
@@ -154,9 +154,9 @@ export const APISchema = Schema.namespace({
     getComments: Schema.method({
       safe: true,
       input: {
-        id: SchemaInput.number<GroupID>(),
+        id: SchemaInput.number<PostID>(),
+        limit: SchemaInput.number(),
         after: SchemaInput.string<DateTime>().optional(),
-        first: SchemaInput.number(),
       },
       output: SchemaOutput.t<{
         readonly comments: ReadonlyArray<Comment>;
