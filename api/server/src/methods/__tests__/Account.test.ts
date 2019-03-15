@@ -1,14 +1,16 @@
 import {APIError, APIErrorCode, RefreshToken} from "@connect/api-client";
 import {
+  AccessTokenGenerator,
+  MockRefreshTokenCollection,
+} from "../../entities/Tokens";
+import {
   getCurrentProfile,
   refreshAccessToken,
   signIn,
   signOut,
   signUp,
-} from "../AccountMethods";
-import {AccessTokenGenerator} from "../../entities/AccessToken";
+} from "../Account";
 import {MockAccountCollection} from "../../entities/Account";
-import {MockRefreshTokenCollection} from "../../entities/RefreshToken";
 import uuidV4 from "uuid/v4";
 
 const testName = "Test";

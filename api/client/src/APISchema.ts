@@ -1,6 +1,6 @@
-import {AccessToken, RefreshToken} from "./types/TokenTypes";
-import {AccountProfile} from "./types/AccountTypes";
-import {Group} from "./types/GroupTypes";
+import {AccessToken, RefreshToken} from "./entities/Tokens";
+import {AccountProfile} from "./entities/Account";
+import {Group} from "./entities/Group";
 import {Schema} from "./Schema";
 import {SchemaInput} from "./SchemaInput";
 import {SchemaOutput} from "./SchemaOutput";

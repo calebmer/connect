@@ -6,9 +6,8 @@ import {
   AccountProfile,
   RefreshToken,
 } from "@connect/api-client";
-import {AccessTokenGenerator} from "../entities/AccessToken";
+import {AccessTokenGenerator, RefreshTokenCollection} from "../entities/Tokens";
 import {AccountCollection} from "../entities/Account";
-import {RefreshTokenCollection} from "../entities/RefreshToken";
 import bcrypt from "bcrypt";
 
 /**

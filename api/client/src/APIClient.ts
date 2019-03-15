@@ -7,7 +7,7 @@ import {
   SchemaNamespace,
 } from "./Schema";
 import {APISchema} from "./APISchema";
-import {AccessToken} from "./types/TokenTypes";
+import {AccessToken} from "./entities/Tokens";
 import {JSONObjectValue} from "./JSONValue";
 
 /**

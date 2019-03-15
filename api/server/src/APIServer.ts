@@ -13,7 +13,7 @@ import {
   SchemaMethodUnauthorized,
   SchemaNamespace,
 } from "@connect/api-client";
-import {AccessTokenData, AccessTokenGenerator} from "./entities/AccessToken";
+import {AccessTokenData, AccessTokenGenerator} from "./entities/Tokens";
 import {NextFunction, Request, Response} from "express";
 import {PGClient} from "./PGClient";
 import {PGContext} from "./PGContext";

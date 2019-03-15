@@ -1,4 +1,4 @@
-import {AccountID} from "./AccountTypes";
+import {AccountID} from "./Account";
 
 /**
  * A unique type which is used as an identifier for groups.

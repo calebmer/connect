@@ -1,4 +1,4 @@
-import * as account from "./AccountMethods";
-import * as group from "./GroupMethods";
+import * as account from "./Account";
+import * as group from "./Group";
 
 export {account, group};

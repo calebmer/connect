@@ -1,6 +1,6 @@
 import {AccountID, DateTime, GroupID} from "@connect/api-client";
 import {MockGroupCollection} from "../../entities/Group";
-import {getBySlug} from "../GroupMethods";
+import {getBySlug} from "../Group";
 
 const accountID1 = 0 as AccountID;
 
