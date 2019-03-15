@@ -18,10 +18,13 @@ import {NextFunction, Request, Response} from "express";
 import {PGClient} from "./PGClient";
 import {PGContext} from "./PGContext";
 import chalk from "chalk";
+import createDebugger from "debug";
 import express from "express";
 import jwt from "jsonwebtoken";
 import morgan from "morgan";
 import querystring from "querystring";
+
+const debug = createDebugger("connect:api:http");
 
 /**
  * The HTTP server for our API. Powered by Express.
@@ -200,6 +203,11 @@ function initializeServerMethodUnauthorized<
  */
 function handleResponse<Output>(handler: (req: Request) => Promise<Output>) {
   return (req: Request, res: Response, next: NextFunction) => {
+    // We already have a an HTTP logger setup for when the query _ends_, but
+    // it’s also nice to log when the query begins. So we have a visual bookmark
+    // between start and finish.
+    debug(`${req.method} ${req.url}`);
+
     handler(req).then(output => {
       // Construct the successful result of an API request.
       const result: APIResult<Output> = {

@@ -1,10 +1,13 @@
 import {ClientBase, Pool, QueryResult} from "pg";
 import {SQLQuery, sql} from "./PGSQL";
+import createDebugger from "debug";
 
 // Throw an error if we try to use Postgres in a test environment.
 if (process.env.NODE_ENV === "test") {
   throw new Error("Should not be using Postgres in tests.");
 }
+
+const debug = createDebugger("connect:api:pg");
 
 /**
  * A database connection pool. Connecting a new client on every request would be
@@ -58,6 +61,8 @@ export class PGClient {
    * injection attacks entirely.
    */
   query(query: SQLQuery): Promise<QueryResult> {
-    return this.client.query(sql.compile(query));
+    const queryConfig = sql.compile(query);
+    debug(typeof queryConfig === "string" ? queryConfig : queryConfig.text);
+    return this.client.query(queryConfig);
   }
 }

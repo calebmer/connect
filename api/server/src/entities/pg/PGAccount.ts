@@ -19,10 +19,10 @@ export class PGAccountCollection implements AccountCollection {
       rows: [row],
     } = await this.client.query(
       sql`
-        INSERT INTO account (name, email, password_hash) VALUES
-          (${name}, ${email}, ${passwordHash})
-          ON CONFLICT (email) DO NOTHING
-          RETURNING id
+        INSERT INTO account (name, email, password_hash)
+        VALUES (${name}, ${email}, ${passwordHash})
+        ON CONFLICT (email) DO NOTHING
+        RETURNING id
       `,
     );
     if (row === undefined) {

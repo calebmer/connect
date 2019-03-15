@@ -5,7 +5,6 @@ import chalk from "chalk";
 APIServer.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(
-    `${chalk.grey("▸")} Ready on ` +
-      `${chalk.bold.underline(`http://localhost:${PORT}`)}`,
+    `Listening on ${chalk.bold.underline(`http://localhost:${PORT}`)}`,
   );
 });
