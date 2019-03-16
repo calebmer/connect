@@ -1,5 +1,5 @@
 import {AccessToken, AccountID, RefreshToken} from "@connect/api-client";
-import {JWT_SECRET} from "../RunConfig";
+import {JWT_SECRET, TEST} from "../RunConfig";
 import jwt from "jsonwebtoken";
 import uuidV4 from "uuid/v4";
 
@@ -78,7 +78,7 @@ export class MockRefreshTokenCollection implements RefreshTokenCollection {
   private readonly refreshTokens = new Map<RefreshToken, AccountID>();
 
   constructor() {
-    if (process.env.NODE_ENV !== "test") {
+    if (!TEST) {
       throw new Error("Cannot use mocks outside of a test environment.");
     }
   }

@@ -1,9 +1,10 @@
 import {ClientBase, Pool, QueryResult} from "pg";
 import {SQLQuery, sql} from "./PGSQL";
+import {TEST} from "./RunConfig";
 import createDebugger from "debug";
 
 // Throw an error if we try to use Postgres in a test environment.
-if (process.env.NODE_ENV === "test") {
+if (TEST) {
   throw new Error("Should not be using Postgres in tests.");
 }
 

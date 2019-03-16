@@ -8,6 +8,16 @@
 // Source: https://twitter.com/Nick_Craver/status/1102193050095374337
 
 /**
+ * Are we running in development mode?
+ */
+export const DEV = process.env.NODE_ENV === "development";
+
+/**
+ * Are we running in test mode?
+ */
+export const TEST = process.env.NODE_ENV === "test";
+
+/**
  * The port that our application runs on.
  */
 export const PORT = 4000;
@@ -18,10 +28,7 @@ export const PORT = 4000;
  * a real secret from our environment variables.
  */
 export const JWT_SECRET: string = (() => {
-  if (
-    process.env.NODE_ENV === "development" ||
-    process.env.NODE_ENV === "test"
-  ) {
+  if (DEV || TEST) {
     return "secret";
   } else {
     throw new Error("JWT secret is not configured.");

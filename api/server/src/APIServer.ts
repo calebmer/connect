@@ -6,6 +6,7 @@ import {
   APISchema,
   AccountID,
   JSONObjectValue,
+  JSON_KEYWORDS,
   SchemaBase,
   SchemaInput,
   SchemaKind,
@@ -14,14 +15,15 @@ import {
   SchemaNamespace,
 } from "@connect/api-client";
 import {AccessTokenData, AccessTokenGenerator} from "./entities/Tokens";
+import {DEV, TEST} from "./RunConfig";
 import {NextFunction, Request, Response} from "express";
 import {PGClient} from "./PGClient";
 import {PGContext} from "./PGContext";
+import {ParsedUrlQuery} from "querystring";
 import chalk from "chalk";
 import express from "express";
 import jwt from "jsonwebtoken";
 import morgan from "morgan";
-import querystring from "querystring";
 
 /**
  * The HTTP server for our API. Powered by Express.
@@ -31,7 +33,7 @@ APIServer.set("x-powered-by", false);
 APIServer.set("etag", false);
 
 // Log all our requests for debugging.
-if (process.env.NODE_ENV === "development") {
+if (DEV) {
   APIServer.use(morgan("dev"));
 }
 
@@ -220,19 +222,23 @@ function getRequestQueryInput<Input extends JSONObjectValue>(
   req: Request,
   schemaInput: SchemaInput<Input>,
 ): Input {
-  // Get the input from our request body.
-  const input = querystring.parse(req.query);
+  // Get parsed URL query from our request object.
+  const input: ParsedUrlQuery = req.query;
 
   // Right now, all of the values in our query object are strings. Iterate
   // through all the values and parse them as JSON.
-  for (const [key, value] of Object.entries(input)) {
-    if (Array.isArray(value)) {
-      for (let i = 0; i < value.length; i++) {
-        value[i] = JSON.parse(value[i]);
+  try {
+    for (const [key, value] of Object.entries(input)) {
+      if (Array.isArray(value)) {
+        for (let i = 0; i < value.length; i++) {
+          value[i] = queryStringValueDeserialize(value[i]);
+        }
+      } else {
+        input[key] = queryStringValueDeserialize(value);
       }
-    } else {
-      input[key] = JSON.parse(value);
     }
+  } catch (error) {
+    throw new APIError(APIErrorCode.BAD_INPUT);
   }
 
   // Validate that the input from our request body is correct. If the input
@@ -242,6 +248,18 @@ function getRequestQueryInput<Input extends JSONObjectValue>(
   }
 
   return input;
+}
+
+/**
+ * JSON parses all values except for strings that start with a letter and aren’t
+ * JSON keywords.
+ */
+function queryStringValueDeserialize(value: string): any {
+  if (/^[a-zA-Z]/.test(value) && !JSON_KEYWORDS.has(value)) {
+    return value;
+  } else {
+    return JSON.parse(value);
+  }
 }
 
 /**
@@ -323,7 +341,7 @@ APIServer.use(
     }
 
     // In development, print the error stack trace to stderr for debugging.
-    if (process.env.NODE_ENV !== "test") {
+    if (!TEST) {
       if (error instanceof Error && !(error instanceof APIError)) {
         console.error(chalk.red(error.stack || "")); // eslint-disable-line no-console
       }
@@ -353,20 +371,20 @@ APIServer.use(
       }
     }
 
-    // Setup the result. If our error was an `APIError` then we get to add a
-    // proper error code!
-    let result: APIResult<never>;
-    if (error instanceof APIError) {
-      result = {
-        ok: false,
-        error: {code: error.code},
-      };
-    } else {
-      result = {
-        ok: false,
-        error: {code: APIErrorCode.UNKNOWN},
-      };
-    }
+    // Get the API error code which we will include in our result.
+    const code = error instanceof APIError ? error.code : APIErrorCode.UNKNOWN;
+
+    // Setup the API result we will send to our client.
+    const result: APIResult<never> = {
+      ok: false,
+      error: {
+        code,
+
+        // If we are in development mode then include the stack of our error
+        // from the server. This should help in debugging why an error ocurred.
+        serverStack: DEV && error instanceof Error ? error.stack : undefined,
+      },
+    };
 
     // Send our error response!
     res.json(result);

@@ -1,4 +1,5 @@
 import {APIError, APIResult} from "./APIError";
+import {JSONObjectValue, JSONValue} from "./JSONValue";
 import {
   SchemaBase,
   SchemaKind,
@@ -8,7 +9,6 @@ import {
 } from "./Schema";
 import {APISchema} from "./APISchema";
 import {AccessToken} from "./entities/Tokens";
-import {JSONObjectValue} from "./JSONValue";
 
 /**
  * The type of an API client.
@@ -206,6 +206,12 @@ function buildClientMethod<
     if (result.ok) {
       return result.data;
     } else {
+      // Log the server error if our result gave us the server’s error
+      // stack trace.
+      if (result.error.serverStack) {
+        console.error(`Server Error: ${result.error.serverStack}`); // eslint-disable-line no-console
+      }
+
       throw new APIError(result.error.code);
     }
   }) as ClientMethod<Input, Output>;
@@ -237,13 +243,44 @@ function queryStringSerialize<Input extends JSONObjectValue>(
     const encodedKey = encodeURIComponent(key);
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i++) {
-        const encodedValue = encodeURIComponent(JSON.stringify(value[i]));
+        const encodedValue = queryStringValueSerialize(value[i]);
         query.push(`${encodedKey}=${encodedValue}`);
       }
     } else {
-      const encodedValue = encodeURIComponent(JSON.stringify(value));
+      const encodedValue = queryStringValueSerialize(value);
       query.push(`${encodedKey}=${encodedValue}`);
     }
   }
   return query.length > 0 ? "?" + query.join("&") : "";
 }
+
+/**
+ * JSON stringifies all values except for strings that start with a letter and
+ * aren’t a JSON keyword.
+ */
+function queryStringValueSerialize<Value extends JSONValue>(
+  value: Value,
+): string {
+  if (
+    typeof value === "string" &&
+    /^[a-zA-Z]/.test(value) &&
+    !JSON_KEYWORDS.has(value)
+  ) {
+    return encodeURIComponent(value);
+  } else {
+    return encodeURIComponent(JSON.stringify(value));
+  }
+}
+
+/**
+ * A set containing [JSON keywords][1]. We use this to determine which strings
+ * we should escape in `queryStringSerialize()`. We export this set so that our
+ * server will also be able to determine keywords vs strings.
+ *
+ * [1]: https://json.org
+ */
+export const JSON_KEYWORDS: ReadonlySet<string> = new Set([
+  "true",
+  "false",
+  "null",
+]);

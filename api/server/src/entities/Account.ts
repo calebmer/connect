@@ -1,4 +1,5 @@
 import {AccountID, AccountProfile} from "@connect/api-client";
+import {TEST} from "../RunConfig";
 
 /**
  * Manage a collection of accounts.
@@ -45,7 +46,7 @@ export class MockAccountCollection implements AccountCollection {
   private readonly accountByEmail = new Map<string, MockAccountData>();
 
   constructor() {
-    if (process.env.NODE_ENV !== "test") {
+    if (!TEST) {
       throw new Error("Cannot use mocks outside of a test environment.");
     }
   }

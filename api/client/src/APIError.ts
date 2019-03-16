@@ -94,8 +94,7 @@ export class APIError extends Error {
  * `ok: true` or the request failed and we return `ok: false` alongside an
  * error code.
  *
- * NOTE: We nest the error code into `error.code` because in the future we might
- * want some errors to include extra data.
+ * In development we include the stack of the error on the server.
  */
 export type APIResult<Data> =
   | {
@@ -104,5 +103,8 @@ export type APIResult<Data> =
     }
   | {
       readonly ok: false;
-      readonly error: {readonly code: APIErrorCode};
+      readonly error: {
+        readonly code: APIErrorCode;
+        readonly serverStack?: string;
+      };
     };
