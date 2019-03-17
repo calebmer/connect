@@ -208,8 +208,11 @@ function buildClientMethod<
     } else {
       // Log the server error if our result gave us the server’s error
       // stack trace.
+      //
+      // NOTE: We use `console.log()` since `console.error()` in React Native
+      // will throw up a big red error box!
       if (result.error.serverStack) {
-        console.error(`Server Error: ${result.error.serverStack}`); // eslint-disable-line no-console
+        console.log(`Server Error: ${result.error.serverStack}`); // eslint-disable-line no-console
       }
 
       throw new APIError(result.error.code);

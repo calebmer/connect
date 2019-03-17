@@ -1,13 +1,26 @@
 import {APIClient, AccessToken, RefreshToken} from "@connect/api-client";
-import {API_URL} from "../RunConfig";
 import AsyncStorage from "@react-native-community/async-storage";
+import {NativeModules} from "react-native";
 import jwtDecode from "jwt-decode";
+import url from "url";
+
+/** The URL our API is hosted at. */
+let apiURL = "http://localhost:4000";
+
+// In development, use the same host as our script for our API. This enables
+// local API development.
+if (__DEV__) {
+  const {protocol, hostname} = url.parse(NativeModules.SourceCode.scriptURL);
+  if (protocol && hostname) {
+    apiURL = `${protocol}//${hostname}:4000`;
+  }
+}
 
 /**
  * A React Native instance of our API client.
  */
 export const API = APIClient.create({
-  url: API_URL,
+  url: apiURL,
   auth: getAccessToken,
 });
 
@@ -23,6 +36,46 @@ let currentState: {
   refreshToken: RefreshToken;
   accessTokenExpiresAt: number | null;
 } | null = null;
+
+/**
+ * Loads our access tokens from persistent storage. (Currently `AsyncStorage`.)
+ * If we find some tokens then we update our internal state and return true
+ * so that the caller knows an account is authenticated. Otherwise we return
+ * false so that the caller knows we are not authenticated.
+ */
+export async function loadTokensFromStorage(): Promise<boolean> {
+  // Load our tokens from our app storage. We assume this storage is private
+  // and secure.
+  const entries = await AsyncStorage.multiGet([
+    ACCESS_TOKEN_KEY,
+    REFRESH_TOKEN_KEY,
+  ]);
+
+  // Extract our tokens from the list of entries we fetched from app storage.
+  let accessToken: AccessToken | undefined;
+  let refreshToken: RefreshToken | undefined;
+  for (let i = 0; i < entries.length; i++) {
+    const [key, value] = entries[i];
+    if (typeof value === "string") {
+      if (key === ACCESS_TOKEN_KEY) accessToken = value as AccessToken;
+      if (key === REFRESH_TOKEN_KEY) refreshToken = value as RefreshToken;
+    }
+  }
+
+  // If we had both an access token and a refresh token in app storage then
+  // update our state and return true.
+  if (accessToken !== undefined && refreshToken !== undefined) {
+    currentState = {
+      accessToken: accessToken!,
+      refreshToken: refreshToken!,
+      accessTokenExpiresAt: null,
+    };
+    return true;
+  } else {
+    currentState = null;
+    return false;
+  }
+}
 
 /**
  * Gets an access token for our API if we are signed in. If the access token has

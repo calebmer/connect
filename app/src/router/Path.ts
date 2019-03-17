@@ -75,9 +75,14 @@ export const Path = {
   create<Path extends PathBase>(...pathPattern: Path): PathPattern<Path> {
     return {
       getID(): string {
-        return pathPattern
-          .map(part => (typeof part === "string" ? part : part.variable))
-          .join(".");
+        return (
+          "connect.com/" +
+          pathPattern
+            .map(part => {
+              return typeof part === "string" ? part : `:${part.variable}`;
+            })
+            .join("/")
+        );
       },
 
       print(variables: PathVariableProps<Path>): string {

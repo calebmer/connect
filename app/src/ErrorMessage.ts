@@ -7,6 +7,12 @@ export function displayErrorMessage(error: unknown): string {
   if (error instanceof APIError) {
     return displayErrorCodeMessage(error.code);
   } else {
+    // If we have an error that is not an `APIError` then it is unexpected. Log
+    // the error to our console for debugging.
+    if (error instanceof Error) {
+      console.error(error.stack); // eslint-disable-line no-console
+    }
+
     return displayErrorCodeMessage(APIErrorCode.UNKNOWN);
   }
 }
