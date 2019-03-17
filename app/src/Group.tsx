@@ -12,7 +12,6 @@ import {Color, Font, Shadow, Space} from "./atoms";
 import {InboxItem, Post} from "./MockData";
 import React, {useState} from "react";
 import {GroupBanner} from "./GroupBanner";
-import {GroupCache} from "./cache/GroupCache";
 import {GroupItem} from "./GroupItem";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupItemInbox} from "./GroupItemInbox";
@@ -27,8 +26,6 @@ const AnimatedSectionList: SectionList<
 > = Animated.createAnimatedComponent(SectionList);
 
 export function Group({slug}: {slug: string}) {
-  const group = GroupCache.useData(slug);
-
   // On iOS you can scroll up which results in a negative value for `scrollY`.
   // When that happens we want to scale up our group banner so that it
   // fills in the extra space. That’s what the `bannerScale` value is for. It
@@ -77,7 +74,7 @@ export function Group({slug}: {slug: string}) {
         // this when we have a background image to test against.
         style={[styles.banner, {transform: [{scale: bannerScale}]}]}
       >
-        <GroupBanner title={group.name} />
+        <GroupBanner slug={slug} />
       </Animated.View>
 
       {/* Include the navbar. */}

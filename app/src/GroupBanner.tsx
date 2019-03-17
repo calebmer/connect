@@ -1,14 +1,17 @@
 import {Color, Font, Space} from "./atoms";
 import {Platform, SafeAreaView, StyleSheet, Text, View} from "react-native";
+import {GroupCache} from "./cache/GroupCache";
 import React from "react";
 
-export function GroupBanner({title}: {title: string}) {
+export function GroupBanner({slug}: {slug: string}) {
+  const group = GroupCache.useData(slug);
+
   const titleNode = (
     <Text
       accessibilityRole={Platform.OS === "web" ? ("heading" as any) : undefined}
       style={styles.title}
     >
-      {title}
+      {group.name}
     </Text>
   );
 
