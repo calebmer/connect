@@ -1,5 +1,5 @@
 import {GroupCache} from "./cache/GroupCache";
-import {GroupInboxLayout} from "./GroupInboxLayout";
+import {GroupInbox} from "./GroupInbox";
 import React from "react";
 
 export function Group({slug}: {slug: string}) {
@@ -7,5 +7,5 @@ export function Group({slug}: {slug: string}) {
   // `<ScrollView>` since it causes weirdness with the scroll position.
   const group = GroupCache.useData(slug);
 
-  return <GroupInboxLayout group={group} />;
+  return <GroupInbox group={group} />;
 }

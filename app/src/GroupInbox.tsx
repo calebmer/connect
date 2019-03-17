@@ -13,9 +13,9 @@ import {InboxItem, Post} from "./MockData";
 import React, {useState} from "react";
 import {Group} from "@connect/api-client";
 import {GroupBanner} from "./GroupBanner";
-import {GroupItem} from "./GroupItem";
-import {GroupItemFeed} from "./GroupItemFeed";
-import {GroupItemInbox} from "./GroupItemInbox";
+import {GroupInboxItem} from "./GroupInboxItem";
+import {GroupInboxItemLayout} from "./GroupInboxItemLayout";
+import {GroupInboxItemPost} from "./GroupInboxItemPost";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {NavbarNative} from "./NavbarNative";
 
@@ -26,7 +26,7 @@ const AnimatedSectionList: SectionList<
   unknown
 > = Animated.createAnimatedComponent(SectionList);
 
-export function GroupInboxLayout({group}: {group: Group}) {
+export function GroupInbox({group}: {group: Group}) {
   // On iOS you can scroll up which results in a negative value for `scrollY`.
   // When that happens we want to scale up our group banner so that it
   // fills in the extra space. That’s what the `bannerScale` value is for. It
@@ -55,7 +55,7 @@ export function GroupInboxLayout({group}: {group: Group}) {
     title: "Inbox",
     data: MockData.inbox,
     keyExtractor: item => String(item.id),
-    renderItem: ({item}) => <GroupItemInbox item={item} />,
+    renderItem: ({item}) => <GroupInboxItem item={item} />,
   };
 
   const feedSection: SectionListData<Post> = {
@@ -64,7 +64,7 @@ export function GroupInboxLayout({group}: {group: Group}) {
       (item, id) => ({...item, id}),
     ),
     keyExtractor: item => String(item.id),
-    renderItem: ({item}) => <GroupItemFeed post={item} />,
+    renderItem: ({item}) => <GroupInboxItemPost post={item} />,
   };
 
   return (
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     position: "absolute",
     bottom: 0,
-    paddingHorizontal: GroupItem.padding,
+    paddingHorizontal: GroupInboxItemLayout.padding,
     paddingBottom: Space.space0 / 2,
     color: Color.grey6,
     ...Font.sans,
@@ -237,11 +237,11 @@ const styles = StyleSheet.create({
     ...Shadow.elevation0,
   },
   sectionVerticalPadding: {
-    height: GroupItem.padding,
-    backgroundColor: GroupItem.backgroundColor,
+    height: GroupInboxItemLayout.padding,
+    backgroundColor: GroupInboxItemLayout.backgroundColor,
   },
   itemSeparator: {
-    height: GroupItem.padding,
-    backgroundColor: GroupItem.backgroundColor,
+    height: GroupInboxItemLayout.padding,
+    backgroundColor: GroupInboxItemLayout.backgroundColor,
   },
 });

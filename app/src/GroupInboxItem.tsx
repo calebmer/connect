@@ -1,16 +1,16 @@
 import {BodyText, Font} from "./atoms";
-import {GroupItem} from "./GroupItem";
+import {GroupInboxItemLayout} from "./GroupInboxItemLayout";
 import {InboxItem} from "./MockData";
 import React from "react";
 import {StyleSheet} from "react-native";
 
-export function GroupItemInbox({item}: {item: InboxItem}) {
+export function GroupInboxItem({item}: {item: InboxItem}) {
   return (
-    <GroupItem account={item.author}>
+    <GroupInboxItemLayout account={item.author}>
       <BodyText style={styles.text} numberOfLines={2}>
         {item.contentPreview}
       </BodyText>
-    </GroupItem>
+    </GroupInboxItemLayout>
   );
 }
 
