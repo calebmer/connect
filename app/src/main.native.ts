@@ -1,4 +1,4 @@
-import {AccountTestRoute, GroupRoute, SignInRoute} from "./router/AllRoutes";
+import {GroupRoute, SignInRoute} from "./router/AllRoutes";
 import {Navigation} from "react-native-navigation";
 import {loadTokensFromStorage} from "./api/API.native";
 
@@ -40,10 +40,11 @@ function main(isAuthenticated: boolean) {
   Navigation.setRoot({
     root: {
       stack: {
-        children: isAuthenticated
-          ? [(AccountTestRoute as any).getLayout({})]
-          : [(SignInRoute as any).getLayout({})],
-        // children: [(GroupRoute as any).getLayout({slug: "nohello"})],
+        children: [
+          isAuthenticated
+            ? (GroupRoute as any).getLayout({slug: "nohello"})
+            : (SignInRoute as any).getLayout({}),
+        ],
       },
     },
   });
