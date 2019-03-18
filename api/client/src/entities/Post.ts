@@ -33,7 +33,7 @@ export const PostCursor = {
   /**
    * Get the cursor for a `Post`.
    */
-  get(post: Post): PostCursor {
+  get(post: Pick<Post, "id" | "publishedAt">): PostCursor {
     return Cursor.encode<[DateTime, PostID]>([post.publishedAt, post.id]);
   },
 };

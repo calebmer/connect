@@ -5,6 +5,7 @@ import {
   Group,
   GroupID,
   PostCursor,
+  Range,
 } from "@connect/api-client";
 import {GroupCollection} from "../entities/Group";
 import {Post} from "@connect/api-client";
@@ -35,11 +36,7 @@ export async function getBySlug(
 export async function getPosts(
   ctx: {readonly groups: GroupCollection},
   accountID: AccountID,
-  input: {
-    readonly id: GroupID;
-    readonly after: PostCursor | null;
-    readonly limit: number;
-  },
+  input: {readonly id: GroupID} & Range<PostCursor>,
 ): Promise<{
   readonly posts: ReadonlyArray<Post>;
 }> {

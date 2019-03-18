@@ -1,4 +1,4 @@
-import {Cursor, JSONValue} from "@connect/api-client";
+import {Cursor, JSONValue, Range, RangeDirection} from "@connect/api-client";
 import {SQLQuery, sql} from "./PGSQL";
 import {PGClient} from "./PGClient";
 import {QueryResult} from "pg";
@@ -26,7 +26,7 @@ export class PGPagination {
   /**
    * Execute a paginated query!
    */
-  query(
+  async query(
     client: PGClient,
     {
       selection,
@@ -35,11 +35,7 @@ export class PGPagination {
     }: {
       readonly selection: SQLQuery;
       readonly extraCondition?: SQLQuery;
-      readonly range: {
-        readonly limit: number;
-        readonly after?: Cursor<ReadonlyArray<JSONValue>> | null;
-        readonly before?: Cursor<ReadonlyArray<JSONValue>> | null;
-      };
+      readonly range: Range<Cursor<ReadonlyArray<JSONValue>>>;
     },
   ): Promise<QueryResult> {
     const condition = [];
@@ -109,28 +105,44 @@ export class PGPagination {
       }
     }
 
-    // Finish the “where” clause by joining the conditions together. If there
+    // Finish the `WHERE` clause by joining the conditions together. If there
     // are no conditions then don’t include a where clause at all!
     const where =
       condition.length > 0
         ? sql` WHERE ${sql.join(condition, sql` AND `)}`
         : sql.empty;
 
-    // Create the “order by” clause by joining all the pagination
+    // Create the `ORDER BY` clause by joining all the pagination
     // columns together.
     const orderBy = sql.join(
-      this.columns.map(({column, descending}) =>
-        descending ? sql`${column} DESC` : column,
-      ),
+      this.columns.map(({column, descending}) => {
+        // Use the column definition to know if this table is descending, but
+        // if our range direction is reversed then reverse the order of all our
+        // columns. This way the `LIMIT` we set on our query will only take
+        // columns from the reverse direction.
+        const actuallyDescending =
+          range.direction !== RangeDirection.Last ? descending : !descending;
+
+        return actuallyDescending ? sql`${column} DESC` : column;
+      }),
       sql`, `,
     );
 
     // Run our query!
-    return client.query(
+    const result = await client.query(
       sql`
         SELECT ${selection} FROM ${this.table}${where}
-        ORDER BY ${orderBy} LIMIT ${range.limit}
+        ORDER BY ${orderBy} LIMIT ${range.count}
       `,
     );
+
+    // If our range direction is “last” then that means we reversed all the
+    // directions in the `ORDER BY` clause. Make sure we reverse our rows back
+    // to their expected direction here.
+    if (range.direction === RangeDirection.Last) {
+      result.rows.reverse();
+    }
+
+    return result;
   }
 }

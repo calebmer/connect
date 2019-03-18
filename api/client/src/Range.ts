@@ -1,5 +1,6 @@
 import * as base64 from "base-64";
 import {JSONValue} from "./JSONValue";
+import {SchemaInput} from "./SchemaInput";
 
 /**
  * The direction in which our range will select items.
@@ -42,6 +43,18 @@ export type Range<ItemCursor extends Cursor<JSONValue>> = {
    */
   readonly before: ItemCursor | null;
 };
+
+/**
+ * Creates an input schema object’s fields for some cursor type.
+ */
+export function RangeInputFields<ItemCursor extends Cursor<JSONValue>>() {
+  return {
+    direction: SchemaInput.enum([RangeDirection.First, RangeDirection.Last]),
+    count: SchemaInput.integer(),
+    after: SchemaInput.string<ItemCursor>().optional(),
+    before: SchemaInput.string<ItemCursor>().optional(),
+  };
+}
 
 /**
  * A cursor represents some opaque base64 and JSON encoded structure for

@@ -27,6 +27,11 @@ export class SchemaInput<Value extends JSONValue> {
     (value): value is number => typeof value === "number",
   );
 
+  private static _integer = new SchemaInput<number>(
+    (value): value is number =>
+      typeof value === "number" && Number.isInteger(value),
+  );
+
   private static _string = new SchemaInput<string>(
     (value): value is string => typeof value === "string",
   );
@@ -42,6 +47,16 @@ export class SchemaInput<Value extends JSONValue> {
   }
 
   /**
+   * Accepts only integer values.
+   *
+   * Allows the caller to pass a type argument to treat the input as some kind
+   * of special type.
+   */
+  static integer<Value extends number>(): SchemaInput<Value> {
+    return this._integer as SchemaInput<Value>;
+  }
+
+  /**
    * Accepts only string values.
    *
    * Allows the caller to pass a type argument to treat the input as some kind
@@ -49,6 +64,18 @@ export class SchemaInput<Value extends JSONValue> {
    */
   static string<Value extends string>(): SchemaInput<Value> {
     return this._string as SchemaInput<Value>;
+  }
+
+  /**
+   * Accepts only one of the specified values.
+   */
+  static enum<Value extends JSONValue>(
+    values: ReadonlyArray<Value>,
+  ): SchemaInput<Value> {
+    const valueSet = new Set(values);
+    return new SchemaInput<Value>(
+      (value): value is Value => valueSet.has(value as any),
+    );
   }
 
   /**

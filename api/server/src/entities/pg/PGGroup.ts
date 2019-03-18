@@ -5,6 +5,7 @@ import {
   GroupMembership,
   Post,
   PostCursor,
+  Range,
 } from "@connect/api-client";
 import {GroupCollection} from "../Group";
 import {PGClient} from "../../PGClient";
@@ -90,7 +91,7 @@ export class PGGroupCollection implements GroupCollection {
 
   async getPosts(
     membership: GroupMembership,
-    range: {limit: number; after: PostCursor | null},
+    range: Range<PostCursor>,
   ): Promise<ReadonlyArray<Post>> {
     const {rows} = await PGPostPagination.query(this.client, {
       selection: sql`id, author_id, published_at, content`,

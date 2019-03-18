@@ -5,6 +5,7 @@ import {
   GroupMembership,
   Post,
   PostCursor,
+  Range,
 } from "@connect/api-client";
 
 /**
@@ -56,7 +57,7 @@ export interface GroupCollection {
    */
   getPosts(
     membership: GroupMembership,
-    range: {limit: number; after: PostCursor | null},
+    range: Range<PostCursor>,
   ): Promise<ReadonlyArray<Post>>;
 }
 

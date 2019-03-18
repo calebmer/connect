@@ -1,8 +1,9 @@
 import {AccessToken, RefreshToken} from "./entities/Tokens";
-import {DateTime, Group, GroupID} from "./entities/Group";
+import {Comment, CommentCursor} from "./entities/Comment";
+import {Group, GroupID} from "./entities/Group";
 import {Post, PostCursor, PostID} from "./entities/Post";
 import {AccountProfile} from "./entities/Account";
-import {Comment} from "./entities/Comment";
+import {RangeInputFields} from "./Range";
 import {Schema} from "./Schema";
 import {SchemaInput} from "./SchemaInput";
 import {SchemaOutput} from "./SchemaOutput";
@@ -132,9 +133,8 @@ export const APISchema = Schema.namespace({
     getPosts: Schema.method({
       safe: true,
       input: {
-        id: SchemaInput.number<GroupID>(),
-        limit: SchemaInput.number(),
-        after: SchemaInput.string<PostCursor>().optional(),
+        id: SchemaInput.integer<GroupID>(),
+        ...RangeInputFields<PostCursor>(),
       },
       output: SchemaOutput.t<{
         readonly posts: ReadonlyArray<Post>;
@@ -154,9 +154,8 @@ export const APISchema = Schema.namespace({
     getComments: Schema.method({
       safe: true,
       input: {
-        id: SchemaInput.number<PostID>(),
-        limit: SchemaInput.number(),
-        after: SchemaInput.string<DateTime>().optional(),
+        id: SchemaInput.integer<PostID>(),
+        ...RangeInputFields<CommentCursor>(),
       },
       output: SchemaOutput.t<{
         readonly comments: ReadonlyArray<Comment>;
