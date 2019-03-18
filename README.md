@@ -8,7 +8,7 @@
 2. Run `yarn` to install node modules.
 3. Install Postgres. (recommended for MacOS users https://postgresapp.com)
 4. Make sure Postgres is running.
-5. Run `yarn workspace @connect/db reset` to setup the Connect database.
+5. Run `yarn workspace @connect/db reset` to setup the database schema.
 
 To run the API: `yarn workspace @connect/api-server dev`
 
