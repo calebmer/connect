@@ -1,4 +1,12 @@
 import {APIClient} from "@connect/api-client";
+import {Platform} from "react-native";
+
+// Safety guard for using the web API client on native.
+if (Platform.OS !== "web") {
+  throw new Error(
+    "Can not use the web API client outside of the web platform.",
+  );
+}
 
 /**
  * A web instance of our API client.
