@@ -1,6 +1,6 @@
 import {DateTime, GroupID} from "./Group";
 import {AccountID} from "./Account";
-import {Cursor} from "../Cursor";
+import {Cursor} from "../Range";
 
 /** A unique type which is used as an identifier for posts. */
 export type PostID = number & {readonly _type: typeof PostID};

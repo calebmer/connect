@@ -4,7 +4,7 @@ export * from "./APISchema";
 export * from "./JSONValue";
 export * from "./Schema";
 export * from "./SchemaInput";
-export * from "./Cursor";
+export * from "./Range";
 export * from "./entities/Account";
 export * from "./entities/Comment";
 export * from "./entities/Group";

@@ -1,5 +1,5 @@
 import {AccountID} from "./Account";
-import {Cursor} from "../Cursor";
+import {Cursor} from "../Range";
 import {DateTime} from "./Group";
 import {PostID} from "./Post";
 

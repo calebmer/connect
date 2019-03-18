@@ -2,5 +2,11 @@
   "name": "@connect/api-client",
   "version": "0.0.0",
   "license": "UNLICENSED",
-  "main": "./src/index.ts"
+  "main": "./src/index.ts",
+  "dependencies": {
+    "base-64": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/base-64": "^0.1.3"
+  }
 }

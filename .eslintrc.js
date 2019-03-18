@@ -21,6 +21,7 @@ module.exports = {
     jest: true,
   },
   rules: {
+    "no-empty": "warn",
     "no-empty-pattern": "off",
     "no-unused-vars": "warn",
     "no-console": "warn",
@@ -65,7 +66,10 @@ module.exports = {
 
     // NOTE: Use the TypeScript camelcase rule instead of the base ESLint one.
     camelcase: "off",
-    "@typescript-eslint/camelcase": ["warn", {properties: "never"}],
+    "@typescript-eslint/camelcase": [
+      "warn",
+      {properties: "never", allow: ["^UNSAFE_", "^test_"]},
+    ],
 
     "import/first": "warn",
     "import/newline-after-import": "warn",

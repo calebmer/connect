@@ -1,3 +1,6 @@
+// TODO: IMPORTANT: `AsyncStorage` is not secure! Use Expo’s
+// `SecureStorage` instead! https://docs.expo.io/versions/v32.0.0/sdk/securestore/
+
 import {APIClient, AccessToken, RefreshToken} from "@connect/api-client";
 import AsyncStorage from "@react-native-community/async-storage";
 import {NativeModules} from "react-native";
