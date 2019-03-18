@@ -4,11 +4,11 @@ import {
   AccountID,
   Group,
   GroupID,
+  Post,
   PostCursor,
   Range,
 } from "@connect/api-client";
 import {GroupCollection} from "../entities/Group";
-import {Post} from "@connect/api-client";
 
 /**
  * Gets a group by its slug, but only if the authenticated account is a member
