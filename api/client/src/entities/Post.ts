@@ -7,12 +7,6 @@ export type PostID = number & {readonly _type: typeof PostID};
 declare const PostID: unique symbol;
 
 /**
- * A cursor represents the position of a post in a list ordered by the post’s
- * `publishedAt` date.
- */
-export type PostCursor = Cursor<[DateTime, PostID]>;
-
-/**
  * An account may post some message in a group to start a conversation or share
  * their thoughts with the world. A post may, in turn, have any number
  * of comments.
@@ -27,4 +21,19 @@ export type Post = {
   readonly publishedAt: DateTime;
   /** The contents of this post in a Markdown-ish format. */
   readonly content: string;
+};
+
+/**
+ * A cursor represents the position of a post in a list ordered by the post’s
+ * `publishedAt` date.
+ */
+export type PostCursor = Cursor<[DateTime, PostID]>;
+
+export const PostCursor = {
+  /**
+   * Get the cursor for a `Post`.
+   */
+  get(post: Post): PostCursor {
+    return Cursor.encode<[DateTime, PostID]>([post.publishedAt, post.id]);
+  },
 };
