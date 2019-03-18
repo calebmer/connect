@@ -39,7 +39,7 @@ function testCacheList(
           items.push(item);
         }
       } else {
-        for (let i = allItems.length; i >= 0; i--) {
+        for (let i = allItems.length - 1; i >= 0; i--) {
           const item = allItems[i];
           if (after != null && !(item > after)) break;
           if (before != null && !(item < before)) continue;
@@ -425,6 +425,439 @@ describe("loadNext", () => {
       {direction: "first", count: 100, after: 102, before: 104},
       {direction: "first", count: 97, after: 105, before: 107},
       {direction: "first", count: 94, after: 108},
+    ]);
+  });
+
+  test("will meet in the middle with load last", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadNext(5)).toEqual([201, 202, 203, 204, 205]);
+    expect(await cache.loadLast(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(await cache.loadNext(1)).toEqual(items);
+    expect(recordCalls).toEqual([
+      {direction: "first", count: 5},
+      {direction: "last", count: 5, after: 205},
+      {direction: "first", count: 1, after: 205, before: 206},
+    ]);
+  });
+
+  test("will load next after load last", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    expect(await cache.loadNext(3)).toEqual([208, 209, 210]);
+    items.push(301, 302, 303, 304, 305);
+    expect(await cache.loadNext(3)).toEqual([208, 209, 210, 301, 302, 303]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "first", count: 3, after: 210},
+      {direction: "first", count: 3, after: 210},
+    ]);
+  });
+});
+
+describe("loadLast", () => {
+  test("will load no items from a list", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(0)).toEqual([]);
+    expect(recordCalls).toEqual([{direction: "last", count: 0}]);
+  });
+
+  test("will load the first item from a list", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(1)).toEqual([210]);
+    expect(recordCalls).toEqual([{direction: "last", count: 1}]);
+  });
+
+  test("will load the first three items from a list", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    expect(recordCalls).toEqual([{direction: "last", count: 3}]);
+  });
+
+  test("will load the first five items from a list", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(recordCalls).toEqual([{direction: "last", count: 5}]);
+  });
+
+  test("will load no items from a list twice", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(0)).toEqual([]);
+    expect(await cache.loadLast(0)).toEqual([]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 0},
+      {direction: "last", count: 0},
+    ]);
+  });
+
+  test("will load the first item from a list twice", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(1)).toEqual([210]);
+    expect(await cache.loadLast(1)).toEqual([210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 1},
+      {direction: "last", count: 1, after: 210},
+    ]);
+  });
+
+  test("will load the first three items from a list twice", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, after: 210},
+    ]);
+  });
+
+  test("will load the first five items from a list twice", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(await cache.loadLast(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 5},
+      {direction: "last", count: 5, after: 210},
+    ]);
+  });
+
+  test("will load three items then five items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    expect(await cache.loadLast(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 5, after: 210},
+      {direction: "last", count: 2, before: 208},
+    ]);
+  });
+
+  test("will load five items then three items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(await cache.loadLast(3)).toEqual([206, 207, 208, 209, 210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 5},
+      {direction: "last", count: 3, after: 210},
+    ]);
+  });
+
+  test("will load zero items then five items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(0)).toEqual([]);
+    expect(await cache.loadLast(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 0},
+      {direction: "last", count: 5},
+    ]);
+  });
+
+  test("will load five items then zero items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(await cache.loadLast(0)).toEqual([206, 207, 208, 209, 210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 5},
+      {direction: "last", count: 0, after: 210},
+    ]);
+  });
+
+  test("will load newly pushed items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    items.push(301, 302, 303);
+    expect(await cache.loadLast(3)).toEqual([301, 302, 303]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, after: 210},
+    ]);
+  });
+
+  test("will load and merge newly pushed items with previously cached items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    items.push(301, 302);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210, 301, 302]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, after: 210},
+    ]);
+  });
+
+  test("will load some newly pushed items which have more", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    items.push(301, 302, 303, 304);
+    expect(await cache.loadLast(3)).toEqual([302, 303, 304]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, after: 210},
+    ]);
+  });
+
+  test("will load some newly pushed items but a short load next won’t merge with previously cached items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    items.push(301, 302, 303, 304, 305, 306);
+    expect(await cache.loadLast(3)).toEqual([304, 305, 306]);
+    expect(await cache.loadPrev(3)).toEqual([301, 302, 303, 304, 305, 306]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, after: 210},
+      {direction: "last", count: 3, after: 210, before: 304},
+    ]);
+  });
+
+  test("will load newly pushed items and a load next will merge the with previously cached items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    items.push(301, 302, 303);
+    expect(await cache.loadLast(3)).toEqual([301, 302, 303]);
+    expect(await cache.loadPrev(0)).toEqual([301, 302, 303]);
+    expect(await cache.loadPrev(1)).toEqual([208, 209, 210, 301, 302, 303]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, after: 210},
+      {direction: "last", count: 0, after: 210, before: 301},
+      {direction: "last", count: 1, after: 210, before: 301},
+    ]);
+  });
+
+  test("will load some newly pushed items and a load next will merge the with previously cached items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    items.push(301, 302, 303, 304);
+    expect(await cache.loadLast(3)).toEqual([302, 303, 304]);
+    expect(await cache.loadPrev(0)).toEqual([302, 303, 304]);
+    expect(await cache.loadPrev(2)).toEqual([
+      208,
+      209,
+      210,
+      301,
+      302,
+      303,
+      304,
+    ]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, after: 210},
+      {direction: "last", count: 0, after: 210, before: 302},
+      {direction: "last", count: 2, after: 210, before: 302},
+    ]);
+  });
+});
+
+describe("loadPrev", () => {
+  test("will load no items from a list", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadPrev(0)).toEqual([]);
+    expect(recordCalls).toEqual([{direction: "last", count: 0}]);
+  });
+
+  test("will load the first item from a list", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadPrev(1)).toEqual([210]);
+    expect(recordCalls).toEqual([{direction: "last", count: 1}]);
+  });
+
+  test("will load the first three items from a list", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadPrev(3)).toEqual([208, 209, 210]);
+    expect(recordCalls).toEqual([{direction: "last", count: 3}]);
+  });
+
+  test("will load the first five items from a list", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadPrev(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(recordCalls).toEqual([{direction: "last", count: 5}]);
+  });
+
+  test("will load no items from a list twice", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadPrev(0)).toEqual([]);
+    expect(await cache.loadPrev(0)).toEqual([]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 0},
+      {direction: "last", count: 0},
+    ]);
+  });
+
+  test("will load the first item from a list many times", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadPrev(1)).toEqual([210]);
+    expect(await cache.loadPrev(1)).toEqual([209, 210]);
+    expect(await cache.loadPrev(1)).toEqual([208, 209, 210]);
+    expect(await cache.loadPrev(1)).toEqual([207, 208, 209, 210]);
+    expect(await cache.loadPrev(1)).toEqual([206, 207, 208, 209, 210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 1},
+      {direction: "last", count: 1, before: 210},
+      {direction: "last", count: 1, before: 209},
+      {direction: "last", count: 1, before: 208},
+      {direction: "last", count: 1, before: 207},
+    ]);
+  });
+
+  test("will load the first two items from a list twice", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadPrev(2)).toEqual([209, 210]);
+    expect(await cache.loadPrev(2)).toEqual([207, 208, 209, 210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 2},
+      {direction: "last", count: 2, before: 209},
+    ]);
+  });
+
+  test("will load the first item after loading some initial items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(2)).toEqual([209, 210]);
+    expect(await cache.loadLast(2)).toEqual([209, 210]);
+    expect(await cache.loadPrev(2)).toEqual([207, 208, 209, 210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 2},
+      {direction: "last", count: 2, after: 210},
+      {direction: "last", count: 2, before: 209},
+    ]);
+  });
+
+  test("will load some new first items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [301, 302, 303];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(2)).toEqual([302, 303]);
+    items.push(401, 402, 403);
+    expect(await cache.loadLast(2)).toEqual([402, 403]);
+    expect(await cache.loadPrev(2)).toEqual([302, 303, 401, 402, 403]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 2},
+      {direction: "last", count: 2, after: 303},
+      {direction: "last", count: 2, after: 303, before: 402},
+    ]);
+  });
+
+  test("will ignore new items", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
+    items.push(301, 302, 303, 304, 305);
+    expect(await cache.loadPrev(3)).toEqual([205, 206, 207, 208, 209, 210]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, before: 208},
+    ]);
+  });
+
+  test("will load until count has been filled", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [101, 102, 103];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadLast(2)).toEqual([102, 103]);
+    items.push(104, 105, 106);
+    expect(await cache.loadLast(2)).toEqual([105, 106]);
+    items.push(107, 108, 109);
+    expect(await cache.loadLast(2)).toEqual([108, 109]);
+    expect(await cache.loadPrev(100)).toEqual([
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+    ]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 2},
+      {direction: "last", count: 2, after: 103},
+      {direction: "last", count: 2, after: 106},
+      {direction: "last", count: 100, after: 106, before: 108},
+      {direction: "last", count: 97, after: 103, before: 105},
+      {direction: "last", count: 94, before: 102},
+    ]);
+  });
+
+  test("will meet in the middle with load first", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadPrev(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(await cache.loadFirst(5)).toEqual([201, 202, 203, 204, 205]);
+    expect(await cache.loadPrev(1)).toEqual(items);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 5},
+      {direction: "first", count: 5, before: 206},
+      {direction: "last", count: 1, after: 205, before: 206},
+    ]);
+  });
+
+  test("will load prev after load first", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await cache.loadFirst(3)).toEqual([201, 202, 203]);
+    expect(await cache.loadPrev(3)).toEqual([201, 202, 203]);
+    items.unshift(101, 102, 103, 104, 105);
+    expect(await cache.loadPrev(3)).toEqual([103, 104, 105, 201, 202, 203]);
+    expect(recordCalls).toEqual([
+      {direction: "first", count: 3},
+      {direction: "last", count: 3, before: 201},
+      {direction: "last", count: 3, before: 201},
     ]);
   });
 });
