@@ -17,7 +17,7 @@ import {PostCache} from "./PostCache";
  */
 export type GroupCacheEntry = {
   readonly group: Group;
-  readonly posts: CacheList<PostCursor, PostCacheListEntry>;
+  readonly postCacheList: CacheList<PostCursor, PostCacheListEntry>;
 };
 
 /**
@@ -39,11 +39,11 @@ export const GroupCache = new Cache<string, GroupCacheEntry>(async slug => {
   const {group} = await API.group.getBySlug({slug});
 
   // Create a fresh cache for our group’s posts.
-  const posts = PostCacheList(group.id);
+  const postCacheList = PostCacheList(group.id);
 
   return {
     group,
-    posts,
+    postCacheList,
   };
 });
 

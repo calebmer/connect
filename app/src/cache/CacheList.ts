@@ -28,7 +28,7 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    *
    * This format lets us know that there _may_ be more items between 3 and 7.
    */
-  private segments = CacheEntry.resolved<CacheListSegments<Item>>([]);
+  private readonly segments = CacheEntry.resolved<CacheListSegments<Item>>([]);
 
   /**
    * User provided function to load more items based on the provided range.
@@ -49,6 +49,20 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
   }) {
     this._load = load;
     this._cursor = cursor;
+  }
+
+  /**
+   * Suspend on all the initial items in the cache.
+   */
+  public suspendFirst(): ReadonlyArray<Item> {
+    return this.segments.suspend()[0] || [];
+  }
+
+  /**
+   * Suspend on all the last items in the cache.
+   */
+  public suspendLast(): ReadonlyArray<Item> {
+    return last(this.segments.suspend()) || [];
   }
 
   /**

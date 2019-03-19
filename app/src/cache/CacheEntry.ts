@@ -121,18 +121,20 @@ export class CacheEntry<Value> {
         const promise = updater(this.value as Value);
         this.status = CacheEntryStatus.Pending;
         this.value = promise;
-        return promise.then(
+        promise.then(
           value => {
             this.status = CacheEntryStatus.Resolved;
             this.value = value;
-            return value;
           },
           error => {
             this.status = CacheEntryStatus.Rejected;
             this.value = error;
-            throw error;
           },
         );
+        // We return the promise directly instead of the `promise.then()` above
+        // in case no one listens to the promise we return so we won’t have an
+        // unhandled exception.
+        return promise;
       }
 
       // Rejected cache entries are poisonous. They always throw.
