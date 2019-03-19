@@ -1,4 +1,4 @@
-import {GroupCache} from "./cache/GroupCache";
+import {GroupCache} from "./cache/entities/GroupCache";
 import {GroupInbox} from "./GroupInbox";
 import React from "react";
 import {useCacheData} from "./cache/Cache";

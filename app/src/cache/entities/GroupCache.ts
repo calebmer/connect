@@ -5,9 +5,9 @@ import {
   PostCursor,
   PostID,
 } from "@connect/api-client";
-import {API} from "../api/API";
-import {Cache} from "./Cache";
-import {CacheList} from "./CacheList";
+import {API} from "../../api/API";
+import {Cache} from "../Cache";
+import {CacheList} from "../CacheList";
 import {PostCache} from "./PostCache";
 
 /**

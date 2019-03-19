@@ -1,6 +1,6 @@
 import {Post, PostID} from "@connect/api-client";
-import {API} from "../api/API";
-import {Cache} from "./Cache";
+import {API} from "../../api/API";
+import {Cache} from "../Cache";
 
 /**
  * Caches posts by their ID.
