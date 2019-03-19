@@ -1,3 +1,6 @@
+import {Box, useBox} from "./Box";
+import {Future} from "./Future";
+
 /**
  * Responsible for caching data.
  */
@@ -23,34 +26,33 @@ export class Cache<Key extends string | number, Data> {
    *
    * [1]: https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)
    */
-  private readonly entries = new Map<Key, CacheEntry<Data>>();
+  private readonly entries = new Map<Key, Box<Future<Data>>>();
 
   constructor(load: (key: Key) => Promise<Data>) {
     this._load = load;
   }
 
   /**
-   * Retrieves an entry from our cache. If the entry does not exist yet then we
-   * will first load the entry into our cache.
+   * Sets an entry in our cache. If the entry already exists in our entries map
+   * then we will update that entry. Otherwise we will create a new one.
    */
-  private accessEntry(key: Key): CacheEntry<Data> {
+  private setEntry(key: Key, data: Future<Data>) {
+    const entry = this.entries.get(key);
+    if (entry === undefined) {
+      this.entries.set(key, new Box(data));
+    } else {
+      entry.set(data);
+    }
+  }
+
+  /**
+   * Retrieves an entry from our cache. If the entry does not exist yet then
+   * we will first load the entry into our cache.
+   */
+  private accessEntry(key: Key): Box<Future<Data>> {
     let entry = this.entries.get(key);
     if (entry === undefined) {
-      const promise = this._load(key);
-      entry = {
-        status: CacheEntryStatus.Pending,
-        value: promise,
-      };
-      promise.then(
-        value => {
-          (entry as any).status = CacheEntryStatus.Resolved;
-          (entry as any).value = value;
-        },
-        error => {
-          (entry as any).status = CacheEntryStatus.Rejected;
-          (entry as any).value = error;
-        },
-      );
+      entry = new Box(new Future(this._load(key)));
       this.entries.set(key, entry);
     }
     return entry;
@@ -61,7 +63,7 @@ export class Cache<Key extends string | number, Data> {
    * this key then that entry will be overridden.
    */
   public insert(key: Key, data: Data) {
-    this.entries.set(key, {status: CacheEntryStatus.Resolved, value: data});
+    this.setEntry(key, new Future(data));
   }
 
   /**
@@ -70,22 +72,12 @@ export class Cache<Key extends string | number, Data> {
    * promise which will resolve immediately.
    *
    * If you are loading data for a React component, please call the React hook
-   * `useCacheData()` instead.
+   * `useCacheData()` instead which will watch the cache for changes.
    */
   public load(key: Key): Promise<Data> {
-    const entry = this.accessEntry(key);
-    switch (entry.status) {
-      case CacheEntryStatus.Pending:
-        return entry.value;
-      case CacheEntryStatus.Resolved:
-        return Promise.resolve(entry.value);
-      case CacheEntryStatus.Rejected:
-        return Promise.reject(entry.value);
-      default: {
-        const never: never = entry;
-        throw new Error(`Unexpected entry status: ${never["status"]}`);
-      }
-    }
+    return this.accessEntry(key)
+      .get()
+      .promise();
   }
 
   /**
@@ -97,23 +89,6 @@ export class Cache<Key extends string | number, Data> {
   public preload(key: Key): void {
     this.accessEntry(key);
   }
-}
-
-/**
- * An entry in our cache.
- */
-export type CacheEntry<Data> =
-  | {readonly status: CacheEntryStatus.Pending; readonly value: Promise<Data>}
-  | {readonly status: CacheEntryStatus.Resolved; readonly value: Data}
-  | {readonly status: CacheEntryStatus.Rejected; readonly value: unknown};
-
-/**
- * The status of a cache entry.
- */
-export enum CacheEntryStatus {
-  Pending,
-  Resolved,
-  Rejected,
 }
 
 /**
@@ -129,17 +104,6 @@ export function useCacheData<Key extends string | number, Data>(
   cache: Cache<Key, Data>,
   key: Key,
 ): Data {
-  const entry: CacheEntry<Data> = (cache as any).accessEntry(key);
-  switch (entry.status) {
-    case CacheEntryStatus.Pending:
-      throw entry.value;
-    case CacheEntryStatus.Resolved:
-      return entry.value;
-    case CacheEntryStatus.Rejected:
-      throw entry.value;
-    default: {
-      const never: never = entry;
-      throw new Error(`Unexpected entry status: ${never["status"]}`);
-    }
-  }
+  const entry: Box<Future<Data>> = (cache as any).accessEntry(key);
+  return useBox(entry).suspend();
 }

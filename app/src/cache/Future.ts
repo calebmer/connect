@@ -19,33 +19,6 @@ enum FutureStatus {
  * future it will throw instead.
  */
 export class Future<Value> {
-  /**
-   * Creates a new pending future from a promise. When the promise resolves
-   * we will have synchronous access to the value from this future.
-   */
-  static pending<Value>(promise: Promise<Value>): Future<Value> {
-    const cacheValueAsync = new Future<Value>(FutureStatus.Pending, promise);
-    promise.then(
-      value => {
-        cacheValueAsync.status = FutureStatus.Resolved;
-        cacheValueAsync.value = value;
-      },
-      error => {
-        cacheValueAsync.status = FutureStatus.Rejected;
-        cacheValueAsync.value = error;
-      },
-    );
-    return cacheValueAsync;
-  }
-
-  /**
-   * Creates a new resolved future. We will have synchronous access to the value
-   * for this future.
-   */
-  static resolved<Value>(value: Value): Future<Value> {
-    return new Future(FutureStatus.Resolved, value);
-  }
-
   /** The status of our future. */
   private status: FutureStatus;
 
@@ -61,9 +34,24 @@ export class Future<Value> {
    */
   private value: unknown;
 
-  private constructor(status: FutureStatus, value: unknown) {
-    this.status = status;
-    this.value = value;
+  constructor(value: Promise<Value> | Value) {
+    if (value instanceof Promise) {
+      this.status = FutureStatus.Pending;
+      this.value = value;
+      value.then(
+        value => {
+          this.status = FutureStatus.Resolved;
+          this.value = value;
+        },
+        error => {
+          this.status = FutureStatus.Rejected;
+          this.value = error;
+        },
+      );
+    } else {
+      this.status = FutureStatus.Resolved;
+      this.value = value;
+    }
   }
 
   /**
