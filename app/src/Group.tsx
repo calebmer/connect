@@ -9,7 +9,12 @@ import {
   View,
 } from "react-native";
 import {Color, Font, Shadow, Space} from "./atoms";
-import {GroupCache, PostCacheListEntry} from "./cache/entities/GroupCache";
+import {
+  GroupCache,
+  PostCacheListEntry,
+  groupPostCountInitial,
+  groupPostCountMore,
+} from "./cache/entities/GroupCache";
 import React, {useState} from "react";
 import {GroupBanner} from "./GroupBanner";
 import {GroupItem} from "./GroupItem";
@@ -92,9 +97,12 @@ export function Group({slug}: {slug: string}) {
         // The section list data!
         sections={[feedSection] as any}
         // Loading more data when the end of the list is reached.
-        initialNumToRender={10}
-        onEndReachedThreshold={0.2}
-        onEndReached={() => postCacheList.loadNext(10)}
+        //
+        // NOTE: An `initialNumToRender` that is too small will
+        // trigger `onEndReached` when this list initially renders.
+        initialNumToRender={groupPostCountInitial}
+        onEndReachedThreshold={0.3}
+        onEndReached={() => postCacheList.loadNext(groupPostCountMore)}
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.

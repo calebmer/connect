@@ -10,6 +10,12 @@ import {Cache} from "../Cache";
 import {CacheList} from "../CacheList";
 import {PostCache} from "./PostCache";
 
+/** The number of posts we load for a group in our initial fetch. */
+export const groupPostCountInitial = 16;
+
+/** The number of posts we load for a group as we are scrolling. */
+export const groupPostCountMore = 16;
+
 /**
  * An entry for a `Group` in our group `Cache`.
  *
@@ -43,7 +49,7 @@ export const GroupCache = new Cache<string, GroupCacheEntry>(async slug => {
 
   // Load the first few posts into our cache. Don’t return the group until we
   // have done this.
-  await postCacheList.loadFirst(10);
+  await postCacheList.loadFirst(groupPostCountInitial);
 
   return {
     group,
