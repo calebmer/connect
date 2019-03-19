@@ -32,6 +32,11 @@ const APIServer = express();
 APIServer.set("x-powered-by", false);
 APIServer.set("etag", false);
 
+// In development print JSON responses with indentation.
+if (DEV) {
+  APIServer.set("json spaces", 2);
+}
+
 // Log all our requests for debugging.
 if (DEV) {
   APIServer.use(morgan("dev"));
