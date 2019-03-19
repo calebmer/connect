@@ -23,5 +23,6 @@
     {"language": "typescript", "autoFix": true},
     {"language": "typescriptreact", "autoFix": true}
   ],
-  "emmet.showExpandedAbbreviation": "never"
+  "emmet.showExpandedAbbreviation": "never",
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

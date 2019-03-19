@@ -28,9 +28,7 @@ export interface GroupCollection {
   ): Promise<GroupMembership | undefined>;
 
   /**
-   * Gets the membership for an account in a group with the provided slug. We
-   * can use this as authorization to confirm that an account can see the
-   * content in a group.
+   * Gets the membership for an account in a group with the provided slug.
    */
   getMembershipWithSlug(
     accountID: AccountID,
@@ -107,8 +105,7 @@ export class MockGroupCollection implements GroupCollection {
     return this.groups[membership.groupID].group;
   }
 
-  // NOTE: Ignore the range. This is just a mock, handling ranges gets boring.
-  async getPosts(membership: GroupMembership): Promise<ReadonlyArray<Post>> {
-    return [...this.groups[membership.groupID].posts].reverse();
+  async getPosts(): Promise<ReadonlyArray<Post>> {
+    throw new Error("unimplemented");
   }
 }

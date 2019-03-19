@@ -144,6 +144,17 @@ export const APISchema = Schema.namespace({
 
   post: Schema.namespace({
     /**
+     * Fetches a post with the provided ID. If the post does not exist or the
+     * current account does not have access to view the post then we will throw
+     * a “not found” error.
+     */
+    get: Schema.method({
+      safe: true,
+      input: {id: SchemaInput.integer<PostID>()},
+      output: SchemaOutput.t<{readonly post: Post}>(),
+    }),
+
+    /**
      * All of the comment replies to a post. Sorted by the time they were posted
      * with the first comments at the beginning of the list.
      *

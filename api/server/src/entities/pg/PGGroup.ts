@@ -26,12 +26,10 @@ export class PGGroupCollection implements GroupCollection {
   ): Promise<GroupMembership | undefined> {
     const {
       rows: [row],
-    } = await this.client.query(
-      sql`
-        SELECT joined_at FROM group_member
-        WHERE account_id = ${accountID} AND group_id = ${groupID}
-      `,
-    );
+    } = await this.client.query(sql`
+      SELECT joined_at FROM group_member
+      WHERE account_id = ${accountID} AND group_id = ${groupID}
+    `);
     if (row === undefined) {
       return undefined;
     } else {
@@ -52,14 +50,12 @@ export class PGGroupCollection implements GroupCollection {
     // key index.
     const {
       rows: [row],
-    } = await this.client.query(
-      sql`
-        SELECT group_member.group_id, group_member.joined_at
-        FROM group_member
-        LEFT JOIN "group" ON "group".id = group_member.group_id
-        WHERE group_member.account_id = ${accountID} AND "group".slug = ${groupSlug}
-      `,
-    );
+    } = await this.client.query(sql`
+      SELECT group_member.group_id, group_member.joined_at
+      FROM group_member
+      LEFT JOIN "group" ON "group".id = group_member.group_id
+      WHERE group_member.account_id = ${accountID} AND "group".slug = ${groupSlug}
+    `);
     if (row === undefined) {
       return undefined;
     } else {

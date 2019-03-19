@@ -1,6 +1,7 @@
 import {PGAccountCollection} from "./entities/pg/PGAccount";
 import {PGClient} from "./PGClient";
 import {PGGroupCollection} from "./entities/pg/PGGroup";
+import {PGPostCollection} from "./entities/pg/PGPost";
 import {PGRefreshTokenCollection} from "./entities/pg/PGRefreshToken";
 
 /**
@@ -10,6 +11,7 @@ import {PGRefreshTokenCollection} from "./entities/pg/PGRefreshToken";
 export interface PGContext {
   readonly accounts: PGAccountCollection;
   readonly groups: PGGroupCollection;
+  readonly posts: PGPostCollection;
   readonly refreshTokens: PGRefreshTokenCollection;
 }
 
@@ -31,6 +33,7 @@ export const PGContext = {
       context = {
         accounts: new PGAccountCollection(client),
         groups: new PGGroupCollection(client),
+        posts: new PGPostCollection(client),
         refreshTokens: new PGRefreshTokenCollection(client),
       };
       contextCache.set(client, context);
