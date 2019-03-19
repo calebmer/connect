@@ -1,3 +1,5 @@
+import {CacheEntry} from "./CacheEntry";
+
 /**
  * Responsible for caching data.
  */
@@ -37,20 +39,7 @@ export class Cache<Key extends string | number, Data> {
     let entry = this.entries.get(key);
     if (entry === undefined) {
       const promise = this._load(key);
-      entry = {
-        status: CacheEntryStatus.Pending,
-        value: promise,
-      };
-      promise.then(
-        value => {
-          (entry as any).status = CacheEntryStatus.Resolved;
-          (entry as any).value = value;
-        },
-        error => {
-          (entry as any).status = CacheEntryStatus.Rejected;
-          (entry as any).value = error;
-        },
-      );
+      entry = CacheEntry.pending(promise);
       this.entries.set(key, entry);
     }
     return entry;
@@ -61,7 +50,7 @@ export class Cache<Key extends string | number, Data> {
    * this key then that entry will be overridden.
    */
   public insert(key: Key, data: Data) {
-    this.entries.set(key, {status: CacheEntryStatus.Resolved, value: data});
+    this.entries.set(key, CacheEntry.resolved(data));
   }
 
   /**
@@ -73,19 +62,7 @@ export class Cache<Key extends string | number, Data> {
    * `useData()` instead.
    */
   public load(key: Key): Promise<Data> {
-    const entry = this.accessEntry(key);
-    switch (entry.status) {
-      case CacheEntryStatus.Pending:
-        return entry.value;
-      case CacheEntryStatus.Resolved:
-        return Promise.resolve(entry.value);
-      case CacheEntryStatus.Rejected:
-        return Promise.reject(entry.value);
-      default: {
-        const never: never = entry;
-        throw new Error(`Unexpected entry status: ${never["status"]}`);
-      }
-    }
+    return this.accessEntry(key).promise();
   }
 
   /**
@@ -97,22 +74,4 @@ export class Cache<Key extends string | number, Data> {
   public preload(key: Key): void {
     this.accessEntry(key);
   }
-}
-
-/**
- * An entry in our cache. An entry could be in any asynchronous data
- * fetching state.
- */
-export type CacheEntry<Data> =
-  | {readonly status: CacheEntryStatus.Pending; readonly value: Promise<Data>}
-  | {readonly status: CacheEntryStatus.Resolved; readonly value: Data}
-  | {readonly status: CacheEntryStatus.Rejected; readonly value: unknown};
-
-/**
- * The status of a cache entry.
- */
-export enum CacheEntryStatus {
-  Pending,
-  Resolved,
-  Rejected,
 }

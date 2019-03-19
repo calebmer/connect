@@ -279,6 +279,37 @@ describe("loadFirst", () => {
       {direction: "first", count: 2, after: 103, before: 201},
     ]);
   });
+
+  test("will run twice in parallel successfully", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await Promise.all([cache.loadFirst(3), cache.loadFirst(3)])).toEqual(
+      [[201, 202, 203], [201, 202, 203]],
+    );
+    expect(recordCalls).toEqual([
+      {direction: "first", count: 3},
+      {direction: "first", count: 3, before: 201},
+    ]);
+  });
+
+  test("will run thrice in parallel successfully", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(
+      await Promise.all([
+        cache.loadFirst(3),
+        cache.loadFirst(3),
+        cache.loadFirst(3),
+      ]),
+    ).toEqual([[201, 202, 203], [201, 202, 203], [201, 202, 203]]);
+    expect(recordCalls).toEqual([
+      {direction: "first", count: 3},
+      {direction: "first", count: 3, before: 201},
+      {direction: "first", count: 3, before: 201},
+    ]);
+  });
 });
 
 describe("loadNext", () => {
@@ -454,6 +485,42 @@ describe("loadNext", () => {
       {direction: "last", count: 3},
       {direction: "first", count: 3, after: 210},
       {direction: "first", count: 3, after: 210},
+    ]);
+  });
+
+  test("will run twice in parallel successfully", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await Promise.all([cache.loadNext(3), cache.loadNext(3)])).toEqual([
+      [201, 202, 203],
+      [201, 202, 203, 204, 205, 206],
+    ]);
+    expect(recordCalls).toEqual([
+      {direction: "first", count: 3},
+      {direction: "first", count: 3, after: 203},
+    ]);
+  });
+
+  test("will run thrice in parallel successfully", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(
+      await Promise.all([
+        cache.loadNext(2),
+        cache.loadNext(2),
+        cache.loadNext(2),
+      ]),
+    ).toEqual([
+      [201, 202],
+      [201, 202, 203, 204],
+      [201, 202, 203, 204, 205, 206],
+    ]);
+    expect(recordCalls).toEqual([
+      {direction: "first", count: 2},
+      {direction: "first", count: 2, after: 202},
+      {direction: "first", count: 2, after: 204},
     ]);
   });
 });
@@ -683,6 +750,38 @@ describe("loadLast", () => {
       {direction: "last", count: 2, after: 210, before: 302},
     ]);
   });
+
+  test("will run twice in parallel successfully", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await Promise.all([cache.loadLast(3), cache.loadLast(3)])).toEqual([
+      [208, 209, 210],
+      [208, 209, 210],
+    ]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, after: 210},
+    ]);
+  });
+
+  test("will run thrice in parallel successfully", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(
+      await Promise.all([
+        cache.loadLast(3),
+        cache.loadLast(3),
+        cache.loadLast(3),
+      ]),
+    ).toEqual([[208, 209, 210], [208, 209, 210], [208, 209, 210]]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, after: 210},
+      {direction: "last", count: 3, after: 210},
+    ]);
+  });
 });
 
 describe("loadPrev", () => {
@@ -858,6 +957,42 @@ describe("loadPrev", () => {
       {direction: "first", count: 3},
       {direction: "last", count: 3, before: 201},
       {direction: "last", count: 3, before: 201},
+    ]);
+  });
+
+  test("will run twice in parallel successfully", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(await Promise.all([cache.loadPrev(3), cache.loadPrev(3)])).toEqual([
+      [208, 209, 210],
+      [205, 206, 207, 208, 209, 210],
+    ]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 3},
+      {direction: "last", count: 3, before: 208},
+    ]);
+  });
+
+  test("will run thrice in parallel successfully", async () => {
+    const recordCalls: Array<TestRange> = [];
+    const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
+    const cache = testCacheList(items, recordCalls);
+    expect(
+      await Promise.all([
+        cache.loadPrev(2),
+        cache.loadPrev(2),
+        cache.loadPrev(2),
+      ]),
+    ).toEqual([
+      [209, 210],
+      [207, 208, 209, 210],
+      [205, 206, 207, 208, 209, 210],
+    ]);
+    expect(recordCalls).toEqual([
+      {direction: "last", count: 2},
+      {direction: "last", count: 2, before: 209},
+      {direction: "last", count: 2, before: 207},
     ]);
   });
 });

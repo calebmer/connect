@@ -1,4 +1,5 @@
 import {Cursor, JSONValue, Range, RangeDirection} from "@connect/api-client";
+import {CacheEntry} from "./CacheEntry";
 
 /**
  * A cache for some list of items which will be lazily loaded from the server.
@@ -27,7 +28,7 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    *
    * This format lets us know that there _may_ be more items between 3 and 7.
    */
-  private segments: ReadonlyArray<NonEmptyArray<Item>> = [];
+  private segments = CacheEntry.resolved<CacheListSegments<Item>>([]);
 
   /**
    * User provided function to load more items based on the provided range.
@@ -57,13 +58,25 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    *
    * We may return more items then `count` if we have cached items.
    */
-  async loadFirst(count: number): Promise<ReadonlyArray<Item>> {
+  public loadFirst(count: number): Promise<ReadonlyArray<Item>> {
+    return this.segments
+      .update(segments => this._loadFirst(segments, count))
+      .then(segments => segments[0] || []);
+  }
+
+  /**
+   * The private implementation of `loadFirst()`.
+   */
+  private async _loadFirst(
+    segments: CacheListSegments<Item>,
+    count: number,
+  ): Promise<CacheListSegments<Item>> {
     let maybeLoadMore = false;
 
     // Get the very first cursor in our cache. We only want to select items that
     // come before that cursor.
     const firstCursor =
-      this.segments.length > 0 ? this._cursor(this.segments[0][0]) : null;
+      segments.length > 0 ? this._cursor(segments[0][0]) : null;
 
     // Load our new items using the loader function.
     const newItems = await this._load({
@@ -76,27 +89,27 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
     // If we got fewer items then we expected, then we know for sure that
     // there are no new items between the set we just fetched and the first
     // cached segment, so merge the new items into our first segment.
-    if (newItems.length < count && this.segments.length > 0) {
+    if (newItems.length < count && segments.length > 0) {
       maybeLoadMore = true;
       if (newItems.length > 0) {
-        this.segments = [
-          [...newItems, ...this.segments[0]] as NonEmptyArray<Item>,
-          ...this.segments.slice(1),
+        segments = [
+          [...newItems, ...segments[0]] as NonEmptyArray<Item>,
+          ...segments.slice(1),
         ];
       }
     } else if (isNonEmpty(newItems)) {
-      // We check to make sure that `newItems` is non-empty.
-      this.segments = [newItems, ...this.segments];
+      // We first check to make sure that `newItems` is non-empty.
+      segments = [newItems, ...segments];
     }
 
     // If we loaded less then `count` items (probably because our cached
     // first-segment was too small) then load some more items to fill out
     // our cache.
-    const firstSegment = this.segments[0] || [];
+    const firstSegment = segments[0] || [];
     if (maybeLoadMore && firstSegment.length < count) {
-      return this.loadNext(count - firstSegment.length);
+      return this._loadNext(segments, count - firstSegment.length);
     } else {
-      return firstSegment;
+      return segments;
     }
   }
 
@@ -110,15 +123,28 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    *
    * We may return more extra items then `count` if we have cached items.
    */
-  async loadNext(count: number): Promise<ReadonlyArray<Item>> {
+  public loadNext(count: number): Promise<ReadonlyArray<Item>> {
+    return this.segments
+      .update(segments => this._loadNext(segments, count))
+      .then(segments => segments[0] || []);
+  }
+
+  /**
+   * The private implementation of `loadNext()`.
+   */
+  private async _loadNext(
+    segments: CacheListSegments<Item>,
+    count: number,
+  ): Promise<CacheListSegments<Item>> {
     let maybeLoadMore = false;
-    const initialCount = this.segments.length > 0 ? this.segments[0].length : 0;
+    const expectedCount =
+      (segments.length > 0 ? segments[0].length : 0) + count;
 
     // Get the upper and lower bound for our fetch.
     const firstSegmentLastCursor =
-      this.segments.length > 0 ? this._cursor(last(this.segments[0])!) : null;
+      segments.length > 0 ? this._cursor(last(segments[0])!) : null;
     const secondSegmentFirstCursor =
-      this.segments.length > 1 ? this._cursor(this.segments[1][0]) : null;
+      segments.length > 1 ? this._cursor(segments[1][0]) : null;
 
     // Load our new items using the loader function.
     const newItems = await this._load({
@@ -132,36 +158,32 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
     // there are no new items between the set we just fetched and the second
     // cached segment, so merge the first segment with our new items and the
     // second segment.
-    if (newItems.length < count && this.segments.length > 1) {
+    if (newItems.length < count && segments.length > 1) {
       maybeLoadMore = true;
-      this.segments = [
-        [
-          ...this.segments[0],
-          ...newItems,
-          ...this.segments[1],
-        ] as NonEmptyArray<Item>,
-        ...this.segments.slice(2),
+      segments = [
+        [...segments[0], ...newItems, ...segments[1]] as NonEmptyArray<Item>,
+        ...segments.slice(2),
       ];
     } else if (isNonEmpty(newItems)) {
       // Add our new items to the first segment. Otherwise, create the first
       // segment with our new items.
-      if (this.segments.length > 0) {
-        this.segments = [
-          [...this.segments[0], ...newItems] as NonEmptyArray<Item>,
-          ...this.segments.slice(1),
+      if (segments.length > 0) {
+        segments = [
+          [...segments[0], ...newItems] as NonEmptyArray<Item>,
+          ...segments.slice(1),
         ];
       } else {
-        this.segments = [newItems, ...this.segments];
+        segments = [newItems, ...segments];
       }
     }
 
     // Get the first segment. We may not have a first segment so in that case
     // the first segment is an empty array.
-    const firstSegment = this.segments[0] || [];
-    if (maybeLoadMore && firstSegment.length < initialCount + count) {
-      return this.loadNext(initialCount + count - firstSegment.length);
+    const firstSegment = segments[0] || [];
+    if (maybeLoadMore && firstSegment.length < expectedCount) {
+      return this._loadNext(segments, expectedCount - firstSegment.length);
     } else {
-      return firstSegment;
+      return segments;
     }
   }
 
@@ -172,15 +194,25 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    *
    * We may return more items then `count` if we have cached items.
    */
-  async loadLast(count: number): Promise<ReadonlyArray<Item>> {
+  public loadLast(count: number): Promise<ReadonlyArray<Item>> {
+    return this.segments
+      .update(segments => this._loadLast(segments, count))
+      .then(segments => last(segments) || []);
+  }
+
+  /**
+   * The private implementation of `loadLast()`.
+   */
+  private async _loadLast(
+    segments: CacheListSegments<Item>,
+    count: number,
+  ): Promise<CacheListSegments<Item>> {
     let maybeLoadMore = false;
 
     // Get the very last cursor in our cache. We only want to select items that
     // come after that cursor.
     const lastCursor =
-      this.segments.length > 0
-        ? this._cursor(last(last(this.segments)!))
-        : null;
+      segments.length > 0 ? this._cursor(last(last(segments)!)) : null;
 
     // Load our new items using the loader function.
     const newItems = await this._load({
@@ -193,27 +225,27 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
     // If we got fewer items then we expected, then we know for sure that
     // there are no new items between the set we just fetched and the last
     // cached segment, so merge the new items into our last segment.
-    if (newItems.length < count && this.segments.length > 0) {
+    if (newItems.length < count && segments.length > 0) {
       maybeLoadMore = true;
       if (newItems.length > 0) {
-        this.segments = [
-          ...this.segments.slice(0, -1),
-          [...last(this.segments), ...newItems] as NonEmptyArray<Item>,
+        segments = [
+          ...segments.slice(0, -1),
+          [...last(segments), ...newItems] as NonEmptyArray<Item>,
         ];
       }
     } else if (isNonEmpty(newItems)) {
       // We check to make sure that `newItems` is non-empty.
-      this.segments = [...this.segments, newItems];
+      segments = [...segments, newItems];
     }
 
     // If we loaded less then `count` items (probably because our cached
     // last-segment was too small) then load some more items to fill out
     // our cache.
-    const lastSegment = last(this.segments) || [];
+    const lastSegment = last(segments) || [];
     if (maybeLoadMore && lastSegment.length < count) {
-      return this.loadPrev(count - lastSegment.length);
+      return this._loadPrev(segments, count - lastSegment.length);
     } else {
-      return lastSegment;
+      return segments;
     }
   }
 
@@ -228,16 +260,28 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    * We may return more extra items then `count` if we have cached items.
    */
   async loadPrev(count: number): Promise<ReadonlyArray<Item>> {
+    return this.segments
+      .update(segments => this._loadPrev(segments, count))
+      .then(segments => last(segments) || []);
+  }
+
+  /**
+   * The private implementation of `loadPrev()`.
+   */
+  private async _loadPrev(
+    segments: CacheListSegments<Item>,
+    count: number,
+  ): Promise<CacheListSegments<Item>> {
     let maybeLoadMore = false;
-    const initialCount =
-      this.segments.length > 0 ? last(this.segments)!.length : 0;
+    const expectedCount =
+      (segments.length > 0 ? last(segments)!.length : 0) + count;
 
     // Get the upper and lower bound for our fetch.
     const lastSegmentFirstCursor =
-      this.segments.length > 0 ? this._cursor(last(this.segments)[0]) : null;
+      segments.length > 0 ? this._cursor(last(segments)[0]) : null;
     const secondSegmentLastCursor =
-      this.segments.length > 1
-        ? this._cursor(last(this.segments[this.segments.length - 2]))
+      segments.length > 1
+        ? this._cursor(last(segments[segments.length - 2]))
         : null;
 
     // Load our new items using the loader function.
@@ -252,39 +296,44 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
     // there are no new items between the set we just fetched and the second
     // to last cached segment, so merge the last segment with our new items and
     // the second to last segment.
-    if (newItems.length < count && this.segments.length > 1) {
+    if (newItems.length < count && segments.length > 1) {
       maybeLoadMore = true;
-      this.segments = [
-        ...this.segments.slice(0, -2),
+      segments = [
+        ...segments.slice(0, -2),
         [
-          ...this.segments[this.segments.length - 2],
+          ...segments[segments.length - 2],
           ...newItems,
-          ...this.segments[this.segments.length - 1],
+          ...segments[segments.length - 1],
         ] as NonEmptyArray<Item>,
       ];
     } else if (isNonEmpty(newItems)) {
       // Add our new items to the last segment. Otherwise, create the last
       // segment with our new items.
-      if (this.segments.length > 0) {
-        this.segments = [
-          ...this.segments.slice(0, -1),
-          [...newItems, ...last(this.segments)] as NonEmptyArray<Item>,
+      if (segments.length > 0) {
+        segments = [
+          ...segments.slice(0, -1),
+          [...newItems, ...last(segments)] as NonEmptyArray<Item>,
         ];
       } else {
-        this.segments = [...this.segments, newItems];
+        segments = [...segments, newItems];
       }
     }
 
     // Get the first segment. We may not have a first segment so in that case
     // the first segment is an empty array.
-    const lastSegment = last(this.segments) || [];
-    if (maybeLoadMore && lastSegment.length < initialCount + count) {
-      return this.loadPrev(initialCount + count - lastSegment.length);
+    const lastSegment = last(segments) || [];
+    if (maybeLoadMore && lastSegment.length < expectedCount) {
+      return this._loadPrev(segments, expectedCount - lastSegment.length);
     } else {
-      return lastSegment;
+      return segments;
     }
   }
 }
+
+/**
+ * The segments data structure for our cache list.
+ */
+type CacheListSegments<Item> = ReadonlyArray<NonEmptyArray<Item>>;
 
 /**
  * A utility type for representing an array that is not empty.
