@@ -1,6 +1,6 @@
 import React, {ReactNode} from "react";
 import {StyleSheet, View} from "react-native";
-import {Account} from "./MockData";
+import {AccountProfile} from "@connect/api-client";
 import {AccountSignature} from "./AccountSignature";
 import {Color} from "./atoms";
 
@@ -8,7 +8,7 @@ export function GroupItem({
   account,
   children,
 }: {
-  account: Account;
+  account: AccountProfile;
   children: ReactNode;
 }) {
   return (

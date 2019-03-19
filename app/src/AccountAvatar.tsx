@@ -1,12 +1,14 @@
 import {Color, Space} from "./atoms";
 import {Image, StyleSheet, View} from "react-native";
-import {Account} from "./MockData";
+import {AccountProfile} from "@connect/api-client";
 import React from "react";
 
-export function AccountAvatar({account}: {account: Account}) {
+export function AccountAvatar({account}: {account: AccountProfile}) {
   return (
     <View style={styles.container}>
-      <Image style={styles.image} source={{uri: account.avatarURL}} />
+      {account.avatarURL && (
+        <Image style={styles.image} source={{uri: account.avatarURL}} />
+      )}
     </View>
   );
 }

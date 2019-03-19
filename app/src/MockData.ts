@@ -1,5 +1,5 @@
 export type Account = {
-  readonly displayName: string;
+  readonly name: string;
   readonly avatarURL: string;
 };
 
@@ -50,43 +50,43 @@ export enum InboxItemCommentReason {
 // NOTE: Ordered alphabetically.
 
 export const baruchHen: Account = {
-  displayName: "Baruch",
+  name: "Baruch",
   avatarURL:
     "https://pbs.twimg.com/profile_images/1022636637891776512/vCciX6oJ_400x400.jpg",
 };
 
 export const calebMeredith: Account = {
-  displayName: "Caleb",
+  name: "Caleb",
   avatarURL:
     "https://pbs.twimg.com/profile_images/1040125515665879040/jrLzK1ta_400x400.jpg",
 };
 
 export const courtneyCross: Account = {
-  displayName: "Courtney",
+  name: "Courtney",
   avatarURL:
     "https://pbs.twimg.com/profile_images/718588760003383296/2AG8omMO.jpg",
 };
 
 export const dominicGozza: Account = {
-  displayName: "Dominic",
+  name: "Dominic",
   avatarURL:
     "https://pbs.twimg.com/profile_images/847609679974768641/WDwlVYbD_400x400.jpg",
 };
 
 export const josephCollins: Account = {
-  displayName: "Joseph",
+  name: "Joseph",
   avatarURL:
     "https://images-na.ssl-images-amazon.com/images/M/MV5BMTc3MzY3MjQ3OV5BMl5BanBnXkFtZTcwODI3NjQxMw@@._V1_UY256_CR6,0,172,256_AL_.jpg",
 };
 
 export const kateEfimova: Account = {
-  displayName: "Kate",
+  name: "Kate",
   avatarURL:
     "https://pbs.twimg.com/profile_images/1095949370564870144/kwTdCHWU_400x400.png",
 };
 
 export const marcelloGozza: Account = {
-  displayName: "Marcello",
+  name: "Marcello",
   avatarURL:
     "https://pbs.twimg.com/profile_images/800702652485160961/R5ZZVj--_400x400.jpg",
 };

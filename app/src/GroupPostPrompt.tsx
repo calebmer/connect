@@ -8,7 +8,7 @@ import React from "react";
 export function GroupPostPrompt({account}: {account: Account}) {
   return (
     <View style={styles.container}>
-      <AccountSignature account={account}>
+      <AccountSignature account={account as any}>
         <BodyText>Start a conversation…</BodyText>
       </AccountSignature>
       <PencilIcon style={styles.icon} color={Color.grey8} />

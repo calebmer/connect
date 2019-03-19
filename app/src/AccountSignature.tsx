@@ -1,21 +1,21 @@
 import {LabelText, Space} from "./atoms";
 import React, {ReactNode} from "react";
 import {StyleSheet, View} from "react-native";
-import {Account} from "./MockData";
 import {AccountAvatar} from "./AccountAvatar";
+import {AccountProfile} from "@connect/api-client";
 
 export function AccountSignature({
   account,
   children,
 }: {
-  account: Account;
+  account: AccountProfile;
   children: ReactNode;
 }) {
   return (
     <View style={styles.container}>
       <AccountAvatar account={account} />
       <View style={styles.body}>
-        <LabelText>{account.displayName}</LabelText>
+        <LabelText>{account.name}</LabelText>
         {children}
       </View>
     </View>
