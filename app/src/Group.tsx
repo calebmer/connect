@@ -2,18 +2,11 @@ import {GroupCache} from "./cache/entities/GroupCache";
 import {GroupInbox} from "./GroupInbox";
 import React from "react";
 import {useCacheData} from "./cache/Cache";
+import {useCacheListData} from "./cache/CacheList";
 
 export function Group({slug}: {slug: string}) {
-  console.log("render <Group>");
-
   const {group, postCacheList} = useCacheData(GroupCache, slug);
-
-  console.log(group);
-
-  // // TODO: Preloading!
-  // const {items: posts} = useCacheListData(postCacheList);
-
-  // console.log(posts);
+  const posts = useCacheListData(postCacheList);
 
   return <GroupInbox group={group} />;
 }

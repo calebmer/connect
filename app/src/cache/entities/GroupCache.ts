@@ -22,7 +22,7 @@ export type GroupCacheEntry = {
 
 /**
  * An entry for a `Post` in a `CacheList`. Notice how this only has the post ID?
- * To get the full post object use the ID to fetch the data from `PostCache`.
+ * To get the full post object use the ID to fetch the data from `postCache`.
  * We also include the time at which the post was published so that we can
  * create the `PostCursor` from a cache entry.
  */
@@ -40,6 +40,10 @@ export const GroupCache = new Cache<string, GroupCacheEntry>(async slug => {
 
   // Create a fresh cache for our group’s posts.
   const postCacheList = PostCacheList(group.id);
+
+  // Load the first few posts into our cache. Don’t return the group until we
+  // have done this.
+  await postCacheList.loadFirst(10);
 
   return {
     group,

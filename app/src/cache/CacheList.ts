@@ -1,4 +1,5 @@
 import {Cursor, JSONValue, Range, RangeDirection} from "@connect/api-client";
+import {Mutable, useMutable} from "./Mutable";
 import {MutableLock} from "./MutableLock";
 
 /**
@@ -356,4 +357,17 @@ function last<Item>(array: NonEmptyArray<Item>): Item;
 function last<Item>(array: ReadonlyArray<Item>): Item;
 function last<Item>(array: ReadonlyArray<Item>): Item | undefined {
   return array[array.length - 1];
+}
+
+/**
+ * Uses the data from the first items in a cache list. Suspends if we are
+ * loading items from the list. If we are loading items from the list but we
+ * previously rendered with some items then we will render using the
+ * previous items.
+ */
+export function useCacheListData<ItemCursor extends Cursor<JSONValue>, Item>(
+  cache: CacheList<ItemCursor, Item>,
+): ReadonlyArray<Item> {
+  const segments: Mutable<CacheListSegments<Item>> = (cache as any).segments;
+  return useMutable(segments)[0] || [];
 }
