@@ -97,7 +97,10 @@ function PostCacheList(groupID: GroupID) {
       // If there are some accounts we have not yet loaded in our cache then
       // send an API request to fetch those accounts.
       if (accountIDs.length > 0) {
-        const {accounts} = await API.group.getProfiles({groupID, accountIDs});
+        const {accounts} = await API.group.getProfiles({
+          groupID,
+          ids: accountIDs,
+        });
         accounts.forEach(account => {
           AccountCache.insert(account.id, account);
         });

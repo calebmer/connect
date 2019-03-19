@@ -59,7 +59,7 @@ export async function getProfiles(
   accountID: AccountID,
   input: {
     readonly groupID: GroupID;
-    readonly accountIDs: ReadonlyArray<AccountID>;
+    readonly ids: ReadonlyArray<AccountID>;
   },
 ) {
   // Confirm that this account is a member of the group.
@@ -67,7 +67,7 @@ export async function getProfiles(
   if (!membership) throw new APIError(APIErrorCode.NOT_FOUND);
 
   // Get profiles for all the accounts we asked for.
-  const accounts = await ctx.groups.getProfiles(membership, input.accountIDs);
+  const accounts = await ctx.groups.getProfiles(membership, input.ids);
 
   return {accounts};
 }

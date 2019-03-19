@@ -168,7 +168,7 @@ export const APISchema = Schema.namespace({
       safe: true,
       input: {
         groupID: SchemaInput.integer<GroupID>(),
-        accountIDs: SchemaInput.array(SchemaInput.integer<AccountID>()),
+        ids: SchemaInput.array(SchemaInput.integer<AccountID>()), // Shorter name for this property since it will be repeated in the URL.
       },
       output: SchemaOutput.t<{
         readonly accounts: ReadonlyArray<AccountProfile>;
