@@ -33,7 +33,7 @@ export class Cache<Key extends string | number, Data> {
    * Retrieves an entry from our cache. If the entry does not exist yet then we
    * will first load the entry into our cache.
    */
-  public accessEntry(key: Key): CacheEntry<Data> {
+  private accessEntry(key: Key): CacheEntry<Data> {
     let entry = this.entries.get(key);
     if (entry === undefined) {
       const promise = this._load(key);
@@ -70,7 +70,7 @@ export class Cache<Key extends string | number, Data> {
    * promise which will resolve immediately.
    *
    * If you are loading data for a React component, please call the React hook
-   * `useData()` instead.
+   * `useCacheData()` instead.
    */
   public load(key: Key): Promise<Data> {
     const entry = this.accessEntry(key);
@@ -102,9 +102,9 @@ export class Cache<Key extends string | number, Data> {
 /**
  * An entry in our cache.
  */
-export type CacheEntry<Value> =
-  | {readonly status: CacheEntryStatus.Pending; readonly value: Promise<Value>}
-  | {readonly status: CacheEntryStatus.Resolved; readonly value: Value}
+export type CacheEntry<Data> =
+  | {readonly status: CacheEntryStatus.Pending; readonly value: Promise<Data>}
+  | {readonly status: CacheEntryStatus.Resolved; readonly value: Data}
   | {readonly status: CacheEntryStatus.Rejected; readonly value: unknown};
 
 /**
@@ -114,4 +114,32 @@ export enum CacheEntryStatus {
   Pending,
   Resolved,
   Rejected,
+}
+
+/**
+ * Use some data from the cache in a React component. If the data has not yet
+ * loaded we will throw a promise. (Suspense style.) If the data has rejected
+ * then we throw an error. If the data has resolved then we return that data.
+ *
+ * This is a React hook and is subject to the rule of hooks. This hook
+ * subscribes to the data so that when it changes the hook will re-render the
+ * React component it is in.
+ */
+export function useCacheData<Key extends string | number, Data>(
+  cache: Cache<Key, Data>,
+  key: Key,
+): Data {
+  const entry: CacheEntry<Data> = (cache as any).accessEntry(key);
+  switch (entry.status) {
+    case CacheEntryStatus.Pending:
+      throw entry.value;
+    case CacheEntryStatus.Resolved:
+      return entry.value;
+    case CacheEntryStatus.Rejected:
+      throw entry.value;
+    default: {
+      const never: never = entry;
+      throw new Error(`Unexpected entry status: ${never["status"]}`);
+    }
+  }
 }
