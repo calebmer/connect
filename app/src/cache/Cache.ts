@@ -1,4 +1,4 @@
-import {Box, useBox} from "./Box";
+import {Mutable, useMutable} from "./Mutable";
 import {Async} from "./Async";
 
 /**
@@ -26,7 +26,7 @@ export class Cache<Key extends string | number, Data> {
    *
    * [1]: https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)
    */
-  private readonly entries = new Map<Key, Box<Async<Data>>>();
+  private readonly entries = new Map<Key, Mutable<Async<Data>>>();
 
   constructor(load: (key: Key) => Promise<Data>) {
     this._load = load;
@@ -39,7 +39,7 @@ export class Cache<Key extends string | number, Data> {
   private setEntry(key: Key, data: Async<Data>) {
     const entry = this.entries.get(key);
     if (entry === undefined) {
-      this.entries.set(key, new Box(data));
+      this.entries.set(key, new Mutable(data));
     } else {
       entry.set(data);
     }
@@ -49,10 +49,10 @@ export class Cache<Key extends string | number, Data> {
    * Retrieves an entry from our cache. If the entry does not exist yet then
    * we will first load the entry into our cache.
    */
-  private accessEntry(key: Key): Box<Async<Data>> {
+  private accessEntry(key: Key): Mutable<Async<Data>> {
     let entry = this.entries.get(key);
     if (entry === undefined) {
-      entry = new Box(new Async(this._load(key)));
+      entry = new Mutable(new Async(this._load(key)));
       this.entries.set(key, entry);
     }
     return entry;
@@ -104,6 +104,6 @@ export function useCacheData<Key extends string | number, Data>(
   cache: Cache<Key, Data>,
   key: Key,
 ): Data {
-  const entry: Box<Async<Data>> = (cache as any).accessEntry(key);
-  return useBox(entry).suspend();
+  const entry: Mutable<Async<Data>> = (cache as any).accessEntry(key);
+  return useMutable(entry).suspend();
 }

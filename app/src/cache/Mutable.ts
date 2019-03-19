@@ -5,11 +5,11 @@ import {useEffect, useState} from "react";
  * important utility for working with mutable values that are not managed by
  * a declarative UI framework like React.
  */
-export class Box<Value> {
-  /** The current value of our box. */
+export class Mutable<Value> {
+  /** The current value. */
   private value: Value;
 
-  /** All of the functions which have subscribed to our box. */
+  /** All of the functions which have subscribed to our mutable value. */
   private readonly subscribers = new Set<() => void>();
 
   /** Have we scheduled a notification for our subscribers? */
@@ -20,15 +20,15 @@ export class Box<Value> {
   }
 
   /**
-   * Gets the current value of our box.
+   * Gets the current mutable value.
    */
   get(): Value {
     return this.value;
   }
 
   /**
-   * Sets the value of our box. Also schedules an asynchronous notification so
-   * that all our subscribers know the box has updated.
+   * Sets the current value. Also schedules an asynchronous notification so
+   * that all our subscribers know the our value has updated.
    */
   set(newValue: Value): void {
     this.value = newValue;
@@ -36,8 +36,8 @@ export class Box<Value> {
   }
 
   /**
-   * Subscribes to a box. The subscriber will be notified whenever the box is
-   * updated. The subscriber may call `get()` to get the box’s new value.
+   * Subscribes to a value. The subscriber will be notified whenever the value
+   * is updated. The subscriber may call `get()` to get the new value.
    */
   subscribe(subscriber: () => void): () => void {
     this.subscribers.add(subscriber);
@@ -45,7 +45,7 @@ export class Box<Value> {
   }
 
   /**
-   * Schedules an asynchronous notification to all our box’s subscribers. If a
+   * Schedules an asynchronous notification for all our subscribers. If a
    * notification is already scheduled then we don’t schedule another one.
    *
    * Currently we schedule a microtask with `Promise.resolve()`.
@@ -62,29 +62,29 @@ export class Box<Value> {
 }
 
 /**
- * Uses the value of a box and subscribes the component to all future changes.
+ * Uses a mutable value and subscribes to the value’s changes over time.
  */
-export function useBox<Value>(box: Box<Value>): Value {
-  // Use a new state variable with the initial value of our box. Make sure to
+export function useMutable<Value>(mutable: Mutable<Value>): Value {
+  // Use a new state variable with the initial value. Make sure to
   // update the value again if it changes between our render and our effect
   // where we add a subscription below.
-  const [value, setValue] = useState(box.get());
+  const [value, setValue] = useState(mutable.get());
 
   useEffect(() => {
     // There might have been an update between the render phase and the commit
     // phase. Update our state with the latest value just in case. React will
     // skip the update if our new state is equal to the old one.
-    setValue(box.get());
+    setValue(mutable.get());
 
-    // Subscribe to all future updates. Whenever the box updates we will also
-    // update our state with the box’s new value.
-    const unsubscribe = box.subscribe(() => {
-      setValue(box.get());
+    // Subscribe to all future updates. Whenever the value updates we will also
+    // update our state with the new value.
+    const unsubscribe = mutable.subscribe(() => {
+      setValue(mutable.get());
     });
 
     // Unsubscribe when the effect is done.
     return unsubscribe;
-  }, [box]);
+  }, [mutable]);
 
   return value;
 }
