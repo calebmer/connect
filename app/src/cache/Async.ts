@@ -58,7 +58,7 @@ export class Async<Value> {
    * Converts our async value into a promise. If the promise is resolved or
    * rejected then we will return a promise that resolves/rejects immediately.
    */
-  promise(): Promise<Value> {
+  public promise(): Promise<Value> {
     switch (this.status) {
       case AsyncStatus.Pending:
         return this.value as Promise<Value>;
@@ -84,7 +84,7 @@ export class Async<Value> {
    * runtime (in our case, React) when to wake-up our function for
    * running again.
    */
-  suspend(): Value {
+  public suspend(): Value {
     switch (this.status) {
       case AsyncStatus.Pending:
         throw this.value as Promise<Value>;

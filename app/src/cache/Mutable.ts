@@ -22,7 +22,7 @@ export class Mutable<Value> {
   /**
    * Gets the current mutable value.
    */
-  get(): Value {
+  public get(): Value {
     return this.value;
   }
 
@@ -30,7 +30,7 @@ export class Mutable<Value> {
    * Sets the current value. Also schedules an asynchronous notification so
    * that all our subscribers know the our value has updated.
    */
-  set(newValue: Value): void {
+  public set(newValue: Value): void {
     this.value = newValue;
     this.scheduleNotify();
   }
@@ -39,7 +39,7 @@ export class Mutable<Value> {
    * Subscribes to a value. The subscriber will be notified whenever the value
    * is updated. The subscriber may call `get()` to get the new value.
    */
-  subscribe(subscriber: () => void): () => void {
+  public subscribe(subscriber: () => void): () => void {
     this.subscribers.add(subscriber);
     return () => this.subscribers.delete(subscriber);
   }

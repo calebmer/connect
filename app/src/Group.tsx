@@ -2,7 +2,6 @@ import {GroupCache} from "./cache/entities/GroupCache";
 import {GroupInbox} from "./GroupInbox";
 import React from "react";
 import {useCacheData} from "./cache/Cache";
-import {useCacheListData} from "./cache/useCacheListData";
 
 export function Group({slug}: {slug: string}) {
   console.log("render <Group>");
