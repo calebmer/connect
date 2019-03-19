@@ -91,6 +91,10 @@ export function Group({slug}: {slug: string}) {
       <AnimatedSectionList
         // The section list data!
         sections={[feedSection] as any}
+        // Loading more data when the end of the list is reached.
+        initialNumToRender={10}
+        onEndReachedThreshold={0.2}
+        onEndReached={() => postCacheList.loadNext(10)}
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.

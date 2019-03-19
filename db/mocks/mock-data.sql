@@ -98,8 +98,53 @@ INSERT INTO post (id, group_id, author_id, content) VALUES
   (37, 1, 3, 'I’m sad that indiehackers.com doesn’t have a mobile app. But if you don’t already read the content on the site. Start here: https://www.indiehackers.com/interviews/page/1'),
   (38, 1, 7, 'By the way, @Baruch, why do you have Sonic meme as ur avatar? 😉'),
   (39, 1, 1, 'never heard of bluebottle in my life, until Caleb and I went there to meet Jeff from the podcasts, now my feed is full of blue bottle ads'),
-  (40, 1, 6, 'Thoughts? https://brave.com');
+  (40, 1, 6, 'Thoughts? https://brave.com'),
 
-ALTER SEQUENCE post_id_seq RESTART WITH 41;
+  (41, 1, 7, 'Anyone here who bought one of the two Wes Bros'' React courses? I''m considering getting it and wanted to hear some reviews 🙂'),
+  (42, 1, 20, '@Caleb @Baruch If you like a lot of cool podcasts you guys should watch some of the Impact Theory episodes. The host is Tom Bilyeu who started Quest nutrition. But some of the episodes he does are insane. One with David Goggins is amazing among many other ones.'),
+  (43, 1, 6, 'anyone ever deal with uploading files, possibly multiple files at the same time? I''ve done this a few different ways in the past, I''m looking for a super robust / scalable solution'),
+  (44, 1, 21, 'what happened to DOGE life'),
+  (45, 1, 3, 'I’m sad that indiehackers.com doesn’t have a mobile app. But if you don’t already read the content on the site. Start here: https://www.indiehackers.com/interviews/page/1'),
+  (46, 1, 7, 'By the way, @Baruch, why do you have Sonic meme as ur avatar? 😉'),
+  (47, 1, 1, 'never heard of bluebottle in my life, until Caleb and I went there to meet Jeff from the podcasts, now my feed is full of blue bottle ads'),
+  (48, 1, 6, 'Thoughts? https://brave.com'),
+
+  (49, 1, 7, 'Anyone here who bought one of the two Wes Bros'' React courses? I''m considering getting it and wanted to hear some reviews 🙂'),
+  (50, 1, 20, '@Caleb @Baruch If you like a lot of cool podcasts you guys should watch some of the Impact Theory episodes. The host is Tom Bilyeu who started Quest nutrition. But some of the episodes he does are insane. One with David Goggins is amazing among many other ones.'),
+  (51, 1, 6, 'anyone ever deal with uploading files, possibly multiple files at the same time? I''ve done this a few different ways in the past, I''m looking for a super robust / scalable solution'),
+  (52, 1, 21, 'what happened to DOGE life'),
+  (53, 1, 3, 'I’m sad that indiehackers.com doesn’t have a mobile app. But if you don’t already read the content on the site. Start here: https://www.indiehackers.com/interviews/page/1'),
+  (54, 1, 7, 'By the way, @Baruch, why do you have Sonic meme as ur avatar? 😉'),
+  (55, 1, 1, 'never heard of bluebottle in my life, until Caleb and I went there to meet Jeff from the podcasts, now my feed is full of blue bottle ads'),
+  (56, 1, 6, 'Thoughts? https://brave.com'),
+
+  (57, 1, 7, 'Anyone here who bought one of the two Wes Bros'' React courses? I''m considering getting it and wanted to hear some reviews 🙂'),
+  (58, 1, 20, '@Caleb @Baruch If you like a lot of cool podcasts you guys should watch some of the Impact Theory episodes. The host is Tom Bilyeu who started Quest nutrition. But some of the episodes he does are insane. One with David Goggins is amazing among many other ones.'),
+  (59, 1, 6, 'anyone ever deal with uploading files, possibly multiple files at the same time? I''ve done this a few different ways in the past, I''m looking for a super robust / scalable solution'),
+  (60, 1, 21, 'what happened to DOGE life'),
+  (61, 1, 3, 'I’m sad that indiehackers.com doesn’t have a mobile app. But if you don’t already read the content on the site. Start here: https://www.indiehackers.com/interviews/page/1'),
+  (62, 1, 7, 'By the way, @Baruch, why do you have Sonic meme as ur avatar? 😉'),
+  (63, 1, 1, 'never heard of bluebottle in my life, until Caleb and I went there to meet Jeff from the podcasts, now my feed is full of blue bottle ads'),
+  (64, 1, 6, 'Thoughts? https://brave.com'),
+
+  (65, 1, 7, 'Anyone here who bought one of the two Wes Bros'' React courses? I''m considering getting it and wanted to hear some reviews 🙂'),
+  (66, 1, 20, '@Caleb @Baruch If you like a lot of cool podcasts you guys should watch some of the Impact Theory episodes. The host is Tom Bilyeu who started Quest nutrition. But some of the episodes he does are insane. One with David Goggins is amazing among many other ones.'),
+  (67, 1, 6, 'anyone ever deal with uploading files, possibly multiple files at the same time? I''ve done this a few different ways in the past, I''m looking for a super robust / scalable solution'),
+  (68, 1, 21, 'what happened to DOGE life'),
+  (69, 1, 3, 'I’m sad that indiehackers.com doesn’t have a mobile app. But if you don’t already read the content on the site. Start here: https://www.indiehackers.com/interviews/page/1'),
+  (70, 1, 7, 'By the way, @Baruch, why do you have Sonic meme as ur avatar? 😉'),
+  (71, 1, 1, 'never heard of bluebottle in my life, until Caleb and I went there to meet Jeff from the podcasts, now my feed is full of blue bottle ads'),
+  (72, 1, 6, 'Thoughts? https://brave.com'),
+
+  (73, 1, 7, 'Anyone here who bought one of the two Wes Bros'' React courses? I''m considering getting it and wanted to hear some reviews 🙂'),
+  (74, 1, 20, '@Caleb @Baruch If you like a lot of cool podcasts you guys should watch some of the Impact Theory episodes. The host is Tom Bilyeu who started Quest nutrition. But some of the episodes he does are insane. One with David Goggins is amazing among many other ones.'),
+  (75, 1, 6, 'anyone ever deal with uploading files, possibly multiple files at the same time? I''ve done this a few different ways in the past, I''m looking for a super robust / scalable solution'),
+  (76, 1, 21, 'what happened to DOGE life'),
+  (77, 1, 3, 'I’m sad that indiehackers.com doesn’t have a mobile app. But if you don’t already read the content on the site. Start here: https://www.indiehackers.com/interviews/page/1'),
+  (78, 1, 7, 'By the way, @Baruch, why do you have Sonic meme as ur avatar? 😉'),
+  (79, 1, 1, 'never heard of bluebottle in my life, until Caleb and I went there to meet Jeff from the podcasts, now my feed is full of blue bottle ads'),
+  (80, 1, 6, 'Thoughts? https://brave.com');
+
+ALTER SEQUENCE post_id_seq RESTART WITH 81;
 
 COMMIT;
