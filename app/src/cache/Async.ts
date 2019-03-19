@@ -1,29 +1,29 @@
-/** The status of a future. Can be any of the promise statuses. */
-enum FutureStatus {
+/** The status of an async value. Can be any of the promise statuses. */
+enum AsyncStatus {
   Pending,
   Resolved,
   Rejected,
 }
 
 /**
- * A future is a wrapper around a promise that allows us to inspect the
+ * `Async` is a wrapper around a promise that allows us to inspect the
  * promise’s internal state. This gives us the ability to synchronously access
  * the value of a resolved promise.
  *
- * The value of a future is immutable. It represents some value that we will
+ * The value of a `Async` is immutable. It represents some value that we will
  * have access to _in the future_. Basically every synchronous value is like
- * this except a future allows us to do the work to compute a
+ * this except `Async` allows us to do the work to compute a
  * value asynchronously.
  *
- * A future may also be rejected. That means whenever we try to access the
- * future it will throw instead.
+ * May also be rejected. That means whenever we try to access the value we will
+ * throw instead.
  */
-export class Future<Value> {
-  /** The status of our future. */
-  private status: FutureStatus;
+export class Async<Value> {
+  /** The status of our async value. */
+  private status: AsyncStatus;
 
   /**
-   * The value of our future. The type of the value changes depending on the
+   * Our async value. The type of the value changes depending on the
    * current status.
    *
    * - If our status is “pending” then the value is a promise.
@@ -36,35 +36,35 @@ export class Future<Value> {
 
   constructor(value: Promise<Value> | Value) {
     if (value instanceof Promise) {
-      this.status = FutureStatus.Pending;
+      this.status = AsyncStatus.Pending;
       this.value = value;
       value.then(
         value => {
-          this.status = FutureStatus.Resolved;
+          this.status = AsyncStatus.Resolved;
           this.value = value;
         },
         error => {
-          this.status = FutureStatus.Rejected;
+          this.status = AsyncStatus.Rejected;
           this.value = error;
         },
       );
     } else {
-      this.status = FutureStatus.Resolved;
+      this.status = AsyncStatus.Resolved;
       this.value = value;
     }
   }
 
   /**
-   * Converts our future into a promise. If the promise is resolved or rejected
-   * then we will return a promise that resolves/rejects immediately.
+   * Converts our async value into a promise. If the promise is resolved or
+   * rejected then we will return a promise that resolves/rejects immediately.
    */
   promise(): Promise<Value> {
     switch (this.status) {
-      case FutureStatus.Pending:
+      case AsyncStatus.Pending:
         return this.value as Promise<Value>;
-      case FutureStatus.Resolved:
+      case AsyncStatus.Resolved:
         return Promise.resolve(this.value as Value);
-      case FutureStatus.Rejected:
+      case AsyncStatus.Rejected:
         return Promise.reject(this.value);
       default: {
         const never: never = this.status;
@@ -74,7 +74,7 @@ export class Future<Value> {
   }
 
   /**
-   * Suspends the current execution if the future has not finished loading.
+   * Suspends the current execution if the async value has not finished loading.
    * Based on React’s definition of suspense. If the promise is rejected then we
    * will throw the error. Otherwise we will return the resolved
    * value synchronously.
@@ -86,11 +86,11 @@ export class Future<Value> {
    */
   suspend(): Value {
     switch (this.status) {
-      case FutureStatus.Pending:
+      case AsyncStatus.Pending:
         throw this.value as Promise<Value>;
-      case FutureStatus.Resolved:
+      case AsyncStatus.Resolved:
         return this.value as Value;
-      case FutureStatus.Rejected:
+      case AsyncStatus.Rejected:
         throw this.value;
       default: {
         const never: never = this.status;
