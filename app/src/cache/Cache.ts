@@ -57,6 +57,14 @@ export class Cache<Key extends string | number, Data> {
   }
 
   /**
+   * Inserts a resolved entry into the cache. If there is already an entry with
+   * this key then that entry will be overridden.
+   */
+  public insert(key: Key, data: Data) {
+    this.entries.set(key, {status: CacheEntryStatus.Resolved, value: data});
+  }
+
+  /**
    * Loads some data from our cache and returns a promise which will resolve
    * with the cached data. If the data has already resolved then we return a
    * promise which will resolve immediately.

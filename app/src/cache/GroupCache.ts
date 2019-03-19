@@ -8,6 +8,7 @@ import {
 import {API} from "../api/API";
 import {Cache} from "./Cache";
 import {CacheList} from "./CacheList";
+import {PostCache} from "./PostCache";
 
 /**
  * An entry for a `Group` in our group `Cache`.
@@ -57,10 +58,10 @@ function PostCacheList(groupID: GroupID) {
       // Fetch the posts for this range from our API.
       const {posts} = await API.group.getPosts({id: groupID, ...range});
 
-      // Loop through all the posts and create cache entries. Also insert each
-      // post into our `PostCache`.
+      // Loop through all the posts and create cache entries for our post list.
+      // Also insert each post into our `PostCache`.
       const entries = posts.map<PostCacheListEntry>(post => {
-        // TODO: Cache each post.
+        PostCache.insert(post.id, post);
         return {
           id: post.id,
           publishedAt: post.publishedAt,
