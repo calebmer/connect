@@ -9,13 +9,11 @@ import {
   View,
 } from "react-native";
 import {Color, Font, Shadow, Space} from "./atoms";
-import {InboxItem, Post} from "./MockData";
+import {GroupCache, PostCacheListEntry} from "./cache/entities/GroupCache";
 import React, {useState} from "react";
 import {GroupBanner} from "./GroupBanner";
-import {GroupCache} from "./cache/entities/GroupCache";
-import {GroupInboxItem} from "./GroupInboxItem";
-import {GroupInboxItemLayout} from "./GroupInboxItemLayout";
-import {GroupInboxItemPost} from "./GroupInboxItemPost";
+import {GroupItem} from "./GroupItem";
+import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {NavbarNative} from "./NavbarNative";
 import {useCacheData} from "./cache/Cache";
@@ -32,8 +30,6 @@ export function Group({slug}: {slug: string}) {
   // Load the data we need for our group.
   const {group, postCacheList} = useCacheData(GroupCache, slug);
   const posts = useCacheListData(postCacheList);
-
-  console.log(posts);
 
   // On iOS you can scroll up which results in a negative value for `scrollY`.
   // When that happens we want to scale up our group banner so that it
@@ -59,20 +55,21 @@ export function Group({slug}: {slug: string}) {
 
   const [showNavbar, setShowNavbar] = useState(false);
 
-  const inboxSection: SectionListData<InboxItem> = {
-    title: "Inbox",
-    data: MockData.inbox,
-    keyExtractor: item => String(item.id),
-    renderItem: ({item}) => <GroupInboxItem item={item} />,
-  };
+  // TODO:
+  // const inboxSection: SectionListData<InboxItem> = {
+  //   title: "Inbox",
+  //   data: MockData.inbox,
+  //   keyExtractor: item => String(item.id),
+  //   renderItem: ({item}) => <GroupInboxItem item={item} />,
+  // };
 
-  const feedSection: SectionListData<Post> = {
+  // The feed section of our `<SectionList>`. Contains all the posts from the
+  // group in reverse chronological order.
+  const feedSection: SectionListData<PostCacheListEntry> = {
     title: "Feed",
-    data: [...MockData.feed, ...MockData.feed, ...MockData.feed].map(
-      (item, id) => ({...item, id}),
-    ),
+    data: posts,
     keyExtractor: item => String(item.id),
-    renderItem: ({item}) => <GroupInboxItemPost post={item} />,
+    renderItem: ({item}) => <GroupItemFeed postID={item.id} />,
   };
 
   return (
@@ -93,7 +90,7 @@ export function Group({slug}: {slug: string}) {
        * will scroll above the group banner. */}
       <AnimatedSectionList
         // The section list data!
-        sections={[inboxSection, feedSection] as any}
+        sections={[feedSection] as any}
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
@@ -219,7 +216,7 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     position: "absolute",
     bottom: 0,
-    paddingHorizontal: GroupInboxItemLayout.padding,
+    paddingHorizontal: GroupItem.padding,
     paddingBottom: Space.space0 / 2,
     color: Color.grey6,
     ...Font.sans,
@@ -245,11 +242,11 @@ const styles = StyleSheet.create({
     ...Shadow.elevation0,
   },
   sectionVerticalPadding: {
-    height: GroupInboxItemLayout.padding,
-    backgroundColor: GroupInboxItemLayout.backgroundColor,
+    height: GroupItem.padding,
+    backgroundColor: GroupItem.backgroundColor,
   },
   itemSeparator: {
-    height: GroupInboxItemLayout.padding,
-    backgroundColor: GroupInboxItemLayout.backgroundColor,
+    height: GroupItem.padding,
+    backgroundColor: GroupItem.backgroundColor,
   },
 });

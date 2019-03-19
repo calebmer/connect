@@ -367,7 +367,7 @@ function last<Item>(array: ReadonlyArray<Item>): Item | undefined {
  */
 export function useCacheListData<ItemCursor extends Cursor<JSONValue>, Item>(
   cache: CacheList<ItemCursor, Item>,
-): ReadonlyArray<Item> {
+): Array<Item> {
   const segments: Mutable<CacheListSegments<Item>> = (cache as any).segments;
   return useMutable(segments)[0] || [];
 }

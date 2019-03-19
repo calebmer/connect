@@ -4,7 +4,7 @@ import {Account} from "./MockData";
 import {AccountSignature} from "./AccountSignature";
 import {Color} from "./atoms";
 
-export function GroupInboxItemLayout({
+export function GroupItem({
   account,
   children,
 }: {
@@ -18,11 +18,11 @@ export function GroupInboxItemLayout({
   );
 }
 
-GroupInboxItemLayout.padding = AccountSignature.padding;
-GroupInboxItemLayout.backgroundColor = Color.white;
+GroupItem.padding = AccountSignature.padding;
+GroupItem.backgroundColor = Color.white;
 
 const styles = StyleSheet.create({
   item: {
-    backgroundColor: GroupInboxItemLayout.backgroundColor,
+    backgroundColor: GroupItem.backgroundColor,
   },
 });
