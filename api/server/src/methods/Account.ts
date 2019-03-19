@@ -9,6 +9,7 @@ import {
 import {AccessTokenGenerator, RefreshTokenCollection} from "../entities/Tokens";
 import {AccountCollection} from "../entities/Account";
 import bcrypt from "bcrypt";
+import {GroupCollection} from "../entities/Group";
 
 /**
  * Balances speed and security for the bcrypt algorithm. See the
@@ -202,8 +203,24 @@ export async function getCurrentProfile(
   readonly account: AccountProfile;
 }> {
   const account = await ctx.accounts.getProfile(accountID);
-  if (account === undefined) {
-    throw new APIError(APIErrorCode.NOT_FOUND);
-  }
+  if (account === undefined) throw new APIError(APIErrorCode.NOT_FOUND);
+  return {account};
+}
+
+/**
+ * Gets basic information about some account’s profile as long as that account
+ * shares at least one group with our current account.
+ */
+export async function getProfile(
+  ctx: {readonly accounts: AccountCollection; readonly groups: GroupCollection},
+  accountID: AccountID,
+  input: {readonly id: AccountID},
+): Promise<{
+  readonly account: AccountProfile;
+}> {
+  const allowedToView = await ctx.groups.sharedMembership(accountID, input.id);
+  if (allowedToView === false) throw new APIError(APIErrorCode.NOT_FOUND);
+  const account = await ctx.accounts.getProfile(input.id);
+  if (account === undefined) throw new APIError(APIErrorCode.NOT_FOUND);
   return {account};
 }

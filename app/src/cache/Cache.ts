@@ -67,6 +67,14 @@ export class Cache<Key extends string | number, Data> {
   }
 
   /**
+   * Does the cache have an entry for this key? If we do not have an entry for
+   * this key then the next call to `load()` or `preload()` will load the entry.
+   */
+  public has(key: Key): boolean {
+    return this.entries.has(key);
+  }
+
+  /**
    * Loads some data from our cache and returns a promise which will resolve
    * with the cached data. If the data has already resolved then we return a
    * promise which will resolve immediately.

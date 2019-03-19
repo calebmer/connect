@@ -93,7 +93,7 @@ export class SchemaInput<Value extends JSONValue> {
       (value): value is any => {
         if (!Array.isArray(value)) return false;
         for (let i = 0; i < value.length; i++) {
-          if (!input.validate(value)) return false;
+          if (!input.validate(value[i])) return false;
         }
         return true;
       },

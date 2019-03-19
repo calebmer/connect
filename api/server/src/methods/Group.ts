@@ -36,12 +36,12 @@ export async function getBySlug(
 export async function getPosts(
   ctx: {readonly groups: GroupCollection},
   accountID: AccountID,
-  input: {readonly id: GroupID} & Range<PostCursor>,
+  input: {readonly groupID: GroupID} & Range<PostCursor>,
 ): Promise<{
   readonly posts: ReadonlyArray<Post>;
 }> {
   // Confirm that this account is a member of the group.
-  const membership = await ctx.groups.getMembership(accountID, input.id);
+  const membership = await ctx.groups.getMembership(accountID, input.groupID);
   if (!membership) throw new APIError(APIErrorCode.NOT_FOUND);
 
   // Get a list of posts in reverse chronological order using the pagination
@@ -49,4 +49,25 @@ export async function getPosts(
   const posts = await ctx.groups.getPosts(membership, input);
 
   return {posts};
+}
+
+/**
+ * Get profiles in a group.
+ */
+export async function getProfiles(
+  ctx: {readonly groups: GroupCollection},
+  accountID: AccountID,
+  input: {
+    readonly groupID: GroupID;
+    readonly accountIDs: ReadonlyArray<AccountID>;
+  },
+) {
+  // Confirm that this account is a member of the group.
+  const membership = await ctx.groups.getMembership(accountID, input.groupID);
+  if (!membership) throw new APIError(APIErrorCode.NOT_FOUND);
+
+  // Get profiles for all the accounts we asked for.
+  const accounts = await ctx.groups.getProfiles(membership, input.accountIDs);
+
+  return {accounts};
 }

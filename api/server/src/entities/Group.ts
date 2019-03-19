@@ -1,5 +1,6 @@
 import {
   AccountID,
+  AccountProfile,
   Group,
   GroupID,
   GroupMembership,
@@ -57,6 +58,26 @@ export interface GroupCollection {
     membership: GroupMembership,
     range: Range<PostCursor>,
   ): Promise<ReadonlyArray<Post>>;
+
+  /**
+   * Gets all the public account profiles in a group.
+   *
+   * **IMPORTANT:** We require a group membership to enforce our privacy policy.
+   * If an account is not a member of a group then they cannot see the account
+   * profiles in that group!
+   */
+  getProfiles(
+    membership: GroupMembership,
+    accountIDs: ReadonlyArray<AccountID>,
+  ): Promise<ReadonlyArray<AccountProfile>>;
+
+  /**
+   * Do the two accounts share at least one group membership?
+   */
+  sharedMembership(
+    accountID1: AccountID,
+    accountID2: AccountID,
+  ): Promise<boolean>;
 }
 
 type MockGroupData = {
@@ -106,6 +127,14 @@ export class MockGroupCollection implements GroupCollection {
   }
 
   async getPosts(): Promise<ReadonlyArray<Post>> {
+    throw new Error("unimplemented");
+  }
+
+  async getProfiles(): Promise<ReadonlyArray<AccountProfile>> {
+    throw new Error("unimplemented");
+  }
+
+  async sharedMembership(): Promise<boolean> {
     throw new Error("unimplemented");
   }
 }

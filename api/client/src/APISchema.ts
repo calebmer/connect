@@ -1,8 +1,8 @@
 import {AccessToken, RefreshToken} from "./entities/Tokens";
+import {AccountID, AccountProfile} from "./entities/Account";
 import {Comment, CommentCursor} from "./entities/Comment";
 import {Group, GroupID} from "./entities/Group";
 import {Post, PostCursor, PostID} from "./entities/Post";
-import {AccountProfile} from "./entities/Account";
 import {RangeInputFields} from "./Range";
 import {Schema} from "./Schema";
 import {SchemaInput} from "./SchemaInput";
@@ -104,6 +104,21 @@ export const APISchema = Schema.namespace({
         readonly account: AccountProfile;
       }>(),
     }),
+
+    /**
+     * Get the profile for an account that is in at least one of the same groups
+     * as us. If the account is not in one of the same groups then we throw
+     * a “not found” error.
+     */
+    getProfile: Schema.method({
+      safe: true,
+      input: {
+        id: SchemaInput.integer<AccountID>(),
+      },
+      output: SchemaOutput.t<{
+        readonly account: AccountProfile;
+      }>(),
+    }),
   }),
 
   group: Schema.namespace({
@@ -133,11 +148,30 @@ export const APISchema = Schema.namespace({
     getPosts: Schema.method({
       safe: true,
       input: {
-        id: SchemaInput.integer<GroupID>(),
+        groupID: SchemaInput.integer<GroupID>(),
         ...RangeInputFields<PostCursor>(),
       },
       output: SchemaOutput.t<{
         readonly posts: ReadonlyArray<Post>;
+      }>(),
+    }),
+
+    /**
+     * Gets public account profiles in a group. If a requested account is not
+     * a member of the group then we will not include it in the output instead
+     * of throwing an error which would mean we lose _all_ account profiles.
+     *
+     * If the authorized account is not a member of the provided group then we
+     * will throw a “not found” error.
+     */
+    getProfiles: Schema.method({
+      safe: true,
+      input: {
+        groupID: SchemaInput.integer<GroupID>(),
+        accountIDs: SchemaInput.array(SchemaInput.integer<AccountID>()),
+      },
+      output: SchemaOutput.t<{
+        readonly accounts: ReadonlyArray<AccountProfile>;
       }>(),
     }),
   }),

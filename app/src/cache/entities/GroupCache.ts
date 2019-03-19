@@ -1,4 +1,5 @@
 import {
+  AccountID,
   DateTime,
   Group,
   GroupID,
@@ -6,6 +7,7 @@ import {
   PostID,
 } from "@connect/api-client";
 import {API} from "../../api/API";
+import {AccountCache} from "./AccountCache";
 import {Cache} from "../Cache";
 import {CacheList} from "../CacheList";
 import {PostCache} from "./PostCache";
@@ -66,17 +68,40 @@ function PostCacheList(groupID: GroupID) {
 
     async load(range) {
       // Fetch the posts for this range from our API.
-      const {posts} = await API.group.getPosts({id: groupID, ...range});
+      const {posts} = await API.group.getPosts({groupID, ...range});
+
+      // A set of all the accounts who authored posts.
+      const accountIDSet = new Set<AccountID>();
 
       // Loop through all the posts and create cache entries for our post list.
       // Also insert each post into our `PostCache`.
       const entries = posts.map<PostCacheListEntry>(post => {
         PostCache.insert(post.id, post);
+        accountIDSet.add(post.authorID);
         return {
           id: post.id,
           publishedAt: post.publishedAt,
         };
       });
+
+      // A set of all the accounts we want to fetch from our API.
+      const accountIDs: Array<AccountID> = [];
+
+      // We want to fetch all the account IDs which we do not have in our cache.
+      accountIDSet.forEach(accountID => {
+        if (!AccountCache.has(accountID)) {
+          accountIDs.push(accountID);
+        }
+      });
+
+      // If there are some accounts we have not yet loaded in our cache then
+      // send an API request to fetch those accounts.
+      if (accountIDs.length > 0) {
+        const {accounts} = await API.group.getProfiles({groupID, accountIDs});
+        accounts.forEach(account => {
+          AccountCache.insert(account.id, account);
+        });
+      }
 
       return entries;
     },
