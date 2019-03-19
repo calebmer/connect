@@ -16,6 +16,8 @@ export function useCacheListData<ItemCursor extends Cursor<JSONValue>, Item>(
 } {
   const previousItems = useRef<ReadonlyArray<Item> | null>(null);
   try {
+    // TODO: If we render anytime after the list has been updated then this will
+    // return a new value. We are breaking the rules of React!!!
     const items = cache.suspendFirst();
     previousItems.current = items;
     return {loading: false, items};
