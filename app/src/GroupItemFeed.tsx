@@ -7,7 +7,7 @@ import React from "react";
 import {StyleSheet} from "react-native";
 import {useCacheData} from "./cache/Cache";
 
-export function GroupItemFeed({postID}: {postID: PostID}) {
+function GroupItemFeed({postID}: {postID: PostID}) {
   // TODO: Suspense handler for _just_ this component.
   const post = useCacheData(PostCache, postID);
   const account = useCacheData(AccountCache, post.authorID);
@@ -19,6 +19,9 @@ export function GroupItemFeed({postID}: {postID: PostID}) {
     </GroupItem>
   );
 }
+
+const _GroupItemFeed = React.memo(GroupItemFeed);
+export {_GroupItemFeed as GroupItemFeed};
 
 const styles = StyleSheet.create({
   text: {

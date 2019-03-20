@@ -33,6 +33,7 @@ const AnimatedSectionList: SectionList<
   unknown
 > = Animated.createAnimatedComponent(SectionList);
 
+// TODO: Investigate why virtualization isn’t working.
 function GroupComponent({slug}: {slug: string}) {
   // Load the data we need for our group.
   const {group, postCacheList} = useCacheData(GroupCache, slug);
@@ -138,7 +139,7 @@ function GroupComponent({slug}: {slug: string}) {
                 scrollView.current
                   .getNode()
                   .getScrollResponder()
-                  .scrollTo({y: 0});
+                  .scrollTo({y: 0, animated: false});
               }
             }}
           />
@@ -152,7 +153,12 @@ function GroupComponent({slug}: {slug: string}) {
         // - The starting Y offset for our scroll view.
         // - An animated value representing the scroll Y position.
         // - Whether or not we should show our navbar on mobile devices.
-        scrollEventThrottle={1}
+        //
+        // NOTE: On web we use a much slower `scrollEventThrottle` since we
+        // don’t need near-realtime animations attached to scrolling. Also, on
+        // native we can use the native animation driver. We don’t have that
+        // luxury on web.
+        scrollEventThrottle={Platform.OS === "web" ? 500 : 1}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {
