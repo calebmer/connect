@@ -29,6 +29,7 @@ const sqlQuery = Symbol("sql.query");
 export type SQLQuery =
   | SQLQueryTemplate
   | SQLQueryValue
+  | SQLQueryIdentifier
   | SQLQueryJoin
   | SQLQueryRaw;
 
@@ -49,6 +50,15 @@ type SQLQueryValue = {
   readonly $$typeof: typeof sqlQuery;
   readonly type: "VALUE";
   readonly value: unknown;
+};
+
+/**
+ * Adds a namespaced SQL identifier to our query.
+ */
+type SQLQueryIdentifier = {
+  readonly $$typeof: typeof sqlQuery;
+  readonly type: "IDENTIFIER";
+  readonly identifiers: [string, ...Array<string>];
 };
 
 /**
@@ -78,7 +88,7 @@ type SQLQueryRaw = {
  */
 export function sql(
   strings: TemplateStringsArray,
-  ...values: Array<unknown>
+  ...values: Array<SQLQuery>
 ): SQLQuery {
   if (strings.length > 0 && strings.length !== values.length + 1) {
     throw new Error(
@@ -89,16 +99,7 @@ export function sql(
     $$typeof: sqlQuery,
     type: "TEMPLATE",
     strings,
-
-    // Wrap any unwrapped values with `sql.query()`.
-    values: values.map(
-      (value): SQLQuery =>
-        typeof value === "object" &&
-        value !== null &&
-        (value as any).$$typeof === sqlQuery
-          ? (value as SQLQuery)
-          : sql.value(value),
-    ),
+    values,
   };
 }
 
@@ -111,6 +112,21 @@ sql.value = function value(value: unknown): SQLQuery {
     $$typeof: sqlQuery,
     type: "VALUE",
     value,
+  };
+};
+
+/**
+ * Adds a SQL identifier to our query. The identifier will always be escaped in
+ * the query.
+ */
+sql.identifier = function identifier(
+  identifier: string,
+  ...identifiers: Array<string>
+): SQLQuery {
+  return {
+    $$typeof: sqlQuery,
+    type: "IDENTIFIER",
+    identifiers: [identifier, ...identifiers],
   };
 };
 
@@ -160,16 +176,10 @@ sql.compile = function compile(initialQuery: SQLQuery): string | QueryConfig {
   //
   // Remember that this stack is First-In-Last-Out (FILO)! So push queries in
   // the reverse order that they should be processed.
-  const stack: Array<SQLQuery | string> = [initialQuery];
+  const stack: Array<SQLQuery> = [initialQuery];
 
   while (stack.length !== 0) {
     const query = stack.pop()!;
-
-    // If our query is a raw string then add it to our query text and continue.
-    if (typeof query === "string") {
-      text += query;
-      continue;
-    }
 
     // Verify that our SQL query indeed has our private symbol. If it does not
     // then we know this module did not create the SQL query. Something or
@@ -187,7 +197,7 @@ sql.compile = function compile(initialQuery: SQLQuery): string | QueryConfig {
         // values to the stack. Our stack is First-in-Last-Out which is why
         // we need to iterate in reverse.
         for (let i = query.values.length - 1; i >= 0; i--) {
-          stack.push(query.strings[i + 1]);
+          stack.push(sql.dangerouslyInjectRawString(query.strings[i + 1]));
           stack.push(query.values[i]);
         }
 
@@ -202,6 +212,22 @@ sql.compile = function compile(initialQuery: SQLQuery): string | QueryConfig {
       case "VALUE": {
         values.push(query.value);
         text += `$${values.length}`;
+        break;
+      }
+
+      // Escape a namespaced identifier and add it to our query text.
+      case "IDENTIFIER": {
+        for (let j = 0; j < query.identifiers.length; j++) {
+          const identifier = query.identifiers[j];
+          if (j !== 0) text += ".";
+          text += '"';
+          for (let i = 0; i < identifier.length; i++) {
+            const c = identifier[i];
+            if (c === '"') text += c + c;
+            else text += c;
+          }
+          text += '"';
+        }
         break;
       }
 
@@ -230,44 +256,7 @@ sql.compile = function compile(initialQuery: SQLQuery): string | QueryConfig {
     }
   }
 
-  // Clean up the query text for debugging purposes.
-  text = cleanQueryText(text);
-
   // Return the final query config. If there are no values only return the
   // query text.
   return values.length === 0 ? text : {text, values};
 };
-
-/**
- * Cleans up the text of a query by removing extra indentation that exists in
- * the source code but nowhere else.
- *
- * No promises that this adheres to the SQL standard! We may remove intentional
- * space from string literals.
- *
- * **TODO:** We could do this at build-time with a Babel plugin.
- */
-function cleanQueryText(source: string): string {
-  let text = "";
-
-  let i = 0;
-  while (i < source.length) {
-    const c = source[i];
-
-    if (c === "\n") {
-      const first = i === 0;
-      i++;
-      while (i < source.length && source[i] === " ") {
-        i++;
-      }
-      if (!first && i < source.length) {
-        text += " ";
-      }
-    } else {
-      text += c;
-      i++;
-    }
-  }
-
-  return text;
-}

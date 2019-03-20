@@ -11,7 +11,7 @@ export class PGRefreshTokenCollection implements RefreshTokenCollection {
     const refreshToken = uuidV4() as RefreshToken;
     await this.client.query(sql`
       INSERT INTO refresh_token (token, account_id)
-      VALUES (${refreshToken}, ${accountID})
+      VALUES (${sql.value(refreshToken)}, ${sql.value(accountID)})
     `);
     return refreshToken;
   }
@@ -26,7 +26,7 @@ export class PGRefreshTokenCollection implements RefreshTokenCollection {
       rows: [row],
     } = await this.client.query(sql`
       UPDATE refresh_token SET last_used_at = now()
-      WHERE token = ${token}
+      WHERE token = ${sql.value(token)}
       RETURNING account_id
     `);
     if (row === undefined) {
@@ -38,7 +38,7 @@ export class PGRefreshTokenCollection implements RefreshTokenCollection {
 
   async destroy(token: RefreshToken): Promise<void> {
     await this.client.query(
-      sql`DELETE FROM refresh_token WHERE token = ${token}`,
+      sql`DELETE FROM refresh_token WHERE token = ${sql.value(token)}`,
     );
   }
 }

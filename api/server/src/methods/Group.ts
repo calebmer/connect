@@ -2,31 +2,40 @@ import {
   APIError,
   APIErrorCode,
   AccountID,
+  AccountProfile,
   Group,
   GroupID,
   Post,
   PostCursor,
   Range,
 } from "@connect/api-client";
+import {AccountProfileView} from "../tables/AccountTable";
 import {GroupCollection} from "../entities/Group";
+import {GroupTable} from "../tables/GroupTable";
+import {PGClient} from "../PGClient";
 
 /**
  * Gets a group by its slug, but only if the authenticated account is a member
  * of that group.
  */
 export async function getBySlug(
-  ctx: {readonly groups: GroupCollection},
+  ctx: {readonly client: PGClient},
   accountID: AccountID,
-  {slug}: {readonly slug: string},
+  input: {readonly slug: string},
 ): Promise<{readonly group: Group}> {
-  // First get this account’s membership in the group. If the account does not
-  // have a membership then pretend that the group does not exist by
-  // returning null.
-  const membership = await ctx.groups.getMembershipWithSlug(accountID, slug);
-  if (!membership) throw new APIError(APIErrorCode.NOT_FOUND);
+  // Select the group which has a slug equal to our provided slug. Slugs have
+  // a unique index in our database which allows for efficient selection.
+  const [group] = await GroupTable.select({
+    id: GroupTable.id,
+    slug: GroupTable.slug,
+    name: GroupTable.name,
+  })
+    .where(GroupTable.slug.equals(input.slug))
+    .execute(ctx.client, accountID);
 
-  // We can safely get the group data now!
-  const group = await ctx.groups.get(membership);
+  // TODO: Return null instead of error.
+  if (group === undefined) throw new APIError(APIErrorCode.NOT_FOUND);
+
   return {group};
 }
 
@@ -55,19 +64,24 @@ export async function getPosts(
  * Get profiles in a group.
  */
 export async function getProfiles(
-  ctx: {readonly groups: GroupCollection},
+  ctx: {readonly client: PGClient},
   accountID: AccountID,
   input: {
     readonly groupID: GroupID;
     readonly ids: ReadonlyArray<AccountID>;
   },
-) {
-  // Confirm that this account is a member of the group.
-  const membership = await ctx.groups.getMembership(accountID, input.groupID);
-  if (!membership) throw new APIError(APIErrorCode.NOT_FOUND);
-
-  // Get profiles for all the accounts we asked for.
-  const accounts = await ctx.groups.getProfiles(membership, input.ids);
+): Promise<{
+  readonly accounts: ReadonlyArray<AccountProfile>;
+}> {
+  // Select all the account profiles our client asked for. We use the group our
+  // client provided as an optimization.
+  const accounts = await AccountProfileView.select({
+    id: AccountProfileView.id,
+    name: AccountProfileView.name,
+    avatarURL: AccountProfileView.avatar_url,
+  })
+    .where(AccountProfileView.id.any(input.ids))
+    .execute(ctx.client, accountID);
 
   return {accounts};
 }

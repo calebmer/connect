@@ -68,7 +68,7 @@ module.exports = {
     camelcase: "off",
     "@typescript-eslint/camelcase": [
       "warn",
-      {properties: "never", allow: ["^UNSAFE_", "^test_"]},
+      {properties: "never", allow: ["^UNSAFE_", "^test_", "^ignorePrivacy_"]},
     ],
 
     "import/first": "warn",

@@ -19,7 +19,9 @@ export class PGAccountCollection implements AccountCollection {
       rows: [row],
     } = await this.client.query(sql`
       INSERT INTO account (name, email, password_hash)
-      VALUES (${name}, ${email}, ${passwordHash})
+      VALUES (${sql.value(name)}, ${sql.value(email)}, ${sql.value(
+      passwordHash,
+    )})
       ON CONFLICT (email) DO NOTHING
       RETURNING id
     `);
@@ -34,7 +36,9 @@ export class PGAccountCollection implements AccountCollection {
     const {
       rows: [row],
     } = await this.client.query(
-      sql`SELECT id, password_hash FROM account WHERE email = ${email}`,
+      sql`SELECT id, password_hash FROM account WHERE email = ${sql.value(
+        email,
+      )}`,
     );
     if (row === undefined) {
       return undefined;
@@ -51,7 +55,7 @@ export class PGAccountCollection implements AccountCollection {
     const {
       rows: [row],
     } = await this.client.query(
-      sql`SELECT name, avatar_url FROM account WHERE id = ${id}`,
+      sql`SELECT name, avatar_url FROM account WHERE id = ${sql.value(id)}`,
     );
     if (row === undefined) {
       return undefined;

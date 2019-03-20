@@ -21,7 +21,7 @@ CREATE TABLE account (
   -- The email associated with this account. Must be unique since the email is
   -- used to sign in to the account and reset the account’s password. Of course,
   -- one could always create a new email address if they want a new account.
-  email TEXT UNIQUE,
+  email TEXT NOT NULL UNIQUE,
   -- A bcrypt hash of the account password.
   password_hash TEXT NOT NULL,
   -- The time at which the account was created.

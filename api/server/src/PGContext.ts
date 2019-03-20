@@ -9,6 +9,7 @@ import {PGRefreshTokenCollection} from "./entities/pg/PGRefreshToken";
  * specialized for Postgres.
  */
 export interface PGContext {
+  readonly client: PGClient;
   readonly accounts: PGAccountCollection;
   readonly groups: PGGroupCollection;
   readonly posts: PGPostCollection;
@@ -31,6 +32,7 @@ export const PGContext = {
     let context = contextCache.get(client);
     if (context === undefined) {
       context = {
+        client,
         accounts: new PGAccountCollection(client),
         groups: new PGGroupCollection(client),
         posts: new PGPostCollection(client),

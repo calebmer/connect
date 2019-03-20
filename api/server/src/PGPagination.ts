@@ -132,7 +132,7 @@ export class PGPagination {
     const result = await client.query(
       sql`
         SELECT ${selection} FROM ${this.table}${where}
-        ORDER BY ${orderBy} LIMIT ${range.count}
+        ORDER BY ${orderBy} LIMIT ${sql.value(range.count)}
       `,
     );
 

@@ -16,10 +16,7 @@ export class SchemaInput<Value extends JSONValue> {
     this.validate = validate;
   }
 
-  /**
-   * Accepts only boolean values.
-   */
-  static boolean = new SchemaInput<boolean>(
+  private static _boolean = new SchemaInput<boolean>(
     (value): value is boolean => typeof value === "boolean",
   );
 
@@ -35,6 +32,13 @@ export class SchemaInput<Value extends JSONValue> {
   private static _string = new SchemaInput<string>(
     (value): value is string => typeof value === "string",
   );
+
+  /**
+   * Accepts only boolean values.
+   */
+  static boolean(): SchemaInput<boolean> {
+    return this._boolean;
+  }
 
   /**
    * Accepts only number values.

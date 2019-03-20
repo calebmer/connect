@@ -12,7 +12,9 @@ export class PGPostCollection {
       SELECT post.group_id, post.author_id, post.published_at, post.content
       FROM post
       LEFT JOIN group_member ON group_member.group_id = post.group_id
-      WHERE post.id = ${postID} AND group_member.account_id = ${accountID}
+      WHERE post.id = ${sql.value(
+        postID,
+      )} AND group_member.account_id = ${sql.value(accountID)}
     `);
     if (row === undefined) {
       return undefined;
