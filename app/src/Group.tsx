@@ -6,6 +6,7 @@ import {
   SectionListData,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import {Color, Font, Shadow, Space} from "./atoms";
@@ -15,7 +16,7 @@ import {
   groupPostCountInitial,
   groupPostCountMore,
 } from "./cache/entities/GroupCache";
-import React, {useMemo, useState} from "react";
+import React, {useMemo, useRef, useState} from "react";
 import {GroupBanner} from "./GroupBanner";
 import {GroupItem} from "./GroupItem";
 import {GroupItemFeed} from "./GroupItemFeed";
@@ -32,10 +33,13 @@ const AnimatedSectionList: SectionList<
   unknown
 > = Animated.createAnimatedComponent(SectionList);
 
-export function Group({slug}: {slug: string}) {
+function GroupComponent({slug}: {slug: string}) {
   // Load the data we need for our group.
   const {group, postCacheList} = useCacheData(GroupCache, slug);
   const posts = useCacheListData(postCacheList);
+
+  // Keep a reference to our scroll view.
+  const scrollView = useRef<any>(null);
 
   // On iOS you can scroll up which results in a negative value for `scrollY`.
   // When that happens we want to scale up our group banner so that it
@@ -105,6 +109,7 @@ export function Group({slug}: {slug: string}) {
       {/* All the scrollable content in the group. This is a scroll view which
        * will scroll above the group banner. */}
       <AnimatedSectionList
+        ref={scrollView}
         // The section list data!
         sections={sections as any}
         // Loading more data when the end of the list is reached.
@@ -125,7 +130,19 @@ export function Group({slug}: {slug: string}) {
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
         ListHeaderComponent={GroupHeader}
-        ListFooterComponent={<GroupFooter loadingNext={loadingNext} />}
+        ListFooterComponent={
+          <GroupFooter
+            loadingNext={loadingNext}
+            onScrollTopTop={() => {
+              if (scrollView.current) {
+                scrollView.current
+                  .getNode()
+                  .getScrollResponder()
+                  .scrollTo({y: 0});
+              }
+            }}
+          />
+        }
         stickySectionHeadersEnabled={false}
         renderSectionHeader={GroupSectionHeader}
         SectionSeparatorComponent={GroupSectionSeparatorWrapper}
@@ -165,6 +182,8 @@ export function Group({slug}: {slug: string}) {
   );
 }
 
+export {GroupComponent as Group};
+
 function GroupHeader() {
   return (
     <View style={styles.header}>
@@ -173,8 +192,25 @@ function GroupHeader() {
   );
 }
 
-function GroupFooter({loadingNext}: {loadingNext: boolean}) {
-  return <View style={styles.footer}>{loadingNext && <Loading />}</View>;
+function GroupFooter({
+  loadingNext,
+  onScrollTopTop,
+}: {
+  loadingNext: boolean;
+  onScrollTopTop: () => void;
+}) {
+  return (
+    <View style={styles.footer}>
+      {loadingNext ? (
+        <Loading />
+      ) : (
+        // Decoration for the end of our list.
+        <TouchableOpacity onPress={onScrollTopTop}>
+          <Text style={styles.footerText}>Back to top ↑</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 }
 
 function GroupSectionHeader({
@@ -245,6 +281,13 @@ const styles = StyleSheet.create({
   },
   footer: {
     height: Loading.size + sectionMargin,
+  },
+  footerText: {
+    color: Color.grey6,
+    textAlign: "center",
+    ...Font.sans,
+    ...Font.size1,
+    lineHeight: Loading.size,
   },
   sectionHeader: {
     justifyContent: "flex-end",
