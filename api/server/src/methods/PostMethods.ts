@@ -6,18 +6,37 @@ import {
   Post,
   PostID,
 } from "@connect/api-client";
-import {PostCollection} from "../entities/Post";
+import {PGClient} from "../PGClient";
+import {PostTable} from "../tables/PostTable";
 
+/**
+ * Get a single post from our database.
+ */
 export async function get(
-  ctx: {readonly posts: PostCollection},
+  ctx: {readonly client: PGClient},
   accountID: AccountID,
   input: {readonly id: PostID},
 ): Promise<{readonly post: Post}> {
-  const post = await ctx.posts.get(accountID, input.id);
+  // Select a post from our post’s table.
+  const [post] = await PostTable.select({
+    id: PostTable.id,
+    groupID: PostTable.group_id,
+    authorID: PostTable.author_id,
+    publishedAt: PostTable.published_at,
+    content: PostTable.content,
+  })
+    .where(PostTable.id.equals(input.id))
+    .execute(ctx.client, accountID);
+
+  // TODO: Return null instead of error.
   if (post == null) throw new APIError(APIErrorCode.NOT_FOUND);
+
   return {post};
 }
 
+/**
+ * Get the comments for a post.
+ */
 export async function getComments(): Promise<{
   readonly comments: ReadonlyArray<Comment>;
 }> {

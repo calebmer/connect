@@ -10,13 +10,9 @@ import {
 } from "@connect/api-client";
 import {GroupCollection} from "../Group";
 import {PGClient} from "../../PGClient";
-import {PGPagination} from "../../PGPagination";
 import {sql} from "../../PGSQL";
 
-const PGPostPagination = new PGPagination(sql`post`, [
-  {column: sql`published_at`, descending: true},
-  {column: sql`id`},
-]);
+declare const PGPostPagination: any;
 
 export class PGGroupCollection implements GroupCollection {
   constructor(private readonly client: PGClient) {}
@@ -99,7 +95,7 @@ export class PGGroupCollection implements GroupCollection {
       extraCondition: sql`group_id = ${sql.value(groupID)}`,
       range,
     });
-    return rows.map(row => ({
+    return rows.map((row: any) => ({
       id: row.id,
       groupID: groupID,
       authorID: row.author_id,

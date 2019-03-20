@@ -324,10 +324,7 @@ export class PGQuerySelect<Type> {
    * Executes a query in the provided Postgres client. First applies our table’s
    * privacy policy to the query.
    */
-  async execute(
-    client: PGClient,
-    accountID: AccountID,
-  ): Promise<ReadonlyArray<Type>> {
+  async execute(client: PGClient, accountID: AccountID): Promise<Array<Type>> {
     const queryBuilder = this._from.applySelectPrivacyPolicy(accountID, this);
     const query = queryBuilder.generateQuery();
     const {rows} = await client.query(query);
@@ -339,14 +336,14 @@ export class PGQuerySelect<Type> {
  * The upper bound for a selection map. Returned objects from our selection will
  * be in this form.
  */
-type PGSelectionBase = {
+export type PGSelectionBase = {
   [key: string]: PGExpression<unknown>;
 };
 
 /**
  * The type returned by a Postgres selection.
  */
-type PGSelectionType<Selection extends PGSelectionBase> = {
+export type PGSelectionType<Selection extends PGSelectionBase> = {
   [Key in keyof Selection]: PGExpressionType<Selection[Key]>
 };
 
@@ -381,7 +378,7 @@ export class PGExpression<Type> {
   /** An expression which is simply the literal “true”. */
   static true = new PGExpression<true>(sql`true`);
 
-  protected constructor(private readonly query: SQLQuery) {}
+  constructor(private readonly query: SQLQuery) {}
 
   /**
    * True if this expression equals the provided expression.
