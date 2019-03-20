@@ -15,11 +15,12 @@ import {
   groupPostCountInitial,
   groupPostCountMore,
 } from "./cache/entities/GroupCache";
-import React, {useState} from "react";
+import React, {useMemo, useState} from "react";
 import {GroupBanner} from "./GroupBanner";
 import {GroupItem} from "./GroupItem";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
+import {Loading} from "./atoms/Loading";
 import {NavbarNative} from "./NavbarNative";
 import {useCacheData} from "./cache/Cache";
 import {useCacheListData} from "./cache/CacheList";
@@ -58,24 +59,34 @@ export function Group({slug}: {slug: string}) {
           extrapolateRight: "clamp",
         });
 
+  // Should we show the navbar or not?
   const [showNavbar, setShowNavbar] = useState(false);
 
-  // TODO:
-  // const inboxSection: SectionListData<InboxItem> = {
-  //   title: "Inbox",
-  //   data: MockData.inbox,
-  //   keyExtractor: item => String(item.id),
-  //   renderItem: ({item}) => <GroupInboxItem item={item} />,
-  // };
+  // Are we loading more posts?
+  const [loadingNext, setLoadingNext] = useState(false);
 
-  // The feed section of our `<SectionList>`. Contains all the posts from the
-  // group in reverse chronological order.
-  const feedSection: SectionListData<PostCacheListEntry> = {
-    title: "Feed",
-    data: posts,
-    keyExtractor: item => String(item.id),
-    renderItem: ({item}) => <GroupItemFeed postID={item.id} />,
-  };
+  // All the section data that our list will render. Memoized to avoid
+  // unnecessary calculations in the virtualized list.
+  const sections = useMemo(() => {
+    // TODO:
+    // const inboxSection: SectionListData<InboxItem> = {
+    //   title: "Inbox",
+    //   data: MockData.inbox,
+    //   keyExtractor: item => String(item.id),
+    //   renderItem: ({item}) => <GroupInboxItem item={item} />,
+    // };
+
+    // The feed section of our `<SectionList>`. Contains all the posts from the
+    // group in reverse chronological order.
+    const feedSection: SectionListData<PostCacheListEntry> = {
+      title: "Feed",
+      data: posts,
+      keyExtractor: item => String(item.id),
+      renderItem: ({item}) => <GroupItemFeed postID={item.id} />,
+    };
+
+    return [feedSection];
+  }, [posts]);
 
   return (
     <View style={styles.container}>
@@ -95,18 +106,26 @@ export function Group({slug}: {slug: string}) {
        * will scroll above the group banner. */}
       <AnimatedSectionList
         // The section list data!
-        sections={[feedSection] as any}
+        sections={sections as any}
         // Loading more data when the end of the list is reached.
         //
         // NOTE: An `initialNumToRender` that is too small will
         // trigger `onEndReached` when this list initially renders.
         initialNumToRender={groupPostCountInitial}
         onEndReachedThreshold={0.3}
-        onEndReached={() => postCacheList.loadNext(groupPostCountMore)}
+        onEndReached={async () => {
+          try {
+            setLoadingNext(true);
+            await postCacheList.loadNext(groupPostCountMore);
+          } finally {
+            setLoadingNext(false);
+          }
+        }}
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
         ListHeaderComponent={GroupHeader}
+        ListFooterComponent={<GroupFooter loadingNext={loadingNext} />}
         stickySectionHeadersEnabled={false}
         renderSectionHeader={GroupSectionHeader}
         SectionSeparatorComponent={GroupSectionSeparatorWrapper}
@@ -152,6 +171,10 @@ function GroupHeader() {
       <GroupPostPrompt account={currentAccount} />
     </View>
   );
+}
+
+function GroupFooter({loadingNext}: {loadingNext: boolean}) {
+  return <View style={styles.footer}>{loadingNext && <Loading />}</View>;
 }
 
 function GroupSectionHeader({
@@ -219,6 +242,9 @@ const styles = StyleSheet.create({
     marginTop: GroupBanner.height,
     paddingBottom: sectionMargin,
     backgroundColor,
+  },
+  footer: {
+    height: Loading.size + sectionMargin,
   },
   sectionHeader: {
     justifyContent: "flex-end",
