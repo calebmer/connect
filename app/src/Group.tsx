@@ -15,7 +15,7 @@ import {
   PostCacheListEntry,
   groupPostCountInitial,
   groupPostCountMore,
-} from "./cache/entities/GroupCache";
+} from "./cache/GroupCache";
 import React, {useMemo, useRef, useState} from "react";
 import {GroupBanner} from "./GroupBanner";
 import {GroupItem} from "./GroupItem";
@@ -23,8 +23,8 @@ import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {Loading} from "./atoms/Loading";
 import {NavbarNative} from "./NavbarNative";
-import {useCacheData} from "./cache/Cache";
-import {useCacheListData} from "./cache/CacheList";
+import {useCacheData} from "./cache/framework/Cache";
+import {useCacheListData} from "./cache/framework/CacheList";
 
 const currentAccount = MockData.calebMeredith;
 

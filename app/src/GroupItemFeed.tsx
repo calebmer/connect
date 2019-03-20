@@ -1,11 +1,11 @@
 import {BodyText, Font} from "./atoms";
-import {AccountCache} from "./cache/entities/AccountCache";
+import {AccountCache} from "./cache/AccountCache";
 import {GroupItem} from "./GroupItem";
-import {PostCache} from "./cache/entities/PostCache";
+import {PostCache} from "./cache/PostCache";
 import {PostID} from "@connect/api-client";
 import React from "react";
 import {StyleSheet} from "react-native";
-import {useCacheData} from "./cache/Cache";
+import {useCacheData} from "./cache/framework/Cache";
 
 function GroupItemFeed({postID}: {postID: PostID}) {
   // TODO: Suspense handler for _just_ this component.

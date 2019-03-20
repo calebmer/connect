@@ -6,10 +6,10 @@ import {
   PostCursor,
   PostID,
 } from "@connect/api-client";
-import {API} from "../../api/API";
+import {API} from "../api/API";
 import {AccountCache} from "./AccountCache";
-import {Cache} from "../Cache";
-import {CacheList} from "../CacheList";
+import {Cache} from "./framework/Cache";
+import {CacheList} from "./framework/CacheList";
 import {PostCache} from "./PostCache";
 
 /** The number of posts we load for a group in our initial fetch. */

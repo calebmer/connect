@@ -1,6 +1,6 @@
 import {AccountID, AccountProfile} from "@connect/api-client";
-import {API} from "../../api/API";
-import {Cache} from "../Cache";
+import {API} from "../api/API";
+import {Cache} from "./framework/Cache";
 
 /**
  * Caches accounts by their ID.
