@@ -1,4 +1,4 @@
-import {AccountID} from "./Account";
+import {AccountID} from "./AccountTypes";
 
 /** A unique type which is used as an identifier for groups. */
 export type GroupID = number & {readonly _type: typeof GroupID};

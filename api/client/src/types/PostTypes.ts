@@ -1,5 +1,5 @@
-import {DateTime, GroupID} from "./Group";
-import {AccountID} from "./Account";
+import {DateTime, GroupID} from "./GroupTypes";
+import {AccountID} from "./AccountTypes";
 import {Cursor} from "../Range";
 
 /** A unique type which is used as an identifier for posts. */

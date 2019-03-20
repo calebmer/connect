@@ -8,7 +8,7 @@ import {
   SchemaNamespace,
 } from "./Schema";
 import {APISchema} from "./APISchema";
-import {AccessToken} from "./entities/Tokens";
+import {AccessToken} from "./types/TokenTypes";
 
 /**
  * The type of an API client.

@@ -9,7 +9,7 @@ import {
   signIn,
   signOut,
   signUp,
-} from "../Account";
+} from "../AccountMethods";
 import {MockAccountCollection} from "../../entities/Account";
 import uuidV4 from "uuid/v4";
 

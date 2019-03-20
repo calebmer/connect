@@ -1,7 +1,7 @@
-import {AccountID} from "./Account";
+import {AccountID} from "./AccountTypes";
 import {Cursor} from "../Range";
-import {DateTime} from "./Group";
-import {PostID} from "./Post";
+import {DateTime} from "./GroupTypes";
+import {PostID} from "./PostTypes";
 
 /** A unique type which is used as an identifier for comments. */
 export type CommentID = number & {readonly _type: typeof CommentID};

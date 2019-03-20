@@ -1,8 +1,8 @@
-import {AccessToken, RefreshToken} from "./entities/Tokens";
-import {AccountID, AccountProfile} from "./entities/Account";
-import {Comment, CommentCursor} from "./entities/Comment";
-import {Group, GroupID} from "./entities/Group";
-import {Post, PostCursor, PostID} from "./entities/Post";
+import {AccessToken, RefreshToken} from "./types/TokenTypes";
+import {AccountID, AccountProfile} from "./types/AccountTypes";
+import {Comment, CommentCursor} from "./types/CommentTypes";
+import {Group, GroupID} from "./types/GroupTypes";
+import {Post, PostCursor, PostID} from "./types/PostTypes";
 import {RangeInputFields} from "./Range";
 import {Schema} from "./Schema";
 import {SchemaInput} from "./SchemaInput";
