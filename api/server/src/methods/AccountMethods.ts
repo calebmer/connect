@@ -198,13 +198,24 @@ async function generateTokens(
  * current profile.
  */
 export async function getCurrentProfile(
-  ctx: {readonly accounts: AccountCollection},
+  ctx: {readonly client: PGClient},
   accountID: AccountID,
 ): Promise<{
   readonly account: AccountProfile;
 }> {
-  const account = await ctx.accounts.getProfile(accountID);
+  // Select all the account profiles our client asked for.
+  const [account] = await AccountProfileView.select({
+    id: AccountProfileView.id,
+    name: AccountProfileView.name,
+    avatarURL: AccountProfileView.avatar_url,
+  })
+    .where(AccountProfileView.id.equals(accountID))
+    .execute(ctx.client, accountID);
+
+  // If the account does not exist then throw an error! We expect our
+  // authorized account to exist.
   if (account === undefined) throw new APIError(APIErrorCode.NOT_FOUND);
+
   return {account};
 }
 
@@ -216,7 +227,7 @@ export async function getProfile(
   accountID: AccountID,
   input: {readonly id: AccountID},
 ): Promise<{
-  readonly account: AccountProfile;
+  readonly account: AccountProfile | null;
 }> {
   // Select all the account profiles our client asked for.
   const [account] = await AccountProfileView.select({
@@ -227,9 +238,7 @@ export async function getProfile(
     .where(AccountProfileView.id.equals(input.id))
     .execute(ctx.client, accountID);
 
-  if (account === undefined) throw new APIError(APIErrorCode.NOT_FOUND);
-
-  return {account};
+  return {account: account || null};
 }
 
 /**

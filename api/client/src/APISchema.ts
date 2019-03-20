@@ -96,6 +96,9 @@ export const APISchema = Schema.namespace({
      * Gets basic information about the current account’s profile. Takes no
      * input because we use the authorization context to determine the
      * current profile.
+     *
+     * If the current account’s profile does not exist then we throw a “not
+     * found” error.
      */
     getCurrentProfile: Schema.method({
       safe: true,
@@ -107,29 +110,27 @@ export const APISchema = Schema.namespace({
 
     /**
      * Get the profile for an account that is in at least one of the same groups
-     * as us. If the account is not in one of the same groups then we throw
-     * a “not found” error.
+     * as us.
+     *
+     * If we are not allowed to see this profile or the profile does not exist
+     * then the method returns null.
      */
     getProfile: Schema.method({
       safe: true,
-      input: {
-        id: SchemaInput.integer<AccountID>(),
-      },
-      output: SchemaOutput.t<{
-        readonly account: AccountProfile;
-      }>(),
+      input: {id: SchemaInput.integer<AccountID>()},
+      output: SchemaOutput.t<{readonly account: AccountProfile | null}>(),
     }),
 
     /**
-     * Gets some public account profiles. If a requested account does not
-     * exist we will not include it in the output instead of throwing an error
-     * which would mean we lose _all_ account profiles.
+     * Gets some public account profiles.
+     *
+     * If we are not allowed to see a profile or a profile does not exist
+     * then the method will not return an element for that profile in the array
+     * but will attempt to return other existing accounts.
      */
     getManyProfiles: Schema.method({
       safe: true,
-      input: {
-        ids: SchemaInput.array(SchemaInput.integer<AccountID>()),
-      },
+      input: {ids: SchemaInput.array(SchemaInput.integer<AccountID>())},
       output: SchemaOutput.t<{
         readonly accounts: ReadonlyArray<AccountProfile>;
       }>(),
@@ -138,18 +139,15 @@ export const APISchema = Schema.namespace({
 
   group: Schema.namespace({
     /**
-     * Fetches a group by its slug which was likely taken from a URL. If a group
-     * does not exist or our account is not a member of that group we throw
-     * a “not found” error.
+     * Fetches a group by its slug which was likely taken from a URL.
+     *
+     * If we are not allowed to see a group or the group does not exist then
+     * the method returns null.
      */
     getBySlug: Schema.method({
       safe: true,
-      input: {
-        slug: SchemaInput.string(),
-      },
-      output: SchemaOutput.t<{
-        readonly group: Group;
-      }>(),
+      input: {slug: SchemaInput.string()},
+      output: SchemaOutput.t<{readonly group: Group | null}>(),
     }),
 
     /**
@@ -174,14 +172,15 @@ export const APISchema = Schema.namespace({
 
   post: Schema.namespace({
     /**
-     * Fetches a post with the provided ID. If the post does not exist or the
-     * current account does not have access to view the post then we will throw
-     * a “not found” error.
+     * Fetches a post with the provided ID.
+     *
+     * If we are not allowed to see a group or the group does not exist then
+     * the method returns null.
      */
     get: Schema.method({
       safe: true,
       input: {id: SchemaInput.integer<PostID>()},
-      output: SchemaOutput.t<{readonly post: Post}>(),
+      output: SchemaOutput.t<{readonly post: Post | null}>(),
     }),
 
     /**

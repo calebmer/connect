@@ -45,6 +45,7 @@ export type PostCacheListEntry = {
 export const GroupCache = new Cache<string, GroupCacheEntry>(async slug => {
   // Get the group by its slug from our API.
   const {group} = await API.group.getBySlug({slug});
+  if (group == null) throw new Error("Group not found.");
 
   // Create a fresh cache for our group’s posts.
   const postCacheList = PostCacheList(group.id);

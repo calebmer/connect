@@ -1,6 +1,4 @@
 import {
-  APIError,
-  APIErrorCode,
   AccountID,
   Group,
   GroupID,
@@ -38,10 +36,7 @@ export async function getBySlug(
     .where(GroupTable.slug.equals(input.slug))
     .execute(ctx.client, accountID);
 
-  // TODO: Return null instead of error.
-  if (group == null) throw new APIError(APIErrorCode.NOT_FOUND);
-
-  return {group};
+  return {group: group || null};
 }
 
 /**

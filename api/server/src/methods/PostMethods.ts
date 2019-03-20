@@ -1,11 +1,4 @@
-import {
-  APIError,
-  APIErrorCode,
-  AccountID,
-  Comment,
-  Post,
-  PostID,
-} from "@connect/api-client";
+import {AccountID, Comment, Post, PostID} from "@connect/api-client";
 import {PGClient} from "../PGClient";
 import {PostTable} from "../tables/PostTable";
 
@@ -28,10 +21,7 @@ export async function get(
     .where(PostTable.id.equals(input.id))
     .execute(ctx.client, accountID);
 
-  // TODO: Return null instead of error.
-  if (post == null) throw new APIError(APIErrorCode.NOT_FOUND);
-
-  return {post};
+  return {post: post || null};
 }
 
 /**

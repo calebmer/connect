@@ -7,5 +7,6 @@ import {Cache} from "../Cache";
  */
 export const AccountCache = new Cache<AccountID, AccountProfile>(async id => {
   const {account} = await API.account.getProfile({id});
+  if (account == null) throw new Error("Account not found.");
   return account;
 });

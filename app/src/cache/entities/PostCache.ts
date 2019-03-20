@@ -7,5 +7,6 @@ import {Cache} from "../Cache";
  */
 export const PostCache = new Cache<PostID, Post>(async id => {
   const {post} = await API.post.get({id});
+  if (post == null) throw new Error("Post not found.");
   return post;
 });
