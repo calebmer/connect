@@ -2,14 +2,12 @@ import {
   APIError,
   APIErrorCode,
   AccountID,
-  AccountProfile,
   Group,
   GroupID,
   Post,
   PostCursor,
   Range,
 } from "@connect/api-client";
-import {AccountProfileView} from "../tables/AccountTable";
 import {GroupTable} from "../tables/GroupTable";
 import {PGClient} from "../PGClient";
 import {PGPagination} from "../PGPagination";
@@ -72,30 +70,4 @@ export async function getPosts(
   );
 
   return {posts};
-}
-
-/**
- * Get profiles in a group.
- */
-export async function getProfiles(
-  ctx: {readonly client: PGClient},
-  accountID: AccountID,
-  input: {
-    readonly groupID: GroupID;
-    readonly ids: ReadonlyArray<AccountID>;
-  },
-): Promise<{
-  readonly accounts: ReadonlyArray<AccountProfile>;
-}> {
-  // Select all the account profiles our client asked for. We use the group our
-  // client provided as an optimization.
-  const accounts = await AccountProfileView.select({
-    id: AccountProfileView.id,
-    name: AccountProfileView.name,
-    avatarURL: AccountProfileView.avatar_url,
-  })
-    .where(AccountProfileView.id.any(input.ids))
-    .execute(ctx.client, accountID);
-
-  return {accounts};
 }

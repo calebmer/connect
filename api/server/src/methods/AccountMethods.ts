@@ -8,8 +8,9 @@ import {
 } from "@connect/api-client";
 import {AccessTokenGenerator, RefreshTokenCollection} from "../entities/Tokens";
 import {AccountCollection} from "../entities/Account";
+import {AccountProfileView} from "../tables/AccountTable";
+import {PGClient} from "../PGClient";
 import bcrypt from "bcrypt";
-import {GroupCollection} from "../entities/Group";
 
 /**
  * Balances speed and security for the bcrypt algorithm. See the
@@ -208,19 +209,47 @@ export async function getCurrentProfile(
 }
 
 /**
- * Gets basic information about some account’s profile as long as that account
- * shares at least one group with our current account.
+ * Gets basic public information about some account’s profile.
  */
 export async function getProfile(
-  ctx: {readonly accounts: AccountCollection; readonly groups: GroupCollection},
+  ctx: {readonly client: PGClient},
   accountID: AccountID,
   input: {readonly id: AccountID},
 ): Promise<{
   readonly account: AccountProfile;
 }> {
-  const allowedToView = await ctx.groups.sharedMembership(accountID, input.id);
-  if (allowedToView === false) throw new APIError(APIErrorCode.NOT_FOUND);
-  const account = await ctx.accounts.getProfile(input.id);
+  // Select all the account profiles our client asked for.
+  const [account] = await AccountProfileView.select({
+    id: AccountProfileView.id,
+    name: AccountProfileView.name,
+    avatarURL: AccountProfileView.avatar_url,
+  })
+    .where(AccountProfileView.id.equals(input.id))
+    .execute(ctx.client, accountID);
+
   if (account === undefined) throw new APIError(APIErrorCode.NOT_FOUND);
+
   return {account};
+}
+
+/**
+ * Gets basic public information about some account’s profile.
+ */
+export async function getManyProfiles(
+  ctx: {readonly client: PGClient},
+  accountID: AccountID,
+  input: {readonly ids: ReadonlyArray<AccountID>},
+): Promise<{
+  readonly accounts: ReadonlyArray<AccountProfile>;
+}> {
+  // Select all the account profiles our client asked for.
+  const accounts = await AccountProfileView.select({
+    id: AccountProfileView.id,
+    name: AccountProfileView.name,
+    avatarURL: AccountProfileView.avatar_url,
+  })
+    .where(AccountProfileView.id.any(input.ids))
+    .execute(ctx.client, accountID);
+
+  return {accounts};
 }

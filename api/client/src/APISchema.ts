@@ -119,6 +119,21 @@ export const APISchema = Schema.namespace({
         readonly account: AccountProfile;
       }>(),
     }),
+
+    /**
+     * Gets some public account profiles. If a requested account does not
+     * exist we will not include it in the output instead of throwing an error
+     * which would mean we lose _all_ account profiles.
+     */
+    getManyProfiles: Schema.method({
+      safe: true,
+      input: {
+        ids: SchemaInput.array(SchemaInput.integer<AccountID>()),
+      },
+      output: SchemaOutput.t<{
+        readonly accounts: ReadonlyArray<AccountProfile>;
+      }>(),
+    }),
   }),
 
   group: Schema.namespace({
@@ -153,25 +168,6 @@ export const APISchema = Schema.namespace({
       },
       output: SchemaOutput.t<{
         readonly posts: ReadonlyArray<Post>;
-      }>(),
-    }),
-
-    /**
-     * Gets public account profiles in a group. If a requested account is not
-     * a member of the group then we will not include it in the output instead
-     * of throwing an error which would mean we lose _all_ account profiles.
-     *
-     * If the authorized account is not a member of the provided group then we
-     * will throw a “not found” error.
-     */
-    getProfiles: Schema.method({
-      safe: true,
-      input: {
-        groupID: SchemaInput.integer<GroupID>(),
-        ids: SchemaInput.array(SchemaInput.integer<AccountID>()), // Shorter name for this property since it will be repeated in the URL.
-      },
-      output: SchemaOutput.t<{
-        readonly accounts: ReadonlyArray<AccountProfile>;
       }>(),
     }),
   }),
