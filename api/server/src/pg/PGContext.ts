@@ -1,8 +1,8 @@
-import {PGAccountCollection} from "./entities/pg/PGAccount";
+import {PGAccountCollection} from "../entities/pg/PGAccount";
 import {PGClient} from "./PGClient";
-import {PGGroupCollection} from "./entities/pg/PGGroup";
-import {PGPostCollection} from "./entities/pg/PGPost";
-import {PGRefreshTokenCollection} from "./entities/pg/PGRefreshToken";
+import {PGGroupCollection} from "../entities/pg/PGGroup";
+import {PGPostCollection} from "../entities/pg/PGPost";
+import {PGRefreshTokenCollection} from "../entities/pg/PGRefreshToken";
 
 /**
  * The context of an API method using entity collection implementations

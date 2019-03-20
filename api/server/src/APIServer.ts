@@ -17,8 +17,8 @@ import {
 import {AccessTokenData, AccessTokenGenerator} from "./entities/Tokens";
 import {DEV, TEST} from "./RunConfig";
 import {NextFunction, Request, Response} from "express";
-import {PGClient} from "./PGClient";
-import {PGContext} from "./PGContext";
+import {PGClient} from "./pg/PGClient";
+import {PGContext} from "./pg/PGContext";
 import {ParsedUrlQuery} from "querystring";
 import chalk from "chalk";
 import express from "express";

@@ -1,5 +1,5 @@
 import {AccountID, Comment, Post, PostID} from "@connect/api-client";
-import {PGClient} from "../PGClient";
+import {PGClient} from "../pg/PGClient";
 import {PostTable} from "../tables/PostTable";
 
 /**

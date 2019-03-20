@@ -1,6 +1,6 @@
 import {AccountID} from "@connect/api-client";
-import {PGTable} from "../PGTable";
-import {PGType} from "../PGType";
+import {PGTable} from "../pg/PGTable";
+import {PGType} from "../pg/PGType";
 
 /**
  * The table containing all of an account’s information. Only the owner of this

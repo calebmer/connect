@@ -7,8 +7,8 @@ import {
   Range,
 } from "@connect/api-client";
 import {GroupTable} from "../tables/GroupTable";
-import {PGClient} from "../PGClient";
-import {PGPagination} from "../PGPagination";
+import {PGClient} from "../pg/PGClient";
+import {PGPagination} from "../pg/PGPagination";
 import {PostTable} from "../tables/PostTable";
 
 // Create a paginator for posts.

@@ -1,7 +1,7 @@
 import {AccountID, GroupID, PostID} from "@connect/api-client";
 import {GroupMemberTable} from "./GroupMemberTable";
-import {PGTable} from "../PGTable";
-import {PGType} from "../PGType";
+import {PGTable} from "../pg/PGTable";
+import {PGType} from "../pg/PGType";
 
 export const PostTable = PGTable.define({
   name: "post",
