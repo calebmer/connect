@@ -32,8 +32,8 @@ CREATE TABLE account (
 
 
 
-GRANT SELECT (id, name, avatar_url) ON TABLE account TO connect_user;
-GRANT INSERT ON TABLE account TO connect_user;
+GRANT SELECT (id, name, avatar_url) ON TABLE account TO connect_api;
+GRANT INSERT ON TABLE account TO connect_api;
 ALTER TABLE account ENABLE ROW LEVEL SECURITY;
 
 -- A user has the permission to see all public account information.

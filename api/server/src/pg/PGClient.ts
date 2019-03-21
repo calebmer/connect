@@ -19,7 +19,11 @@ const debug = createDebugger("connect:api:pg");
  * Don’t use `pool` directly! Instead use the `withClient()` function which
  * automatically handles acquiring and releasing a client.
  */
-const pool = new Pool();
+const pool = new Pool({
+  // Always connect to Postgres with the `connect_api` role! No matter what
+  // configuration we are given.
+  user: "connect_api",
+});
 
 // Whenever the pool newly connects a client this event is called and we can run
 // some setup commands.
@@ -46,13 +50,28 @@ export class PGClient {
    */
   static async with<T>(action: (client: PGClient) => Promise<T>): Promise<T> {
     const client = await pool.connect();
-    let result: T;
     try {
-      result = await action(new PGClient(client));
+      // Begin an explicit transaction.
+      await client.query("BEGIN");
+
+      // Execute our action...
+      const result = await action(new PGClient(client));
+
+      // If the action was successful then commit our transaction!
+      await client.query("COMMIT");
+
+      // Return the result.
+      return result;
+    } catch (error) {
+      // If there was an error, rollback our transaction.
+      await client.query("ROLLBACK");
+
+      // Rethrow the error.
+      throw error;
     } finally {
+      // Always release our client back to the pool.
       client.release();
     }
-    return result;
   }
 
   private constructor(private readonly client: ClientBase) {}

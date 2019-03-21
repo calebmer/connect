@@ -1,6 +1,6 @@
 import {AccountID, Post, PostID} from "@connect/api-client";
-import {PGClient} from "../../PGClient";
-import {sql} from "../../PGSQL";
+import {PGClient} from "../../pg/PGClient";
+import {sql} from "../../pg/PGSQL";
 
 export class PGPostCollection {
   constructor(private readonly client: PGClient) {}

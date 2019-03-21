@@ -1,7 +1,7 @@
 import {AccountID, RefreshToken} from "@connect/api-client";
-import {PGClient} from "../../PGClient";
+import {PGClient} from "../../pg/PGClient";
 import {RefreshTokenCollection} from "../Tokens";
-import {sql} from "../../PGSQL";
+import {sql} from "../../pg/PGSQL";
 import uuidV4 from "uuid/v4";
 
 export class PGRefreshTokenCollection implements RefreshTokenCollection {

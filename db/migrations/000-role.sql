@@ -1,8 +1,8 @@
 -- Create the role we will use for ensuring proper access to our APIs.
-CREATE ROLE connect_user;
+CREATE ROLE connect_api LOGIN;
 
--- Allow our user to see the objects in the Connect schema.
-GRANT USAGE ON SCHEMA connect TO connect_user;
+-- Allow our API user to see the objects in the Connect schema.
+GRANT USAGE ON SCHEMA connect TO connect_api;
 
 -- Creates a function that will return the current account ID set as a
 -- configuration parameter.

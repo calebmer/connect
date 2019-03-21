@@ -29,7 +29,7 @@ CREATE TABLE refresh_token (
 --
 -- Currently this table is secured at the API level. Should we also consider
 -- securing this table at the database level?
-GRANT SELECT ON TABLE refresh_token TO connect_user;
-GRANT INSERT ON TABLE refresh_token TO connect_user;
-GRANT UPDATE ON TABLE refresh_token TO connect_user;
-GRANT DELETE ON TABLE refresh_token TO connect_user;
+GRANT SELECT ON TABLE refresh_token TO connect_api;
+GRANT INSERT ON TABLE refresh_token TO connect_api;
+GRANT UPDATE ON TABLE refresh_token TO connect_api;
+GRANT DELETE ON TABLE refresh_token TO connect_api;

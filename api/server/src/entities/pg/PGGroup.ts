@@ -9,8 +9,8 @@ import {
   Range,
 } from "@connect/api-client";
 import {GroupCollection} from "../Group";
-import {PGClient} from "../../PGClient";
-import {sql} from "../../PGSQL";
+import {PGClient} from "../../pg/PGClient";
+import {sql} from "../../pg/PGSQL";
 
 declare const PGPostPagination: any;
 

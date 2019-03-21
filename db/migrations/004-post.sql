@@ -30,7 +30,7 @@ CREATE INDEX post_published_at ON post (group_id, published_at DESC, id);
 
 
 
-GRANT SELECT ON TABLE post TO connect_user;
+GRANT SELECT ON TABLE post TO connect_api;
 ALTER TABLE post ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY select_member_of ON post FOR SELECT USING (

@@ -1,8 +1,8 @@
 import {Group, GroupID, Post, PostCursor, Range} from "@connect/api-client";
 import {Context} from "../Context";
-import {GroupTable} from "../tables/GroupTable";
 import {PGPagination} from "../pg/PGPagination";
 import {PostTable} from "../tables/PostTable";
+import {sql} from "../pg/PGSQL";
 
 // Create a paginator for posts.
 const PostTablePagination = new PGPagination([
@@ -17,18 +17,24 @@ const PostTablePagination = new PGPagination([
 export async function getBySlug(
   ctx: Context,
   input: {readonly slug: string},
-): Promise<{readonly group: Group}> {
-  // Select the group which has a slug equal to our provided slug. Slugs have
-  // a unique index in our database which allows for efficient selection.
-  const [group] = await GroupTable.select({
-    id: GroupTable.id,
-    slug: GroupTable.slug,
-    name: GroupTable.name,
-  })
-    .where(GroupTable.slug.equals(input.slug))
-    .execute(ctx);
+): Promise<{readonly group: Group | null}> {
+  const {
+    rows: [row],
+  } = await ctx.client.query(
+    sql`SELECT id, name FROM "group" WHERE slug = ${input.slug}`,
+  );
 
-  return {group: group || null};
+  if (row === undefined) {
+    return {group: null};
+  } else {
+    return {
+      group: {
+        id: row.id,
+        slug: input.slug,
+        name: row.name,
+      },
+    };
+  }
 }
 
 /**

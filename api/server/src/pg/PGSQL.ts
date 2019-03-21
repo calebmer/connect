@@ -88,7 +88,7 @@ type SQLQueryRaw = {
  */
 export function sql(
   strings: TemplateStringsArray,
-  ...values: Array<SQLQuery>
+  ...values: Array<unknown>
 ): SQLQuery {
   if (strings.length > 0 && strings.length !== values.length + 1) {
     throw new Error(
@@ -99,7 +99,16 @@ export function sql(
     $$typeof: sqlQuery,
     type: "TEMPLATE",
     strings,
-    values,
+
+    // Wrap any values that are not SQL queries with `sql.value()`.
+    values: values.map(
+      (value): SQLQuery =>
+        typeof value === "object" &&
+        value !== null &&
+        (value as any).$$typeof === sqlQuery
+          ? (value as SQLQuery)
+          : sql.value(value),
+    ),
   };
 }
 

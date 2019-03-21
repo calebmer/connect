@@ -47,7 +47,7 @@ CREATE TABLE group_member (
 
 
 
-GRANT SELECT ON TABLE "group" TO connect_user;
+GRANT SELECT ON TABLE "group" TO connect_api;
 ALTER TABLE "group" ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY select_member_of ON "group" FOR SELECT USING (
@@ -64,7 +64,7 @@ CREATE POLICY select_member_of ON "group" FOR SELECT USING (
 
 
 
-GRANT SELECT ON TABLE group_member TO connect_user;
+GRANT SELECT ON TABLE group_member TO connect_api;
 ALTER TABLE group_member ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY select_own ON group_member FOR SELECT USING

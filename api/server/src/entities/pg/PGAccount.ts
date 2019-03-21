@@ -1,7 +1,7 @@
 import {AccountAuth, AccountCollection} from "../Account";
 import {AccountID, AccountProfile} from "@connect/api-client";
-import {PGClient} from "../../PGClient";
-import {sql} from "../../PGSQL";
+import {PGClient} from "../../pg/PGClient";
+import {sql} from "../../pg/PGSQL";
 
 export class PGAccountCollection implements AccountCollection {
   constructor(private readonly client: PGClient) {}
