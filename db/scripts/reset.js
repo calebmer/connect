@@ -22,10 +22,30 @@ async function run() {
 
   // Connect a Postgres client, insert the mock data, and release our client.
   const client = new Client();
-  await client.connect();
-  await client.query("SET search_path = connect");
-  await client.query(mockData);
-  await client.end();
+  try {
+    await client.connect();
+    await client.query("SET search_path = connect");
+    await client.query(mockData);
+  } finally {
+    await client.end();
+  }
+}
+
+async function maybeCreateDatabase(database) {
+  // Create a new temporary client with the default connection settings.
+  const tmpClient = new Client();
+  try {
+    await tmpClient.connect();
+    const {rowCount} = await tmpClient.query(
+      "SELECT 1 FROM pg_database WHERE datname = $1",
+      [database],
+    );
+    if (rowCount < 1) {
+      await tmpClient.query(`CREATE DATABASE "${database.replace('"', '""')}"`);
+    }
+  } finally {
+    await tmpClient.end();
+  }
 }
 
 module.exports = run;

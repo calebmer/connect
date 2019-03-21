@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 
 const readline = require("readline");
-
 const chalk = require("chalk");
 const {Client} = require("pg");
 
@@ -37,23 +36,25 @@ async function run() {
 
   // Connect a Postgres client.
   const client = new Client();
-  await client.connect();
+  try {
+    await client.connect();
 
-  // Drop everything including the migrations table.
-  await client.query(`
-    BEGIN;
-    DROP SCHEMA IF EXISTS connect CASCADE;
-    DROP ROLE IF EXISTS connect_api;
-    DROP ROLE IF EXISTS connect_api_auth;
-    DROP TABLE IF EXISTS connect_migration;
-    COMMIT;
-  `);
+    // Drop everything including the migrations table.
+    await client.query(`
+      BEGIN;
+      DROP SCHEMA IF EXISTS connect CASCADE;
+      DROP ROLE IF EXISTS connect_api;
+      DROP ROLE IF EXISTS connect_api_auth;
+      DROP TABLE IF EXISTS connect_migration;
+      COMMIT;
+    `);
 
-  // Release our Postgres client.
-  await client.end();
-
-  // Let the user know their database was successfully dropped.
-  console.log(`${chalk.grey("▸")} Database successfully dropped ♻️`);
+    // Let the user know their database was successfully dropped.
+    console.log(`${chalk.grey("▸")} Database successfully dropped ♻️`);
+  } finally {
+    // Release our Postgres client.
+    await client.end();
+  }
 }
 
 module.exports = run;

@@ -16,59 +16,63 @@ async function run() {
 
   // Connect a Postgres client.
   const client = new Client();
-  await client.connect();
+  try {
+    await client.connect();
 
-  // Setup the migrations schema.
-  await client.query(`
-    BEGIN;
+    // Setup the migrations schema.
+    await client.query(`
+      BEGIN;
 
-    CREATE SCHEMA IF NOT EXISTS connect;
+      CREATE SCHEMA IF NOT EXISTS connect;
 
-    CREATE TABLE IF NOT EXISTS connect_migration (
-      name TEXT PRIMARY KEY,
-      run_at TIMESTAMP NOT NULL DEFAULT now()
-    );
+      CREATE TABLE IF NOT EXISTS connect_migration (
+        name TEXT PRIMARY KEY,
+        run_at TIMESTAMP NOT NULL DEFAULT now()
+      );
 
-    COMMIT;
-  `);
+      COMMIT;
+    `);
 
-  // Begin a new transaction.
-  await client.query("BEGIN");
+    // Begin a new transaction.
+    await client.query("BEGIN");
 
-  // All of the migrations which have already been run.
-  const result = await client.query("SELECT name FROM connect_migration");
+    // All of the migrations which have already been run.
+    const result = await client.query("SELECT name FROM connect_migration");
 
-  // Remove all the rows from our `migrations` set which have already been run.
-  for (const row of result.rows) {
-    migrations.delete(row.name);
+    // Remove all the rows from our `migrations` set which have already
+    // been run.
+    for (const row of result.rows) {
+      migrations.delete(row.name);
+    }
+
+    // Set the search path to the connect schema. This way all the tables we
+    // create will automatically be added to the connect schema.
+    await client.query("SET search_path = connect");
+
+    // Run all the migrations which have not yet been run.
+    for (const name of migrations) {
+      if (path.extname(name) !== ".sql") continue;
+
+      console.log(
+        `${chalk.grey("▸")} Running migration ${chalk.cyan.bold(name)}`,
+      );
+
+      const migrationPath = path.join(migrationsDir, name);
+      const migrationFile = await readFile(migrationPath, "utf8");
+      await client.query(migrationFile);
+      await client.query({
+        text: "INSERT INTO public.connect_migration (name) VALUES ($1)",
+        values: [name],
+      });
+    }
+
+    // Commit our transaction now that we’ve finished running all
+    // our migrations.
+    await client.query("COMMIT");
+  } finally {
+    // Release our Postgres client.
+    await client.end();
   }
-
-  // Set the search path to the connect schema. This way all the tables we
-  // create will automatically be added to the connect schema.
-  await client.query("SET search_path = connect");
-
-  // Run all the migrations which have not yet been run.
-  for (const name of migrations) {
-    if (path.extname(name) !== ".sql") continue;
-
-    console.log(
-      `${chalk.grey("▸")} Running migration ${chalk.cyan.bold(name)}`,
-    );
-
-    const migrationPath = path.join(migrationsDir, name);
-    const migrationFile = await readFile(migrationPath, "utf8");
-    await client.query(migrationFile);
-    await client.query({
-      text: "INSERT INTO public.connect_migration (name) VALUES ($1)",
-      values: [name],
-    });
-  }
-
-  // Commit our transaction now that we’ve finished running all our migrations.
-  await client.query("COMMIT");
-
-  // Release our Postgres client.
-  await client.end();
 }
 
 module.exports = run;
