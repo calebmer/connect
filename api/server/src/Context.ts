@@ -1,9 +1,14 @@
+import {SQLQuery, sql} from "./pg/PGSQL";
 import {AccountID} from "@connect/api-client";
-import {PGClient} from "./pg/PGClient";
 import {PGAccountCollection} from "./entities/pg/PGAccount";
+import {PGClient} from "./pg/PGClient";
 import {PGGroupCollection} from "./entities/pg/PGGroup";
-import {PGRefreshTokenCollection} from "./entities/pg/PGRefreshToken";
 import {PGPostCollection} from "./entities/pg/PGPost";
+import {PGRefreshTokenCollection} from "./entities/pg/PGRefreshToken";
+import {QueryResult} from "pg";
+import createDebugger from "debug";
+
+const debugSQL = createDebugger("connect:api:pg");
 
 /**
  * Context for an unauthorized API request.
@@ -19,9 +24,12 @@ export class ContextUnauthorized {
   }
 
   /**
-   * The Postgres client our context uses to execute database queries.
+   * The Postgres client our context uses to execute database queries. The
+   * client is private. It may not be accessed by the outside world. Instead
+   * if you have a `Context` object you should call the `query()` method which
+   * requires a `SQLQuery` and performs debug logging.
    */
-  public readonly client: PGClient;
+  private readonly client: PGClient;
 
   protected constructor(client: PGClient) {
     this.client = client;
@@ -30,6 +38,17 @@ export class ContextUnauthorized {
     this.groups = new PGGroupCollection(client);
     this.refreshTokens = new PGRefreshTokenCollection(client);
     this.posts = new PGPostCollection(client);
+  }
+
+  /**
+   * Executes a SQL query. We require a `SQLQuery` object to prevent SQL
+   * injection attacks entirely. We will also log the provided query
+   * for debugging.
+   */
+  query(query: SQLQuery): Promise<QueryResult> {
+    const queryConfig = sql.compile(query);
+    debugSQL(typeof queryConfig === "string" ? queryConfig : queryConfig.text);
+    return this.client.query(queryConfig);
   }
 }
 
@@ -55,9 +74,7 @@ export class Context extends ContextUnauthorized {
       if (typeof accountID !== "number") {
         throw new Error("Expected accountID to be a number.");
       }
-      await (client as any).client.query(
-        `SET LOCAL connect.account_id = ${accountID}`,
-      );
+      await client.query(`SET LOCAL connect.account_id = ${accountID}`);
 
       // Run our action!
       return action(new Context(client, accountID));

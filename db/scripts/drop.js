@@ -44,6 +44,7 @@ async function run() {
     BEGIN;
     DROP SCHEMA IF EXISTS connect CASCADE;
     DROP ROLE IF EXISTS connect_api;
+    DROP ROLE IF EXISTS connect_api_auth;
     DROP TABLE IF EXISTS connect_migration;
     COMMIT;
   `);

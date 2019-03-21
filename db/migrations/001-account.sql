@@ -28,13 +28,18 @@ CREATE TABLE account (
   created_at TIMESTAMP NOT NULL DEFAULT now()
 );
 
+-- Create a view of the `account` table with just the account’s public profile
+-- information. Not including the account’s private data like `email`
+-- and `password_hash`.
+CREATE VIEW account_profile AS
+  SELECT id, name, avatar_url
+    FROM account;
 
+-- Allow `connect_api_auth` to access the private data in our `account` table
+-- like `email` and `password_hash`.
+GRANT SELECT ON TABLE account TO connect_api_auth;
+GRANT INSERT ON TABLE account TO connect_api_auth;
 
-
-
-GRANT SELECT (id, name, avatar_url) ON TABLE account TO connect_api;
-GRANT INSERT ON TABLE account TO connect_api;
-ALTER TABLE account ENABLE ROW LEVEL SECURITY;
-
--- A user has the permission to see all public account information.
-CREATE POLICY select_all ON account FOR SELECT USING (true);
+-- Allow all users to select from `account_profile`. All account profile
+-- information is public.
+GRANT SELECT ON TABLE account_profile TO connect_api;

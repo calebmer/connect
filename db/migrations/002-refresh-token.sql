@@ -22,14 +22,10 @@ CREATE TABLE refresh_token (
   created_at TIMESTAMP NOT NULL DEFAULT now()
 );
 
--- NOTE: Users have full access to select, insert, update, and delete
--- refresh tokens since we want our API to use this access to authenticate
--- unauthorized users. This could be problematic, however, since it reveals
--- information like the last time a refresh token was used.
---
--- Currently this table is secured at the API level. Should we also consider
--- securing this table at the database level?
-GRANT SELECT ON TABLE refresh_token TO connect_api;
-GRANT INSERT ON TABLE refresh_token TO connect_api;
-GRANT UPDATE ON TABLE refresh_token TO connect_api;
-GRANT DELETE ON TABLE refresh_token TO connect_api;
+-- Refresh tokens are secured at an API level considering we provide very little
+-- access to them. We provide access to `connect_api_auth` and
+-- not `connect_api` very intentionally!
+GRANT SELECT ON TABLE refresh_token TO connect_api_auth;
+GRANT INSERT ON TABLE refresh_token TO connect_api_auth;
+GRANT UPDATE ON TABLE refresh_token TO connect_api_auth;
+GRANT DELETE ON TABLE refresh_token TO connect_api_auth;

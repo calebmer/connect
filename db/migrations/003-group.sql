@@ -43,29 +43,23 @@ CREATE TABLE group_member (
   PRIMARY KEY (account_id, group_id)
 );
 
-
-
-
-
+-- Allow our API to access this table, but only after passing row level
+-- security policies.
 GRANT SELECT ON TABLE "group" TO connect_api;
 ALTER TABLE "group" ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY select_member_of ON "group" FOR SELECT USING (
-  EXISTS (
-    SELECT 1
-    FROM group_member
-    WHERE
-      group_member.account_id = current_account_id() AND
-      group_member.group_id = "group".id
-  )
-);
-
-
-
-
-
+-- Allow our API to access this table, but only after passing row level
+-- security policies.
 GRANT SELECT ON TABLE group_member TO connect_api;
 ALTER TABLE group_member ENABLE ROW LEVEL SECURITY;
 
+-- Account must be a member of the group to see it.
+CREATE POLICY select_member_of ON "group" FOR SELECT USING
+  (EXISTS (SELECT 1
+             FROM group_member
+            WHERE group_member.account_id = current_account_id() AND
+                  group_member.group_id = "group".id));
+
+-- Account must own the group membership to see it.
 CREATE POLICY select_own ON group_member FOR SELECT USING
   (account_id = current_account_id());

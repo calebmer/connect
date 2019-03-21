@@ -1,14 +1,7 @@
 import {Group, GroupID, Post, PostCursor, Range} from "@connect/api-client";
 import {Context} from "../Context";
 import {PGPagination} from "../pg/PGPagination";
-import {PostTable} from "../tables/PostTable";
 import {sql} from "../pg/PGSQL";
-
-// Create a paginator for posts.
-const PostTablePagination = new PGPagination([
-  {column: PostTable.published_at, descending: true},
-  {column: PostTable.id},
-]);
 
 /**
  * Gets a group by its slug, but only if the authenticated account is a member
@@ -20,7 +13,7 @@ export async function getBySlug(
 ): Promise<{readonly group: Group | null}> {
   const {
     rows: [row],
-  } = await ctx.client.query(
+  } = await ctx.query(
     sql`SELECT id, name FROM "group" WHERE slug = ${input.slug}`,
   );
 
@@ -37,6 +30,12 @@ export async function getBySlug(
   }
 }
 
+// Create a paginator for posts.
+const PGPaginationPost = new PGPagination(sql`post`, [
+  {column: sql`published_at`, descending: true},
+  {column: sql`id`},
+]);
+
 /**
  * Get posts in a group by reverse chronological order.
  */
@@ -48,16 +47,20 @@ export async function getPosts(
 }> {
   // Get a list of posts in reverse chronological order using the pagination
   // parameters provided by our input.
-  const posts = await PostTablePagination.query(
-    ctx,
-    PostTable.select({
-      id: PostTable.id,
-      groupID: PostTable.group_id,
-      authorID: PostTable.author_id,
-      publishedAt: PostTable.published_at,
-      content: PostTable.content,
-    }).where(PostTable.group_id.equals(input.groupID)),
-    input,
+  const {rows} = await PGPaginationPost.query(ctx, {
+    selection: sql`id, author_id, published_at, content`,
+    extraCondition: sql`group_id = ${sql.value(input.groupID)}`,
+    range: input,
+  });
+
+  const posts = rows.map(
+    (row): Post => ({
+      id: row.id,
+      groupID: input.groupID,
+      authorID: row.author_id,
+      publishedAt: row.published_at,
+      content: row.content,
+    }),
   );
 
   return {posts};

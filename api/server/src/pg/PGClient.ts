@@ -1,14 +1,10 @@
-import {ClientBase, Pool, QueryResult} from "pg";
-import {SQLQuery, sql} from "./PGSQL";
+import {ClientBase, Pool} from "pg";
 import {TEST} from "../RunConfig";
-import createDebugger from "debug";
 
 // Throw an error if we try to use Postgres in a test environment.
 if (TEST) {
   throw new Error("Should not be using Postgres in tests.");
 }
-
-const debug = createDebugger("connect:api:pg");
 
 /**
  * A database connection pool. Connecting a new client on every request would be
@@ -43,19 +39,21 @@ pool.on("error", (error, _client) => {
 /**
  * A Postgres database client which we may directly execute SQL queries against.
  */
-export class PGClient {
+export interface PGClient extends ClientBase {}
+
+export const PGClient = {
   /**
    * Executes an action with a Postgres client from our connection pool. Once
    * the action finishes we release the client back to our pool.
    */
-  static async with<T>(action: (client: PGClient) => Promise<T>): Promise<T> {
+  async with<T>(action: (client: PGClient) => Promise<T>): Promise<T> {
     const client = await pool.connect();
     try {
       // Begin an explicit transaction.
       await client.query("BEGIN");
 
       // Execute our action...
-      const result = await action(new PGClient(client));
+      const result = await action(client);
 
       // If the action was successful then commit our transaction!
       await client.query("COMMIT");
@@ -72,17 +70,5 @@ export class PGClient {
       // Always release our client back to the pool.
       client.release();
     }
-  }
-
-  private constructor(private readonly client: ClientBase) {}
-
-  /**
-   * Executes a SQL query. We require a `SQLQuery` object to prevent SQL
-   * injection attacks entirely.
-   */
-  query(query: SQLQuery): Promise<QueryResult> {
-    const queryConfig = sql.compile(query);
-    debug(typeof queryConfig === "string" ? queryConfig : queryConfig.text);
-    return this.client.query(queryConfig);
-  }
-}
+  },
+};

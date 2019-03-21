@@ -26,19 +26,15 @@ CREATE TABLE post (
 -- * `id` to disambiguate two posts which were posted at the exact same time.
 CREATE INDEX post_published_at ON post (group_id, published_at DESC, id);
 
-
-
-
-
+-- Allow our API to access this table, but only after passing row level
+-- security policies.
 GRANT SELECT ON TABLE post TO connect_api;
 ALTER TABLE post ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY select_member_of ON post FOR SELECT USING (
-  EXISTS (
-    SELECT 1
-    FROM group_member
-    WHERE
-      group_member.account_id = current_account_id() AND
-      group_member.group_id = post.group_id
-  )
-);
+-- Account must be a member of the group the post was published in to see
+-- the post.
+CREATE POLICY select_member_of ON post FOR SELECT USING
+  (EXISTS (SELECT 1
+             FROM group_member
+            WHERE group_member.account_id = current_account_id() AND
+                  group_member.group_id = post.group_id));

@@ -8,9 +8,9 @@ import {
 } from "@connect/api-client";
 import {Context, ContextUnauthorized} from "../Context";
 import {AccessTokenGenerator} from "../AccessToken";
-import {AccountCollection} from "../entities/Account";
-import {AccountProfileView} from "../tables/AccountTable";
 import bcrypt from "bcrypt";
+import {sql} from "../pg/PGSQL";
+import uuidV4 from "uuid/v4";
 
 /**
  * Balances speed and security for the bcrypt algorithm. See the
@@ -50,17 +50,26 @@ export async function signUp(
     throw new APIError(APIErrorCode.BAD_INPUT);
   }
 
+  // Use the `connect_api_auth` role in this transaction. This will give us full
+  // access to the `account` and `refresh_token` tables but nothing else.
+  await ctx.query(sql`SET LOCAL ROLE connect_api_auth`);
+
   // Hash the provided password with bcrypt.
   const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
 
   // Attempt to create a new account. If there is already an account with the
   // same email then we’ll do nothing. Otherwise we’ll return the ID of the
   // new account.
-  const newAccountID = await ctx.accounts.register({
-    name: input.name,
-    email: input.email,
-    passwordHash,
-  });
+  const {
+    rows: [row],
+  } = await ctx.query(
+    sql`INSERT INTO (name, email, password_hash) VALUES (${input.name}, ${
+      input.email
+    }, ${passwordHash}) ON CONFLICT (email) DO NOTHING RETURNING id`,
+  );
+
+  // Extract the account ID from the row.
+  const newAccountID: AccountID | undefined = row ? row.id : undefined;
 
   // If we did not create an account then we know the email was already in use
   // by some other account. Throw an API error for a nice error message.
@@ -82,10 +91,7 @@ export async function signUp(
  * our API!
  */
 export async function signIn(
-  ctx: {
-    readonly accounts: AccountCollection;
-    readonly refreshTokens: RefreshTokenCollection;
-  },
+  ctx: ContextUnauthorized,
   input: {
     readonly email: string;
     readonly password: string;
@@ -94,8 +100,16 @@ export async function signIn(
   readonly accessToken: AccessToken;
   readonly refreshToken: RefreshToken;
 }> {
+  // Use the `connect_api_auth` role in this transaction. This will give us full
+  // access to the `account` and `refresh_token` tables but nothing else.
+  await ctx.query(sql`SET LOCAL ROLE connect_api_auth`);
+
   // Lookup the account associated with the provided email address.
-  const account = await ctx.accounts.getAuth(input.email);
+  const {
+    rows: [account],
+  } = await ctx.query(
+    sql`SELECT id, password_hash FROM account WHERE email = ${input.email}`,
+  );
 
   // If there is no account for the provided email address then throw an error.
   //
@@ -108,7 +122,7 @@ export async function signIn(
 
   // Use bcrypt to compare the new password against the hashed password in
   // our database.
-  const same = await bcrypt.compare(input.password, account.passwordHash);
+  const same = await bcrypt.compare(input.password, account.password_hash);
 
   // If the passwords are not the same then throw an error. We must not sign
   // the person in if they gave us the wrong password.
@@ -126,10 +140,18 @@ export async function signIn(
  * sign back in.
  */
 export async function signOut(
-  ctx: {readonly refreshTokens: RefreshTokenCollection},
+  ctx: ContextUnauthorized,
   input: {readonly refreshToken: RefreshToken},
 ): Promise<{}> {
-  await ctx.refreshTokens.destroy(input.refreshToken);
+  // Use the `connect_api_auth` role in this transaction. This will give us full
+  // access to the `account` and `refresh_token` tables but nothing else.
+  await ctx.query(sql`SET LOCAL ROLE connect_api_auth`);
+
+  // Delete the refresh token from our database!
+  await ctx.query(
+    sql`DELETE FROM refresh_token WHERE token = ${input.refreshToken}`,
+  );
+
   return {};
 }
 
@@ -138,14 +160,28 @@ export async function signOut(
  * used when you have an expired access token and you need to get a new one.
  */
 export async function refreshAccessToken(
-  ctx: {readonly refreshTokens: RefreshTokenCollection},
+  ctx: ContextUnauthorized,
   {refreshToken}: {readonly refreshToken: RefreshToken},
 ): Promise<{
   readonly accessToken: AccessToken;
 }> {
-  // Fetch the refresh token from our database. Since we are only given a
-  // string, up-cast to a refresh token. It won’t hurt to trust this input.
-  const accountID = await ctx.refreshTokens.use(refreshToken);
+  // Use the `connect_api_auth` role in this transaction. This will give us full
+  // access to the `account` and `refresh_token` tables but nothing else.
+  await ctx.query(sql`SET LOCAL ROLE connect_api_auth`);
+
+  // Fetch the refresh token from our database.
+  //
+  // When we use a refresh token we also update the `last_used_at` column. By
+  // updating `last_used_at` we can tell, roughly, the last hour or so the
+  // associated account was active.
+  const {
+    rows: [row],
+  } = await ctx.query(
+    sql`UPDATE refresh_token SET last_used_at = now() WHERE token = ${refreshToken} RETURNING account_id`,
+  );
+
+  // Extract the account ID from the query.
+  const accountID: AccountID | undefined = row ? row.account_id : undefined;
 
   // If the refresh token does not exist then we can’t create a new
   // access token.
@@ -168,7 +204,7 @@ export async function refreshAccessToken(
  * tokens after they have verify the identity of the person trying to sign in.
  */
 async function generateTokens(
-  ctx: {readonly refreshTokens: RefreshTokenCollection},
+  ctx: ContextUnauthorized,
   accountID: AccountID,
 ): Promise<{
   readonly accessToken: AccessToken;
@@ -176,7 +212,12 @@ async function generateTokens(
 }> {
   // Generate a new refresh token. This way when the access token we create
   // expires the API client will be able to get a new one.
-  const refreshToken = await ctx.refreshTokens.generate(accountID);
+  const refreshToken = uuidV4() as RefreshToken;
+
+  // Insert our refresh token into the database.
+  await ctx.query(
+    sql`INSERT INTO refresh_token (token, account_id) VALUES (${refreshToken}, ${accountID})`,
+  );
 
   // Create a new access token that lasts for one hour. When the access token
   // expires an API client may use the refresh token to get a new access token.
@@ -199,18 +240,27 @@ export async function getCurrentProfile(
 ): Promise<{
   readonly account: AccountProfile;
 }> {
-  // Select all the account profiles our client asked for.
-  const [account] = await AccountProfileView.select({
-    id: AccountProfileView.id,
-    name: AccountProfileView.name,
-    avatarURL: AccountProfileView.avatar_url,
-  })
-    .where(AccountProfileView.id.equals(ctx.accountID))
-    .execute(ctx);
+  // Select the profile of our current account.
+  const {
+    rows: [row],
+  } = await ctx.query(
+    sql`SELECT name, avatar_url FROM account_profile WHERE id = ${
+      ctx.accountID
+    }`,
+  );
 
   // If the account does not exist then throw an error! We expect our
   // authorized account to exist.
-  if (account === undefined) throw new APIError(APIErrorCode.NOT_FOUND);
+  if (row === undefined) {
+    throw new APIError(APIErrorCode.NOT_FOUND);
+  }
+
+  // Correctly format the selected row.
+  const account: AccountProfile = {
+    id: ctx.accountID,
+    name: row.name,
+    avatarURL: row.avatar_url,
+  };
 
   return {account};
 }
@@ -224,16 +274,24 @@ export async function getProfile(
 ): Promise<{
   readonly account: AccountProfile | null;
 }> {
-  // Select all the account profiles our client asked for.
-  const [account] = await AccountProfileView.select({
-    id: AccountProfileView.id,
-    name: AccountProfileView.name,
-    avatarURL: AccountProfileView.avatar_url,
-  })
-    .where(AccountProfileView.id.equals(input.id))
-    .execute(ctx);
+  // Select the profile of the requested account.
+  const {
+    rows: [row],
+  } = await ctx.query(
+    sql`SELECT name, avatar_url FROM account_profile WHERE id = ${input.id}`,
+  );
 
-  return {account: account || null};
+  // Correctly format the selected row.
+  if (row === undefined) {
+    return {account: null};
+  } else {
+    const account: AccountProfile = {
+      id: input.id,
+      name: row.name,
+      avatarURL: row.avatar_url,
+    };
+    return {account};
+  }
 }
 
 /**
@@ -245,14 +303,19 @@ export async function getManyProfiles(
 ): Promise<{
   readonly accounts: ReadonlyArray<AccountProfile>;
 }> {
-  // Select all the account profiles our client asked for.
-  const accounts = await AccountProfileView.select({
-    id: AccountProfileView.id,
-    name: AccountProfileView.name,
-    avatarURL: AccountProfileView.avatar_url,
-  })
-    .where(AccountProfileView.id.any(input.ids))
-    .execute(ctx);
+  // Select the profiles of the requested accounts.
+  const {rows} = await ctx.query(
+    sql`SELECT id, name, avatar_url FROM account_profile WHERE id = ANY (${
+      input.ids
+    })`,
+  );
+
+  // Correctly format the selected rows.
+  const accounts: ReadonlyArray<AccountProfile> = rows.map(row => ({
+    id: row.id,
+    name: row.name,
+    avatarURL: row.avatar_url,
+  }));
 
   return {accounts};
 }
