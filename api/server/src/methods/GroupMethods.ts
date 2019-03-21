@@ -1,7 +1,7 @@
 import {Group, GroupID, Post, PostCursor, Range} from "@connect/api-client";
 import {Context} from "../Context";
-import {PGPagination} from "../pg/PGPagination";
-import {sql} from "../pg/PGSQL";
+import {PGPagination} from "../PGPagination";
+import {sql} from "../PGSQL";
 
 /**
  * Gets a group by its slug, but only if the authenticated account is a member

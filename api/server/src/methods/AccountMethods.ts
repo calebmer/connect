@@ -9,7 +9,7 @@ import {
 import {Context, ContextUnauthorized} from "../Context";
 import {AccessTokenGenerator} from "../AccessToken";
 import bcrypt from "bcrypt";
-import {sql} from "../pg/PGSQL";
+import {sql} from "../PGSQL";
 import uuidV4 from "uuid/v4";
 
 /**

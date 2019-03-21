@@ -1,5 +1,5 @@
 import {ClientBase, Pool} from "pg";
-import {TEST} from "../RunConfig";
+import {TEST} from "./RunConfig";
 
 // Throw an error if we try to use Postgres in a test environment.
 if (TEST) {

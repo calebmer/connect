@@ -1,6 +1,6 @@
 import {Cursor, JSONValue, Range, RangeDirection} from "@connect/api-client";
 import {SQLQuery, sql} from "./PGSQL";
-import {ContextUnauthorized} from "../Context";
+import {ContextUnauthorized} from "./Context";
 import {QueryResult} from "pg";
 
 /**

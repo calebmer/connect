@@ -1,10 +1,6 @@
-import {SQLQuery, sql} from "./pg/PGSQL";
+import {SQLQuery, sql} from "./PGSQL";
 import {AccountID} from "@connect/api-client";
-import {PGAccountCollection} from "./entities/pg/PGAccount";
-import {PGClient} from "./pg/PGClient";
-import {PGGroupCollection} from "./entities/pg/PGGroup";
-import {PGPostCollection} from "./entities/pg/PGPost";
-import {PGRefreshTokenCollection} from "./entities/pg/PGRefreshToken";
+import {PGClient} from "./PGClient";
 import {QueryResult} from "pg";
 import createDebugger from "debug";
 
@@ -33,11 +29,6 @@ export class ContextUnauthorized {
 
   protected constructor(client: PGClient) {
     this.client = client;
-
-    this.accounts = new PGAccountCollection(client);
-    this.groups = new PGGroupCollection(client);
-    this.refreshTokens = new PGRefreshTokenCollection(client);
-    this.posts = new PGPostCollection(client);
   }
 
   /**

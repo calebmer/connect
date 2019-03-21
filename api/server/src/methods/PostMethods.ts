@@ -1,6 +1,6 @@
 import {Comment, Post, PostID} from "@connect/api-client";
 import {Context} from "../Context";
-import {sql} from "../pg/PGSQL";
+import {sql} from "../PGSQL";
 
 /**
  * Get a single post from our database.
