@@ -10,7 +10,7 @@ export const GroupMemberTable = PGTable.define({
     joined_at: PGType.timestamp,
   },
 
-  privacy(groupMember, query, accountID) {
-    return query.where(groupMember.account_id.equals(accountID));
+  privacySelect(groupMember, ctx, query) {
+    return query.where(groupMember.account_id.equals(ctx.accountID));
   },
 });

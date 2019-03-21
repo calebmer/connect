@@ -1,13 +1,12 @@
-import {AccountID, Comment, Post, PostID} from "@connect/api-client";
-import {PGClient} from "../pg/PGClient";
+import {Comment, Post, PostID} from "@connect/api-client";
+import {Context} from "../Context";
 import {PostTable} from "../tables/PostTable";
 
 /**
  * Get a single post from our database.
  */
 export async function get(
-  ctx: {readonly client: PGClient},
-  accountID: AccountID,
+  ctx: Context,
   input: {readonly id: PostID},
 ): Promise<{readonly post: Post}> {
   // Select a post from our post’s table.
@@ -19,7 +18,7 @@ export async function get(
     content: PostTable.content,
   })
     .where(PostTable.id.equals(input.id))
-    .execute(ctx.client, accountID);
+    .execute(ctx);
 
   return {post: post || null};
 }

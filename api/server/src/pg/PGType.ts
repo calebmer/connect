@@ -13,6 +13,9 @@ export class PGType<Type> {
   /** `TIMESTAMP` */
   static readonly timestamp = new PGType<DateTime>();
 
+  /** `UUID` */
+  static readonly uuid = new PGType<string>();
+
   /**
    * Gets a nullable variant of this Postgres type.
    */

@@ -4,7 +4,6 @@ import {
   APIErrorCode,
   APIResult,
   APISchema,
-  AccountID,
   JSONObjectValue,
   JSON_KEYWORDS,
   SchemaBase,
@@ -14,11 +13,10 @@ import {
   SchemaMethodUnauthorized,
   SchemaNamespace,
 } from "@connect/api-client";
-import {AccessTokenData, AccessTokenGenerator} from "./entities/Tokens";
+import {AccessTokenData, AccessTokenGenerator} from "./AccessToken";
+import {Context, ContextUnauthorized} from "./Context";
 import {DEV, TEST} from "./RunConfig";
 import {NextFunction, Request, Response} from "express";
-import {PGClient} from "./pg/PGClient";
-import {PGContext} from "./pg/PGContext";
 import {ParsedUrlQuery} from "querystring";
 import chalk from "chalk";
 import express from "express";
@@ -143,8 +141,8 @@ function initializeServerMethod<
       handleResponse<Output>(async req => {
         const accessToken = await getRequestAuthorization(req);
         const input = getRequestQueryInput(req, schema.input);
-        return PGClient.with(client => {
-          return definition(PGContext.get(client), accessToken.id, input);
+        return Context.with(accessToken.id, ctx => {
+          return definition(ctx, input);
         });
       }),
     );
@@ -154,8 +152,8 @@ function initializeServerMethod<
       handleResponse<Output>(async req => {
         const accessToken = await getRequestAuthorization(req);
         const input = getRequestBodyInput(req, schema.input);
-        return PGClient.with(client => {
-          return definition(PGContext.get(client), accessToken.id, input);
+        return Context.with(accessToken.id, ctx => {
+          return definition(ctx, input);
         });
       }),
     );
@@ -183,8 +181,8 @@ function initializeServerMethodUnauthorized<
       apiPath,
       handleResponse<Output>(req => {
         const input = getRequestQueryInput(req, schema.input);
-        return PGClient.with(client => {
-          return definition(PGContext.get(client), input);
+        return ContextUnauthorized.withUnauthorized(ctx => {
+          return definition(ctx, input);
         });
       }),
     );
@@ -193,8 +191,8 @@ function initializeServerMethodUnauthorized<
       apiPath,
       handleResponse<Output>(req => {
         const input = getRequestBodyInput(req, schema.input);
-        return PGClient.with(client => {
-          return definition(PGContext.get(client), input);
+        return ContextUnauthorized.withUnauthorized(ctx => {
+          return definition(ctx, input);
         });
       }),
     );
@@ -424,8 +422,7 @@ type ServerNamespace<Schemas extends {readonly [key: string]: SchemaBase}> = {
  * method input and some authorized context.
  */
 type ServerMethod<Input, Output> = (
-  ctx: PGContext,
-  accountID: AccountID,
+  ctx: Context,
   input: Input,
 ) => Promise<Output>;
 
@@ -434,6 +431,6 @@ type ServerMethod<Input, Output> = (
  * method input and some unauthorized context.
  */
 type ServerMethodUnauthorized<Input, Output> = (
-  ctx: PGContext,
+  ctx: ContextUnauthorized,
   input: Input,
 ) => Promise<Output>;

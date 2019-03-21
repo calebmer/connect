@@ -17,8 +17,8 @@ export const AccountTable = PGTable.define({
     created_at: PGType.timestamp,
   },
 
-  privacy(account, query, accountID) {
-    return query.where(account.id.equals(accountID));
+  privacySelect(account, ctx, query) {
+    return query.where(account.id.equals(ctx.accountID));
   },
 });
 
@@ -38,7 +38,7 @@ export const AccountProfileView = PGTable.define({
     avatar_url: PGType.text.nullable(),
   },
 
-  privacy(_account, query) {
-    return query;
-  },
+  // No privacy policy for account profiles. Anyone, even users without an
+  // account, can see account profiles.
+  privacySelect: null,
 });

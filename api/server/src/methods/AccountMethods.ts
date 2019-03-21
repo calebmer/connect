@@ -6,10 +6,10 @@ import {
   AccountProfile,
   RefreshToken,
 } from "@connect/api-client";
-import {AccessTokenGenerator, RefreshTokenCollection} from "../entities/Tokens";
+import {Context, ContextUnauthorized} from "../Context";
+import {AccessTokenGenerator} from "../AccessToken";
 import {AccountCollection} from "../entities/Account";
 import {AccountProfileView} from "../tables/AccountTable";
-import {PGClient} from "../PGClient";
 import bcrypt from "bcrypt";
 
 /**
@@ -35,10 +35,7 @@ const SALT_ROUNDS = 10;
  * our API!
  */
 export async function signUp(
-  ctx: {
-    readonly accounts: AccountCollection;
-    readonly refreshTokens: RefreshTokenCollection;
-  },
+  ctx: ContextUnauthorized,
   input: {
     readonly name: string;
     readonly email: string;
@@ -198,8 +195,7 @@ async function generateTokens(
  * current profile.
  */
 export async function getCurrentProfile(
-  ctx: {readonly client: PGClient},
-  accountID: AccountID,
+  ctx: Context,
 ): Promise<{
   readonly account: AccountProfile;
 }> {
@@ -209,8 +205,8 @@ export async function getCurrentProfile(
     name: AccountProfileView.name,
     avatarURL: AccountProfileView.avatar_url,
   })
-    .where(AccountProfileView.id.equals(accountID))
-    .execute(ctx.client, accountID);
+    .where(AccountProfileView.id.equals(ctx.accountID))
+    .execute(ctx);
 
   // If the account does not exist then throw an error! We expect our
   // authorized account to exist.
@@ -223,8 +219,7 @@ export async function getCurrentProfile(
  * Gets basic public information about some account’s profile.
  */
 export async function getProfile(
-  ctx: {readonly client: PGClient},
-  accountID: AccountID,
+  ctx: Context,
   input: {readonly id: AccountID},
 ): Promise<{
   readonly account: AccountProfile | null;
@@ -236,7 +231,7 @@ export async function getProfile(
     avatarURL: AccountProfileView.avatar_url,
   })
     .where(AccountProfileView.id.equals(input.id))
-    .execute(ctx.client, accountID);
+    .execute(ctx);
 
   return {account: account || null};
 }
@@ -245,8 +240,7 @@ export async function getProfile(
  * Gets basic public information about some account’s profile.
  */
 export async function getManyProfiles(
-  ctx: {readonly client: PGClient},
-  accountID: AccountID,
+  ctx: Context,
   input: {readonly ids: ReadonlyArray<AccountID>},
 ): Promise<{
   readonly accounts: ReadonlyArray<AccountProfile>;
@@ -258,7 +252,7 @@ export async function getManyProfiles(
     avatarURL: AccountProfileView.avatar_url,
   })
     .where(AccountProfileView.id.any(input.ids))
-    .execute(ctx.client, accountID);
+    .execute(ctx);
 
   return {accounts};
 }

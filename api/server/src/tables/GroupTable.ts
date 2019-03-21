@@ -13,7 +13,7 @@ export const GroupTable = PGTable.define({
     created_at: PGType.timestamp,
   },
 
-  privacy(group, query, accountID) {
+  privacySelect(group, ctx, query) {
     return (
       query
         // Ok to ignore privacy since we only select group member rows with the
@@ -23,7 +23,7 @@ export const GroupTable = PGTable.define({
           GroupMemberTable.group_id.equals(group.id),
         )
 
-        .where(GroupMemberTable.account_id.equals(accountID))
+        .where(GroupMemberTable.account_id.equals(ctx.accountID))
     );
   },
 });

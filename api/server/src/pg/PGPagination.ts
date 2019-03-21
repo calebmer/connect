@@ -1,12 +1,6 @@
-import {
-  AccountID,
-  Cursor,
-  JSONValue,
-  Range,
-  RangeDirection,
-} from "@connect/api-client";
+import {Cursor, JSONValue, Range, RangeDirection} from "@connect/api-client";
 import {PGColumn, PGExpression, PGQuerySelect} from "./PGTable";
-import {PGClient} from "./PGClient";
+import {ContextUnauthorized} from "../Context";
 import {sql} from "./PGSQL";
 
 /**
@@ -32,10 +26,9 @@ export class PGPagination {
    * Execute a paginated query!
    */
   async query<Selection>(
-    client: PGClient,
-    accountID: AccountID,
-    range: Range<Cursor<ReadonlyArray<JSONValue>>>,
+    ctx: ContextUnauthorized,
     query: PGQuerySelect<Selection>,
+    range: Range<Cursor<ReadonlyArray<JSONValue>>>,
   ): Promise<Array<Selection>> {
     // If we have an “after” cursor then let’s add some conditions for
     // our cursor...
@@ -120,7 +113,7 @@ export class PGPagination {
     query = query.limit(range.count);
 
     // Run our query!
-    const result = await query.execute(client, accountID);
+    const result = await query.execute(ctx);
 
     // If our range direction is “last” then that means we reversed all the
     // directions in the `ORDER BY` clause. Make sure we reverse our rows back

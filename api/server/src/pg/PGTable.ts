@@ -1,7 +1,7 @@
+import {APIError, APIErrorCode} from "@connect/api-client";
+import {Context, ContextUnauthorized} from "../Context";
 import {PGType, PGTypeGet} from "./PGType";
 import {SQLQuery, sql} from "./PGSQL";
-import {AccountID} from "@connect/api-client";
-import {PGClient} from "./PGClient";
 
 /**
  * Counts the number of aliases each table has so we can create a new alias each
@@ -16,6 +16,11 @@ const tableAliasCounter = new Map<string, number>();
  * Tables also have the important feature of being able to specify a
  * privacy policy! All queries generated based on `PGTable` will have a privacy
  * policy automatically added to the query.
+ *
+ * **TODO:** Insertion privacy policy. We don’t want people creating posts or
+ * comments in groups they are not a member of.
+ *
+ * **TODO:** Update privacy policy.
  */
 export class PGTable<Columns extends PGColumnsBase> {
   /**
@@ -24,13 +29,13 @@ export class PGTable<Columns extends PGColumnsBase> {
   static define<Columns extends PGColumnsBase>(config: {
     name: string;
     columns: Columns;
-    privacy: PGPrivacySelect<Columns>;
+    privacySelect: PGPrivacySelect<Columns> | null;
   }): PGTable<Columns> & PGTableColumns<Columns> {
     const table = new PGTable(
       config.name,
       null,
       config.columns,
-      config.privacy,
+      config.privacySelect,
     );
     return table.assignColumns();
   }
@@ -39,7 +44,7 @@ export class PGTable<Columns extends PGColumnsBase> {
     public readonly tableName: string,
     public readonly tableAlias: string | null,
     private readonly _columns: Columns,
-    private readonly _privacy: PGPrivacySelect<Columns>,
+    private readonly _privacySelect: PGPrivacySelect<Columns> | null,
   ) {}
 
   /**
@@ -51,11 +56,13 @@ export class PGTable<Columns extends PGColumnsBase> {
     return PGQuerySelect.create(this, selection);
   }
 
-  // TODO:
-  // insert<Insertion extends PGInsertionBase>(
-  //   insertion: Insertion,
-  //   values: ReadonlyArray<PGInsertionType<Insertion>>,
-  // ): PGQueryInsert<{}>;
+  /**
+   * Creates an `INSERT` query for inserting data into our table.
+   */
+  insert<Insertion extends PGInsertionBase>(
+    insertion: Insertion,
+    values: ReadonlyArray<PGInsertionType<Insertion>>,
+  ): PGQueryInsert<{}> {}
 
   /**
    * Creates an alias for our table. Useful when we need to write queries with
@@ -68,7 +75,7 @@ export class PGTable<Columns extends PGColumnsBase> {
       this.tableName,
       `${this.tableName}${aliasCounter}`,
       this._columns,
-      this._privacy,
+      this._privacySelect,
     );
     return table.assignColumns();
   }
@@ -89,10 +96,17 @@ export class PGTable<Columns extends PGColumnsBase> {
    * Apply this table’s privacy policy
    */
   applySelectPrivacyPolicy<Type>(
-    accountID: AccountID,
+    ctx: ContextUnauthorized,
     query: PGQuerySelect<Type>,
   ): PGQuerySelect<Type> {
-    return this._privacy(this as any, query, accountID);
+    if (this._privacySelect == null) {
+      return query;
+    } else {
+      if (!(ctx instanceof Context)) {
+        throw new APIError(APIErrorCode.UNAUTHORIZED);
+      }
+      return this._privacySelect(this as any, ctx, query);
+    }
   }
 
   /**
@@ -112,8 +126,8 @@ export class PGTable<Columns extends PGColumnsBase> {
  */
 type PGPrivacySelect<Columns extends PGColumnsBase> = <Type>(
   columns: PGTableColumns<Columns>,
+  ctx: Context,
   query: PGQuerySelect<Type>,
-  accountID: AccountID,
 ) => PGQuerySelect<Type>;
 
 type PGColumnsBase = {[key: string]: PGType<unknown>};
@@ -123,8 +137,11 @@ type PGTableColumns<Columns extends PGColumnsBase> = {
 };
 
 /**
- * A `SELECT` query builder. There are many features of `SELECT` we don’t
- * include since they would violate our privacy policy.
+ * A `SELECT` query builder.
+ *
+ * Any feature of `SELECT` that would violate our privacy policies we prefix
+ * with `ignorePrivacy_`. When calling these methods, please explain why you
+ * are choosing to ignore privacy.
  */
 export class PGQuerySelect<Type> {
   /**
@@ -252,7 +269,7 @@ export class PGQuerySelect<Type> {
       if (expression instanceof PGColumn && expression.columnName === key) {
         return expression.generateQuery();
       } else {
-        return sql`${expression.generateQuery()} as ${sql.identifier(key)}`;
+        return sql`${expression.generateQuery()} AS ${sql.identifier(key)}`;
       }
     });
     const select =
@@ -324,10 +341,10 @@ export class PGQuerySelect<Type> {
    * Executes a query in the provided Postgres client. First applies our table’s
    * privacy policy to the query.
    */
-  async execute(client: PGClient, accountID: AccountID): Promise<Array<Type>> {
-    const queryBuilder = this._from.applySelectPrivacyPolicy(accountID, this);
+  async execute(ctx: ContextUnauthorized): Promise<Array<Type>> {
+    const queryBuilder = this._from.applySelectPrivacyPolicy(ctx, this);
     const query = queryBuilder.generateQuery();
-    const {rows} = await client.query(query);
+    const {rows} = await ctx.client.query(query);
     return rows;
   }
 }
@@ -347,28 +364,45 @@ export type PGSelectionType<Selection extends PGSelectionBase> = {
   [Key in keyof Selection]: PGExpressionType<Selection[Key]>
 };
 
-// TODO:
-// interface PGQueryInsert<Type> {
-//   returning<Selection extends PGSelectionBase>(
-//     selection: Selection,
-//   ): PGQueryInsert<PGSelectionType<Selection>>;
-//
-//   onConflictDoNothing(column: PGColumn<unknown>): PGQueryInsert<Type>;
-// }
+/**
+ * An `INSERT` query builder.
+ */
+export class PGQueryInsert<Type> {
+  private constructor(
+    private readonly _selection: PGSelectionBase | null,
+    private readonly _onConflictDoNothing: PGColumn<unknown> | null,
+  ) {}
 
-// TODO:
-//
-// /**
-//  * The upper bound for an insertion map. Specifies the columns to be inserted.
-//  */
-// type PGInsertionBase = {
-//   [key: string]: PGColumn<unknown>;
-// };
-//
-// /** The type of an object to be inserted. */
-// type PGInsertionType<Selection extends PGInsertionBase> = {
-//   [Key in keyof Selection]: PGExpressionType<Selection[Key]>
-// };
+  /**
+   * Add a `RETURNING` clause to return some data from our insert.
+   */
+  returning<Selection extends PGSelectionBase>(
+    selection: Selection,
+  ): PGQueryInsert<PGSelectionType<Selection>> {
+    return new PGQueryInsert(selection, this._onConflictDoNothing);
+  }
+
+  /**
+   * Adds an `ON CONFLICT (column) DO NOTHING` clause to our insertion query. If
+   * there is already an `ON CONFLICT` clause set then that clause will
+   * be overriden.
+   */
+  onConflictDoNothing(column: PGColumn<unknown>): PGQueryInsert<Type> {
+    return new PGQueryInsert(this._selection, column);
+  }
+}
+
+/**
+ * The upper bound for an insertion map. Specifies the columns to be inserted.
+ */
+export type PGInsertionBase = {
+  [key: string]: PGColumn<unknown>;
+};
+
+/** The type of an object to be inserted. */
+export type PGInsertionType<Selection extends PGInsertionBase> = {
+  [Key in keyof Selection]: PGExpressionType<Selection[Key]>
+};
 
 /**
  * Some expression in a Postgres SQL query. The expression has the type of it’s

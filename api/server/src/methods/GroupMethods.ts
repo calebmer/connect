@@ -1,13 +1,6 @@
-import {
-  AccountID,
-  Group,
-  GroupID,
-  Post,
-  PostCursor,
-  Range,
-} from "@connect/api-client";
+import {Group, GroupID, Post, PostCursor, Range} from "@connect/api-client";
+import {Context} from "../Context";
 import {GroupTable} from "../tables/GroupTable";
-import {PGClient} from "../pg/PGClient";
 import {PGPagination} from "../pg/PGPagination";
 import {PostTable} from "../tables/PostTable";
 
@@ -22,8 +15,7 @@ const PostTablePagination = new PGPagination([
  * of that group.
  */
 export async function getBySlug(
-  ctx: {readonly client: PGClient},
-  accountID: AccountID,
+  ctx: Context,
   input: {readonly slug: string},
 ): Promise<{readonly group: Group}> {
   // Select the group which has a slug equal to our provided slug. Slugs have
@@ -34,7 +26,7 @@ export async function getBySlug(
     name: GroupTable.name,
   })
     .where(GroupTable.slug.equals(input.slug))
-    .execute(ctx.client, accountID);
+    .execute(ctx);
 
   return {group: group || null};
 }
@@ -43,8 +35,7 @@ export async function getBySlug(
  * Get posts in a group by reverse chronological order.
  */
 export async function getPosts(
-  ctx: {readonly client: PGClient},
-  accountID: AccountID,
+  ctx: Context,
   input: {readonly groupID: GroupID} & Range<PostCursor>,
 ): Promise<{
   readonly posts: ReadonlyArray<Post>;
@@ -52,9 +43,7 @@ export async function getPosts(
   // Get a list of posts in reverse chronological order using the pagination
   // parameters provided by our input.
   const posts = await PostTablePagination.query(
-    ctx.client,
-    accountID,
-    input,
+    ctx,
     PostTable.select({
       id: PostTable.id,
       groupID: PostTable.group_id,
@@ -62,6 +51,7 @@ export async function getPosts(
       publishedAt: PostTable.published_at,
       content: PostTable.content,
     }).where(PostTable.group_id.equals(input.groupID)),
+    input,
   );
 
   return {posts};
