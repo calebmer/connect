@@ -27,3 +27,14 @@ CREATE TABLE account (
   -- The time at which the account was created.
   created_at TIMESTAMP NOT NULL DEFAULT now()
 );
+
+
+
+
+
+GRANT SELECT (id, name, avatar_url) ON TABLE account TO connect_user;
+GRANT INSERT ON TABLE account TO connect_user;
+ALTER TABLE account ENABLE ROW LEVEL SECURITY;
+
+-- A user has the permission to see all public account information.
+CREATE POLICY select_all ON account FOR SELECT USING (true);

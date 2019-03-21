@@ -43,6 +43,7 @@ async function run() {
   await client.query(`
     BEGIN;
     DROP SCHEMA IF EXISTS connect CASCADE;
+    DROP ROLE IF EXISTS connect_user;
     DROP TABLE IF EXISTS connect_migration;
     COMMIT;
   `);

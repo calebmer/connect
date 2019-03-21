@@ -21,3 +21,15 @@ CREATE TABLE refresh_token (
   -- person may sign out of their account on all their devices.
   created_at TIMESTAMP NOT NULL DEFAULT now()
 );
+
+-- NOTE: Users have full access to select, insert, update, and delete
+-- refresh tokens since we want our API to use this access to authenticate
+-- unauthorized users. This could be problematic, however, since it reveals
+-- information like the last time a refresh token was used.
+--
+-- Currently this table is secured at the API level. Should we also consider
+-- securing this table at the database level?
+GRANT SELECT ON TABLE refresh_token TO connect_user;
+GRANT INSERT ON TABLE refresh_token TO connect_user;
+GRANT UPDATE ON TABLE refresh_token TO connect_user;
+GRANT DELETE ON TABLE refresh_token TO connect_user;

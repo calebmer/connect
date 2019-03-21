@@ -28,3 +28,44 @@ CREATE TABLE "group" (
   -- The time the group was created at for bookkeeping.
   created_at TIMESTAMP NOT NULL DEFAULT now()
 );
+
+-- An account’s membership in a group. Accounts can’t join arbitrary groups.
+-- They must be invited to a group.
+CREATE TABLE group_member (
+  -- The account which is a member of this group.
+  account_id INT NOT NULL REFERENCES account(id),
+  -- The group which this account is a part of.
+  group_id INT NOT NULL REFERENCES "group"(id),
+  -- The date at which the account joined the group.
+  joined_at TIMESTAMP NOT NULL DEFAULT now(),
+  -- We have a compound primary key on this table between the account and
+  -- group IDs.
+  PRIMARY KEY (account_id, group_id)
+);
+
+
+
+
+
+GRANT SELECT ON TABLE "group" TO connect_user;
+ALTER TABLE "group" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY select_member_of ON "group" FOR SELECT USING (
+  EXISTS (
+    SELECT 1
+    FROM group_member
+    WHERE
+      group_member.account_id = current_account_id() AND
+      group_member.group_id = "group".id
+  )
+);
+
+
+
+
+
+GRANT SELECT ON TABLE group_member TO connect_user;
+ALTER TABLE group_member ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY select_own ON group_member FOR SELECT USING
+  (account_id = current_account_id());
