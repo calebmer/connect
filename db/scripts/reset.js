@@ -31,23 +31,6 @@ async function run() {
   }
 }
 
-async function maybeCreateDatabase(database) {
-  // Create a new temporary client with the default connection settings.
-  const tmpClient = new Client();
-  try {
-    await tmpClient.connect();
-    const {rowCount} = await tmpClient.query(
-      "SELECT 1 FROM pg_database WHERE datname = $1",
-      [database],
-    );
-    if (rowCount < 1) {
-      await tmpClient.query(`CREATE DATABASE "${database.replace('"', '""')}"`);
-    }
-  } finally {
-    await tmpClient.end();
-  }
-}
-
 module.exports = run;
 
 // Make unhandled promise exceptions an unhandled runtime exception.
