@@ -134,85 +134,80 @@ describe("signUp", () => {
   });
 });
 
-// describe("signIn", () => {
-//   test("fails if the account does not exist", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
+describe("signIn", () => {
+  test("fails if the account does not exist", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      let error: any;
+      try {
+        await signIn(ctx, {email: testEmail, password: "qwerty"});
+      } catch (e) {
+        error = e;
+      }
 
-//     let error: any;
-//     try {
-//       await signIn(
-//         {accounts, refreshTokens},
-//         {email: testEmail, password: "qwerty"},
-//       );
-//     } catch (e) {
-//       error = e;
-//     }
+      expect(error).toBeInstanceOf(APIError);
+      expect(error.code).toBe(APIErrorCode.SIGN_IN_UNRECOGNIZED_EMAIL);
+    });
+  });
 
-//     expect(error).toBeInstanceOf(APIError);
-//     expect(error.code).toBe(APIErrorCode.SIGN_IN_UNRECOGNIZED_EMAIL);
-//   });
+  test("fails if the wrong password is used", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      await signUp(ctx, {name: testName, email: testEmail, password: "qwerty"});
 
-//   test("fails if the wrong password is used", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
-//     await signUp(
-//       {accounts, refreshTokens},
-//       {name: testName, email: testEmail, password: "qwerty"},
-//     );
+      let error: any;
+      try {
+        await signIn(ctx, {email: testEmail, password: "qwerty1"});
+      } catch (e) {
+        error = e;
+      }
 
-//     let error: any;
-//     try {
-//       await signIn(
-//         {accounts, refreshTokens},
-//         {email: testEmail, password: "qwerty1"},
-//       );
-//     } catch (e) {
-//       error = e;
-//     }
+      expect(error).toBeInstanceOf(APIError);
+      expect(error.code).toBe(APIErrorCode.SIGN_IN_INCORRECT_PASSWORD);
+    });
+  });
 
-//     expect(error).toBeInstanceOf(APIError);
-//     expect(error.code).toBe(APIErrorCode.SIGN_IN_INCORRECT_PASSWORD);
-//   });
+  test("creates a new refresh token", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      await signUp(ctx, {name: testName, email: testEmail, password: "qwerty"});
 
-//   test("creates a new refresh token", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
-//     await signUp(
-//       {accounts, refreshTokens},
-//       {name: testName, email: testEmail, password: "qwerty"},
-//     );
+      const {refreshToken} = await signIn(ctx, {
+        email: testEmail,
+        password: "qwerty",
+      });
 
-//     const {refreshToken} = await signIn(
-//       {accounts, refreshTokens},
-//       {email: testEmail, password: "qwerty"},
-//     );
+      const {
+        rows: [{id: accountID}],
+      } = await ctx.query(
+        sql`SELECT id FROM account WHERE email = ${testEmail}`,
+      );
+      const {rowCount} = await ctx.query(
+        sql`SELECT 1 FROM refresh_token WHERE token = ${refreshToken} AND account_id = ${accountID}`,
+      );
+      expect(rowCount).toBe(1);
+    });
+  });
 
-//     const accountID = (await accounts.getAuth(testEmail))!.id;
-//     expect(await refreshTokens.use(refreshToken)).toBe(accountID);
-//   });
+  test("creates a new access token", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      await signUp(ctx, {name: testName, email: testEmail, password: "qwerty"});
 
-//   test("creates a new access token", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
-//     await signUp(
-//       {accounts, refreshTokens},
-//       {name: testName, email: testEmail, password: "qwerty"},
-//     );
+      const {accessToken} = await signIn(ctx, {
+        email: testEmail,
+        password: "qwerty",
+      });
 
-//     const {accessToken} = await signIn(
-//       {accounts, refreshTokens},
-//       {email: testEmail, password: "qwerty"},
-//     );
-
-//     const accountID = (await accounts.getAuth(testEmail))!.id;
-//     expect(await AccessTokenGenerator.verify(accessToken)).toEqual({
-//       exp: expect.any(Number),
-//       iat: expect.any(Number),
-//       id: accountID,
-//     });
-//   });
-// });
+      const {
+        rows: [{id: accountID}],
+      } = await ctx.query(
+        sql`SELECT id FROM account WHERE email = ${testEmail}`,
+      );
+      expect(await AccessTokenGenerator.verify(accessToken)).toEqual({
+        exp: expect.any(Number),
+        iat: expect.any(Number),
+        id: accountID,
+      });
+    });
+  });
+});
 
 // describe("signOut", () => {
 //   test("noop if the token does not exist", async () => {
