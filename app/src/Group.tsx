@@ -193,7 +193,7 @@ export {GroupComponent as Group};
 function GroupHeader() {
   return (
     <View style={styles.header}>
-      <GroupPostPrompt account={currentAccount} />
+      <GroupPostPrompt account={currentAccount as any} />
     </View>
   );
 }

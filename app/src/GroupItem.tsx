@@ -1,8 +1,8 @@
+import {Color, LabelText, Space} from "./atoms";
 import React, {ReactNode} from "react";
 import {StyleSheet, View} from "react-native";
+import {AccountAvatar} from "./AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
-import {AccountSignature} from "./AccountSignature";
-import {Color} from "./atoms";
 
 export function GroupItem({
   account,
@@ -12,17 +12,28 @@ export function GroupItem({
   children: ReactNode;
 }) {
   return (
-    <View style={styles.item}>
-      <AccountSignature account={account}>{children}</AccountSignature>
+    <View style={styles.container}>
+      <AccountAvatar account={account} />
+      <View style={styles.body}>
+        <LabelText>{account.name}</LabelText>
+        {children}
+      </View>
     </View>
   );
 }
 
-GroupItem.padding = AccountSignature.padding;
+GroupItem.padding = Space.space3;
 GroupItem.backgroundColor = Color.white;
 
 const styles = StyleSheet.create({
-  item: {
+  container: {
+    flex: 1,
+    flexDirection: "row",
+    paddingHorizontal: GroupItem.padding,
     backgroundColor: GroupItem.backgroundColor,
+  },
+  body: {
+    flex: 1,
+    paddingLeft: GroupItem.padding,
   },
 });
