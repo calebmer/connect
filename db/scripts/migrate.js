@@ -9,7 +9,7 @@ const {Client} = require("pg");
 const readDir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
 
-async function run() {
+async function run({silent = false} = {}) {
   // Get all of our migrations.
   const migrationsDir = path.resolve(__dirname, "..", "migrations");
   const migrations = new Set(await readDir(migrationsDir));
@@ -53,9 +53,11 @@ async function run() {
     for (const name of migrations) {
       if (path.extname(name) !== ".sql") continue;
 
-      console.log(
-        `${chalk.grey("▸")} Running migration ${chalk.cyan.bold(name)}`,
-      );
+      if (!silent) {
+        console.log(
+          `${chalk.grey("▸")} Running migration ${chalk.cyan.bold(name)}`,
+        );
+      }
 
       const migrationPath = path.join(migrationsDir, name);
       const migrationFile = await readFile(migrationPath, "utf8");

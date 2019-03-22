@@ -1,16 +1,15 @@
 /* eslint-disable import/first */
 
-jest.mock("../PGContext", () => ({PGContext: {get: () => ({})}}));
 jest.mock("../PGClient", () => ({
-  PGClient: {with: (action: any) => action({})},
+  PGClient: {with: (action: any) => action({query: () => {}})},
 }));
 jest.mock("../methods", () => ({
   account: {
     signIn: jest.fn(() => Promise.resolve({works: true})),
-    getCurrentProfile: jest.fn((_, accountID) =>
+    getCurrentProfile: jest.fn(ctx =>
       Promise.resolve({
         works: true,
-        accountID,
+        accountID: ctx.accountID,
       }),
     ),
   },

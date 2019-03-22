@@ -1,10 +1,4 @@
 import {ClientBase, Pool} from "pg";
-import {TEST} from "./RunConfig";
-
-// Throw an error if we try to use Postgres in a test environment.
-if (TEST) {
-  throw new Error("Should not be using Postgres in tests.");
-}
 
 /**
  * A database connection pool. Connecting a new client on every request would be
