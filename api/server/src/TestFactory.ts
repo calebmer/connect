@@ -130,6 +130,7 @@ export async function createGroupMember(
 type FactoryPostConfig = {
   groupID?: GroupID;
   authorID?: AccountID;
+  publishedAt?: DateTime;
 };
 
 type FactoryPost = {
@@ -155,9 +156,11 @@ export async function createPost(
   ]);
 
   const content = `Post Content ${n}`;
-  const publishedAt = new Date(
-    startPublishedAt + 1000 * 60 * 60 * (n - 1),
-  ).toISOString() as DateTime;
+  const publishedAt = config.publishedAt
+    ? config.publishedAt
+    : (new Date(
+        startPublishedAt + 1000 * 60 * 60 * (n - 1),
+      ).toISOString() as DateTime);
 
   const {
     rows: [row],

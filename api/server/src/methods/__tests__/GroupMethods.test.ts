@@ -1,4 +1,4 @@
-import {PostCursor, RangeDirection} from "@connect/api-client";
+import {DateTime, PostCursor, RangeDirection} from "@connect/api-client";
 import {
   createAccount,
   createGroup,
@@ -416,6 +416,40 @@ describe("getPosts", () => {
             before: null,
           }),
         ).toEqual({posts: []});
+      });
+    });
+  });
+
+  test("correctly uses cursors to select posts with the same publish time", () => {
+    return ContextTest.with(async ctx => {
+      const group = await createGroup(ctx);
+      const {accountID} = await createGroupMember(ctx, {groupID: group.id});
+      const publishedAt = new Date().toISOString() as DateTime;
+      const post5 = await createPost(ctx, {groupID: group.id, publishedAt});
+      const post4 = await createPost(ctx, {groupID: group.id, publishedAt});
+      const post3 = await createPost(ctx, {groupID: group.id, publishedAt});
+      const post2 = await createPost(ctx, {groupID: group.id, publishedAt});
+      const post1 = await createPost(ctx, {groupID: group.id, publishedAt});
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(
+          await getPosts(ctx, {
+            groupID: group.id,
+            direction: RangeDirection.Last,
+            count: 3,
+            after: null,
+            before: PostCursor.get(post3),
+          }),
+        ).toEqual({posts: [post1, post2]});
+        expect(
+          await getPosts(ctx, {
+            groupID: group.id,
+            direction: RangeDirection.First,
+            count: 3,
+            after: PostCursor.get(post3),
+            before: null,
+          }),
+        ).toEqual({posts: [post4, post5]});
       });
     });
   });
