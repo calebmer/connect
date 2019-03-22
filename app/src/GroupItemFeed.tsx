@@ -1,4 +1,4 @@
-import {BodyText, Font} from "./atoms";
+import {BodyText, Font, LabelText} from "./atoms";
 import {AccountCache} from "./cache/AccountCache";
 import {GroupItem} from "./GroupItem";
 import {PostCache} from "./cache/PostCache";
@@ -13,6 +13,7 @@ function GroupItemFeed({postID}: {postID: PostID}) {
   const account = useCacheData(AccountCache, post.authorID);
   return (
     <GroupItem account={account}>
+      <LabelText>{account.name}</LabelText>
       <BodyText style={styles.text} numberOfLines={2}>
         {post.content}
       </BodyText>

@@ -1,4 +1,4 @@
-import {Color, LabelText, Space} from "./atoms";
+import {Color, Space} from "./atoms";
 import React, {ReactNode} from "react";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
@@ -14,10 +14,7 @@ export function GroupItem({
   return (
     <View style={styles.container}>
       <AccountAvatar account={account} />
-      <View style={styles.body}>
-        <LabelText>{account.name}</LabelText>
-        {children}
-      </View>
+      <View style={styles.body}>{children}</View>
     </View>
   );
 }
