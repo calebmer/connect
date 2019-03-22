@@ -63,9 +63,10 @@ export async function signUp(
   const {
     rows: [row],
   } = await ctx.query(
-    sql`INSERT INTO (name, email, password_hash) VALUES (${input.name}, ${
-      input.email
-    }, ${passwordHash}) ON CONFLICT (email) DO NOTHING RETURNING id`,
+    sql`INSERT INTO account (name, email, password_hash) VALUES (${sql.join(
+      [input.name, input.email, passwordHash].map(sql.value),
+      sql`, `,
+    )}) ON CONFLICT (email) DO NOTHING RETURNING id`,
   );
 
   // Extract the account ID from the row.

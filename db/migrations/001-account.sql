@@ -39,6 +39,7 @@ CREATE VIEW account_profile AS
 -- like `email` and `password_hash`.
 GRANT SELECT ON TABLE account TO connect_api_auth;
 GRANT INSERT ON TABLE account TO connect_api_auth;
+GRANT USAGE ON SEQUENCE account_id_seq TO connect_api_auth;
 
 -- Allow all users to select from `account_profile`. All account profile
 -- information is public.

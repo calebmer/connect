@@ -1,3 +1,20 @@
+/**
+ * Initializes a temporary, small, Postgres database we will use during testing.
+ * The database configured is to start very quickly.
+ *
+ * When unit testing, it is advised that you mock out components not under test.
+ * Usually, people include Postgres.
+ *
+ * However, there are some components to your program which are so critical that
+ * mocking them out means there’s very little to test at all. For example, it
+ * would be ridiculous to mock your programming language or standard library.
+ * For this reason we _don’t_ mock Postgres. It’s such a critical piece of our
+ * program that mocking it means we wouldn’t have much to test.
+ *
+ * We want to test all the SQL queries we’ve written as they make up a
+ * significant portion of our program’s logic.
+ */
+
 const path = require("path");
 const os = require("os");
 const fs = require("fs-extra");

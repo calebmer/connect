@@ -1,142 +1,138 @@
-test("TODO", () => {});
+import {APIError, APIErrorCode, RefreshToken} from "@connect/api-client";
+import {
+  getCurrentProfile,
+  refreshAccessToken,
+  signIn,
+  signOut,
+  signUp,
+} from "../AccountMethods";
+import uuidV4 from "uuid/v4";
+import {Context, ContextUnauthorized} from "../../Context";
+import {sql} from "../../PGSQL";
+import {AccessTokenGenerator} from "../../AccessToken";
 
-// import {APIError, APIErrorCode, RefreshToken} from "@connect/api-client";
-// import {
-//   AccessTokenGenerator,
-//   MockRefreshTokenCollection,
-// } from "../../entities/Tokens";
-// import {
-//   getCurrentProfile,
-//   refreshAccessToken,
-//   signIn,
-//   signOut,
-//   signUp,
-// } from "../AccountMethods";
-// import {MockAccountCollection} from "../../entities/Account";
-// import uuidV4 from "uuid/v4";
+const testName = "Test";
+const testEmail = "test@example.com";
 
-// const testName = "Test";
-// const testEmail = "test@example.com";
+describe("signUp", () => {
+  test("rejects empty display names", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      let error: any;
+      try {
+        await signUp(ctx, {name: "", email: testEmail, password: "qwerty"});
+      } catch (e) {
+        error = e;
+      }
 
-// describe("signUp", () => {
-//   test("rejects empty display names", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
+      expect(error).toBeInstanceOf(APIError);
+      expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+    });
+  });
 
-//     let error: any;
-//     try {
-//       await signUp(
-//         {accounts, refreshTokens},
-//         {name: "", email: testEmail, password: "qwerty"},
-//       );
-//     } catch (e) {
-//       error = e;
-//     }
+  test("rejects single character display names", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      let error: any;
+      try {
+        await signUp(ctx, {name: "a", email: testEmail, password: "qwerty"});
+      } catch (e) {
+        error = e;
+      }
 
-//     expect(error).toBeInstanceOf(APIError);
-//     expect(error.code).toBe(APIErrorCode.BAD_INPUT);
-//   });
+      expect(error).toBeInstanceOf(APIError);
+      expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+    });
+  });
 
-//   test("rejects single character display names", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
+  test("rejects empty emails", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      let error: any;
+      try {
+        await signUp(ctx, {name: testName, email: "", password: "qwerty"});
+      } catch (e) {
+        error = e;
+      }
 
-//     let error: any;
-//     try {
-//       await signUp(
-//         {accounts, refreshTokens},
-//         {name: "a", email: testEmail, password: "qwerty"},
-//       );
-//     } catch (e) {
-//       error = e;
-//     }
+      expect(error).toBeInstanceOf(APIError);
+      expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+    });
+  });
 
-//     expect(error).toBeInstanceOf(APIError);
-//     expect(error.code).toBe(APIErrorCode.BAD_INPUT);
-//   });
+  test("creates a new account", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      await signUp(ctx, {name: testName, email: testEmail, password: "qwerty"});
 
-//   test("rejects empty emails", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
+      const {rowCount} = await ctx.query(
+        sql`SELECT 1 FROM account WHERE email = ${testEmail}`,
+      );
 
-//     let error: any;
-//     try {
-//       await signUp(
-//         {accounts, refreshTokens},
-//         {name: testName, email: "", password: "qwerty"},
-//       );
-//     } catch (e) {
-//       error = e;
-//     }
+      expect(rowCount).toEqual(1);
+    });
+  });
 
-//     expect(error).toBeInstanceOf(APIError);
-//     expect(error.code).toBe(APIErrorCode.BAD_INPUT);
-//   });
+  test("errors when trying to sign up with an already used email", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      await signUp(ctx, {
+        name: testName,
+        email: testEmail,
+        password: "qwerty1",
+      });
+      let error: any;
+      try {
+        await signUp(ctx, {
+          name: testName,
+          email: testEmail,
+          password: "qwerty2",
+        });
+      } catch (e) {
+        error = e;
+      }
 
-//   test("creates a new account", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
+      expect(error).toBeInstanceOf(APIError);
+      expect(error.code).toBe(APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED);
+    });
+  });
 
-//     await signUp(
-//       {accounts, refreshTokens},
-//       {name: testName, email: testEmail, password: "qwerty"},
-//     );
+  test("creates a new refresh token", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      const {refreshToken} = await signUp(ctx, {
+        name: testName,
+        email: testEmail,
+        password: "qwerty",
+      });
 
-//     expect(accounts.getAuth(testEmail)).toBeTruthy();
-//   });
+      const {
+        rows: [{id: accountID}],
+      } = await ctx.query(
+        sql`SELECT id FROM account WHERE email = ${testEmail}`,
+      );
+      const {rowCount} = await ctx.query(
+        sql`SELECT 1 FROM refresh_token WHERE token = ${refreshToken} AND account_id = ${accountID}`,
+      );
+      expect(rowCount).toBe(1);
+    });
+  });
 
-//   test("errors when trying to sign up with an already used email", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
+  test("creates a new access token", () => {
+    return ContextUnauthorized.withUnauthorized(async ctx => {
+      const {accessToken} = await signUp(ctx, {
+        name: testName,
+        email: testEmail,
+        password: "qwerty",
+      });
 
-//     await signUp(
-//       {accounts, refreshTokens},
-//       {name: testName, email: testEmail, password: "qwerty1"},
-//     );
-//     let error: any;
-//     try {
-//       await signUp(
-//         {accounts, refreshTokens},
-//         {name: testName, email: testEmail, password: "qwerty2"},
-//       );
-//     } catch (e) {
-//       error = e;
-//     }
-
-//     expect(error).toBeInstanceOf(APIError);
-//     expect(error.code).toBe(APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED);
-//   });
-
-//   test("creates a new refresh token", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
-
-//     const {refreshToken} = await signUp(
-//       {accounts, refreshTokens},
-//       {name: testName, email: testEmail, password: "qwerty"},
-//     );
-
-//     const accountID = (await accounts.getAuth(testEmail))!.id;
-//     expect(await refreshTokens.use(refreshToken)).toBe(accountID);
-//   });
-
-//   test("creates a new access token", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
-
-//     const {accessToken} = await signUp(
-//       {accounts, refreshTokens},
-//       {name: testName, email: testEmail, password: "qwerty"},
-//     );
-
-//     const accountID = (await accounts.getAuth(testEmail))!.id;
-//     expect(await AccessTokenGenerator.verify(accessToken)).toEqual({
-//       exp: expect.any(Number),
-//       iat: expect.any(Number),
-//       id: accountID,
-//     });
-//   });
-// });
+      const {
+        rows: [{id: accountID}],
+      } = await ctx.query(
+        sql`SELECT id FROM account WHERE email = ${testEmail}`,
+      );
+      expect(await AccessTokenGenerator.verify(accessToken)).toEqual({
+        exp: expect.any(Number),
+        iat: expect.any(Number),
+        id: accountID,
+      });
+    });
+  });
+});
 
 // describe("signIn", () => {
 //   test("fails if the account does not exist", async () => {
