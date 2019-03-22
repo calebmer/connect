@@ -27,7 +27,7 @@ async function run({silent = false} = {}) {
 
       CREATE TABLE IF NOT EXISTS connect_migration (
         name TEXT PRIMARY KEY,
-        run_at TIMESTAMP NOT NULL DEFAULT now()
+        run_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
       );
 
       COMMIT;

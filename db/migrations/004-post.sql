@@ -12,7 +12,7 @@ CREATE TABLE post (
   -- The time the post was published. In the future we might also have a
   -- `created_at` time which represents when the post was created for
   -- draft posts.
-  published_at TIMESTAMP NOT NULL DEFAULT now()
+  published_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 -- Very important index for fetching posts in reverse chronological order.
@@ -24,7 +24,7 @@ CREATE TABLE post (
 --   reverse chronological order. We make sure the order is descending because
 --   we want to select posts in _reverse_ chronological order.
 -- * `id` to disambiguate two posts which were posted at the exact same time.
-CREATE INDEX post_published_at ON post (group_id, published_at DESC, id);
+CREATE INDEX post_published_at ON post (group_id, published_at DESC, id DESC);
 
 -- Allow our API to access this table, but only after passing row level
 -- security policies.

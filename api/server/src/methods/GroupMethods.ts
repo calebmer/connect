@@ -33,7 +33,7 @@ export async function getBySlug(
 // Create a paginator for posts.
 const PGPaginationPost = new PGPagination(sql`post`, [
   {column: sql`published_at`, descending: true},
-  {column: sql`id`},
+  {column: sql`id`, descending: true},
 ]);
 
 /**

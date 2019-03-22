@@ -1,5 +1,6 @@
-import {ClientBase, Pool} from "pg";
+import {ClientBase, Pool, types as pgTypes} from "pg";
 import {TEST} from "./RunConfig";
+import parseDate from "postgres-date";
 
 // We expect `jest-global-setup.js` to start a temporary test database we can
 // connect to. We also expect that it exposes its Postgres configuration through
@@ -37,6 +38,19 @@ pool.on("error", (error, _client) => {
   console.error(error); // eslint-disable-line no-console
   process.exit(1);
 });
+
+// Parse timestamps as an ISO string instead of a JavaScript `Date` object.
+const TIMESTAMPTZ_OID = 1184;
+const TIMESTAMP_OID = 1114;
+pgTypes.setTypeParser(TIMESTAMPTZ_OID, parseTimestamp);
+pgTypes.setTypeParser(TIMESTAMP_OID, parseTimestamp);
+
+function parseTimestamp(isoString: string | null): string | null {
+  if (isoString === null) return null;
+  const isoDate = parseDate(isoString);
+  if (isoDate === null) return null;
+  return isoDate.toISOString();
+}
 
 /**
  * A Postgres database client which we may directly execute SQL queries against.

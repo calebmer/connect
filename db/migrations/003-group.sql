@@ -26,7 +26,7 @@ CREATE TABLE "group" (
   -- created the group although ownership may be transferred.
   owner_id INT NOT NULL REFERENCES account(id),
   -- The time the group was created at for bookkeeping.
-  created_at TIMESTAMP NOT NULL DEFAULT now()
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 -- An account’s membership in a group. Accounts can’t join arbitrary groups.
@@ -37,7 +37,7 @@ CREATE TABLE group_member (
   -- The group which this account is a part of.
   group_id INT NOT NULL REFERENCES "group"(id),
   -- The date at which the account joined the group.
-  joined_at TIMESTAMP NOT NULL DEFAULT now(),
+  joined_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   -- We have a compound primary key on this table between the account and
   -- group IDs.
   PRIMARY KEY (account_id, group_id)

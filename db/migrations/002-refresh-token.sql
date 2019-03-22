@@ -15,11 +15,11 @@ CREATE TABLE refresh_token (
   account_id INT NOT NULL REFERENCES account(id),
   -- The last time this refresh token was used to generate a new access token.
   -- Used for keeping track of how refresh tokens are used.
-  last_used_at TIMESTAMP DEFAULT now(),
+  last_used_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   -- The time at which a UUID was created. We should also consider adding extra
   -- information like the device this refresh token is attached to so that a
   -- person may sign out of their account on all their devices.
-  created_at TIMESTAMP NOT NULL DEFAULT now()
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 -- Refresh tokens are secured at an API level considering we provide very little

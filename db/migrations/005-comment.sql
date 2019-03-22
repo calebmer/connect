@@ -11,7 +11,7 @@ CREATE TABLE comment (
   content TEXT NOT NULL,
   -- The time this comment was posted. Could be different from the last time
   -- this comment was updated.
-  posted_at TIMESTAMP NOT NULL DEFAULT now()
+  posted_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 -- Very important index for fetching comments in chronological order. Index by:

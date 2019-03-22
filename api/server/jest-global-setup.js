@@ -58,7 +58,6 @@ async function initializeFreshDatabase() {
       "fsync = off",
       "synchronous_commit = off",
       "full_page_writes = off",
-      "log_min_duration_statement = 0",
       "log_connections = on",
       "log_disconnections = on",
     ].join("\n") + "\n",
@@ -121,6 +120,11 @@ module.exports = async () => {
 
   debug(`Starting Postgres on port ${port}`);
   const subprocess = cp.exec(`postgres -D ${dataDir} -p ${port}`);
+
+  // Pipe the Postgres process log to a file for later inspection.
+  subprocess.stderr.pipe(
+    fs.createWriteStream(path.join(tempDir, "postgres.log")),
+  );
 
   // Wait for the database to start up. Retry 5 times waiting 100ms between
   // each attempt.

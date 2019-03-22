@@ -25,7 +25,7 @@ CREATE TABLE account (
   -- A bcrypt hash of the account password.
   password_hash TEXT NOT NULL,
   -- The time at which the account was created.
-  created_at TIMESTAMP NOT NULL DEFAULT now()
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 -- Create a view of the `account` table with just the account’s public profile
