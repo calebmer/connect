@@ -21,6 +21,7 @@ const fs = require("fs-extra");
 const cp = require("child_process");
 const debug = require("debug")("connect:test:pg");
 const getPort = require("get-port");
+const {Client} = require("pg");
 const runMigrations = require("@connect/db/scripts/migrate");
 
 const osTempDir = os.tmpdir();
@@ -116,6 +117,7 @@ module.exports = async () => {
   process.env.PGHOST = tempDir;
   process.env.PGPORT = port;
   process.env.PGDATABASE = "test";
+  delete process.env.PGUSER;
 
   debug(`Starting Postgres on port ${port}`);
   const subprocess = cp.exec(`postgres -D ${dataDir} -p ${port}`);
@@ -143,6 +145,16 @@ module.exports = async () => {
   // If our loop ended with an error then throw it.
   if (error !== undefined) {
     throw error;
+  }
+
+  debug("Creating test user");
+  const client = new Client();
+  try {
+    await client.connect();
+    await client.query("CREATE ROLE connect_api_test LOGIN SUPERUSER");
+    process.env.PGUSER = "connect_api_test"; // Run migrations as our test user.
+  } finally {
+    client.end();
   }
 
   debug("Running migrations");

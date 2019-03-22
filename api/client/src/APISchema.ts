@@ -32,6 +32,7 @@ export const APISchema = Schema.namespace({
         password: SchemaInput.string(),
       },
       output: SchemaOutput.t<{
+        readonly accountID: AccountID;
         readonly accessToken: AccessToken;
         readonly refreshToken: RefreshToken;
       }>(),
@@ -58,6 +59,7 @@ export const APISchema = Schema.namespace({
         password: SchemaInput.string(),
       },
       output: SchemaOutput.t<{
+        readonly accountID: AccountID;
         readonly accessToken: AccessToken;
         readonly refreshToken: RefreshToken;
       }>(),

@@ -141,7 +141,7 @@ function initializeServerMethod<
       handleResponse<Output>(async req => {
         const accessToken = await getRequestAuthorization(req);
         const input = getRequestQueryInput(req, schema.input);
-        return Context.with(accessToken.id, ctx => {
+        return Context.withAuthorized(accessToken.id, ctx => {
           return definition(ctx, input);
         });
       }),
@@ -152,7 +152,7 @@ function initializeServerMethod<
       handleResponse<Output>(async req => {
         const accessToken = await getRequestAuthorization(req);
         const input = getRequestBodyInput(req, schema.input);
-        return Context.with(accessToken.id, ctx => {
+        return Context.withAuthorized(accessToken.id, ctx => {
           return definition(ctx, input);
         });
       }),
@@ -181,7 +181,7 @@ function initializeServerMethodUnauthorized<
       apiPath,
       handleResponse<Output>(req => {
         const input = getRequestQueryInput(req, schema.input);
-        return ContextUnauthorized.withUnauthorized(ctx => {
+        return Context.withUnauthorized(ctx => {
           return definition(ctx, input);
         });
       }),
@@ -191,7 +191,7 @@ function initializeServerMethodUnauthorized<
       apiPath,
       handleResponse<Output>(req => {
         const input = getRequestBodyInput(req, schema.input);
-        return ContextUnauthorized.withUnauthorized(ctx => {
+        return Context.withUnauthorized(ctx => {
           return definition(ctx, input);
         });
       }),

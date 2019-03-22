@@ -6,17 +6,18 @@ import {
   signOut,
   signUp,
 } from "../AccountMethods";
-import uuidV4 from "uuid/v4";
-import {Context, ContextUnauthorized} from "../../Context";
-import {sql} from "../../PGSQL";
 import {AccessTokenGenerator} from "../../AccessToken";
+import {Context} from "../../Context";
+import {ContextTest} from "../../ContextTest";
+import {sql} from "../../PGSQL";
+import uuidV4 from "uuid/v4";
 
 const testName = "Test";
 const testEmail = "test@example.com";
 
 describe("signUp", () => {
   test("rejects empty display names", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
+    return Context.withUnauthorized(async ctx => {
       let error: any;
       try {
         await signUp(ctx, {name: "", email: testEmail, password: "qwerty"});
@@ -30,7 +31,7 @@ describe("signUp", () => {
   });
 
   test("rejects single character display names", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
+    return Context.withUnauthorized(async ctx => {
       let error: any;
       try {
         await signUp(ctx, {name: "a", email: testEmail, password: "qwerty"});
@@ -44,7 +45,7 @@ describe("signUp", () => {
   });
 
   test("rejects empty emails", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
+    return Context.withUnauthorized(async ctx => {
       let error: any;
       try {
         await signUp(ctx, {name: testName, email: "", password: "qwerty"});
@@ -58,7 +59,7 @@ describe("signUp", () => {
   });
 
   test("creates a new account", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
+    return Context.withUnauthorized(async ctx => {
       await signUp(ctx, {name: testName, email: testEmail, password: "qwerty"});
 
       const {rowCount} = await ctx.query(
@@ -70,7 +71,7 @@ describe("signUp", () => {
   });
 
   test("errors when trying to sign up with an already used email", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
+    return Context.withUnauthorized(async ctx => {
       await signUp(ctx, {
         name: testName,
         email: testEmail,
@@ -93,18 +94,13 @@ describe("signUp", () => {
   });
 
   test("creates a new refresh token", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
-      const {refreshToken} = await signUp(ctx, {
+    return Context.withUnauthorized(async ctx => {
+      const {accountID, refreshToken} = await signUp(ctx, {
         name: testName,
         email: testEmail,
         password: "qwerty",
       });
 
-      const {
-        rows: [{id: accountID}],
-      } = await ctx.query(
-        sql`SELECT id FROM account WHERE email = ${testEmail}`,
-      );
       const {rowCount} = await ctx.query(
         sql`SELECT 1 FROM refresh_token WHERE token = ${refreshToken} AND account_id = ${accountID}`,
       );
@@ -113,18 +109,13 @@ describe("signUp", () => {
   });
 
   test("creates a new access token", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
-      const {accessToken} = await signUp(ctx, {
+    return Context.withUnauthorized(async ctx => {
+      const {accountID, accessToken} = await signUp(ctx, {
         name: testName,
         email: testEmail,
         password: "qwerty",
       });
 
-      const {
-        rows: [{id: accountID}],
-      } = await ctx.query(
-        sql`SELECT id FROM account WHERE email = ${testEmail}`,
-      );
       expect(await AccessTokenGenerator.verify(accessToken)).toEqual({
         exp: expect.any(Number),
         iat: expect.any(Number),
@@ -136,7 +127,7 @@ describe("signUp", () => {
 
 describe("signIn", () => {
   test("fails if the account does not exist", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
+    return Context.withUnauthorized(async ctx => {
       let error: any;
       try {
         await signIn(ctx, {email: testEmail, password: "qwerty"});
@@ -150,7 +141,7 @@ describe("signIn", () => {
   });
 
   test("fails if the wrong password is used", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
+    return Context.withUnauthorized(async ctx => {
       await signUp(ctx, {name: testName, email: testEmail, password: "qwerty"});
 
       let error: any;
@@ -166,19 +157,14 @@ describe("signIn", () => {
   });
 
   test("creates a new refresh token", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
+    return Context.withUnauthorized(async ctx => {
       await signUp(ctx, {name: testName, email: testEmail, password: "qwerty"});
 
-      const {refreshToken} = await signIn(ctx, {
+      const {accountID, refreshToken} = await signIn(ctx, {
         email: testEmail,
         password: "qwerty",
       });
 
-      const {
-        rows: [{id: accountID}],
-      } = await ctx.query(
-        sql`SELECT id FROM account WHERE email = ${testEmail}`,
-      );
       const {rowCount} = await ctx.query(
         sql`SELECT 1 FROM refresh_token WHERE token = ${refreshToken} AND account_id = ${accountID}`,
       );
@@ -187,19 +173,14 @@ describe("signIn", () => {
   });
 
   test("creates a new access token", () => {
-    return ContextUnauthorized.withUnauthorized(async ctx => {
+    return Context.withUnauthorized(async ctx => {
       await signUp(ctx, {name: testName, email: testEmail, password: "qwerty"});
 
-      const {accessToken} = await signIn(ctx, {
+      const {accountID, accessToken} = await signIn(ctx, {
         email: testEmail,
         password: "qwerty",
       });
 
-      const {
-        rows: [{id: accountID}],
-      } = await ctx.query(
-        sql`SELECT id FROM account WHERE email = ${testEmail}`,
-      );
       expect(await AccessTokenGenerator.verify(accessToken)).toEqual({
         exp: expect.any(Number),
         iat: expect.any(Number),
@@ -209,104 +190,104 @@ describe("signIn", () => {
   });
 });
 
-// describe("signOut", () => {
-//   test("noop if the token does not exist", async () => {
-//     const refreshTokens = new MockRefreshTokenCollection();
+describe("signOut", () => {
+  test("noop if the token does not exist", () => {
+    return Context.withUnauthorized(async ctx => {
+      await signOut(ctx, {refreshToken: uuidV4() as any});
+    });
+  });
 
-//     await signOut({refreshTokens}, {refreshToken: "yolo" as any});
-//   });
+  test("prevents a refresh token from being used again", () => {
+    return Context.withUnauthorized(async ctx => {
+      const {refreshToken} = await signUp(ctx, {
+        name: testName,
+        email: testEmail,
+        password: "qwerty",
+      });
 
-//   test("prevents a refresh token from being used again", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
-//     const {refreshToken} = await signUp(
-//       {accounts, refreshTokens},
-//       {name: testName, email: testEmail, password: "qwerty"},
-//     );
+      await refreshAccessToken(ctx, {refreshToken});
+      await signOut(ctx, {refreshToken});
+      let error: any;
+      try {
+        await refreshAccessToken(ctx, {refreshToken});
+      } catch (e) {
+        error = e;
+      }
 
-//     await refreshAccessToken({refreshTokens}, {refreshToken});
-//     await signOut({refreshTokens}, {refreshToken});
-//     let error: any;
-//     try {
-//       await refreshAccessToken({refreshTokens}, {refreshToken});
-//     } catch (e) {
-//       error = e;
-//     }
+      expect(error).toBeInstanceOf(APIError);
+      expect(error.code).toBe(APIErrorCode.REFRESH_TOKEN_INVALID);
+    });
+  });
+});
 
-//     expect(error).toBeInstanceOf(APIError);
-//     expect(error.code).toBe(APIErrorCode.REFRESH_TOKEN_INVALID);
-//   });
-// });
+describe("refreshAccessToken", () => {
+  test("fails if the refresh token does not exist", () => {
+    return Context.withUnauthorized(async ctx => {
+      let error: any;
+      try {
+        await refreshAccessToken(ctx, {refreshToken: uuidV4() as RefreshToken});
+      } catch (e) {
+        error = e;
+      }
 
-// describe("refreshAccessToken", () => {
-//   test("fails if the refresh token does not exist", async () => {
-//     const refreshTokens = new MockRefreshTokenCollection();
+      expect(error).toBeInstanceOf(APIError);
+      expect(error.code).toBe(APIErrorCode.REFRESH_TOKEN_INVALID);
+    });
+  });
 
-//     let error: any;
-//     try {
-//       await refreshAccessToken(
-//         {refreshTokens},
-//         {refreshToken: uuidV4() as RefreshToken},
-//       );
-//     } catch (e) {
-//       error = e;
-//     }
+  test("creates a new access token when given a refresh token", () => {
+    return Context.withUnauthorized(async ctx => {
+      const {accountID, refreshToken} = await signUp(ctx, {
+        name: testName,
+        email: testEmail,
+        password: "qwerty",
+      });
 
-//     expect(error).toBeInstanceOf(APIError);
-//     expect(error.code).toBe(APIErrorCode.REFRESH_TOKEN_INVALID);
-//   });
+      const {accessToken} = await refreshAccessToken(ctx, {refreshToken});
 
-//   test("creates a new access token when given a refresh token", async () => {
-//     const accounts = new MockAccountCollection();
-//     const refreshTokens = new MockRefreshTokenCollection();
-//     const {refreshToken} = await signUp(
-//       {accounts, refreshTokens},
-//       {name: testName, email: testEmail, password: "qwerty"},
-//     );
+      expect(await AccessTokenGenerator.verify(accessToken)).toEqual({
+        exp: expect.any(Number),
+        iat: expect.any(Number),
+        id: accountID,
+      });
+    });
+  });
+});
 
-//     const {accessToken} = await refreshAccessToken(
-//       {refreshTokens},
-//       {refreshToken},
-//     );
+describe("getCurrentProfile", () => {
+  test("throws if the account does not exist", () => {
+    return Context.withAuthorized(42 as any, async ctx => {
+      let error: any;
+      try {
+        await getCurrentProfile(ctx);
+      } catch (e) {
+        error = e;
+      }
 
-//     const accountID = (await accounts.getAuth(testEmail))!.id;
-//     expect(await AccessTokenGenerator.verify(accessToken)).toEqual({
-//       exp: expect.any(Number),
-//       iat: expect.any(Number),
-//       id: accountID,
-//     });
-//   });
-// });
+      expect(error).toBeInstanceOf(APIError);
+      expect(error.code).toBe(APIErrorCode.NOT_FOUND);
+    });
+  });
 
-// describe("getCurrentProfile", () => {
-//   test("throws if the account does not exist", async () => {
-//     const accounts = new MockAccountCollection();
+  test("gets the account profile if one exists", () => {
+    return ContextTest.with(async ctx => {
+      const {accountID} = await ctx.withUnauthorized(ctx => {
+        return signUp(ctx, {
+          name: testName,
+          email: testEmail,
+          password: "",
+        });
+      });
 
-//     let error: any;
-//     try {
-//       await getCurrentProfile({accounts}, 42 as any);
-//     } catch (e) {
-//       error = e;
-//     }
+      const {account} = await ctx.withAuthorized(accountID, ctx => {
+        return getCurrentProfile(ctx);
+      });
 
-//     expect(error).toBeInstanceOf(APIError);
-//     expect(error.code).toBe(APIErrorCode.NOT_FOUND);
-//   });
-
-//   test("gets the account profile if one exists", async () => {
-//     const accounts = new MockAccountCollection();
-//     const accountID = await accounts.register({
-//       name: testName,
-//       email: testEmail,
-//       passwordHash: "",
-//     });
-
-//     const {account} = await getCurrentProfile({accounts}, accountID!);
-
-//     expect(account).toEqual({
-//       id: accountID,
-//       name: testName,
-//       avatarURL: null,
-//     });
-//   });
-// });
+      expect(account).toEqual({
+        id: accountID,
+        name: testName,
+        avatarURL: null,
+      });
+    });
+  });
+});

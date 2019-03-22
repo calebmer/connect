@@ -42,6 +42,7 @@ export async function signUp(
     readonly password: string;
   },
 ): Promise<{
+  readonly accountID: AccountID;
   readonly accessToken: AccessToken;
   readonly refreshToken: RefreshToken;
 }> {
@@ -80,7 +81,13 @@ export async function signUp(
 
   // We also want to sign our new account in, so generate new
   // authorization tokens...
-  return await generateTokens(ctx, newAccountID);
+  const {accessToken, refreshToken} = await generateTokens(ctx, newAccountID);
+
+  return {
+    accountID: newAccountID,
+    accessToken,
+    refreshToken,
+  };
 }
 
 /**
@@ -98,6 +105,7 @@ export async function signIn(
     readonly password: string;
   },
 ): Promise<{
+  readonly accountID: AccountID;
   readonly accessToken: AccessToken;
   readonly refreshToken: RefreshToken;
 }> {
@@ -132,7 +140,13 @@ export async function signIn(
   }
 
   // Generate tokens for this account, officially signing the person in!
-  return await generateTokens(ctx, account.id);
+  const {accessToken, refreshToken} = await generateTokens(ctx, account.id);
+
+  return {
+    accountID: account.id,
+    accessToken,
+    refreshToken,
+  };
 }
 
 /**
