@@ -77,7 +77,11 @@ export class ContextTest implements ContextQueryable {
       return await action(ctx);
     } finally {
       ctx.invalidate();
-      await this.client.query("RESET ROLE");
+      try {
+        await this.client.query("RESET ROLE");
+      } catch (error) {
+        // Ignore errors here...
+      }
     }
   }
 
@@ -107,8 +111,12 @@ export class ContextTest implements ContextQueryable {
       return await action(ctx);
     } finally {
       ctx.invalidate();
-      await this.client.query("RESET ROLE");
-      await this.client.query("RESET connect.account_id");
+      try {
+        await this.client.query("RESET ROLE");
+        await this.client.query("RESET connect.account_id");
+      } catch (error) {
+        // Ignore errors here...
+      }
     }
   }
 

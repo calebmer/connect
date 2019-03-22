@@ -9,12 +9,11 @@ export async function get(
   ctx: Context,
   input: {readonly id: PostID},
 ): Promise<{readonly post: Post | null}> {
+  const postID = input.id;
   const {
     rows: [row],
   } = await ctx.query(
-    sql`SELECT group_id, author_id, published_at, content WHERE id = ${
-      input.id
-    }`,
+    sql`SELECT group_id, author_id, published_at, content FROM post WHERE id = ${postID}`,
   );
   if (row === undefined) {
     return {post: null};
