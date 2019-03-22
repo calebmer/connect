@@ -1,6 +1,13 @@
-import {APIError, APIErrorCode, RefreshToken} from "@connect/api-client";
+import {
+  APIError,
+  APIErrorCode,
+  AccountID,
+  RefreshToken,
+} from "@connect/api-client";
 import {
   getCurrentProfile,
+  getManyProfiles,
+  getProfile,
   refreshAccessToken,
   signIn,
   signOut,
@@ -11,6 +18,9 @@ import {Context} from "../../Context";
 import {ContextTest} from "../../ContextTest";
 import {sql} from "../../PGSQL";
 import uuidV4 from "uuid/v4";
+
+// NOTE: Run our tests concurrently for a nice speed boost.
+const test: jest.It = (global as any).test.concurrent;
 
 const testName = "Test";
 const testEmail = "test@example.com";
@@ -287,6 +297,253 @@ describe("getCurrentProfile", () => {
         id: accountID,
         name: testName,
         avatarURL: null,
+      });
+    });
+  });
+});
+
+describe("getProfile", () => {
+  test("cannot get a profile that does not exist", () => {
+    return ContextTest.with(async ctx => {
+      const {accountID} = await ctx.withUnauthorized(ctx => {
+        return signUp(ctx, {
+          name: testName,
+          email: testEmail,
+          password: "",
+        });
+      });
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(await getProfile(ctx, {id: -42 as any})).toEqual({
+          account: null,
+        });
+      });
+    });
+  });
+
+  test("can get any profile", () => {
+    return ContextTest.with(async ctx => {
+      const accountIDs = await ctx.withUnauthorized(async ctx => {
+        return [
+          await signUp(ctx, {
+            name: "Test 0",
+            email: "test0@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 1",
+            email: "test1@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 2",
+            email: "test2@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 3",
+            email: "test3@example.com",
+            password: "",
+          }),
+        ].map(({accountID}) => accountID);
+      });
+
+      await ctx.withAuthorized(accountIDs[0], async ctx => {
+        expect(await getProfile(ctx, {id: accountIDs[1]})).toEqual({
+          account: {
+            id: accountIDs[1],
+            name: "Test 1",
+            avatarURL: null,
+          },
+        });
+        expect(await getProfile(ctx, {id: accountIDs[2]})).toEqual({
+          account: {
+            id: accountIDs[2],
+            name: "Test 2",
+            avatarURL: null,
+          },
+        });
+        expect(await getProfile(ctx, {id: accountIDs[3]})).toEqual({
+          account: {
+            id: accountIDs[3],
+            name: "Test 3",
+            avatarURL: null,
+          },
+        });
+      });
+    });
+  });
+});
+
+describe("getManyProfiles", () => {
+  test("can get no profiles", () => {
+    return ContextTest.with(async ctx => {
+      const {accountID} = await ctx.withUnauthorized(ctx => {
+        return signUp(ctx, {
+          name: testName,
+          email: testEmail,
+          password: "",
+        });
+      });
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(await getManyProfiles(ctx, {ids: []})).toEqual({accounts: []});
+      });
+    });
+  });
+
+  test("can get one profile", () => {
+    return ContextTest.with(async ctx => {
+      const accountIDs = await ctx.withUnauthorized(async ctx => {
+        return [
+          await signUp(ctx, {
+            name: "Test 0",
+            email: "test0@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 1",
+            email: "test1@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 2",
+            email: "test2@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 3",
+            email: "test3@example.com",
+            password: "",
+          }),
+        ].map(({accountID}) => accountID);
+      });
+
+      await ctx.withAuthorized(accountIDs[0], async ctx => {
+        expect(await getManyProfiles(ctx, {ids: [accountIDs[2]]})).toEqual({
+          accounts: [
+            {
+              id: accountIDs[2],
+              name: "Test 2",
+              avatarURL: null,
+            },
+          ],
+        });
+      });
+    });
+  });
+
+  test("can get any profiles", () => {
+    return ContextTest.with(async ctx => {
+      const accountIDs = await ctx.withUnauthorized(async ctx => {
+        return [
+          await signUp(ctx, {
+            name: "Test 0",
+            email: "test0@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 1",
+            email: "test1@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 2",
+            email: "test2@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 3",
+            email: "test3@example.com",
+            password: "",
+          }),
+        ].map(({accountID}) => accountID);
+      });
+
+      await ctx.withAuthorized(accountIDs[0], async ctx => {
+        expect(
+          await getManyProfiles(ctx, {
+            ids: [accountIDs[1], accountIDs[2], accountIDs[3]],
+          }),
+        ).toEqual({
+          accounts: [
+            {
+              id: accountIDs[1],
+              name: "Test 1",
+              avatarURL: null,
+            },
+            {
+              id: accountIDs[2],
+              name: "Test 2",
+              avatarURL: null,
+            },
+            {
+              id: accountIDs[3],
+              name: "Test 3",
+              avatarURL: null,
+            },
+          ],
+        });
+      });
+    });
+  });
+
+  test("cannot get a profile that does not exist", () => {
+    return ContextTest.with(async ctx => {
+      const accountIDs = await ctx.withUnauthorized(async ctx => {
+        return [
+          await signUp(ctx, {
+            name: "Test 0",
+            email: "test0@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 1",
+            email: "test1@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 2",
+            email: "test2@example.com",
+            password: "",
+          }),
+          await signUp(ctx, {
+            name: "Test 3",
+            email: "test3@example.com",
+            password: "",
+          }),
+        ].map(({accountID}) => accountID);
+      });
+
+      await ctx.withAuthorized(accountIDs[0], async ctx => {
+        expect(
+          await getManyProfiles(ctx, {
+            ids: [
+              accountIDs[1],
+              accountIDs[2],
+              -42 as AccountID,
+              accountIDs[3],
+            ],
+          }),
+        ).toEqual({
+          accounts: [
+            {
+              id: accountIDs[1],
+              name: "Test 1",
+              avatarURL: null,
+            },
+            {
+              id: accountIDs[2],
+              name: "Test 2",
+              avatarURL: null,
+            },
+            {
+              id: accountIDs[3],
+              name: "Test 3",
+              avatarURL: null,
+            },
+          ],
+        });
       });
     });
   });
