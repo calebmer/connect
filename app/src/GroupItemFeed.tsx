@@ -41,10 +41,12 @@ const numberOfLines = 8;
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
+    justifyContent: "space-between",
+
+    // NOTE: `baseline` doesn’t work very well outside of web. Super sad!
     alignItems: Platform.OS === "web" ? "baseline" : undefined,
   },
   publishedAt: {
-    paddingLeft: Space.space0,
     ...Platform.select({
       web: {},
       default: {
