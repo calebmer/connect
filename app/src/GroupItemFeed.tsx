@@ -13,8 +13,11 @@ function GroupItemFeed({postID}: {postID: PostID}) {
   const account = useCacheData(AccountCache, post.authorID);
   return (
     <GroupItem account={account}>
-      <LabelText>{account.name}</LabelText>
-      <BodyText style={styles.text} numberOfLines={2}>
+      <BodyText style={styles.text} numberOfLines={numberOfLines}>
+        <LabelText>
+          {account.name}
+          {"\n"}
+        </LabelText>
         {post.content}
       </BodyText>
     </GroupItem>
@@ -24,8 +27,10 @@ function GroupItemFeed({postID}: {postID: PostID}) {
 const _GroupItemFeed = React.memo(GroupItemFeed);
 export {_GroupItemFeed as GroupItemFeed};
 
+const numberOfLines = 8;
+
 const styles = StyleSheet.create({
   text: {
-    maxHeight: Font.size2.lineHeight * 2,
+    maxHeight: Font.size2.lineHeight * numberOfLines,
   },
 });

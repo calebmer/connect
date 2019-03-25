@@ -13,10 +13,10 @@ import {CacheList} from "./framework/CacheList";
 import {PostCache} from "./PostCache";
 
 /** The number of posts we load for a group in our initial fetch. */
-export const groupPostCountInitial = 16;
+export const groupPostCountInitial = 8;
 
 /** The number of posts we load for a group as we are scrolling. */
-export const groupPostCountMore = 16;
+export const groupPostCountMore = 8;
 
 /**
  * An entry for a `Group` in our group `Cache`.

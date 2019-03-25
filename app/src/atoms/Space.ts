@@ -2,7 +2,7 @@
 export const space0 = 4;
 export const space1 = 8;
 export const space2 = 12;
-export const space3 = 16;
+export const space3 = 17;
 export const space4 = 24;
 export const space5 = 36;
 export const space6 = 48;

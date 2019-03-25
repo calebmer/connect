@@ -22,7 +22,7 @@ INSERT INTO account (id, name, avatar_url, email, password_hash) VALUES
   (18, 'John', null, 'john@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
   (19, 'Budd', null, 'budd@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
   (20, 'Joseph', 'https://images-na.ssl-images-amazon.com/images/M/MV5BMTc3MzY3MjQ3OV5BMl5BanBnXkFtZTcwODI3NjQxMw@@._V1_UY256_CR6,0,172,256_AL_.jpg', 'joseph@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
-  (21, 'Courtney', 'https://pbs.twimg.com/profile_images/718588760003383296/2AG8omMO.jpg', 'courtney@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.');
+  (21, 'Courtney', 'https://s3.amazonaws.com/uifaces/faces/twitter/adellecharles/128.jpg', 'courtney@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.');
 
 ALTER SEQUENCE account_id_seq RESTART WITH 21;
 

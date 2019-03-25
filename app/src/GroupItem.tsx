@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "row",
-    paddingHorizontal: GroupItem.padding,
+    padding: GroupItem.padding,
     backgroundColor: GroupItem.backgroundColor,
   },
   body: {
