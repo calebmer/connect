@@ -1,12 +1,12 @@
+import {BodyText, LabelText, MetaText, Space} from "./atoms";
+import {ScrollView, StyleSheet, View} from "react-native";
+import {AccountAvatar} from "./AccountAvatar";
+import {AccountCache} from "./cache/AccountCache";
 import {PostCache} from "./cache/PostCache";
 import {PostID} from "@connect/api-client";
 import React from "react";
-import {ScrollView, StyleSheet, Text, View} from "react-native";
-import {useCacheData} from "./cache/framework/Cache";
-import {AccountAvatar} from "./AccountAvatar";
-import {AccountCache} from "./cache/AccountCache";
-import {BodyText, LabelText, MetaText, Space} from "./atoms";
 import {communicateTime} from "./communicateTime";
+import {useCacheData} from "./cache/framework/Cache";
 
 // TODO:
 //
