@@ -14,13 +14,7 @@ import {useCacheData} from "./cache/framework/Cache";
 // 2. Native navbar
 // 3. Web inbox
 
-export function Post({
-  groupSlug,
-  postID: _postID,
-}: {
-  groupSlug: string;
-  postID: string;
-}) {
+export function Post({postID: _postID}: {postID: string}) {
   const postID = parseInt(_postID, 10) as PostID;
 
   const post = useCacheData(PostCache, postID);
