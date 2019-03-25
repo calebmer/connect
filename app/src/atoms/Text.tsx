@@ -39,7 +39,7 @@ export function MetaLinkText(props: TextProps) {
 
 const styles = StyleSheet.create({
   body: {
-    color: Color.grey7,
+    color: Color.grey8,
     ...Font.serif,
     ...Font.size2,
   },
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   meta: {
     color: Color.grey6,
     ...Font.sans,
-    ...Font.size1,
+    ...Font.size0,
   },
   metaLink: {
     color: Color.blue5,
