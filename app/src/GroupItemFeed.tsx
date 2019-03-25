@@ -1,4 +1,4 @@
-import {BodyText, Font, LabelText, MetaText, Space} from "./atoms";
+import {BodyText, Font, LabelText, MetaText} from "./atoms";
 import {Platform, StyleSheet, View} from "react-native";
 import {AccountCache} from "./cache/AccountCache";
 import {GroupItem} from "./GroupItem";
@@ -36,7 +36,7 @@ function GroupItemFeed({postID}: {postID: PostID}) {
 const _GroupItemFeed = React.memo(GroupItemFeed);
 export {_GroupItemFeed as GroupItemFeed};
 
-const numberOfLines = 8;
+const numberOfLines = 4;
 
 const styles = StyleSheet.create({
   header: {

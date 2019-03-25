@@ -25,7 +25,6 @@ import {Loading} from "./atoms/Loading";
 import {NavbarNative} from "./NavbarNative";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCacheListData} from "./cache/framework/CacheList";
-import {AccountAvatar} from "./AccountAvatar";
 
 const currentAccount = MockData.calebMeredith;
 
@@ -148,7 +147,6 @@ function GroupComponent({slug}: {slug: string}) {
         stickySectionHeadersEnabled={false}
         renderSectionHeader={GroupSectionHeader}
         SectionSeparatorComponent={GroupSectionSeparatorWrapper}
-        ItemSeparatorComponent={GroupItemSeparator}
         // Watch scroll events and keep track of:
         //
         // - The starting Y offset for our scroll view.
@@ -256,14 +254,6 @@ function GroupSectionSeparator({
   );
 }
 
-function GroupItemSeparator() {
-  return (
-    <View style={styles.itemSeparatorContainer}>
-      <View style={styles.itemSeparator} />
-    </View>
-  );
-}
-
 const backgroundColor = Color.grey0;
 const sectionMargin = Space.space3;
 
@@ -330,18 +320,4 @@ const styles = StyleSheet.create({
     backgroundColor: Color.white,
     ...Shadow.elevation0,
   },
-  itemSeparatorContainer: {
-    paddingHorizontal: GroupItem.padding,
-    backgroundColor: GroupItem.backgroundColor,
-  },
-  itemSeparator: Platform.select({
-    web: {
-      height: 1,
-      backgroundColor: "hsl(0, 0%, 87%)",
-    },
-    default: {
-      height: StyleSheet.hairlineWidth,
-      backgroundColor: "hsl(0, 0%, 70%)",
-    },
-  }),
 });
