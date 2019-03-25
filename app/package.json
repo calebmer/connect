@@ -24,8 +24,8 @@
     "react": "16.8.3",
     "react-art": "^16.8.4",
     "react-dom": "16.8.3",
-    "react-native": "0.59.0-rc.3",
-    "react-native-navigation": "^2.13.1",
+    "react-native": "0.59.1",
+    "react-native-navigation": "^2.15.0",
     "react-native-web": "^0.11.1"
   },
   "devDependencies": {

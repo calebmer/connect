@@ -4,11 +4,21 @@ import {AccountCache} from "./cache/AccountCache";
 import {GroupItem} from "./GroupItem";
 import {PostCache} from "./cache/PostCache";
 import {PostID} from "@connect/api-client";
+import {PostRoute} from "./router/AllRoutes";
 import React from "react";
+import {Route} from "./router/Route";
 import {communicateTime} from "./communicateTime";
 import {useCacheData} from "./cache/framework/Cache";
 
-function GroupItemFeed({postID}: {postID: PostID}) {
+function GroupItemFeed({
+  route,
+  groupSlug,
+  postID,
+}: {
+  route: Route;
+  groupSlug: string;
+  postID: PostID;
+}) {
   // TODO: Suspense handler for _just_ this component.
   const post = useCacheData(PostCache, postID);
   const account = useCacheData(AccountCache, post.authorID);
@@ -21,7 +31,10 @@ function GroupItemFeed({postID}: {postID: PostID}) {
   const publishedAt = communicateTime(new Date(), new Date(post.publishedAt));
 
   return (
-    <GroupItem account={account}>
+    <GroupItem
+      account={account}
+      onPress={() => route.push(PostRoute, {groupSlug, postID: String(postID)})}
+    >
       <View style={styles.header}>
         <LabelText>{account.name}</LabelText>
         <MetaText style={styles.publishedAt}>{publishedAt}</MetaText>

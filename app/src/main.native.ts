@@ -42,7 +42,7 @@ function main(isAuthenticated: boolean) {
       stack: {
         children: [
           isAuthenticated
-            ? (GroupRoute as any).getLayout({slug: "nohello"})
+            ? (GroupRoute as any).getLayout({groupSlug: "nohello"})
             : (SignInRoute as any).getLayout({}),
         ],
       },

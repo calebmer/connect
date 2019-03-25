@@ -20,6 +20,16 @@ export const AccountTestRoute = new RouteConfig({
 });
 
 export const GroupRoute = new RouteConfig({
-  path: Path.create("group", Path.variable("slug")),
+  path: Path.create("group", Path.variable("groupSlug")),
   component: () => import("../Group").then(m => m.Group),
+});
+
+export const PostRoute = new RouteConfig({
+  path: Path.create(
+    "group",
+    Path.variable("groupSlug"),
+    "post",
+    Path.variable("postID"),
+  ),
+  component: () => import("../Post").then(m => m.Post),
 });

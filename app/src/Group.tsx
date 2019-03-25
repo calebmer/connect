@@ -23,6 +23,7 @@ import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {Loading} from "./atoms/Loading";
 import {NavbarNative} from "./NavbarNative";
+import {Route} from "./router/Route";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCacheListData} from "./cache/framework/CacheList";
 
@@ -33,10 +34,10 @@ const AnimatedSectionList: SectionList<
   unknown
 > = Animated.createAnimatedComponent(SectionList);
 
-// TODO: Investigate why virtualization isn’t working.
-function GroupComponent({slug}: {slug: string}) {
+// TODO: Investigate why virtualization isn’t working on web.
+function GroupComponent({route, groupSlug}: {route: Route; groupSlug: string}) {
   // Load the data we need for our group.
-  const {group, postCacheList} = useCacheData(GroupCache, slug);
+  const {group, postCacheList} = useCacheData(GroupCache, groupSlug);
   const posts = useCacheListData(postCacheList);
 
   // Keep a reference to our scroll view.
@@ -87,11 +88,13 @@ function GroupComponent({slug}: {slug: string}) {
       title: "Feed",
       data: posts,
       keyExtractor: item => String(item.id),
-      renderItem: ({item}) => <GroupItemFeed postID={item.id} />,
+      renderItem: ({item}) => (
+        <GroupItemFeed route={route} groupSlug={groupSlug} postID={item.id} />
+      ),
     };
 
     return [feedSection];
-  }, [posts]);
+  }, [groupSlug, posts, route]);
 
   return (
     <View style={styles.container}>

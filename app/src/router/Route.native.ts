@@ -1,7 +1,7 @@
 import {Layout, Navigation} from "react-native-navigation";
 import {PathBase, PathVariableProps} from "./Path";
+import React, {useMemo} from "react";
 import {RouteBase, RouteConfigBase} from "./RouteBase";
-import React from "react";
 
 // Utility type for removing keys from an object.
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
@@ -25,7 +25,8 @@ export class RouteConfig<
         // Create the lazy component element with all the appropriate props.
         // Make sure to use the default props object in case some of our
         // required props were not provided!
-        props.route = new Route(componentId);
+        const route = useMemo(() => new Route(componentId), [componentId]);
+        props.route = route;
         const element = React.createElement(LazyComponent, props);
 
         // We need to wrap our lazy component in `<React.Suspense>` to handle

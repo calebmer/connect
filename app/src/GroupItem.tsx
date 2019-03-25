@@ -6,15 +6,18 @@ import {AccountProfile} from "@connect/api-client";
 
 export function GroupItem({
   account,
+  onPress,
   children,
 }: {
   account: AccountProfile;
+  onPress?: () => void;
   children: ReactNode;
 }) {
   const [isPressed, setIsPressed] = useState(false);
 
   return (
     <TouchableWithoutFeedback
+      onPress={onPress}
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}
     >
