@@ -1,16 +1,40 @@
 import {Animated, SafeAreaView, StyleSheet, View} from "react-native";
-import {Color, Font, Shadow, Space} from "./atoms";
+import {Color, Font, IconName, Shadow, Space} from "./atoms";
 import React, {useEffect, useState} from "react";
+
+type NavbarNativeProps = {
+  /**
+   * The navbar title. Will be displayed in the center of the navbar. Use this
+   * to provide context about the current visible screen.
+   */
+  title?: string;
+
+  /**
+   * The icon to be displayed on the left side of the navbar.
+   */
+  leftIcon?: IconName;
+
+  /**
+   * Should the background of our navbar be hidden to let the content
+   * underneath show? We will animate the background into place when this
+   * prop changes.
+   */
+  hideBackground?: boolean;
+
+  /**
+   * If `hideBackground` is true should we also hide the title? When
+   * `hideBackground` changes to false we will animate the title alongside
+   * the background.
+   */
+  hideTitleWithBackground?: boolean;
+};
 
 export function NavbarNative({
   title,
+  leftIcon,
   hideBackground,
   hideTitleWithBackground,
-}: {
-  title?: string;
-  hideBackground?: boolean;
-  hideTitleWithBackground?: boolean;
-}) {
+}: NavbarNativeProps) {
   const [backgroundOpacity] = useState(
     new Animated.Value(hideBackground ? 0 : 1),
   );
