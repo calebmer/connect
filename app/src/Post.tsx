@@ -7,6 +7,7 @@ import {GroupCache} from "./cache/GroupCache";
 import {NavbarNative} from "./NavbarNative";
 import {PostCache} from "./cache/PostCache";
 import {PostID} from "@connect/api-client";
+import {Route} from "./router/Route";
 import {communicateTime} from "./communicateTime";
 import {useCacheData} from "./cache/framework/Cache";
 
@@ -16,9 +17,11 @@ import {useCacheData} from "./cache/framework/Cache";
 // 3. Web inbox
 
 export function Post({
+  route,
   groupSlug,
   postID: _postID,
 }: {
+  route: Route;
   groupSlug: string;
   postID: string;
 }) {
@@ -37,7 +40,12 @@ export function Post({
 
   return (
     <>
-      <NavbarNative title={group.name} hideBackground={hideNavbarBackground} />
+      <NavbarNative
+        title={group.name}
+        leftIcon="arrow-left"
+        onLeftIconPress={() => route.pop()}
+        hideBackground={hideNavbarBackground}
+      />
       <ScrollView
         style={styles.background}
         contentContainerStyle={styles.container}

@@ -75,6 +75,13 @@ export class Route extends RouteBase {
   }
 
   /**
+   * Pops the current route of the stack and shows us the previous route.
+   */
+  protected _pop() {
+    Navigation.pop(this.componentID);
+  }
+
+  /**
    * Pops routes off the navigation stack until we return to this route.
    */
   protected _popTo() {

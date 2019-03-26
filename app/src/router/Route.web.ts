@@ -114,6 +114,17 @@ export class Route extends RouteBase {
   }
 
   /**
+   * Goes back to the last route in browser history.
+   *
+   * This actually changes browser history! The user won’t be able to return
+   * to the current route by pressing the back button. It’s like they pressed
+   * the back button in their browser.
+   */
+  protected _pop() {
+    history.goBack();
+  }
+
+  /**
    * Pushes a route with the same configuration as this one to the navigation
    * stack. Unlike native which actually moves backwards in the
    * navigation stack.

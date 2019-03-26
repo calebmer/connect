@@ -1,5 +1,11 @@
-import {Animated, SafeAreaView, StyleSheet, View} from "react-native";
-import {Color, Font, IconName, Shadow, Space} from "./atoms";
+import {
+  Animated,
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import React, {useEffect, useState} from "react";
 
 type NavbarNativeProps = {
@@ -13,6 +19,12 @@ type NavbarNativeProps = {
    * The icon to be displayed on the left side of the navbar.
    */
   leftIcon?: IconName;
+
+  /**
+   * When the left icon is pressed execute this function. Only works if there
+   * is a left icon present.
+   */
+  onLeftIconPress?: () => void;
 
   /**
    * Should the background of our navbar be hidden to let the content
@@ -32,6 +44,7 @@ type NavbarNativeProps = {
 export function NavbarNative({
   title,
   leftIcon,
+  onLeftIconPress,
   hideBackground,
   hideTitleWithBackground,
 }: NavbarNativeProps) {
@@ -63,6 +76,13 @@ export function NavbarNative({
         style={[styles.background, {opacity: backgroundOpacity}]}
       />
       <View style={styles.navbar}>
+        <View style={styles.icon}>
+          {leftIcon && (
+            <TouchableOpacity hitSlop={hitSlop} onPress={onLeftIconPress}>
+              <Icon name={leftIcon} size={Space.space4} />
+            </TouchableOpacity>
+          )}
+        </View>
         {title && (
           <Animated.Text
             style={[styles.title, {opacity: titleOpacity}]}
@@ -71,12 +91,20 @@ export function NavbarNative({
             {title}
           </Animated.Text>
         )}
+        <View style={styles.icon} />
       </View>
     </SafeAreaView>
   );
 }
 
 NavbarNative.height = Space.space6;
+
+const hitSlop = {
+  top: Space.space3,
+  bottom: Space.space3,
+  left: Space.space3,
+  right: Space.space3,
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -102,9 +130,14 @@ const styles = StyleSheet.create({
     height: NavbarNative.height,
   },
   title: {
-    color: Color.grey6,
+    flex: 1,
+    color: Color.grey8,
     textAlign: "center",
     ...Font.sans,
-    ...Font.size2,
+    ...Font.size1,
+  },
+  icon: {
+    width: Space.space4,
+    marginHorizontal: Space.space3,
   },
 });

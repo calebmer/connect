@@ -27,7 +27,7 @@ export const GlyphMap = {
   // "arrow-down-right": 0xe90e,
   // "arrow-down": 0xe90f,
   // "arrow-left-circle": 0xe910,
-  // "arrow-left": 0xe911,
+  "arrow-left": 0xe911,
   // "arrow-right-circle": 0xe912,
   // "arrow-right": 0xe913,
   // "arrow-up-circle": 0xe914,

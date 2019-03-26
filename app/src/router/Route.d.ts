@@ -37,6 +37,8 @@ export class Route extends RouteBase {
     props: Omit<NextProps, "route">,
   ): void;
 
+  protected _pop(): void;
+
   protected _popTo(): void;
 
   protected _swapRoot<

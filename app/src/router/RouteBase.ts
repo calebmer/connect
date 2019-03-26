@@ -246,6 +246,22 @@ export abstract class RouteBase {
   ): void;
 
   /**
+   * Returns us to the route before the current one in the stack by removing
+   * our current route from the stack.
+   *
+   * If you want to go back to a specific route in history use `popTo()` instead
+   * which will return back to a particular route.
+   */
+  public pop(): void {
+    this._pop();
+  }
+
+  /**
+   * Internal implementation of `pop()` which child classes should override.
+   */
+  protected abstract _pop(): void;
+
+  /**
    * Returns us to the current route by popping all routes in our navigation
    * stack above this one.
    *
