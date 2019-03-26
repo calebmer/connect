@@ -1,11 +1,21 @@
 import {Animated, SafeAreaView, StyleSheet, View} from "react-native";
-import {Color, Shadow, Space} from "./atoms";
+import {Color, Font, Shadow, Space} from "./atoms";
 import React, {useEffect, useState} from "react";
 
-export function NavbarNative({hideBackground}: {hideBackground?: boolean}) {
+export function NavbarNative({
+  title,
+  hideBackground,
+  hideTitleWithBackground,
+}: {
+  title?: string;
+  hideBackground?: boolean;
+  hideTitleWithBackground?: boolean;
+}) {
   const [backgroundOpacity] = useState(
     new Animated.Value(hideBackground ? 0 : 1),
   );
+
+  const titleOpacity = hideTitleWithBackground ? backgroundOpacity : undefined;
 
   useEffect(() => {
     if (hideBackground) {
@@ -28,7 +38,16 @@ export function NavbarNative({hideBackground}: {hideBackground?: boolean}) {
       <Animated.View
         style={[styles.background, {opacity: backgroundOpacity}]}
       />
-      <View style={styles.navbar} />
+      <View style={styles.navbar}>
+        {title && (
+          <Animated.Text
+            style={[styles.title, {opacity: titleOpacity}]}
+            numberOfLines={1}
+          >
+            {title}
+          </Animated.Text>
+        )}
+      </View>
     </SafeAreaView>
   );
 }
@@ -53,6 +72,15 @@ const styles = StyleSheet.create({
     ...Shadow.elevation1,
   },
   navbar: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     height: NavbarNative.height,
+  },
+  title: {
+    color: Color.grey6,
+    textAlign: "center",
+    ...Font.sans,
+    ...Font.size2,
   },
 });

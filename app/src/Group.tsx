@@ -108,7 +108,11 @@ function GroupComponent({route, groupSlug}: {route: Route; groupSlug: string}) {
       </Animated.View>
 
       {/* Include the navbar. */}
-      <NavbarNative hideBackground={!showNavbar} />
+      <NavbarNative
+        title={group.name}
+        hideBackground={!showNavbar}
+        hideTitleWithBackground={true}
+      />
 
       {/* All the scrollable content in the group. This is a scroll view which
        * will scroll above the group banner. */}
@@ -160,6 +164,7 @@ function GroupComponent({route, groupSlug}: {route: Route; groupSlug: string}) {
         // don’t need near-realtime animations attached to scrolling. Also, on
         // native we can use the native animation driver. We don’t have that
         // luxury on web.
+        scrollIndicatorInsets={scrollIndicatorInsets}
         scrollEventThrottle={Platform.OS === "web" ? 500 : 1}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
@@ -171,17 +176,15 @@ function GroupComponent({route, groupSlug}: {route: Route; groupSlug: string}) {
                 setOffsetScrollY(event.nativeEvent.contentOffset.y);
               }
 
-              // We should show the navbar when we’ve scrolled past 40% of the
-              // group banner’s height.
+              // We should show the navbar when scrolling anymore would mean
+              // scrolling under the navbar.
               const shouldShowNavbar =
                 event.nativeEvent.contentOffset.y - (offsetScrollY || 0) >=
-                GroupBanner.height * 0.25;
+                GroupBanner.height - NavbarNative.height;
 
-              // If `shouldShowNavbar` is different from `showNavbar` then
-              // enqueue an update to change `showNavbar`.
-              if (shouldShowNavbar !== showNavbar) {
-                setShowNavbar(shouldShowNavbar);
-              }
+              // Update our navbar state depending on whether we should or
+              // should not show the navbar.
+              setShowNavbar(shouldShowNavbar);
             },
           },
         )}
@@ -256,6 +259,8 @@ function GroupSectionSeparator({
     </View>
   );
 }
+
+const scrollIndicatorInsets = {top: NavbarNative.height};
 
 const backgroundColor = Color.grey0;
 const sectionMargin = Space.space3;
