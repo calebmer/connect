@@ -1,8 +1,7 @@
-import {BodyText, Color, LabelText, Shadow, Space} from "./atoms";
+import {BodyText, Color, Icon, LabelText, Shadow, Space} from "./atoms";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
-import Icon from "react-native-vector-icons/Feather";
 import React from "react";
 
 export function GroupPostPrompt({account}: {account: AccountProfile}) {
@@ -13,7 +12,7 @@ export function GroupPostPrompt({account}: {account: AccountProfile}) {
         <LabelText>{account.name}</LabelText>
         <BodyText>Start a conversation…</BodyText>
       </View>
-      <Icon name="edit" size={Space.space3} color={Color.grey8} />
+      <Icon name="edit" />
     </View>
   );
 }

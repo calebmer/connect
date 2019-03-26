@@ -1,4 +1,14 @@
 @font-face {
-  src: url("~react-native-vector-icons/Fonts/Feather.ttf");
-  font-family: Feather;
+  font-family: "Font Awesome 5 Free";
+  font-style: normal;
+  font-weight: 400;
+  font-display: auto;
+  src: url(../../src/assets/icons/FontAwesome-Regular.eot);
+  src: url(../../src/assets/icons/FontAwesome-Regular.eot?#iefix)
+      format("embedded-opentype"),
+    url(../../src/assets/icons/FontAwesome-Regular.woff2) format("woff2"),
+    url(../../src/assets/icons/FontAwesome-Regular.woff) format("woff"),
+    url(../../src/assets/icons/FontAwesome-Regular.ttf) format("truetype"),
+    url(../../src/assets/icons/FontAwesome-Regular.svg#fontawesome)
+      format("svg");
 }

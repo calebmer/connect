@@ -128,7 +128,7 @@ module.exports = {
 
       // This is needed for webpack to import static images in JavaScript files.
       {
-        test: /\.(gif|jpe?g|png|svg|ttf)$/,
+        test: /\.(gif|jpe?g|png|svg|ttf|eot|woff2?)$/,
         use: {
           loader: "url-loader",
           options: {

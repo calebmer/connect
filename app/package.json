@@ -6,7 +6,6 @@
     "nohoist": [
       "react-native",
       "react-native-navigation",
-      "react-native-vector-icons",
       "@react-native-community/async-storage"
     ]
   },
@@ -27,7 +26,6 @@
     "react-dom": "16.8.3",
     "react-native": "0.59.1",
     "react-native-navigation": "^2.15.0",
-    "react-native-vector-icons": "^6.4.2",
     "react-native-web": "^0.11.1"
   },
   "devDependencies": {
@@ -37,7 +35,6 @@
     "@types/jwt-decode": "^2.2.1",
     "@types/react": "^16.8.6",
     "@types/react-native": "^0.57.40",
-    "@types/react-native-vector-icons": "^4.6.4",
     "@types/react-test-renderer": "^16.8.1",
     "babel-loader": "^8.0.5",
     "babel-plugin-react-native-web": "^0.10.0",

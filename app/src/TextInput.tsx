@@ -8,7 +8,6 @@ import {
   View,
 } from "react-native";
 import React, {useImperativeHandle, useRef} from "react";
-import Icon from "react-native-vector-icons/Feather";
 
 interface TextInputProps extends NativeTextInputProps {
   /**
