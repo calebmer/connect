@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import React, {useImperativeHandle, useRef} from "react";
-import {XIcon} from "./icons/XIcon";
+import Icon from "react-native-vector-icons/Feather";
 
 interface TextInputProps extends NativeTextInputProps {
   /**
@@ -77,7 +77,7 @@ function TextInput(
       </Text>
       {errorMessage && (
         <View style={styles.error}>
-          <XIcon style={styles.errorIcon} color={Color.red5} />
+          <Icon name="x" size={Space.space1} color={Color.red5} />
           <Text style={styles.errorText}>{errorMessage}</Text>
         </View>
       )}
@@ -122,12 +122,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingVertical: Space.space1,
     paddingHorizontal: Space.space0,
-  },
-  errorIcon: {
-    marginTop: 6,
-    flexShrink: 0,
-    width: Space.space1,
-    height: Space.space1,
   },
   errorText: {
     paddingLeft: Space.space0,

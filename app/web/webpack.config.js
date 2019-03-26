@@ -12,6 +12,8 @@ const TerserPlugin = require("terser-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const InlineChunkHtmlPlugin = require("react-dev-utils/InlineChunkHtmlPlugin");
 const ModuleNotFoundPlugin = require("react-dev-utils/ModuleNotFoundPlugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 
 const dev = process.env.NODE_ENV !== "production";
 
@@ -28,7 +30,9 @@ module.exports = {
     // Include an alternative client for `WebpackDevServer`. We use the
     // `create-react-app` dev client because it displays nice error overlays.
     dev && require.resolve("react-dev-utils/webpackHotDevClient"),
-    // Web entry file!
+    // Style entry file!
+    path.join(__dirname, "css", "main.css"),
+    // Script entry file!
     path.join(appDirectory, "src", "main"),
   ].filter(Boolean),
 
@@ -67,6 +71,10 @@ module.exports = {
     // Alias all `react-native` imports to `react-native-web`.
     alias: {
       "react-native$": "react-native-web",
+
+      // Setup aliases so that `react-native-vector-icons` will work on web.
+      "react-native-vector-icons/Feather$":
+        "react-native-vector-icons/dist/Feather",
     },
   },
 
@@ -94,26 +102,38 @@ module.exports = {
         },
       },
 
-      // SVG files with the `.react.svg` extension are imported as React
-      // components instead of file URLs.
+      // Process CSS files:
+      //
+      // - `css-loader` loader resolves paths in CSS and adds assets
+      //   as dependencies.
+      // - `MiniCssExtractPlugin` extracts CSS to a file. Normally, people only
+      //   use this loader in production and use `style-loader` in development
+      //   for hot-module-reloading. We don’t care about CSS developer
+      //   experience since we don’t edit it often.
       {
-        test: /\.react\.svg$/,
-        use: {
-          loader: "@svgr/webpack",
-          options: {
-            svgoConfig: {plugins: {removeViewBox: false}},
+        test: /\.css$/,
+        use: [
+          {loader: MiniCssExtractPlugin.loader},
+          {
+            loader: require.resolve("css-loader"),
+            options: {importLoaders: 1, sourceMap: true},
           },
-        },
+        ],
+        // Don't consider CSS imports dead code even if the
+        // containing package claims to have no side effects.
+        // Remove this when webpack adds a warning or an error for this.
+        // See https://github.com/webpack/webpack/issues/6571
+        sideEffects: true,
       },
 
       // This is needed for webpack to import static images in JavaScript files.
       {
-        test: /\.(gif|jpe?g|png|svg)$/,
-        exclude: /\.react\.svg$/,
+        test: /\.(gif|jpe?g|png|svg|ttf)$/,
         use: {
           loader: "url-loader",
           options: {
-            name: "[name].[ext]",
+            limit: 10000,
+            name: "static/media/[name].[hash:8].[ext]",
           },
         },
       },
@@ -170,6 +190,20 @@ module.exports = {
             cache: true,
             sourceMap: true,
           }),
+
+          // This is only used in production mode
+          new OptimizeCssAssetsPlugin({
+            cssProcessorOptions: {
+              map: {
+                // `inline: false` forces the sourcemap to be output into a
+                // separate file
+                inline: false,
+                // `annotation: true` appends the sourceMappingURL to the end of
+                // the css file, helping the browser find the sourcemap
+                annotation: true,
+              },
+            },
+          }),
         ],
         // Automatically split vendor and commons
         // https://twitter.com/wSokra/status/969633336732905474
@@ -210,6 +244,23 @@ module.exports = {
           : undefined,
       ),
     ),
+    // Extract CSS into separate files instead of including it in the main
+    // Webpack bundle.
+    //
+    // NOTE: We currently use this in both development and production. Normally
+    // it is recommended to only use in production and use `style-loader` in
+    // development for hot-module-reloading. We don’t write much CSS so we use
+    // this plugin for both.
+    new MiniCssExtractPlugin({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
+      filename: dev
+        ? "static/css/[name].css"
+        : "static/css/[name].[contenthash:8].css",
+      chunkFilename: dev
+        ? "static/css/[name].chunk.css"
+        : "static/css/[name].[contenthash:8].chunk.css",
+    }),
     // Inlines the webpack runtime script. This script is too small to warrant
     // a network request.
     !dev && new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime~.+[.]js/]),

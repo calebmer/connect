@@ -6,6 +6,7 @@
     "nohoist": [
       "react-native",
       "react-native-navigation",
+      "react-native-vector-icons",
       "@react-native-community/async-storage"
     ]
   },
@@ -26,22 +27,27 @@
     "react-dom": "16.8.3",
     "react-native": "0.59.1",
     "react-native-navigation": "^2.15.0",
+    "react-native-vector-icons": "^6.4.2",
     "react-native-web": "^0.11.1"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
     "@babel/runtime": "^7.3.4",
-    "@svgr/webpack": "^4.1.0",
     "@types/history": "^4.7.2",
     "@types/jwt-decode": "^2.2.1",
     "@types/react": "^16.8.6",
     "@types/react-native": "^0.57.40",
+    "@types/react-native-vector-icons": "^4.6.4",
     "@types/react-test-renderer": "^16.8.1",
     "babel-loader": "^8.0.5",
     "babel-plugin-react-native-web": "^0.10.0",
+    "css-loader": "^2.1.1",
+    "file-loader": "^3.0.1",
     "html-webpack-plugin": "^4.0.0-beta.5",
     "metro-react-native-babel-preset": "^0.53.0",
+    "mini-css-extract-plugin": "^0.5.0",
     "nock": "^10.0.6",
+    "optimize-css-assets-webpack-plugin": "^5.0.1",
     "react-dev-utils": "^7.0.3",
     "react-test-renderer": "^16.8.4",
     "supertest": "^4.0.0",

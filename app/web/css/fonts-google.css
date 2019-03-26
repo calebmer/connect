@@ -1,0 +1,180 @@
+/* Inlined from: https://fonts.googleapis.com/css?family=Faustina:400,400i,700,700i%7CWork+Sans:400,700 */
+
+/* vietnamese */
+/* @font-face {
+  font-family: "Faustina";
+  font-style: italic;
+  font-weight: 400;
+  src: local("Faustina Italic"), local("Faustina-Italic"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYjIZPxYpJfTbZAFV-6LcFio10sRXlUSw.woff2)
+      format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+} */
+/* latin-ext */
+/* @font-face {
+  font-family: "Faustina";
+  font-style: italic;
+  font-weight: 400;
+  src: local("Faustina Italic"), local("Faustina-Italic"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYjIZPxYpJfTbZAFV-6LcBio10sRXlUSw.woff2)
+      format("woff2");
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+} */
+/* latin */
+@font-face {
+  font-family: "Faustina";
+  font-style: italic;
+  font-weight: 400;
+  src: local("Faustina Italic"), local("Faustina-Italic"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYjIZPxYpJfTbZAFV-6Lc5io10sRXk.woff2)
+      format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+/* vietnamese */
+/* @font-face {
+  font-family: "Faustina";
+  font-style: italic;
+  font-weight: 700;
+  src: local("Faustina Bold Italic"), local("Faustina-BoldItalic"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYgIZPxYpJfTbZAFV-6JXVHtn8OSFNuQsI3GA.woff2)
+      format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+} */
+/* latin-ext */
+/* @font-face {
+  font-family: "Faustina";
+  font-style: italic;
+  font-weight: 700;
+  src: local("Faustina Bold Italic"), local("Faustina-BoldItalic"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYgIZPxYpJfTbZAFV-6JXVHtn4OSFNuQsI3GA.woff2)
+      format("woff2");
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+} */
+/* latin */
+@font-face {
+  font-family: "Faustina";
+  font-style: italic;
+  font-weight: 700;
+  src: local("Faustina Bold Italic"), local("Faustina-BoldItalic"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYgIZPxYpJfTbZAFV-6JXVHtnAOSFNuQsI.woff2)
+      format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+/* vietnamese */
+/* @font-face {
+  font-family: "Faustina";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Faustina Regular"), local("Faustina-Regular"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYlIZPxYpJfTbZAFV-wHcxopH8udXg.woff2)
+      format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+} */
+/* latin-ext */
+/* @font-face {
+  font-family: "Faustina";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Faustina Regular"), local("Faustina-Regular"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYlIZPxYpJfTbZAFV-xHcxopH8udXg.woff2)
+      format("woff2");
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+} */
+/* latin */
+@font-face {
+  font-family: "Faustina";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Faustina Regular"), local("Faustina-Regular"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYlIZPxYpJfTbZAFV-_HcxopH8u.woff2)
+      format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+/* vietnamese */
+/* @font-face {
+  font-family: "Faustina";
+  font-style: normal;
+  font-weight: 700;
+  src: local("Faustina Bold"), local("Faustina-Bold"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYiIZPxYpJfTbZAFVcEONlKhnIET3FscsM.woff2)
+      format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+} */
+/* latin-ext */
+/* @font-face {
+  font-family: "Faustina";
+  font-style: normal;
+  font-weight: 700;
+  src: local("Faustina Bold"), local("Faustina-Bold"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYiIZPxYpJfTbZAFVcEONlLhnIET3FscsM.woff2)
+      format("woff2");
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+} */
+/* latin */
+@font-face {
+  font-family: "Faustina";
+  font-style: normal;
+  font-weight: 700;
+  src: local("Faustina Bold"), local("Faustina-Bold"),
+    url(https://fonts.gstatic.com/s/faustina/v3/XLYiIZPxYpJfTbZAFVcEONlFhnIET3Fs.woff2)
+      format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+/* latin-ext */
+/* @font-face {
+  font-family: "Work Sans";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Work Sans"), local("WorkSans-Regular"),
+    url(https://fonts.gstatic.com/s/worksans/v4/QGYsz_wNahGAdqQ43Rh_cqDptfpA4cD3.woff2)
+      format("woff2");
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+} */
+/* latin */
+@font-face {
+  font-family: "Work Sans";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Work Sans"), local("WorkSans-Regular"),
+    url(https://fonts.gstatic.com/s/worksans/v4/QGYsz_wNahGAdqQ43Rh_fKDptfpA4Q.woff2)
+      format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+/* latin-ext */
+/* @font-face {
+  font-family: "Work Sans";
+  font-style: normal;
+  font-weight: 700;
+  src: local("Work Sans Bold"), local("WorkSans-Bold"),
+    url(https://fonts.gstatic.com/s/worksans/v4/QGYpz_wNahGAdqQ43Rh3x4X8lthNy_r-K7mV.woff2)
+      format("woff2");
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+} */
+/* latin */
+@font-face {
+  font-family: "Work Sans";
+  font-style: normal;
+  font-weight: 700;
+  src: local("Work Sans Bold"), local("WorkSans-Bold"),
+    url(https://fonts.gstatic.com/s/worksans/v4/QGYpz_wNahGAdqQ43Rh3x4X8mNhNy_r-Kw.woff2)
+      format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}

@@ -1,0 +1,13 @@
+@import "./fonts-google.css";
+@import "./fonts-icon.css";
+
+html,
+body {
+  height: 100%;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
