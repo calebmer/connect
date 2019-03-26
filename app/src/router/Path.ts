@@ -107,6 +107,11 @@ export const Path = {
           path = path.slice(1);
         }
 
+        // Remove trailing slash if we have one.
+        if (path[path.length - 1] === "/") {
+          path = path.slice(0, -1);
+        }
+
         // If the path is empty, then only successfully parse the path if our
         // pattern has no parts in it.
         if (path === "") {
