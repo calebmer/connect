@@ -18,7 +18,7 @@ export const history: History<undefined> = createBrowserHistory();
  */
 const routes: Array<{
   readonly path: PathPattern<PathBase>;
-  readonly Component: React.ComponentType<PathVariableProps<PathBase>>;
+  readonly render: (variables: PathVariableProps<PathBase>) => ReactElement;
 }> = [];
 
 /**
@@ -33,12 +33,12 @@ const routes: Array<{
  */
 export function getRoute(
   location: Location<undefined>,
-): ReactElement<unknown> | undefined {
+): ReactElement | undefined {
   for (let i = 0; i < routes.length; i++) {
-    const {path, Component} = routes[i];
+    const {path, render} = routes[i];
     const variables = path.parse(location.pathname);
     if (variables !== undefined) {
-      return React.createElement(Component, variables);
+      return render(variables);
     }
   }
   return undefined;
@@ -60,25 +60,41 @@ export class RouteConfig<
     // Setup the variables that use our route config.
     const route = new Route(this);
 
-    /**
-     * Our route component renders the lazy component with our default props and
-     * route object.
-     */
-    function RouteRoot(props: PathVariableProps<Path>) {
-      // Create the lazy component element with all the appropriate props.
-      const element = React.createElement(LazyComponent, {
-        ...props,
-        route,
-      } as any);
-
-      // We need to wrap our lazy component in `<React.Suspense>` to handle
-      // the `LazyComponent` suspend.
-      return React.createElement(React.Suspense, {fallback: null}, element);
-    }
-
     // Actually register our component.
-    routes.push({path: this.path, Component: RouteRoot});
+    //
+    // NOTE: We use the same `<RouteRoot>` component on every render so that
+    // React does not unmount the previous route component if it is the same as
+    // the next route component.
+    routes.push({
+      path: this.path,
+      render: variables => {
+        return React.createElement(RouteRoot, {
+          RouteComponent: LazyComponent,
+          routeProps: {...variables, route},
+        } as any);
+      },
+    });
   }
+}
+
+/**
+ * NOTE: Unlike on the native side, we use the same component for every route
+ * root on the web. That way, when we render a new route if that route renders
+ * the same component as our old route then React will not unmount the
+ * old component.
+ */
+function RouteRoot<Props>({
+  RouteComponent,
+  routeProps,
+}: {
+  RouteComponent: React.ComponentType<Props>;
+  routeProps: Props;
+}) {
+  return React.createElement(
+    React.Suspense,
+    {fallback: null},
+    React.createElement(RouteComponent, routeProps),
+  );
 }
 
 export class Route extends RouteBase {

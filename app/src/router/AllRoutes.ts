@@ -2,6 +2,7 @@
 // alphabetically sorted list.
 
 import {Path} from "./Path";
+import {Platform} from "react-native";
 import {RouteConfig} from "./Route";
 
 export const SignInRoute = new RouteConfig({
@@ -21,7 +22,10 @@ export const AccountTestRoute = new RouteConfig({
 
 export const GroupRoute = new RouteConfig({
   path: Path.create("group", Path.variable("groupSlug")),
-  component: () => import("../Group").then(m => m.Group),
+  component: () =>
+    Platform.OS === "web"
+      ? import("../GroupHomeWeb.web").then(m => m.GroupHomeWeb)
+      : import("../Group").then(m => m.Group),
 });
 
 export const PostRoute = new RouteConfig({
@@ -31,5 +35,8 @@ export const PostRoute = new RouteConfig({
     "post",
     Path.variable("postID"),
   ),
-  component: () => import("../Post").then(m => m.Post),
+  component: () =>
+    Platform.OS === "web"
+      ? import("../GroupHomeWeb.web").then(m => m.GroupHomeWeb)
+      : import("../Post").then(m => m.PostRoute),
 });

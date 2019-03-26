@@ -171,6 +171,10 @@ function GroupComponent({route, groupSlug}: {route: Route; groupSlug: string}) {
           {
             useNativeDriver: Platform.OS !== "web",
             listener: (event: any) => {
+              // Skip all this on the web where we don’t need a scroll
+              // event listener.
+              if (Platform.OS === "web") return;
+
               // If we don’t yet have an `offsetScrollY` value then set one!
               if (offsetScrollY === null) {
                 setOffsetScrollY(event.nativeEvent.contentOffset.y);
@@ -193,7 +197,8 @@ function GroupComponent({route, groupSlug}: {route: Route; groupSlug: string}) {
   );
 }
 
-export {GroupComponent as Group};
+const _Group = React.memo(GroupComponent);
+export {_Group as Group};
 
 function GroupHeader() {
   return (

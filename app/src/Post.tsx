@@ -1,6 +1,6 @@
 import {BodyText, Color, LabelText, MetaText, Space} from "./atoms";
+import {Platform, ScrollView, StyleSheet, View} from "react-native";
 import React, {useState} from "react";
-import {ScrollView, StyleSheet, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountCache} from "./cache/AccountCache";
 import {GroupCache} from "./cache/GroupCache";
@@ -11,22 +11,15 @@ import {Route} from "./router/Route";
 import {communicateTime} from "./communicateTime";
 import {useCacheData} from "./cache/framework/Cache";
 
-// TODO:
-//
-// 2. Native navbar
-// 3. Web inbox
-
 export function Post({
   route,
   groupSlug,
-  postID: _postID,
+  postID,
 }: {
   route: Route;
   groupSlug: string;
-  postID: string;
+  postID: PostID;
 }) {
-  const postID = parseInt(_postID, 10) as PostID;
-
   const {group} = useCacheData(GroupCache, groupSlug);
   const post = useCacheData(PostCache, postID);
   const author = useCacheData(AccountCache, post.authorID);
@@ -52,7 +45,9 @@ export function Post({
         scrollIndicatorInsets={scrollIndicatorInsets}
         scrollEventThrottle={16}
         onScroll={event => {
-          setHideNavbarBackground(event.nativeEvent.contentOffset.y <= 0);
+          if (Platform.OS !== "web") {
+            setHideNavbarBackground(event.nativeEvent.contentOffset.y <= 0);
+          }
         }}
       >
         <View style={styles.header}>
@@ -64,9 +59,207 @@ export function Post({
         </View>
         <View style={styles.content}>
           <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
+          <BodyText>{post.content}</BodyText>
         </View>
       </ScrollView>
     </>
+  );
+}
+
+/**
+ * Component we use for a post’s route. It takes `postID` as a string instead of
+ * an integer. We convert it to a `PostID` in this component and pass
+ * it to `<Post>`.
+ */
+export function PostRoute({
+  route,
+  groupSlug,
+  postID,
+}: {
+  route: Route;
+  groupSlug: string;
+  postID: string;
+}) {
+  return (
+    <Post
+      route={route}
+      groupSlug={groupSlug}
+      postID={parseInt(postID, 10) as PostID}
+    />
   );
 }
 
