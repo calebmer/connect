@@ -76,11 +76,7 @@ function TextInput(
       </Text>
       {errorMessage && (
         <View style={styles.error}>
-          <Icon
-            style={styles.errorIcon}
-            name="times-circle"
-            color={Color.red5}
-          />
+          <Icon name="x" color={Color.red5} />
           <Text style={styles.errorText}>{errorMessage}</Text>
         </View>
       )}
@@ -124,17 +120,12 @@ const styles = StyleSheet.create({
   error: {
     flexDirection: "row",
     paddingVertical: Space.space1,
-    paddingHorizontal: Space.space0,
-  },
-  errorIcon: {
-    position: "relative",
-    bottom: -1,
   },
   errorText: {
-    paddingLeft: Space.space0,
+    paddingLeft: 2,
     color: Color.red6,
     ...Font.sans,
-    ...Font.size2,
+    ...Font.size1,
     lineHeight: undefined,
   },
 });

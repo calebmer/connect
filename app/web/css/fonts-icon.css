@@ -1,14 +1,11 @@
 @font-face {
-  font-family: "Font Awesome 5 Free";
-  font-style: normal;
-  font-weight: 400;
-  font-display: auto;
-  src: url(../../src/assets/icons/FontAwesome-Regular.eot);
-  src: url(../../src/assets/icons/FontAwesome-Regular.eot?#iefix)
+  font-family: "Feather";
+  src: url("../../src/assets/icons/Feather.eot?2ulxpc");
+  src: url("../../src/assets/icons/Feather.eot?2ulxpc#iefix")
       format("embedded-opentype"),
-    url(../../src/assets/icons/FontAwesome-Regular.woff2) format("woff2"),
-    url(../../src/assets/icons/FontAwesome-Regular.woff) format("woff"),
-    url(../../src/assets/icons/FontAwesome-Regular.ttf) format("truetype"),
-    url(../../src/assets/icons/FontAwesome-Regular.svg#fontawesome)
-      format("svg");
+    url("../../src/assets/icons/Feather.ttf?2ulxpc") format("truetype"),
+    url("../../src/assets/icons/Feather.woff?2ulxpc") format("woff"),
+    url("../../src/assets/icons/Feather.svg?2ulxpc#Feather") format("svg");
+  font-weight: normal;
+  font-style: normal;
 }

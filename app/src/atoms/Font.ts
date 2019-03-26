@@ -52,7 +52,7 @@ export const size0 = {
   lineHeight: 18,
 };
 export const size1 = {
-  fontSize: 14,
+  fontSize: 15,
   lineHeight: 24,
 };
 export const size2 = {

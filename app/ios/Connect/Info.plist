@@ -41,7 +41,7 @@
 	<string></string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>FontAwesome-Regular.ttf</string>
+		<string>Feather.ttf</string>
 		<string>Faustina-Bold.ttf</string>
 		<string>Faustina-BoldItalic.ttf</string>
 		<string>Faustina-Italic.ttf</string>

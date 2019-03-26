@@ -36,8 +36,7 @@ export function Icon({
 
 const styles = StyleSheet.create({
   icon: {
-    fontFamily:
-      Platform.OS === "web" ? '"Font Awesome 5 Free"' : "Font Awesome 5 Free",
+    fontFamily: "Feather",
     ...(Platform.OS === "web" && {
       WebkitFontSmoothing: "antialiased",
       MozOsxFontSmoothing: "grayscale",
