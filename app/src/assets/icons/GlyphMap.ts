@@ -7,6 +7,8 @@
  * app if we don’t need all of them. Only uncomment the icons we actually want
  * to use!
  *
+ * To search for icons use: https://fontawesome.com/icons?d=gallery&s=regular
+ *
  * [1]: https://fontawesome.com
  */
 
@@ -1191,7 +1193,7 @@ export const GlyphMap = {
   // thumbtack: 61581,
   // "ticket-alt": 62463,
   // times: 61453,
-  // "times-circle": 61527,
+  "times-circle": 61527,
   // tint: 61507,
   // "tint-slash": 62919,
   // tired: 62920,

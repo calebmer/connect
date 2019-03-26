@@ -1,4 +1,4 @@
-import {Border, Color, Font, Space} from "./atoms";
+import {Border, Color, Font, Icon, Space} from "./atoms";
 import {
   TextInput as NativeTextInput,
   TextInputProps as NativeTextInputProps,
@@ -76,7 +76,11 @@ function TextInput(
       </Text>
       {errorMessage && (
         <View style={styles.error}>
-          <Icon name="x" size={Space.space1} color={Color.red5} />
+          <Icon
+            style={styles.errorIcon}
+            name="times-circle"
+            color={Color.red5}
+          />
           <Text style={styles.errorText}>{errorMessage}</Text>
         </View>
       )}
@@ -121,6 +125,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingVertical: Space.space1,
     paddingHorizontal: Space.space0,
+  },
+  errorIcon: {
+    position: "relative",
+    bottom: -1,
   },
   errorText: {
     paddingLeft: Space.space0,

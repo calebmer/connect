@@ -1,6 +1,6 @@
 import * as Color from "./Color";
 import * as Space from "./Space";
-import {Platform, StyleSheet, Text} from "react-native";
+import {Platform, StyleProp, StyleSheet, Text, TextStyle} from "react-native";
 import {GlyphMap} from "../assets/icons/GlyphMap";
 import React from "react";
 
@@ -17,14 +17,16 @@ export function Icon({
   name,
   size = Space.space3,
   color = Color.grey7,
+  style,
 }: {
   name: IconName;
   size?: number;
   color?: string;
+  style?: StyleProp<TextStyle>;
 }) {
   return (
     <Text
-      style={[styles.icon, {color, fontSize: size, lineHeight: size}]}
+      style={[style, styles.icon, {color, fontSize: size, lineHeight: size}]}
       selectable={false}
     >
       {String.fromCharCode(GlyphMap[name])}
