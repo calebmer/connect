@@ -49,7 +49,9 @@ function GroupItemFeed({
 const _GroupItemFeed = React.memo(GroupItemFeed);
 export {_GroupItemFeed as GroupItemFeed};
 
-const numberOfLines = 4;
+// On web, you can open a post without leaving the feed. So favor shorter post
+// previews and more posts on screen.
+const numberOfLines = Platform.OS === "web" ? 2 : 4;
 
 const styles = StyleSheet.create({
   header: {

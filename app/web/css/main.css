@@ -6,6 +6,10 @@ body {
   height: 100%;
 }
 
+body {
+  background-color: hsl(0, 0%, 23%);
+}
+
 #root {
   display: flex;
   flex-direction: column;

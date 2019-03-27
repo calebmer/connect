@@ -48,7 +48,7 @@ export const sansBold = {
 
 // Type size scale:
 export const size0 = {
-  fontSize: 12,
+  fontSize: 13,
   lineHeight: 18,
 };
 export const size1 = {
@@ -60,7 +60,7 @@ export const size2 = {
   lineHeight: 24,
 };
 export const size3 = {
-  fontSize: 18,
+  fontSize: 19,
   lineHeight: 24,
 };
 export const size4 = {

@@ -50,6 +50,6 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
-    paddingLeft: GroupItem.padding,
+    paddingHorizontal: GroupItem.padding,
   },
 });
