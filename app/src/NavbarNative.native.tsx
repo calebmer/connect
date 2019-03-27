@@ -1,6 +1,7 @@
 import {
   Animated,
   SafeAreaView,
+  StatusBar,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -40,6 +41,13 @@ type NavbarNativeProps = {
    * the background.
    */
   hideTitleWithBackground?: boolean;
+
+  /**
+   * Whether or not we should use light content when the background is hidden.
+   * This will also affect whether or not the status bar is rendered with light
+   * or dark content.
+   */
+  lightContentWithoutBackground?: boolean;
 };
 
 export function NavbarNative({
@@ -48,6 +56,7 @@ export function NavbarNative({
   onLeftIconPress,
   hideBackground,
   hideTitleWithBackground,
+  lightContentWithoutBackground,
 }: NavbarNativeProps) {
   const backgroundOpacity = useConstant(() => {
     return new Animated.Value(hideBackground ? 0 : 1);
@@ -72,29 +81,39 @@ export function NavbarNative({
   }, [backgroundOpacity, hideBackground]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Animated.View
-        style={[styles.background, {opacity: backgroundOpacity}]}
+    <>
+      <StatusBar
+        animated={true}
+        barStyle={
+          hideBackground && lightContentWithoutBackground
+            ? "light-content"
+            : "dark-content"
+        }
       />
-      <View style={styles.navbar}>
-        <View style={styles.icon}>
-          {leftIcon && (
-            <TouchableOpacity hitSlop={hitSlop} onPress={onLeftIconPress}>
-              <Icon name={leftIcon} size={Space.space4} />
-            </TouchableOpacity>
+      <SafeAreaView style={styles.container}>
+        <Animated.View
+          style={[styles.background, {opacity: backgroundOpacity}]}
+        />
+        <View style={styles.navbar}>
+          <View style={styles.icon}>
+            {leftIcon && (
+              <TouchableOpacity hitSlop={hitSlop} onPress={onLeftIconPress}>
+                <Icon name={leftIcon} size={Space.space4} />
+              </TouchableOpacity>
+            )}
+          </View>
+          {title && (
+            <Animated.Text
+              style={[styles.title, {opacity: titleOpacity}]}
+              numberOfLines={1}
+            >
+              {title}
+            </Animated.Text>
           )}
+          <View style={styles.icon} />
         </View>
-        {title && (
-          <Animated.Text
-            style={[styles.title, {opacity: titleOpacity}]}
-            numberOfLines={1}
-          >
-            {title}
-          </Animated.Text>
-        )}
-        <View style={styles.icon} />
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </>
   );
 }
 
