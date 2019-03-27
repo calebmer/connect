@@ -86,7 +86,7 @@ export function SignIn({
       .then(error => {
         if (error === undefined) {
           // Navigate into the app after successfully signing in!
-          route.swapRoot(AccountTestRoute, {});
+          route.nativeSwapRoot(AccountTestRoute, {});
         } else {
           // If we got an error then decide which input to display the error on.
           if (

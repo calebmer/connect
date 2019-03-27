@@ -41,7 +41,15 @@ export class Route extends RouteBase {
 
   protected _popTo(): void;
 
-  protected _swapRoot<
+  protected _webReplace<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
+  ): void;
+
+  protected _nativeSwapRoot<
     NextPath extends PathBase,
     NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
   >(

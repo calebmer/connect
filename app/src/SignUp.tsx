@@ -104,7 +104,7 @@ export function SignUp({
       .then(error => {
         if (error === undefined) {
           // Navigate into the app after successfully signing in!
-          route.swapRoot(AccountTestRoute, {});
+          route.nativeSwapRoot(AccountTestRoute, {});
         } else {
           // Set server error.
           if (

@@ -126,6 +126,8 @@ export class Route extends RouteBase {
   ) {
     // TODO: Implement passing `partialProps` to the new component. Right now
     // we only use the required props to print the next path.
+    //
+    // Also do this for `_replace()`.
     history.push(nextRoute.path.print(props as NextProps));
   }
 
@@ -150,6 +152,8 @@ export class Route extends RouteBase {
    * back button which breaks the user’s perception of the web. Our default on
    * web should always be to push forward. That’s what users are used to.
    *
+   * We could implement this method on web, but we choose not to.
+   *
    * If we really want `popTo()` on the web then maybe we’ll add an
    * `actuallyPopTo()` method which pops on both platforms instead of using an
    * intelligent default on web.
@@ -159,10 +163,31 @@ export class Route extends RouteBase {
   }
 
   /**
+   * Replaces the current route in our navigation stack with a new one.
+   *
+   * Actually replaces the route on web instead of naively pushing a new route!
+   * Use this when redirecting a user to a new path so they won’t fight with
+   * the back button when trying to navigate backwards.
+   */
+  protected _webReplace<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfig<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
+  ): void {
+    // TODO: Implement passing `partialProps` to the new component. Right now
+    // we only use the required props to print the next path.
+    //
+    // Also do this for `_push()`.
+    history.replace(nextRoute.path.print(props as NextProps));
+  }
+
+  /**
    * Calls `_push()` instead of resetting browser history which would be totally
    * unexpected by the user.
    */
-  protected _swapRoot<
+  protected _nativeSwapRoot<
     NextPath extends PathBase,
     NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
   >(

@@ -89,10 +89,23 @@ export class Route extends RouteBase {
   }
 
   /**
+   * Push a new route since we don’t have any native equivalent for replace.
+   */
+  protected _webReplace<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfig<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
+  ): void {
+    this._push(nextRoute, props);
+  }
+
+  /**
    * Resets the native navigation stack to a stack with only a single component.
    * The provided component.
    */
-  protected _swapRoot<
+  protected _nativeSwapRoot<
     NextPath extends PathBase,
     NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
   >(

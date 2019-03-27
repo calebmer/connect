@@ -270,10 +270,9 @@ export abstract class RouteBase {
    *
    * On web, this will push a new route with the same config instead of popping
    * back to our route’s reference. We do this because on web popping breaks
-   * the back button which breaks the user’s perception. Navigation through
-   * space is perceived differently on web and native. If we want a method
-   * that actually pops on both native and web we might implement an
-   * `actuallyPopTo()` method in the future.
+   * the back button which breaks the user’s perception.
+   *
+   * We could correctly implement this method on web, but we choose not to.
    */
   public popTo(): void {
     this._popTo();
@@ -285,15 +284,15 @@ export abstract class RouteBase {
   protected abstract _popTo(): void;
 
   /**
-   * Reset the current navigation stack to the provided route. Removes old
-   * routes so that they can’t be popped back to.
+   * Replace the current position in the navigation stack with the new route.
+   * Effectively this will pop the current route and add the new one. We first
+   * wait for the next route’s component to load before actually performing
+   * the action.
    *
-   * On web, this will `push()` instead of resetting browser history. Since
-   * resetting browser history is unexpected for web platform users. If we want
-   * a method that actually resets history we might implement an
-   * `actuallySwapRoot()` method in the future.
+   * **NOTE:** On web this will _actually_ replace the current route! On native
+   * this only pushes a new route.
    */
-  public swapRoot<
+  public webReplace<
     NextPath extends PathBase,
     NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
   >(
@@ -301,15 +300,46 @@ export abstract class RouteBase {
     props: Omit<NextProps, "route">,
   ) {
     nextRoute.waitForComponent(() => {
-      this._swapRoot(nextRoute, props);
+      this._webReplace(nextRoute, props);
     });
   }
 
   /**
-   * Internal implementation of `swapRoot()` which child classes
+   * Internal implementation of `webReplace()` which child classes
    * should override.
    */
-  protected abstract _swapRoot<
+  protected abstract _webReplace<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
+  ): void;
+
+  /**
+   * Reset the current navigation stack to the provided route. Removes old
+   * routes so that they can’t be popped back to.
+   *
+   * On web, this will `push()` instead of resetting browser history. Since
+   * resetting browser history is unexpected for web platform users.
+   */
+  public nativeSwapRoot<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
+  ) {
+    nextRoute.waitForComponent(() => {
+      this._nativeSwapRoot(nextRoute, props);
+    });
+  }
+
+  /**
+   * Internal implementation of `nativeSwapRoot()` which child classes
+   * should override.
+   */
+  protected abstract _nativeSwapRoot<
     NextPath extends PathBase,
     NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
   >(

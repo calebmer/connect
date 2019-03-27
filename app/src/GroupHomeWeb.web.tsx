@@ -44,7 +44,7 @@ export function GroupHomeWeb({
   // update our route so that it points to the actual post we are rendering.
   useEffect(() => {
     if (actualPostID !== postID) {
-      route.push(PostRoute, {groupSlug, postID: String(postID)});
+      route.webReplace(PostRoute, {groupSlug, postID: String(postID)});
     }
   }, [actualPostID, groupSlug, postID, route]);
 
