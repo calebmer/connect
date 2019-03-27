@@ -1,4 +1,4 @@
-import * as MockData from "./MockData";
+import {AccountCache, CurrentAccountCache} from "./cache/AccountCache";
 import {
   Animated,
   Platform,
@@ -28,9 +28,8 @@ import {NavbarNative} from "./NavbarNative";
 import {Route} from "./router/Route";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCacheListData} from "./cache/framework/CacheList";
+import {useCacheSingletonData} from "./cache/framework/CacheSingleton";
 import {useConstant} from "./useConstant";
-
-const currentAccount = MockData.calebMeredith;
 
 // NOTE: Having a React component and a type with the same name is ok in
 // TypeScript, but eslint complains when it’s an import. So import the type with
@@ -187,7 +186,7 @@ function Group({
         // native we can use the native animation driver. We don’t have that
         // luxury on web.
         scrollIndicatorInsets={scrollIndicatorInsets}
-        scrollEventThrottle={Platform.OS === "web" ? 500 : 1}
+        scrollEventThrottle={Platform.OS === "web" ? 16 : 1}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {
@@ -233,6 +232,9 @@ export function GroupRoute({
   route: Route;
   groupSlug: string;
 }) {
+  // Always preload the current account...
+  CurrentAccountCache.preload();
+
   // Load the data we need for our group.
   const {group, postCacheList} = useCacheData(GroupCache, groupSlug);
   const {loading, items: posts} = useCacheListData(postCacheList);
@@ -250,9 +252,11 @@ export function GroupRoute({
 }
 
 function GroupHeader() {
+  const currentAccountID = useCacheSingletonData(CurrentAccountCache);
+  const currentAccount = useCacheData(AccountCache, currentAccountID);
   return (
     <View style={styles.header}>
-      <GroupPostPrompt account={currentAccount as any} />
+      <GroupPostPrompt account={currentAccount} />
     </View>
   );
 }

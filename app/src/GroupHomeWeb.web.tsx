@@ -1,6 +1,7 @@
 import {Color, Shadow, Space} from "./atoms";
 import {Platform, StyleSheet, View} from "react-native";
 import React, {useEffect} from "react";
+import {CurrentAccountCache} from "./cache/AccountCache";
 import {Group} from "./Group";
 import {GroupCache} from "./cache/GroupCache";
 import {Post} from "./Post";
@@ -23,6 +24,9 @@ export function GroupHomeWeb({
   groupSlug: string;
   postID?: string;
 }) {
+  // Always preload the current account...
+  CurrentAccountCache.preload();
+
   // Parse a post ID from our props which comes from the URL.
   const actualPostID =
     _actualPostID != null ? (parseInt(_actualPostID, 10) as PostID) : undefined;
