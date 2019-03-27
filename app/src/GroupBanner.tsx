@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import {Group} from "@connect/api-client";
 import React from "react";
+import backgroundImage from "./assets/images/group-banner-background.png";
 
 export function GroupBanner({group}: {group: Group}) {
   const titleNode = (
@@ -21,10 +22,7 @@ export function GroupBanner({group}: {group: Group}) {
   );
 
   return Platform.OS === "ios" ? (
-    <ImageBackground
-      style={styles.background}
-      source={require("./assets/images/group-banner-background.png")}
-    >
+    <ImageBackground style={styles.background} source={backgroundImage}>
       <SafeAreaView>
         <View style={styles.banner}>{titleNode}</View>
       </SafeAreaView>
@@ -32,7 +30,7 @@ export function GroupBanner({group}: {group: Group}) {
   ) : (
     <ImageBackground
       style={[styles.background, styles.banner]}
-      source={require("./assets/images/group-banner-background.png")}
+      source={backgroundImage}
       accessibilityRole={Platform.OS === "web" ? ("banner" as any) : "header"}
     >
       {titleNode}
