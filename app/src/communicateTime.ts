@@ -1,5 +1,3 @@
-import {DateTime} from "@connect/api-client";
-
 /**
  * Communicates a time to a user.
  *

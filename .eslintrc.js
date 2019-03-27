@@ -92,6 +92,7 @@ module.exports = {
         // since it can understand reads/writes.
         "no-undef": "off",
         "no-unused-vars": "off",
+        "consistent-return": "off",
       },
     },
   ],

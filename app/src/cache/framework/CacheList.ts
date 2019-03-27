@@ -1,6 +1,6 @@
+import {Async, useAsyncWithPrev} from "./Async";
 import {Cursor, JSONValue, Range, RangeDirection} from "@connect/api-client";
 import {Mutable, useMutable} from "./Mutable";
-import {MutableLock} from "./MutableLock";
 
 /**
  * A cache for some list of items which will be lazily loaded from the server.
@@ -17,11 +17,11 @@ import {MutableLock} from "./MutableLock";
  */
 export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
   /**
-   * All of the items in our cache. We load items from the server into our cache
-   * incrementally from either end of the list. That means we could load the
-   * _first_ 3 items and then load the _last_ 3 items into our cache. But then
-   * we would have a gap in our cache between the first and last items. This
-   * would be represented with a segments array of:
+   * All of the items in our cache. We load items from the server into our
+   * cache incrementally from either end of the list. That means we could load
+   * the _first_ 3 items and then load the _last_ 3 items into our cache. But
+   * then we would have a gap in our cache between the first and last items.
+   * This would be represented with a segments array of:
    *
    * ```ts
    * segments = [[1, 2, 3], [7, 8, 9]];
@@ -29,17 +29,21 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    *
    * This format lets us know that there _may_ be more items between 3 and 7.
    */
-  private readonly segments = new MutableLock<CacheListSegments<Item>>([]);
+  private readonly segments = new Mutable<Async<CacheListSegments<Item>>>(
+    new Async([]),
+  );
 
   /**
    * User provided function to load more items based on the provided range.
    */
-  private _load: (range: Range<ItemCursor>) => Promise<ReadonlyArray<Item>>;
+  private readonly _load: (
+    range: Range<ItemCursor>,
+  ) => Promise<ReadonlyArray<Item>>;
 
   /**
    * User provided function to get a cursor from a cached item.
    */
-  private _cursor: (item: Item) => ItemCursor;
+  private readonly _cursor: (item: Item) => ItemCursor;
 
   constructor({
     cursor,
@@ -59,10 +63,18 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    *
    * We may return more items then `count` if we have cached items.
    */
-  public loadFirst(count: number): Promise<ReadonlyArray<Item>> {
-    return this.segments
-      .update(segments => this._loadFirst(segments, count))
-      .then(segments => segments[0] || []);
+  public async loadFirst(count: number): Promise<ReadonlyArray<Item>> {
+    // If the segments entry is pending then don’t update it! Instead let’s wait
+    // for the segments entry to resolve and then we’ll try again.
+    let segments = this.segments.get().get();
+    while (segments instanceof Promise) {
+      await segments;
+      segments = this.segments.get().get();
+    }
+
+    const newSegmentsPromise = this._loadFirst(segments, count);
+    this.segments.set(new Async(newSegmentsPromise));
+    return (await newSegmentsPromise)[0] || [];
   }
 
   /**
@@ -124,10 +136,18 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    *
    * We may return more extra items then `count` if we have cached items.
    */
-  public loadNext(count: number): Promise<ReadonlyArray<Item>> {
-    return this.segments
-      .update(segments => this._loadNext(segments, count))
-      .then(segments => segments[0] || []);
+  public async loadNext(count: number): Promise<ReadonlyArray<Item>> {
+    // If the segments entry is pending then don’t update it! Instead let’s wait
+    // for the segments entry to resolve and then we’ll try again.
+    let segments = this.segments.get().get();
+    while (segments instanceof Promise) {
+      await segments;
+      segments = this.segments.get().get();
+    }
+
+    const newSegmentsPromise = this._loadNext(segments, count);
+    this.segments.set(new Async(newSegmentsPromise));
+    return (await newSegmentsPromise)[0] || [];
   }
 
   /**
@@ -195,10 +215,18 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    *
    * We may return more items then `count` if we have cached items.
    */
-  public loadLast(count: number): Promise<ReadonlyArray<Item>> {
-    return this.segments
-      .update(segments => this._loadLast(segments, count))
-      .then(segments => last(segments) || []);
+  public async loadLast(count: number): Promise<ReadonlyArray<Item>> {
+    // If the segments entry is pending then don’t update it! Instead let’s wait
+    // for the segments entry to resolve and then we’ll try again.
+    let segments = this.segments.get().get();
+    while (segments instanceof Promise) {
+      await segments;
+      segments = this.segments.get().get();
+    }
+
+    const newSegmentsPromise = this._loadLast(segments, count);
+    this.segments.set(new Async(newSegmentsPromise));
+    return last(await newSegmentsPromise) || [];
   }
 
   /**
@@ -261,9 +289,17 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
    * We may return more extra items then `count` if we have cached items.
    */
   async loadPrev(count: number): Promise<ReadonlyArray<Item>> {
-    return this.segments
-      .update(segments => this._loadPrev(segments, count))
-      .then(segments => last(segments) || []);
+    // If the segments entry is pending then don’t update it! Instead let’s wait
+    // for the segments entry to resolve and then we’ll try again.
+    let segments = this.segments.get().get();
+    while (segments instanceof Promise) {
+      await segments;
+      segments = this.segments.get().get();
+    }
+
+    const newSegmentsPromise = this._loadPrev(segments, count);
+    this.segments.set(new Async(newSegmentsPromise));
+    return last(await newSegmentsPromise) || [];
   }
 
   /**
@@ -367,7 +403,18 @@ function last<Item>(array: ReadonlyArray<Item>): Item | undefined {
  */
 export function useCacheListData<ItemCursor extends Cursor<JSONValue>, Item>(
   cache: CacheList<ItemCursor, Item>,
-): Array<Item> {
-  const segments: Mutable<CacheListSegments<Item>> = (cache as any).segments;
-  return useMutable(segments)[0] || [];
+): {
+  loading: boolean;
+  items: Array<Item>;
+} {
+  const cacheSegments: Mutable<Async<CacheListSegments<Item>>> = (cache as any)
+    .segments;
+
+  const asyncSegments = useMutable(cacheSegments);
+  const {loading, value: segments} = useAsyncWithPrev(asyncSegments);
+
+  return {
+    loading,
+    items: segments[0] || [],
+  };
 }

@@ -29,7 +29,7 @@ export function GroupHomeWeb({
 
   // Get the list of posts for this component.
   const {group, postCacheList} = useCacheData(GroupCache, groupSlug);
-  const posts = useCacheListData(postCacheList);
+  const {loading, items: posts} = useCacheListData(postCacheList);
 
   // If we weren’t provided a post ID then use the ID of the first post in
   // our group.
@@ -55,6 +55,7 @@ export function GroupHomeWeb({
         group={group}
         posts={posts}
         selectedPostID={postID}
+        loadingMorePosts={loading}
         onLoadMorePosts={count => postCacheList.loadNext(count)}
       />
       <View style={styles.content}>

@@ -47,12 +47,14 @@ function Group({
   group,
   posts,
   selectedPostID,
+  loadingMorePosts,
   onLoadMorePosts,
 }: {
   route: Route;
   group: Group;
   posts: Array<PostCacheListEntry>;
-  selectedPostID?: PostID;
+  selectedPostID: PostID | undefined;
+  loadingMorePosts: boolean;
   onLoadMorePosts: (count: number) => Promise<unknown>;
 }) {
   // Keep a reference to our scroll view.
@@ -82,9 +84,6 @@ function Group({
 
   // Should we show the navbar or not?
   const [showNavbar, setShowNavbar] = useState(false);
-
-  // Are we loading more posts?
-  const [loadingNext, setLoadingNext] = useState(false);
 
   // All the section data that our list will render. Memoized to avoid
   // unnecessary calculations in the virtualized list.
@@ -157,21 +156,14 @@ function Group({
         // trigger `onEndReached` when this list initially renders.
         initialNumToRender={groupPostCountInitial}
         onEndReachedThreshold={0.3}
-        onEndReached={async () => {
-          try {
-            setLoadingNext(true);
-            await onLoadMorePosts(groupPostCountMore);
-          } finally {
-            setLoadingNext(false);
-          }
-        }}
+        onEndReached={() => onLoadMorePosts(groupPostCountMore)}
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
         ListHeaderComponent={GroupHeader}
         ListFooterComponent={
           <GroupFooter
-            loadingNext={loadingNext}
+            loadingMorePosts={loadingMorePosts}
             onScrollTopTop={() => {
               if (scrollView.current) {
                 scrollView.current
@@ -244,13 +236,15 @@ export function GroupRoute({
 }) {
   // Load the data we need for our group.
   const {group, postCacheList} = useCacheData(GroupCache, groupSlug);
-  const posts = useCacheListData(postCacheList);
+  const {loading, items: posts} = useCacheListData(postCacheList);
 
   return (
     <Group
       route={route}
       group={group}
       posts={posts}
+      selectedPostID={undefined}
+      loadingMorePosts={loading}
       onLoadMorePosts={count => postCacheList.loadNext(count)}
     />
   );
@@ -265,15 +259,15 @@ function GroupHeader() {
 }
 
 function GroupFooter({
-  loadingNext,
+  loadingMorePosts,
   onScrollTopTop,
 }: {
-  loadingNext: boolean;
+  loadingMorePosts: boolean;
   onScrollTopTop: () => void;
 }) {
   return (
     <View style={styles.footer}>
-      {loadingNext ? (
+      {loadingMorePosts ? (
         <Loading />
       ) : (
         // Decoration for the end of our list.

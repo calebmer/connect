@@ -1,3 +1,5 @@
+import {useEffect, useReducer, useRef} from "react";
+
 /** The status of an async value. Can be any of the promise statuses. */
 enum AsyncStatus {
   Pending,
@@ -55,17 +57,20 @@ export class Async<Value> {
   }
 
   /**
-   * Converts our async value into a promise. If the promise is resolved or
-   * rejected then we will return a promise that resolves/rejects immediately.
+   * Gets the asynchronous value. If the value is resolved then we synchronously
+   * return it. Otherwise we return a promise that resolves when the
+   * asynchronous value is ready.
+   *
+   * If the asynchronous value rejected then we synchronously throw an error.
    */
-  public promise(): Promise<Value> {
+  public get(): Value | Promise<Value> {
     switch (this.status) {
       case AsyncStatus.Pending:
         return this.value as Promise<Value>;
       case AsyncStatus.Resolved:
-        return Promise.resolve(this.value as Value);
+        return this.value as Value;
       case AsyncStatus.Rejected:
-        return Promise.reject(this.value);
+        throw this.value;
       default: {
         const never: never = this.status;
         throw new Error(`Unexpected status: ${never}`);
@@ -97,5 +102,75 @@ export class Async<Value> {
         throw new Error(`Unexpected status: ${never}`);
       }
     }
+  }
+}
+
+/**
+ * A unique symbol we use to represent a “no value” state since using null or
+ * undefined could lead to buggy behavior if an expected value is null
+ * or undefined.
+ */
+const noValue = Symbol();
+
+/**
+ * Uses an asynchronous value.
+ *
+ * - If the asynchronous value is pending and we’ve rendered before with a
+ *   different asynchronous value then we will use the previous value and set
+ *   `loading` to true.
+ *
+ * - If the asynchronous value is pending and we’ve not rendered a value before
+ *   then suspend by throwing the asynchronous value’s promise.
+ */
+export function useAsyncWithPrev<Value>(
+  asyncValue: Async<Value>,
+): {
+  loading: boolean;
+  value: Value;
+} {
+  // Get the asynchronous value. This will give us a `Promise` if the value is
+  // pending and will throw if the value is rejected.
+  const value = asyncValue.get();
+
+  // Force update function lets us manually refresh our component.
+  const [, forceUpdate] = useReducer(state => !state, false);
+
+  // The previous value we rendered.
+  const prevValue = useRef<Value | typeof noValue>(noValue);
+
+  // When we have a pending asynchronous value then attach event handlers to
+  // the promise which will force update our component when we’ve resolved.
+  useEffect(() => {
+    if (!(value instanceof Promise)) {
+      return;
+    }
+
+    let cancelled = false;
+
+    function done() {
+      if (!cancelled) {
+        forceUpdate({});
+      }
+    }
+
+    value.then(done, done);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [value]);
+
+  // If our asynchronous value is pending and we have a previous value then
+  // return the previous value. Otherwise suspend.
+  if (value instanceof Promise) {
+    if (prevValue.current === noValue) {
+      throw value;
+    } else {
+      return {loading: true, value: prevValue.current};
+    }
+  } else {
+    // Update the previous value and return the resolved value.
+    prevValue.current = value;
+    return {loading: false, value};
   }
 }

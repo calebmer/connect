@@ -83,9 +83,11 @@ export class Cache<Key extends string | number, Data> {
    * `useCacheData()` instead which will watch the cache for changes.
    */
   public load(key: Key): Promise<Data> {
-    return this.accessEntry(key)
-      .get()
-      .promise();
+    return Promise.resolve(
+      this.accessEntry(key)
+        .get()
+        .get(),
+    );
   }
 
   /**
