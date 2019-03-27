@@ -1,4 +1,4 @@
-import {BodyText, Font, LabelText, MetaText} from "./atoms";
+import {BodyText, Font, LabelText, MetaText, Space} from "./atoms";
 import {Platform, StyleSheet, View} from "react-native";
 import {AccountCache} from "./cache/AccountCache";
 import {GroupItem} from "./GroupItem";
@@ -59,12 +59,12 @@ const numberOfLines = Platform.OS === "web" ? 2 : 4;
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
 
     // NOTE: `baseline` doesn’t work very well outside of web. Super sad!
     alignItems: Platform.OS === "web" ? "baseline" : undefined,
   },
   publishedAt: {
+    marginLeft: Space.space0 * 2,
     ...Platform.select({
       web: {},
       default: {
