@@ -1,5 +1,12 @@
 import {Color, Font, Space} from "./atoms";
-import {Platform, SafeAreaView, StyleSheet, Text, View} from "react-native";
+import {
+  ImageBackground,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import {Group} from "@connect/api-client";
 import React from "react";
 
@@ -14,21 +21,27 @@ export function GroupBanner({group}: {group: Group}) {
   );
 
   return Platform.OS === "ios" ? (
-    <SafeAreaView style={styles.background}>
-      <View style={styles.banner}>{titleNode}</View>
-    </SafeAreaView>
+    <ImageBackground
+      style={styles.background}
+      source={require("./assets/images/group-banner-background.png")}
+    >
+      <SafeAreaView>
+        <View style={styles.banner}>{titleNode}</View>
+      </SafeAreaView>
+    </ImageBackground>
   ) : (
-    <View
-      accessibilityRole={Platform.OS === "web" ? ("banner" as any) : "header"}
+    <ImageBackground
       style={[styles.background, styles.banner]}
+      source={require("./assets/images/group-banner-background.png")}
+      accessibilityRole={Platform.OS === "web" ? ("banner" as any) : "header"}
     >
       {titleNode}
-    </View>
+    </ImageBackground>
   );
 }
 
 GroupBanner.maxWidth = Space.space14;
-GroupBanner.height = Space.space9;
+GroupBanner.height = Space.space10;
 
 const styles = StyleSheet.create({
   background: {
@@ -46,6 +59,6 @@ const styles = StyleSheet.create({
     color: Color.white,
     textAlign: "center",
     ...Font.sansBold,
-    ...Font.size4,
+    ...Font.size5,
   },
 });
