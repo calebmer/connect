@@ -4,6 +4,7 @@ import {
   Platform,
   SectionList,
   SectionListData,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -120,6 +121,15 @@ function GroupComponent({
       >
         <GroupBanner group={group} />
       </Animated.View>
+
+      {/* Style the status bar on native so that it has a light style when the
+          navbar is not visible. */}
+      {Platform.OS !== "web" && (
+        <StatusBar
+          animated={true}
+          barStyle={showNavbar ? "dark-content" : "light-content"}
+        />
+      )}
 
       {/* Include the navbar. */}
       <NavbarNative
