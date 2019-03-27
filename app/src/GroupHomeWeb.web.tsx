@@ -24,7 +24,7 @@ export function GroupHomeWeb({
 
   return (
     <View style={styles.container}>
-      <Group route={route} groupSlug={groupSlug} />
+      <Group route={route} groupSlug={groupSlug} selectedPostID={postID} />
       <View style={styles.content}>
         {postID != null && (
           <Post

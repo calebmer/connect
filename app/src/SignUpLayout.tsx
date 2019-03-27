@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     maxWidth: Space.space14,
   },
   stroke: {
-    borderTopWidth: Border.width3,
+    borderTopWidth: Border.width4,
     borderTopColor: Color.yellow4,
   },
   bigStroke: {

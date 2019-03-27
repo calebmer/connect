@@ -1,15 +1,22 @@
 import {Border, Color, Space} from "./atoms";
+import {
+  Platform,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import React, {ReactNode, useState} from "react";
-import {StyleSheet, TouchableWithoutFeedback, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
 
 export function GroupItem({
   account,
+  selected,
   onPress,
   children,
 }: {
   account: AccountProfile;
+  selected?: boolean;
   onPress?: () => void;
   children: ReactNode;
 }) {
@@ -21,7 +28,12 @@ export function GroupItem({
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}
     >
-      <View style={[styles.container, isPressed && styles.containerPressed]}>
+      <View
+        style={[
+          styles.container,
+          (selected || isPressed) && styles.containerSelected,
+        ]}
+      >
         <AccountAvatar account={account} />
         <View style={styles.body}>{children}</View>
       </View>
@@ -32,21 +44,21 @@ export function GroupItem({
 GroupItem.padding = Space.space3;
 GroupItem.backgroundColor = Color.white;
 
-const borderWidth = Border.width2;
+const borderWidth = Border.width3;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "row",
     padding: GroupItem.padding,
-    paddingLeft: GroupItem.padding - borderWidth,
+    paddingRight: GroupItem.padding - borderWidth,
     backgroundColor: GroupItem.backgroundColor,
-    borderLeftWidth: borderWidth,
-    borderLeftColor: GroupItem.backgroundColor,
+    borderRightWidth: borderWidth,
+    borderRightColor: GroupItem.backgroundColor,
   },
-  containerPressed: {
+  containerSelected: {
     backgroundColor: Color.yellow0,
-    borderLeftColor: Color.yellow4,
+    borderRightColor: Platform.OS === "web" ? Color.yellow4 : Color.yellow0,
   },
   body: {
     flex: 1,

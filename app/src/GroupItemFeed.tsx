@@ -14,10 +14,12 @@ function GroupItemFeed({
   route,
   groupSlug,
   postID,
+  selected,
 }: {
   route: Route;
   groupSlug: string;
   postID: PostID;
+  selected?: boolean;
 }) {
   // TODO: Suspense handler for _just_ this component.
   const post = useCacheData(PostCache, postID);
@@ -33,6 +35,7 @@ function GroupItemFeed({
   return (
     <GroupItem
       account={account}
+      selected={selected}
       onPress={() => route.push(PostRoute, {groupSlug, postID: String(postID)})}
     >
       <View style={styles.header}>
