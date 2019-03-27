@@ -1,4 +1,5 @@
-import {useEffect, useReducer, useRef} from "react";
+import {useEffect, useRef} from "react";
+import {useForceUpdate} from "../../useForceUpdate";
 
 /** The status of an async value. Can be any of the promise statuses. */
 enum AsyncStatus {
@@ -133,7 +134,7 @@ export function useAsyncWithPrev<Value>(
   const value = asyncValue.get();
 
   // Force update function lets us manually refresh our component.
-  const [, forceUpdate] = useReducer(state => !state, false);
+  const forceUpdate = useForceUpdate();
 
   // The previous value we rendered.
   const prevValue = useRef<Value | typeof noValue>(noValue);
@@ -149,7 +150,7 @@ export function useAsyncWithPrev<Value>(
 
     function done() {
       if (!cancelled) {
-        forceUpdate({});
+        forceUpdate();
       }
     }
 
@@ -158,7 +159,7 @@ export function useAsyncWithPrev<Value>(
     return () => {
       cancelled = true;
     };
-  }, [value]);
+  }, [forceUpdate, value]);
 
   // If our asynchronous value is pending and we have a previous value then
   // return the previous value. Otherwise suspend.

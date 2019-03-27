@@ -8,7 +8,8 @@ import {
   Text,
   TouchableWithoutFeedback,
 } from "react-native";
-import React, {useState} from "react";
+import React from "react";
+import {useConstant} from "../useConstant";
 
 export function Button({
   label,
@@ -17,7 +18,7 @@ export function Button({
   readonly label: string;
   readonly onPress: () => void;
 }) {
-  const [pressed] = useState(new Animated.Value(0));
+  const pressed = useConstant(() => new Animated.Value(0));
   const backgroundColor = pressed.interpolate({
     inputRange: [0, 1],
     outputRange: [Color.yellow3, Color.yellow5],

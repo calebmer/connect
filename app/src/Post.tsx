@@ -31,8 +31,6 @@ function Post({
   // for now.
   const publishedAt = communicateTime(new Date(), new Date(post.publishedAt));
 
-  console.log("render <Post>");
-
   return (
     <>
       <NavbarNative

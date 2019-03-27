@@ -28,6 +28,7 @@ import {NavbarNative} from "./NavbarNative";
 import {Route} from "./router/Route";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCacheListData} from "./cache/framework/CacheList";
+import {useConstant} from "./useConstant";
 
 const currentAccount = MockData.calebMeredith;
 
@@ -68,7 +69,7 @@ function Group({
   // There’s some weirdness on iOS where where `scrollY` starts at some negative
   // value like -20 (or -44 on an iPhone X) instead of 0, so we record the first
   // value of `scrollY` and use it as an offset.
-  const [scrollY] = useState(new Animated.Value(0));
+  const scrollY = useConstant(() => new Animated.Value(0));
   const [offsetScrollY, setOffsetScrollY] = useState<null | number>(
     Platform.OS === "ios" ? null : 0,
   );
@@ -114,8 +115,6 @@ function Group({
 
     return [feedSection];
   }, [group.slug, posts, route, selectedPostID]);
-
-  console.log("render <Group>");
 
   return (
     <View style={styles.container}>

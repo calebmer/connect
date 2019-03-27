@@ -29,10 +29,15 @@ export class Mutable<Value> {
   /**
    * Sets the current value. Also schedules an asynchronous notification so
    * that all our subscribers know the our value has updated.
+   *
+   * If the current value is already equal by `===` to the new value then we
+   * don’t do anything.
    */
   public set(newValue: Value): void {
-    this.value = newValue;
-    this.scheduleNotify();
+    if (this.value !== newValue) {
+      this.value = newValue;
+      this.scheduleNotify();
+    }
   }
 
   /**

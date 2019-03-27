@@ -44,12 +44,8 @@ export function GroupHomeWeb({
     }
   }, [actualPostID, groupSlug, postID, route]);
 
-  console.log("render <GroupHomeWeb>");
-
   return (
     <View style={styles.container}>
-      {/* TODO: Instead of re-rendering `<Group>` whenever the URL changes we
-          could use context. */}
       <Group
         route={route}
         group={group}
