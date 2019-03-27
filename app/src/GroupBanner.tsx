@@ -28,12 +28,12 @@ export function GroupBanner({group}: {group: Group}) {
 }
 
 GroupBanner.maxWidth = Space.space14;
-GroupBanner.height = Space.space10;
+GroupBanner.height = Space.space9;
 
 const styles = StyleSheet.create({
   background: {
     overflow: "hidden",
-    backgroundColor: Color.yellow3,
+    backgroundColor: Color.grey8,
   },
   banner: {
     justifyContent: "center",
@@ -43,9 +43,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Space.space4,
   },
   title: {
-    color: Color.yellow9,
+    color: Color.white,
     textAlign: "center",
     ...Font.sansBold,
-    ...Font.size5,
+    ...Font.size4,
   },
 });
