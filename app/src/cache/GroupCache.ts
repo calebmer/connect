@@ -13,7 +13,7 @@ import {CacheList} from "./framework/CacheList";
 import {PostCache} from "./PostCache";
 
 /** The number of posts we load for a group in our initial fetch. */
-export const groupPostCountInitial = 8;
+export const groupPostCountInitial = 16;
 
 /** The number of posts we load for a group as we are scrolling. */
 export const groupPostCountMore = 8;
@@ -25,8 +25,13 @@ export const groupPostCountMore = 8;
  */
 export type GroupCacheEntry = {
   readonly group: Group;
-  readonly postCacheList: CacheList<PostCursor, PostCacheListEntry>;
+  readonly postCacheList: PostCacheList;
 };
+
+/**
+ * Type for a `CacheList` of `Post`s.
+ */
+export type PostCacheList = CacheList<PostCursor, PostCacheListEntry>;
 
 /**
  * An entry for a `Post` in a `CacheList`. Notice how this only has the post ID?

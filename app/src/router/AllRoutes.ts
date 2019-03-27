@@ -25,7 +25,7 @@ export const GroupRoute = new RouteConfig({
   component: () =>
     Platform.OS === "web"
       ? import("../GroupHomeWeb.web").then(m => m.GroupHomeWeb)
-      : import("../Group").then(m => m.Group),
+      : import("../Group").then(m => m.GroupRoute),
 });
 
 export const PostRoute = new RouteConfig({

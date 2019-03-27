@@ -17,6 +17,7 @@ import {
   groupPostCountInitial,
   groupPostCountMore,
 } from "./cache/GroupCache";
+import {PostID, Group as _Group} from "@connect/api-client";
 import React, {useMemo, useRef, useState} from "react";
 import {GroupBanner} from "./GroupBanner";
 import {GroupItem} from "./GroupItem";
@@ -24,32 +25,36 @@ import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {Loading} from "./atoms/Loading";
 import {NavbarNative} from "./NavbarNative";
-import {PostID} from "@connect/api-client";
 import {Route} from "./router/Route";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCacheListData} from "./cache/framework/CacheList";
 
 const currentAccount = MockData.calebMeredith;
 
+// NOTE: Having a React component and a type with the same name is ok in
+// TypeScript, but eslint complains when it’s an import. So import the type with
+// a different name and alias it here.
+type Group = _Group;
+
 // NOTE: `Animated.SectionList` is typed as `any` so give it a proper type!
 const AnimatedSectionList: SectionList<
   unknown
 > = Animated.createAnimatedComponent(SectionList);
 
-// TODO: Investigate why virtualization isn’t working on web.
-function GroupComponent({
+// TODO: Fix virtualization on web. https://github.com/necolas/react-native-web/issues/1295
+function Group({
   route,
-  groupSlug,
+  group,
+  posts,
   selectedPostID,
+  onLoadMorePosts,
 }: {
   route: Route;
-  groupSlug: string;
+  group: Group;
+  posts: Array<PostCacheListEntry>;
   selectedPostID?: PostID;
+  onLoadMorePosts: (count: number) => Promise<unknown>;
 }) {
-  // Load the data we need for our group.
-  const {group, postCacheList} = useCacheData(GroupCache, groupSlug);
-  const posts = useCacheListData(postCacheList);
-
   // Keep a reference to our scroll view.
   const scrollView = useRef<any>(null);
 
@@ -101,7 +106,7 @@ function GroupComponent({
       renderItem: ({item: {id: postID}}) => (
         <GroupItemFeed
           route={route}
-          groupSlug={groupSlug}
+          groupSlug={group.slug}
           postID={postID}
           selected={selectedPostID === postID}
         />
@@ -109,7 +114,9 @@ function GroupComponent({
     };
 
     return [feedSection];
-  }, [groupSlug, posts, route, selectedPostID]);
+  }, [group.slug, posts, route, selectedPostID]);
+
+  console.log("render <Group>");
 
   return (
     <View style={styles.container}>
@@ -153,7 +160,7 @@ function GroupComponent({
         onEndReached={async () => {
           try {
             setLoadingNext(true);
-            await postCacheList.loadNext(groupPostCountMore);
+            await onLoadMorePosts(groupPostCountMore);
           } finally {
             setLoadingNext(false);
           }
@@ -221,8 +228,33 @@ function GroupComponent({
   );
 }
 
-const _Group = React.memo(GroupComponent);
-export {_Group as Group};
+const GroupMemo = React.memo(Group);
+export {GroupMemo as Group};
+
+/**
+ * Component we use for a group’s route. It does data loading instead of letting
+ * the parent component do data loading.
+ */
+export function GroupRoute({
+  route,
+  groupSlug,
+}: {
+  route: Route;
+  groupSlug: string;
+}) {
+  // Load the data we need for our group.
+  const {group, postCacheList} = useCacheData(GroupCache, groupSlug);
+  const posts = useCacheListData(postCacheList);
+
+  return (
+    <Group
+      route={route}
+      group={group}
+      posts={posts}
+      onLoadMorePosts={count => postCacheList.loadNext(count)}
+    />
+  );
+}
 
 function GroupHeader() {
   return (

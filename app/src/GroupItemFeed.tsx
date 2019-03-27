@@ -49,8 +49,8 @@ function GroupItemFeed({
   );
 }
 
-const _GroupItemFeed = React.memo(GroupItemFeed);
-export {_GroupItemFeed as GroupItemFeed};
+const GroupItemFeedMemo = React.memo(GroupItemFeed);
+export {GroupItemFeedMemo as GroupItemFeed};
 
 // On web, you can open a post without leaving the feed. So favor shorter post
 // previews and more posts on screen.

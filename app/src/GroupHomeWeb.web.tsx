@@ -28,7 +28,7 @@ export function GroupHomeWeb({
     _actualPostID != null ? (parseInt(_actualPostID, 10) as PostID) : undefined;
 
   // Get the list of posts for this component.
-  const {postCacheList} = useCacheData(GroupCache, groupSlug);
+  const {group, postCacheList} = useCacheData(GroupCache, groupSlug);
   const posts = useCacheListData(postCacheList);
 
   // If we weren’t provided a post ID then use the ID of the first post in
@@ -44,11 +44,19 @@ export function GroupHomeWeb({
     }
   }, [actualPostID, groupSlug, postID, route]);
 
+  console.log("render <GroupHomeWeb>");
+
   return (
     <View style={styles.container}>
       {/* TODO: Instead of re-rendering `<Group>` whenever the URL changes we
           could use context. */}
-      <Group route={route} groupSlug={groupSlug} selectedPostID={postID} />
+      <Group
+        route={route}
+        group={group}
+        posts={posts}
+        selectedPostID={postID}
+        onLoadMorePosts={count => postCacheList.loadNext(count)}
+      />
       <View style={styles.content}>
         {postID != null && (
           <Post

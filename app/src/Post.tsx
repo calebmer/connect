@@ -11,7 +11,7 @@ import {Route} from "./router/Route";
 import {communicateTime} from "./communicateTime";
 import {useCacheData} from "./cache/framework/Cache";
 
-export function Post({
+function Post({
   route,
   groupSlug,
   postID,
@@ -30,6 +30,8 @@ export function Post({
   // `useEffect()` to watch for when the time changes, but this is good enough
   // for now.
   const publishedAt = communicateTime(new Date(), new Date(post.publishedAt));
+
+  console.log("render <Post>");
 
   return (
     <>
@@ -64,6 +66,10 @@ export function Post({
     </>
   );
 }
+
+// Don’t re-render `<Post>` unless the props change.
+const PostMemo = React.memo(Post);
+export {PostMemo as Post};
 
 /**
  * Component we use for a post’s route. It takes `postID` as a string instead of
