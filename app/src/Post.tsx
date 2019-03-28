@@ -73,7 +73,12 @@ function Post({
               <MetaText>{publishedAt}</MetaText>
             </View>
           </View>
-          <View style={[styles.content, indentContent && styles.contentIndent]}>
+          <View
+            style={[
+              styles.postContent,
+              indentContent && styles.postContentIndent,
+            ]}
+          >
             <BodyText>{post.content}</BodyText>
           </View>
         </View>
@@ -150,10 +155,10 @@ const styles = StyleSheet.create({
   headerInfo: {
     paddingLeft: Space.space3,
   },
-  content: {
+  postContent: {
     maxWidth: Space.space15 - Space.space3 * 2,
   },
-  contentIndent: {
+  postContentIndent: {
     marginLeft: AccountAvatar.size + Space.space3,
   },
   commentsTitleMobile: {
