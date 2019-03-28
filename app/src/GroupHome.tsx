@@ -122,8 +122,6 @@ const styles = StyleSheet.create({
   },
   post: {
     flex: 4,
-    padding: Space.space2,
-    backgroundColor: Color.white,
     ...Shadow.elevation3,
   },
 });

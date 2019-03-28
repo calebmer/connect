@@ -1,7 +1,7 @@
 import {BodyText, Color, LabelText, MetaText, Space} from "./atoms";
 import {Breakpoint, useBreakpoint} from "./useBreakpoint";
 import {Platform, ScrollView, StyleSheet, View} from "react-native";
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountCache} from "./cache/AccountCache";
 import {GroupCache} from "./cache/GroupCache";
@@ -9,8 +9,10 @@ import {NavbarNative} from "./NavbarNative";
 import {PostCache} from "./cache/PostCache";
 import {PostID} from "@connect/api-client";
 import {Route} from "./router/Route";
+import {Trough} from "./Trough";
 import {communicateTime} from "./communicateTime";
 import {useCacheData} from "./cache/framework/Cache";
+import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 
 function Post({
   route,
@@ -27,7 +29,10 @@ function Post({
 
   const [hideNavbarBackground, setHideNavbarBackground] = useState(true);
 
+  // Get information about the current screen size.
+  const groupHomeLayout = useContext(GroupHomeLayoutContext);
   const breakpoint = useBreakpoint();
+  const indentContent = breakpoint >= Breakpoint.LaptopLarge;
 
   // NOTE: `new Date()` is a side-effect in render! Ideally we would use
   // `useEffect()` to watch for when the time changes, but this is good enough
@@ -44,7 +49,6 @@ function Post({
       />
       <ScrollView
         style={styles.background}
-        contentContainerStyle={styles.container}
         scrollIndicatorInsets={scrollIndicatorInsets}
         scrollEventThrottle={16}
         onScroll={event => {
@@ -54,25 +58,26 @@ function Post({
         }}
       >
         <View
-          style={[
-            styles.header,
-            breakpoint >= Breakpoint.LaptopLarge && styles.headerLaptopLarge,
-          ]}
+          style={
+            groupHomeLayout === GroupHomeLayout.Laptop
+              ? styles.postLaptop
+              : styles.postMobile
+          }
         >
-          <AccountAvatar account={author} />
-          <View style={styles.headerInfo}>
-            <LabelText>{author.name}</LabelText>
-            <MetaText>{publishedAt}</MetaText>
+          <View
+            style={[styles.header, indentContent && styles.headerIndentContent]}
+          >
+            <AccountAvatar account={author} />
+            <View style={styles.headerInfo}>
+              <LabelText>{author.name}</LabelText>
+              <MetaText>{publishedAt}</MetaText>
+            </View>
+          </View>
+          <View style={[styles.content, indentContent && styles.contentIndent]}>
+            <BodyText>{post.content}</BodyText>
           </View>
         </View>
-        <View
-          style={[
-            styles.content,
-            breakpoint >= Breakpoint.LaptopLarge && styles.contentLaptopLarge,
-          ]}
-        >
-          <BodyText>{post.content}</BodyText>
-        </View>
+        <Trough title="Comments" />
       </ScrollView>
     </>
   );
@@ -112,15 +117,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Color.white,
   },
-  container: {
+  postMobile: {
     paddingTop: NavbarNative.height + Space.space3,
-    padding: Space.space3,
+    paddingBottom: Space.space3,
+    paddingHorizontal: Space.space3,
+  },
+  postLaptop: {
+    paddingTop: NavbarNative.height + Space.space4,
+    paddingBottom: Space.space4,
+    paddingHorizontal: Space.space4,
   },
   header: {
     flexDirection: "row",
     paddingBottom: Space.space3,
   },
-  headerLaptopLarge: {
+  headerIndentContent: {
     paddingBottom: Space.space1,
   },
   headerInfo: {
@@ -129,7 +140,7 @@ const styles = StyleSheet.create({
   content: {
     maxWidth: Space.space15 - Space.space3 * 2,
   },
-  contentLaptopLarge: {
+  contentIndent: {
     marginLeft: AccountAvatar.size + Space.space3,
   },
 });
