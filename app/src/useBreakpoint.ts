@@ -26,7 +26,7 @@ export enum Breakpoint {
 export function useBreakpoint(): Breakpoint {
   // Create a state variable which uses the current screen size.
   const [breakpoint, setBreakpoint] = useState(() => {
-    return fromWidth(Dimensions.get("screen").width);
+    return fromWidth(Dimensions.get("window").width);
   });
 
   useEffect(() => {
@@ -34,12 +34,12 @@ export function useBreakpoint(): Breakpoint {
 
     // Update our breakpoint in case the screen size changed between React’s
     // render phase and commit phase.
-    setBreakpoint(fromWidth(Dimensions.get("screen").width));
+    setBreakpoint(fromWidth(Dimensions.get("window").width));
 
     // Whenever the screen size changes, update the breakpoint!
-    function handleChange({screen}: {screen: ScaledSize}) {
+    function handleChange({window}: {window: ScaledSize}) {
       if (cancelled) return; // A race condition means we might call this after removing the event listener.
-      setBreakpoint(fromWidth(screen.width));
+      setBreakpoint(fromWidth(window.width));
     }
 
     Dimensions.addEventListener("change", handleChange);
