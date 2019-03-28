@@ -23,9 +23,12 @@ function Post({
   groupSlug: string;
   postID: PostID;
 }) {
-  const {group} = useCacheData(GroupCache, groupSlug);
+  // Load the group in parallel while we load the post...
+  GroupCache.preload(groupSlug);
+
   const post = useCacheData(PostCache, postID);
   const author = useCacheData(AccountCache, post.authorID);
+  const group = useCacheData(GroupCache, groupSlug);
 
   const [hideNavbarBackground, setHideNavbarBackground] = useState(true);
 

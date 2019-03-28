@@ -11,15 +11,16 @@ import {
 } from "react-native";
 import {Color, Font, Space} from "./atoms";
 import {
-  GroupCache,
+  PostCacheList,
   PostCacheListEntry,
-  groupPostCountInitial,
-  groupPostCountMore,
-} from "./cache/GroupCache";
+  postCountInitial,
+  postCountMore,
+} from "./cache/PostCache";
 import {PostID, Group as _Group} from "@connect/api-client";
 import React, {useMemo, useRef, useState} from "react";
 import {Trough, TroughTitle} from "./Trough";
 import {GroupBanner} from "./GroupBanner";
+import {GroupCache} from "./cache/GroupCache";
 import {GroupItem} from "./GroupItem";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
@@ -144,9 +145,9 @@ function Group({
         //
         // NOTE: An `initialNumToRender` that is too small will
         // trigger `onEndReached` when this list initially renders.
-        initialNumToRender={groupPostCountInitial}
+        initialNumToRender={postCountInitial}
         onEndReachedThreshold={0.3}
-        onEndReached={() => onLoadMorePosts(groupPostCountMore)}
+        onEndReached={() => onLoadMorePosts(postCountMore)}
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
@@ -227,7 +228,8 @@ export function GroupRoute({
   CurrentAccountCache.preload();
 
   // Load the data we need for our group.
-  const {group, postCacheList} = useCacheData(GroupCache, groupSlug);
+  const group = useCacheData(GroupCache, groupSlug);
+  const postCacheList = useCacheData(PostCacheList, group.id);
   const {loading, items: posts} = useCacheListData(postCacheList);
 
   return (
