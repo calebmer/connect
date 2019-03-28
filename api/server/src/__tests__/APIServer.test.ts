@@ -3,19 +3,7 @@
 jest.mock("../PGClient", () => ({
   PGClient: {with: (action: any) => action({query: () => {}})},
 }));
-jest.mock("../methods", () => ({
-  account: {
-    signIn: jest.fn(() => Promise.resolve({works: true})),
-    getCurrentProfile: jest.fn(ctx =>
-      Promise.resolve({
-        works: true,
-        accountID: ctx.accountID,
-      }),
-    ),
-  },
-  group: {},
-  post: {},
-}));
+jest.mock("../methods");
 
 import * as methods from "../methods";
 import {APIErrorCode} from "@connect/api-client";
@@ -28,6 +16,17 @@ const signIn: jest.Mock<typeof methods.account.signIn> = methods.account
   .signIn as any;
 const getCurrentProfile: jest.Mock<typeof methods.account.signIn> = methods
   .account.getCurrentProfile as any;
+
+(signIn as any).mockImplementation(async () => {
+  return {works: true};
+});
+
+(getCurrentProfile as any).mockImplementation(async (ctx: any) => {
+  return {
+    works: true,
+    accountID: ctx.accountID,
+  };
+});
 
 test("GET /", async () => {
   await request(APIServer)

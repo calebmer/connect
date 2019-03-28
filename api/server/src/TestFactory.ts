@@ -37,15 +37,16 @@ const commentSequence = createSequence();
 const simplePasswordHash =
   "$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.";
 
-function maybeCreate<ID>(
-  factory: (ctx: ContextTest) => Promise<{id: ID}>,
+function maybeCreate<ID, Config>(
+  factory: (ctx: ContextTest, config?: Config) => Promise<{id: ID}>,
   ctx: ContextTest,
   value: ID | undefined,
+  config?: Config,
 ): Promise<ID> {
   if (value !== undefined) {
     return Promise.resolve(value);
   } else {
-    return factory(ctx).then(({id}) => id);
+    return factory(ctx, config).then(({id}) => id);
   }
 }
 
@@ -187,6 +188,7 @@ export async function createPost(
 }
 
 type FactoryCommentConfig = {
+  groupID?: GroupID; // Not used if a `postID` is provided.
   postID?: PostID;
   authorID?: AccountID;
 };
@@ -209,7 +211,7 @@ export async function createComment(
   const n = commentSequence(ctx);
 
   const [postID, authorID] = await Promise.all([
-    maybeCreate(createPost, ctx, config.postID),
+    maybeCreate(createPost, ctx, config.postID, {groupID: config.groupID}),
     maybeCreate(createAccount, ctx, config.authorID),
   ]);
 

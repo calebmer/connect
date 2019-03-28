@@ -366,7 +366,16 @@ function handleError(res, error) {
   res.write(
     JSON.stringify({
       ok: false,
-      error: {code: "UNKNOWN"},
+      error: {
+        code: "UNKNOWN",
+
+        // If we are in development mode then include the stack of our error
+        // from the server. This should help in debugging why an error ocurred.
+        serverStack:
+          process.env.NODE_ENV === "development" && error instanceof Error
+            ? error.stack
+            : undefined,
+      },
     }),
   );
   res.end();

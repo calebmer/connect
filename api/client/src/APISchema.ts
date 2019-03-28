@@ -1,6 +1,6 @@
 import {AccessToken, RefreshToken} from "./types/TokenTypes";
 import {AccountID, AccountProfile} from "./types/AccountTypes";
-import {Comment, CommentCursor} from "./types/CommentTypes";
+import {Comment, CommentCursor, CommentID} from "./types/CommentTypes";
 import {Group, GroupID} from "./types/GroupTypes";
 import {Post, PostCursor, PostID} from "./types/PostTypes";
 import {RangeInputFields} from "./Range";
@@ -202,6 +202,20 @@ export const APISchema = Schema.namespace({
       output: SchemaOutput.t<{
         readonly comments: ReadonlyArray<Comment>;
       }>(),
+    }),
+  }),
+
+  comment: Schema.namespace({
+    /**
+     * Fetches a comment with the provided ID.
+     *
+     * If we are not allowed to see a group or the group does not exist then
+     * the method returns null.
+     */
+    get: Schema.method({
+      safe: true,
+      input: {id: SchemaInput.integer<CommentID>()},
+      output: SchemaOutput.t<{readonly comment: Comment | null}>(),
     }),
   }),
 });
