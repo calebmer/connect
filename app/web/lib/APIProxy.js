@@ -123,6 +123,11 @@ function proxyRequest(req, res, pathname) {
     // Make the request.
     const apiRequest = http.request(apiRequestOptions, handleResponse);
 
+    // If there is an error then handle it...
+    apiRequest.on("error", error => {
+      handleError(res, error);
+    });
+
     // Copy headers we’re ok with proxying to our request options.
     for (let i = 0; i < req.rawHeaders.length; i += 2) {
       const header = req.rawHeaders[i];
@@ -349,9 +354,11 @@ async function proxySignOutRequest(req, res) {
  * Handles an error and sends that error to our response.
  */
 function handleError(res, error) {
-  // Log the error for debugging purposes.
-  // eslint-disable-next-line no-console
-  console.error(error.stack);
+  if (process.env.NODE_ENV !== "test") {
+    // Log the error for debugging purposes.
+    // eslint-disable-next-line no-console
+    console.error(error.stack);
+  }
 
   // Send an unknown error to the client.
   res.statusCode = 500;

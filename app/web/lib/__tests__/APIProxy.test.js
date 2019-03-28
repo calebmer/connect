@@ -500,6 +500,13 @@ test("fails the request if the refresh token request fails", async () => {
     });
 });
 
+test("fails gracefully if the request fails", async () => {
+  await request(APIProxy)
+    .get("/")
+    .ok(() => true)
+    .expect(500, {ok: false, error: {code: "UNKNOWN"}});
+});
+
 describe("/account/signIn", () => {
   test("if successful moves tokens to cookies from body", async () => {
     nock(API_URL)
