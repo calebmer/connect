@@ -14,6 +14,7 @@ const InlineChunkHtmlPlugin = require("react-dev-utils/InlineChunkHtmlPlugin");
 const ModuleNotFoundPlugin = require("react-dev-utils/ModuleNotFoundPlugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const CircularDependencyPlugin = require("circular-dependency-plugin");
 
 const dev = process.env.NODE_ENV !== "production";
 
@@ -267,6 +268,13 @@ module.exports = {
     // This gives some necessary context to module not found errors, such as
     // the requesting resource.
     new ModuleNotFoundPlugin(workspaceDirectory),
+    // Detect circular dependencies in our JavaScript modules. Circular
+    // dependencies cause problems so let’s avoid them.
+    new CircularDependencyPlugin({
+      exclude: /node_modules/,
+      failOnError: false,
+      cwd: workspaceDirectory,
+    }),
     // It is absolutely essential that `NODE_ENV` is set to production during a
     // production build. Otherwise React will be compiled in the very slow
     // development mode.

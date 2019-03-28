@@ -12,7 +12,6 @@ module.exports = {
     "react-hooks",
     "react-native",
   ],
-  settings: {react: {version: "16.8"}},
   extends: ["eslint:recommended", "plugin:react/recommended"],
   env: {
     es6: true,

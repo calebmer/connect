@@ -1,8 +1,9 @@
 import {Breakpoint, useBreakpoint} from "./useBreakpoint";
 import {Color, Shadow, Space} from "./atoms";
 import {Group, GroupRoute as GroupRouteComponent} from "./Group";
+import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import {Post, PostRoute as PostRouteComponent} from "./Post";
-import React, {useCallback, useContext, useEffect} from "react";
+import React, {useCallback, useEffect} from "react";
 import {StyleSheet, View} from "react-native";
 import {CurrentAccountCache} from "./cache/AccountCache";
 import {GroupCache} from "./cache/GroupCache";
@@ -102,24 +103,11 @@ export function GroupHomeRoute({
     }
   } else {
     return (
-      <GroupHomeLayered.Provider value={true}>
+      <GroupHomeLayoutContext.Provider value={GroupHomeLayout.Laptop}>
         <GroupHome route={route} groupSlug={groupSlug} postID={postID} />
-      </GroupHomeLayered.Provider>
+      </GroupHomeLayoutContext.Provider>
     );
   }
-}
-
-/**
- * Is `GroupHome` using a layered layout? Defaults to false unless we are
- * actually using a layered layout.
- */
-const GroupHomeLayered = React.createContext(false);
-
-/**
- * Is `GroupHome` using a layered layout?
- */
-export function useGroupHomeLayeredContext() {
-  return useContext(GroupHomeLayered);
 }
 
 const styles = StyleSheet.create({
