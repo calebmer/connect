@@ -28,27 +28,34 @@ function createSequence(): (ctx: ContextTest) => number {
   };
 }
 
-const accountSequence = createSequence();
-const groupSequence = createSequence();
-const postSequence = createSequence();
-const commentSequence = createSequence();
+function maybeCreate<ID, Config>(
+  factory: (ctx: ContextTest, config?: Config) => Promise<{id: ID}>,
+) {
+  return (
+    ctx: ContextTest,
+    value: ID | undefined,
+    config?: Config,
+  ): Promise<ID> => {
+    if (value !== undefined) {
+      return Promise.resolve(value);
+    } else {
+      return factory(ctx, config).then(({id}) => id);
+    }
+  };
+}
 
 /** This is the password hash for literally the string “password” */
 const simplePasswordHash =
   "$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.";
 
-function maybeCreate<ID, Config>(
-  factory: (ctx: ContextTest, config?: Config) => Promise<{id: ID}>,
-  ctx: ContextTest,
-  value: ID | undefined,
-  config?: Config,
-): Promise<ID> {
-  if (value !== undefined) {
-    return Promise.resolve(value);
-  } else {
-    return factory(ctx, config).then(({id}) => id);
-  }
-}
+const accountSequence = createSequence();
+const groupSequence = createSequence();
+const postSequence = createSequence();
+const commentSequence = createSequence();
+
+const maybeCreateAccount = maybeCreate(createAccount);
+const maybeCreateGroup = maybeCreate(createGroup);
+const maybeCreatePost = maybeCreate(createPost);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -120,8 +127,8 @@ export async function createGroupMember(
   config: FactoryGroupMemberConfig = {},
 ): Promise<FactoryGroupMember> {
   const [accountID, groupID] = await Promise.all([
-    maybeCreate(createAccount, ctx, config.accountID),
-    maybeCreate(createGroup, ctx, config.groupID),
+    maybeCreateAccount(ctx, config.accountID),
+    maybeCreateGroup(ctx, config.groupID),
   ]);
 
   await ctx.query(sql`
@@ -159,8 +166,8 @@ export async function createPost(
   const n = postSequence(ctx);
 
   const [groupID, authorID] = await Promise.all([
-    maybeCreate(createGroup, ctx, config.groupID),
-    maybeCreate(createAccount, ctx, config.authorID),
+    maybeCreateGroup(ctx, config.groupID),
+    maybeCreateAccount(ctx, config.authorID),
   ]);
 
   const content = `Post Content ${n}`;
@@ -211,8 +218,8 @@ export async function createComment(
   const n = commentSequence(ctx);
 
   const [postID, authorID] = await Promise.all([
-    maybeCreate(createPost, ctx, config.postID, {groupID: config.groupID}),
-    maybeCreate(createAccount, ctx, config.authorID),
+    maybeCreatePost(ctx, config.postID, {groupID: config.groupID}),
+    maybeCreateAccount(ctx, config.authorID),
   ]);
 
   const content = `Comment Content ${n}`;
