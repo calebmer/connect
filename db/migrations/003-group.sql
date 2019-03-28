@@ -45,13 +45,13 @@ CREATE TABLE group_member (
 
 -- Allow our API to access this table, but only after passing row level
 -- security policies.
-GRANT SELECT ON TABLE "group" TO connect_api;
 ALTER TABLE "group" ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON TABLE "group" TO connect_api;
 
 -- Allow our API to access this table, but only after passing row level
 -- security policies.
-GRANT SELECT ON TABLE group_member TO connect_api;
 ALTER TABLE group_member ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON TABLE group_member TO connect_api;
 
 -- Account must be a member of the group to see it.
 CREATE POLICY select_member_of ON "group" FOR SELECT USING

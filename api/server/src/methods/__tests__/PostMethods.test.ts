@@ -1,7 +1,12 @@
-import {createAccount, createGroupMember, createPost} from "../../TestFactory";
+import {PostID, RangeDirection} from "@connect/api-client";
+import {
+  createAccount,
+  createComment,
+  createGroupMember,
+  createPost,
+} from "../../TestFactory";
+import {get, getComments} from "../PostMethods";
 import {ContextTest} from "../../ContextTest";
-import {PostID} from "@connect/api-client";
-import {get} from "../PostMethods";
 
 describe("get", () => {
   test("does not get a post which does not exist", () => {
@@ -32,6 +37,58 @@ describe("get", () => {
 
       await ctx.withAuthorized(account.id, async ctx => {
         expect(await get(ctx, {id: post.id})).toEqual({post: null});
+      });
+    });
+  });
+});
+
+describe("getComments", () => {
+  test("does not get comments from a post in a group we are not in", () => {
+    return ContextTest.with(async ctx => {
+      const post = await createPost(ctx);
+      const {accountID} = await createGroupMember(ctx);
+
+      await createComment(ctx, {postID: post.id});
+      await createComment(ctx, {postID: post.id});
+      await createComment(ctx, {postID: post.id});
+      await createComment(ctx, {postID: post.id});
+      await createComment(ctx, {postID: post.id});
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(
+          await getComments(ctx, {
+            postID: post.id,
+            direction: RangeDirection.First,
+            count: 3,
+            after: null,
+            before: null,
+          }),
+        ).toEqual({comments: []});
+      });
+    });
+  });
+
+  test("gets comments from a post in a group we are in", () => {
+    return ContextTest.with(async ctx => {
+      const {accountID, groupID} = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID});
+
+      const comment1 = await createComment(ctx, {postID: post.id});
+      const comment2 = await createComment(ctx, {postID: post.id});
+      const comment3 = await createComment(ctx, {postID: post.id});
+      await createComment(ctx, {postID: post.id});
+      await createComment(ctx, {postID: post.id});
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(
+          await getComments(ctx, {
+            postID: post.id,
+            direction: RangeDirection.First,
+            count: 3,
+            after: null,
+            before: null,
+          }),
+        ).toEqual({comments: [comment1, comment2, comment3]});
       });
     });
   });

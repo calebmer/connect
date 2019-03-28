@@ -1,4 +1,10 @@
-import {AccountID, DateTime, GroupID, PostID} from "@connect/api-client";
+import {
+  AccountID,
+  CommentID,
+  DateTime,
+  GroupID,
+  PostID,
+} from "@connect/api-client";
 import {ContextTest} from "./ContextTest";
 import {TEST} from "./RunConfig";
 import {sql} from "./PGSQL";
@@ -25,6 +31,7 @@ function createSequence(): (ctx: ContextTest) => number {
 const accountSequence = createSequence();
 const groupSequence = createSequence();
 const postSequence = createSequence();
+const commentSequence = createSequence();
 
 /** This is the password hash for literally the string “password” */
 const simplePasswordHash =
@@ -137,8 +144,8 @@ type FactoryPost = {
   id: PostID;
   groupID: GroupID;
   authorID: AccountID;
-  content: string;
   publishedAt: DateTime;
+  content: string;
 };
 
 // https://en.wikipedia.org/wiki/The_Impossible_Astronaut
@@ -165,8 +172,8 @@ export async function createPost(
   const {
     rows: [row],
   } = await ctx.query(sql`
-    INSERT INTO post (group_id, author_id, content, published_at)
-         VALUES (${groupID}, ${authorID}, ${content}, ${publishedAt})
+    INSERT INTO post (group_id, author_id, published_at, content)
+         VALUES (${groupID}, ${authorID}, ${publishedAt}, ${content})
       RETURNING id
   `);
 
@@ -174,7 +181,56 @@ export async function createPost(
     id: row.id,
     groupID,
     authorID,
-    content,
     publishedAt,
+    content,
+  };
+}
+
+type FactoryCommentConfig = {
+  postID?: PostID;
+  authorID?: AccountID;
+};
+
+type FactoryComment = {
+  id: CommentID;
+  postID: PostID;
+  authorID: AccountID;
+  postedAt: DateTime;
+  content: string;
+};
+
+// https://en.wikipedia.org/wiki/The_Impossible_Astronaut
+const startPostedAt = Date.parse("2011-04-22 16:30:00");
+
+export async function createComment(
+  ctx: ContextTest,
+  config: FactoryCommentConfig = {},
+): Promise<FactoryComment> {
+  const n = commentSequence(ctx);
+
+  const [postID, authorID] = await Promise.all([
+    maybeCreate(createPost, ctx, config.postID),
+    maybeCreate(createAccount, ctx, config.authorID),
+  ]);
+
+  const content = `Comment Content ${n}`;
+  const postedAt = new Date(
+    startPostedAt + 1000 * 60 * 60 * (n - 1),
+  ).toISOString() as DateTime;
+
+  const {
+    rows: [row],
+  } = await ctx.query(sql`
+    INSERT INTO comment (post_id, author_id, posted_at, content)
+         VALUES (${postID}, ${authorID}, ${postedAt}, ${content})
+      RETURNING id
+  `);
+
+  return {
+    id: row.id,
+    postID,
+    authorID,
+    postedAt,
+    content,
   };
 }

@@ -7,12 +7,12 @@ CREATE TABLE post (
   group_id INT NOT NULL REFERENCES "group"(id),
   -- The author of this post.
   author_id INT NOT NULL REFERENCES account(id),
-  -- The contents of this post in markdown formatting.
-  content TEXT NOT NULL,
   -- The time the post was published. In the future we might also have a
   -- `created_at` time which represents when the post was created for
   -- draft posts.
-  published_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+  published_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  -- The contents of this post in markdown formatting.
+  content TEXT NOT NULL
 );
 
 -- Very important index for fetching posts in reverse chronological order.
@@ -28,8 +28,8 @@ CREATE INDEX post_published_at ON post (group_id, published_at DESC, id DESC);
 
 -- Allow our API to access this table, but only after passing row level
 -- security policies.
-GRANT SELECT ON TABLE post TO connect_api;
 ALTER TABLE post ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON TABLE post TO connect_api;
 
 -- Account must be a member of the group the post was published in to see
 -- the post.
