@@ -31,5 +31,5 @@ export const PostRoute = new RouteConfig({
     "post",
     Path.variable("postID"),
   ),
-  component: () => import("../GroupHome").then(m => m.GroupHomeRoute) as any,
+  component: () => import("../GroupHome").then(m => m.GroupHomeRoute),
 });

@@ -11,7 +11,7 @@ type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
  */
 export class RouteConfig<
   Path extends PathBase,
-  Props extends {readonly route: RouteBase} & PathVariableProps<Path>
+  Props extends {readonly route: Route} & PathVariableProps<Path>
 > extends RouteConfigBase<Path, Props> {
   /**
    * Performs some side-effects during construction to globally register our
