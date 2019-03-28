@@ -1,13 +1,9 @@
 import {Border, Color, Space} from "./atoms";
-import {
-  Platform,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
 import React, {ReactNode, useState} from "react";
+import {StyleSheet, TouchableWithoutFeedback, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
+import {useGroupHomeLayeredContext} from "./GroupHome";
 
 export function GroupItem({
   account,
@@ -21,6 +17,7 @@ export function GroupItem({
   children: ReactNode;
 }) {
   const [isPressed, setIsPressed] = useState(false);
+  const isGroupHomeLayered = useGroupHomeLayeredContext();
 
   return (
     <TouchableWithoutFeedback
@@ -31,7 +28,10 @@ export function GroupItem({
       <View
         style={[
           styles.container,
-          (selected || isPressed) && styles.containerSelected,
+          (selected || isPressed) && [
+            styles.containerSelected,
+            isGroupHomeLayered && styles.containerSelectedLayered,
+          ],
         ]}
       >
         <AccountAvatar account={account} />
@@ -58,7 +58,10 @@ const styles = StyleSheet.create({
   },
   containerSelected: {
     backgroundColor: Color.yellow0,
-    borderRightColor: Platform.OS === "web" ? Color.yellow4 : Color.yellow0,
+    borderRightColor: Color.yellow0,
+  },
+  containerSelectedLayered: {
+    borderRightColor: Color.yellow4,
   },
   body: {
     flex: 1,

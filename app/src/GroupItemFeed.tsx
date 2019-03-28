@@ -40,7 +40,9 @@ function GroupItemFeed({
     >
       <View style={styles.header}>
         <LabelText>{account.name}</LabelText>
-        <MetaText style={styles.publishedAt}>{publishedAt}</MetaText>
+        <MetaText style={styles.publishedAt} numberOfLines={1}>
+          {publishedAt}
+        </MetaText>
       </View>
       <BodyText style={styles.text} numberOfLines={numberOfLines}>
         {post.content}

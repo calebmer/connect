@@ -1,4 +1,5 @@
 import {BodyText, Color, LabelText, MetaText, Space} from "./atoms";
+import {Breakpoint, useBreakpoint} from "./useBreakpoint";
 import {Platform, ScrollView, StyleSheet, View} from "react-native";
 import React, {useState} from "react";
 import {AccountAvatar} from "./AccountAvatar";
@@ -26,6 +27,8 @@ function Post({
 
   const [hideNavbarBackground, setHideNavbarBackground] = useState(true);
 
+  const breakpoint = useBreakpoint();
+
   // NOTE: `new Date()` is a side-effect in render! Ideally we would use
   // `useEffect()` to watch for when the time changes, but this is good enough
   // for now.
@@ -50,14 +53,24 @@ function Post({
           }
         }}
       >
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            breakpoint >= Breakpoint.LaptopLarge && styles.headerLaptopLarge,
+          ]}
+        >
           <AccountAvatar account={author} />
           <View style={styles.headerInfo}>
             <LabelText>{author.name}</LabelText>
             <MetaText>{publishedAt}</MetaText>
           </View>
         </View>
-        <View style={styles.content}>
+        <View
+          style={[
+            styles.content,
+            breakpoint >= Breakpoint.LaptopLarge && styles.contentLaptopLarge,
+          ]}
+        >
           <BodyText>{post.content}</BodyText>
         </View>
       </ScrollView>
@@ -105,13 +118,18 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    paddingBottom: Platform.OS === "web" ? Space.space1 : Space.space3,
+    paddingBottom: Space.space3,
+  },
+  headerLaptopLarge: {
+    paddingBottom: Space.space1,
   },
   headerInfo: {
     paddingLeft: Space.space3,
   },
   content: {
-    marginLeft: Platform.OS === "web" ? AccountAvatar.size + Space.space3 : 0,
     maxWidth: Space.space15 - Space.space3 * 2,
+  },
+  contentLaptopLarge: {
+    marginLeft: AccountAvatar.size + Space.space3,
   },
 });

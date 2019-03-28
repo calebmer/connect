@@ -1,21 +1,18 @@
+import {Breakpoint, useBreakpoint} from "./useBreakpoint";
 import {Color, Shadow, Space} from "./atoms";
-import {Platform, StyleSheet, View} from "react-native";
-import React, {useEffect} from "react";
+import {Group, GroupRoute as GroupRouteComponent} from "./Group";
+import {Post, PostRoute as PostRouteComponent} from "./Post";
+import React, {useCallback, useContext, useEffect} from "react";
+import {StyleSheet, View} from "react-native";
 import {CurrentAccountCache} from "./cache/AccountCache";
-import {Group} from "./Group";
 import {GroupCache} from "./cache/GroupCache";
-import {Post} from "./Post";
 import {PostID} from "@connect/api-client";
 import {PostRoute} from "./router/AllRoutes";
 import {Route} from "./router/Route";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCacheListData} from "./cache/framework/CacheList";
 
-if (Platform.OS !== "web") {
-  throw new Error("Can only use this module on the web.");
-}
-
-export function GroupHomeWeb({
+function GroupHome({
   route,
   groupSlug,
   postID: _actualPostID,
@@ -50,15 +47,19 @@ export function GroupHomeWeb({
 
   return (
     <View style={styles.container}>
-      <Group
-        route={route}
-        group={group}
-        posts={posts}
-        selectedPostID={postID}
-        loadingMorePosts={loading}
-        onLoadMorePosts={count => postCacheList.loadNext(count)}
-      />
-      <View style={styles.content}>
+      <View style={styles.group}>
+        <Group
+          route={route}
+          group={group}
+          posts={posts}
+          selectedPostID={postID}
+          loadingMorePosts={loading}
+          onLoadMorePosts={useCallback(count => postCacheList.loadNext(count), [
+            postCacheList,
+          ])}
+        />
+      </View>
+      <View style={styles.post}>
         {postID != null && (
           <Post
             key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
@@ -72,14 +73,67 @@ export function GroupHomeWeb({
   );
 }
 
+/**
+ * The component we actually render for this route. If the screen is large
+ * enough we will use a layered layout.
+ */
+export function GroupHomeRoute({
+  route,
+  groupSlug,
+  postID,
+}: {
+  route: Route;
+  groupSlug: string;
+  postID?: string;
+}) {
+  const breakpoint = useBreakpoint();
+
+  if (breakpoint <= Breakpoint.TabletSmall) {
+    if (postID == null) {
+      return <GroupRouteComponent route={route} groupSlug={groupSlug} />;
+    } else {
+      return (
+        <PostRouteComponent
+          route={route}
+          groupSlug={groupSlug}
+          postID={postID}
+        />
+      );
+    }
+  } else {
+    return (
+      <GroupHomeLayered.Provider value={true}>
+        <GroupHome route={route} groupSlug={groupSlug} postID={postID} />
+      </GroupHomeLayered.Provider>
+    );
+  }
+}
+
+/**
+ * Is `GroupHome` using a layered layout? Defaults to false unless we are
+ * actually using a layered layout.
+ */
+const GroupHomeLayered = React.createContext(false);
+
+/**
+ * Is `GroupHome` using a layered layout?
+ */
+export function useGroupHomeLayeredContext() {
+  return useContext(GroupHomeLayered);
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "row",
     overflow: "hidden",
   },
-  content: {
-    width: `calc(100vw - ${Space.space12}px)`,
+  group: {
+    flex: 3,
+    maxWidth: Space.space12,
+  },
+  post: {
+    flex: 4,
     padding: Space.space2,
     backgroundColor: Color.white,
     ...Shadow.elevation3,
