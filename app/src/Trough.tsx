@@ -1,6 +1,6 @@
 import {Color, Font, Shadow, Space} from "./atoms";
-import {StyleSheet, Text, View} from "react-native";
-import React from "react";
+import React, {ReactNode} from "react";
+import {StyleProp, StyleSheet, Text, TextStyle, View} from "react-native";
 
 /**
  * Name comes from a [“trough”][1] that animals drink out of. Also used in
@@ -8,22 +8,45 @@ import React from "react";
  *
  * [1]: https://en.wiktionary.org/wiki/trough
  */
-export function Trough({title}: {title?: string}) {
+export function Trough({
+  hideTopShadow,
+  hideBottomShadow,
+  children,
+}: {
+  hideTopShadow?: boolean;
+  hideBottomShadow?: boolean;
+  children?: ReactNode;
+}) {
   return (
     <View style={styles.trough}>
-      <View style={styles.troughShadowTop} />
-      <View style={styles.troughShadowBottom} />
-      {title && <Text style={styles.title}>{title}</Text>}
+      {!hideTopShadow && <View style={styles.troughShadowTop} />}
+      {!hideBottomShadow && <View style={styles.troughShadowBottom} />}
+      {children}
     </View>
   );
 }
+
+/**
+ * A title in `<Trough>` component.
+ */
+export function TroughTitle({
+  style,
+  children,
+}: {
+  style?: StyleProp<TextStyle>;
+  children?: string;
+}) {
+  return <Text style={[style, styles.troughTitle]}>{children}</Text>;
+}
+
+Trough.backgroundColor = Color.grey0;
 
 const styles = StyleSheet.create({
   trough: {
     overflow: "hidden",
     position: "relative",
-    height: Font.size1.lineHeight + Space.space0 / 2 + Space.space3,
-    backgroundColor: Color.grey0,
+    minHeight: Space.space3,
+    backgroundColor: Trough.backgroundColor,
   },
   troughShadowTop: {
     position: "absolute",
@@ -43,28 +66,11 @@ const styles = StyleSheet.create({
     backgroundColor: Color.white,
     ...Shadow.elevation0,
   },
-  title: {
-    position: "absolute",
-    bottom: 0,
-    paddingHorizontal: Space.space3,
+  troughTitle: {
+    paddingTop: Space.space3,
     paddingBottom: Space.space0 / 2,
     color: Color.grey6,
     ...Font.sans,
     ...Font.size1,
   },
 });
-
-// function GroupSectionSeparator({
-//   isLeading,
-//   isTrailing,
-// }: {
-//   isLeading?: boolean;
-//   isTrailing?: boolean;
-// }) {
-//   return (
-//     <View style={styles.sectionSeparator}>
-//       {isLeading && <View style={styles.sectionSeparatorShadowLeading} />}
-//       {isTrailing && <View style={styles.sectionSeparatorShadowTrailing} />}
-//     </View>
-//   );
-// }

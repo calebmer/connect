@@ -122,7 +122,7 @@ export function SignIn({
         autoComplete="email"
         autoCorrect={false}
         keyboardType="email-address"
-        selectTextOnFocus={true}
+        selectTextOnFocus
         textContentType="emailAddress"
         returnKeyType="next"
         onSubmitEditing={() => {
@@ -147,10 +147,10 @@ export function SignIn({
           errorMessage={
             attempted ? passwordServerError || passwordError : undefined
           }
-          secureTextEntry={true}
+          secureTextEntry
           autoCapitalize="none"
           autoComplete={Platform.OS === "web" ? "current-password" : "password"}
-          selectTextOnFocus={true}
+          selectTextOnFocus
           textContentType="password"
           returnKeyType="go"
           onSubmitEditing={handleSignIn}
@@ -160,7 +160,9 @@ export function SignIn({
         <Button label="Sign In" onPress={handleSignIn} />
       </View>
       <View style={styles.meta}>
-        <MetaText>Don’t have an account?{" " /* intentional space */}</MetaText>
+        <MetaText>
+          Don’t have an account?{"\u00A0" /* intentional space */}
+        </MetaText>
         <TextLink
           onPress={() => {
             if (signUpRoute) {

@@ -1,4 +1,4 @@
-import {BodyText, Font, LabelText, MetaText, Space} from "./atoms";
+import {BodyText, Font, LabelText, MetaText} from "./atoms";
 import {Platform, StyleSheet, View} from "react-native";
 import {AccountCache} from "./cache/AccountCache";
 import {GroupItem} from "./GroupItem";
@@ -40,9 +40,7 @@ function GroupItemFeed({
     >
       <View style={styles.header}>
         <LabelText>{account.name}</LabelText>
-        <MetaText style={styles.publishedAt} numberOfLines={1}>
-          {publishedAt}
-        </MetaText>
+        <MetaText style={styles.publishedAt}>{publishedAt}</MetaText>
       </View>
       <BodyText style={styles.text} numberOfLines={numberOfLines}>
         {post.content}
@@ -66,13 +64,13 @@ const styles = StyleSheet.create({
     alignItems: Platform.OS === "web" ? "baseline" : undefined,
   },
   publishedAt: {
-    marginLeft: Space.space0 * 2,
+    marginLeft: 6,
     ...Platform.select({
       web: {},
       default: {
         // NOTE: Manually align to the baseline since `alignItems: "baseline"`
         // doesn’t do it.
-        bottom: -2.5,
+        bottom: -2.6,
       },
     }),
   },

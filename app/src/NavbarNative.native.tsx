@@ -83,7 +83,7 @@ export function NavbarNative({
   return (
     <>
       <StatusBar
-        animated={true}
+        animated
         barStyle={
           hideBackground && lightContentWithoutBackground
             ? "light-content"

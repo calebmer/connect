@@ -22,7 +22,7 @@ export function TextLink({
       // workaround: https://github.com/necolas/react-native-web/issues/1266
       <_TouchableOpacity
         accessibilityComponentType="a"
-        accessible={true}
+        accessible
         onPress={onPress}
       >
         {children}

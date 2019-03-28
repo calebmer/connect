@@ -185,10 +185,10 @@ export function SignUp({
           errorMessage={
             attempted ? passwordServerError || passwordError : undefined
           }
-          secureTextEntry={true}
+          secureTextEntry
           autoCapitalize="none"
           autoComplete={Platform.OS === "web" ? "new-password" : "password"}
-          selectTextOnFocus={true}
+          selectTextOnFocus
           textContentType="newPassword"
           returnKeyType="go"
           onSubmitEditing={handleSignUp}
@@ -199,7 +199,7 @@ export function SignUp({
       </View>
       <View style={styles.meta}>
         <MetaText>
-          Already have an account?{" " /* Intentional space */}
+          Already have an account?{"\u00A0" /* Intentional space */}
         </MetaText>
         <TextLink
           onPress={() => {

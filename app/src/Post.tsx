@@ -1,7 +1,9 @@
 import {BodyText, Color, LabelText, MetaText, Space} from "./atoms";
 import {Breakpoint, useBreakpoint} from "./useBreakpoint";
+import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import {Platform, ScrollView, StyleSheet, View} from "react-native";
 import React, {useContext, useState} from "react";
+import {Trough, TroughTitle} from "./Trough";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountCache} from "./cache/AccountCache";
 import {GroupCache} from "./cache/GroupCache";
@@ -9,10 +11,8 @@ import {NavbarNative} from "./NavbarNative";
 import {PostCache} from "./cache/PostCache";
 import {PostID} from "@connect/api-client";
 import {Route} from "./router/Route";
-import {Trough} from "./Trough";
 import {communicateTime} from "./communicateTime";
 import {useCacheData} from "./cache/framework/Cache";
-import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 
 function Post({
   route,
@@ -77,7 +77,17 @@ function Post({
             <BodyText>{post.content}</BodyText>
           </View>
         </View>
-        <Trough title="Comments" />
+        <Trough>
+          <TroughTitle
+            style={
+              groupHomeLayout === GroupHomeLayout.Laptop
+                ? styles.commentsTitleLaptop
+                : styles.commentsTitleMobile
+            }
+          >
+            Comments
+          </TroughTitle>
+        </Trough>
       </ScrollView>
     </>
   );
@@ -112,20 +122,23 @@ export function PostRoute({
 
 const scrollIndicatorInsets = {top: NavbarNative.height};
 
+const paddingMobile = Space.space3;
+const paddingLaptop = Space.space4;
+
 const styles = StyleSheet.create({
   background: {
     flex: 1,
     backgroundColor: Color.white,
   },
   postMobile: {
-    paddingTop: NavbarNative.height + Space.space3,
-    paddingBottom: Space.space3,
-    paddingHorizontal: Space.space3,
+    paddingTop: NavbarNative.height + paddingMobile,
+    paddingBottom: paddingMobile,
+    paddingHorizontal: paddingMobile,
   },
   postLaptop: {
-    paddingTop: NavbarNative.height + Space.space4,
-    paddingBottom: Space.space4,
-    paddingHorizontal: Space.space4,
+    paddingTop: NavbarNative.height + paddingLaptop,
+    paddingBottom: paddingLaptop,
+    paddingHorizontal: paddingLaptop,
   },
   header: {
     flexDirection: "row",
@@ -142,5 +155,11 @@ const styles = StyleSheet.create({
   },
   contentIndent: {
     marginLeft: AccountAvatar.size + Space.space3,
+  },
+  commentsTitleMobile: {
+    paddingHorizontal: paddingMobile,
+  },
+  commentsTitleLaptop: {
+    paddingHorizontal: paddingLaptop,
   },
 });

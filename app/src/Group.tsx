@@ -4,13 +4,12 @@ import {
   Platform,
   SectionList,
   SectionListData,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import {Color, Font, Shadow, Space} from "./atoms";
+import {Color, Font, Space} from "./atoms";
 import {
   GroupCache,
   PostCacheListEntry,
@@ -19,6 +18,7 @@ import {
 } from "./cache/GroupCache";
 import {PostID, Group as _Group} from "@connect/api-client";
 import React, {useMemo, useRef, useState} from "react";
+import {Trough, TroughTitle} from "./Trough";
 import {GroupBanner} from "./GroupBanner";
 import {GroupItem} from "./GroupItem";
 import {GroupItemFeed} from "./GroupItemFeed";
@@ -130,8 +130,8 @@ function Group({
       <NavbarNative
         title={group.name}
         hideBackground={!showNavbar}
-        hideTitleWithBackground={true}
-        lightContentWithoutBackground={true}
+        hideTitleWithBackground
+        lightContentWithoutBackground
       />
 
       {/* All the scrollable content in the group. This is a scroll view which
@@ -166,7 +166,6 @@ function Group({
         }
         stickySectionHeadersEnabled={false}
         renderSectionHeader={GroupSectionHeader}
-        SectionSeparatorComponent={GroupSectionSeparatorWrapper}
         // Watch scroll events and keep track of:
         //
         // - The starting Y offset for our scroll view.
@@ -253,6 +252,18 @@ function GroupHeader() {
   );
 }
 
+function GroupSectionHeader({
+  section: {title},
+}: {
+  section: SectionListData<unknown>;
+}) {
+  return (
+    <Trough>
+      <TroughTitle style={styles.sectionTitle}>{title}</TroughTitle>
+    </Trough>
+  );
+}
+
 function GroupFooter({
   loadingMorePosts,
   onScrollTopTop,
@@ -261,59 +272,22 @@ function GroupFooter({
   onScrollTopTop: () => void;
 }) {
   return (
-    <View style={styles.footer}>
-      {loadingMorePosts ? (
-        <Loading />
-      ) : (
-        // Decoration for the end of our list.
-        <TouchableOpacity onPress={onScrollTopTop}>
-          <Text style={styles.footerText}>Back to top ↑</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-}
-
-function GroupSectionHeader({
-  section: {title},
-}: {
-  section: SectionListData<unknown>;
-}) {
-  return (
-    <>
-      <View style={styles.sectionHeader}>
-        <GroupSectionSeparator isLeading />
-        <Text style={styles.sectionHeaderText}>{title}</Text>
+    <Trough hideBottomShadow>
+      <View style={styles.footer}>
+        {loadingMorePosts ? (
+          <Loading />
+        ) : (
+          // Decoration for the end of our list.
+          <TouchableOpacity onPress={onScrollTopTop}>
+            <Text style={styles.footerText}>Back to top ↑</Text>
+          </TouchableOpacity>
+        )}
       </View>
-    </>
-  );
-}
-
-function GroupSectionSeparatorWrapper({leadingItem}: {leadingItem?: unknown}) {
-  return leadingItem !== undefined ? (
-    <GroupSectionSeparator isTrailing />
-  ) : null;
-}
-
-function GroupSectionSeparator({
-  isLeading,
-  isTrailing,
-}: {
-  isLeading?: boolean;
-  isTrailing?: boolean;
-}) {
-  return (
-    <View style={styles.sectionSeparator}>
-      {isLeading && <View style={styles.sectionSeparatorShadowLeading} />}
-      {isTrailing && <View style={styles.sectionSeparatorShadowTrailing} />}
-    </View>
+    </Trough>
   );
 }
 
 const scrollIndicatorInsets = {top: NavbarNative.height};
-
-const backgroundColor = Color.grey0;
-const sectionMargin = Space.space3;
 
 const styles = StyleSheet.create({
   container: {
@@ -322,7 +296,7 @@ const styles = StyleSheet.create({
     position: "relative",
     width: "100%",
     maxWidth: GroupBanner.maxWidth,
-    backgroundColor,
+    backgroundColor: Trough.backgroundColor,
   },
   banner: {
     position: "absolute",
@@ -332,50 +306,19 @@ const styles = StyleSheet.create({
   },
   header: {
     marginTop: GroupBanner.height,
-    paddingBottom: sectionMargin,
-    backgroundColor,
+  },
+  sectionTitle: {
+    paddingHorizontal: GroupItem.padding,
   },
   footer: {
-    height: Loading.size + sectionMargin,
+    flexDirection: "column",
+    justifyContent: "center",
+    height: Loading.size + Space.space3 * 2,
   },
   footerText: {
     color: Color.grey6,
     textAlign: "center",
     ...Font.sans,
     ...Font.size1,
-    lineHeight: Loading.size,
-  },
-  sectionHeader: {
-    justifyContent: "flex-end",
-    height: Font.size1.lineHeight + Space.space0 / 2,
-    backgroundColor,
-  },
-  sectionHeaderText: {
-    position: "absolute",
-    bottom: 0,
-    paddingHorizontal: GroupItem.padding,
-    paddingBottom: Space.space0 / 2,
-    color: Color.grey6,
-    ...Font.sans,
-    ...Font.size1,
-  },
-  sectionSeparator: {
-    overflow: "hidden",
-    minHeight: sectionMargin,
-    backgroundColor,
-  },
-  sectionSeparatorShadowLeading: {
-    position: "relative",
-    top: sectionMargin,
-    height: sectionMargin,
-    backgroundColor: Color.white,
-    ...Shadow.elevation0,
-  },
-  sectionSeparatorShadowTrailing: {
-    position: "relative",
-    top: -sectionMargin,
-    height: sectionMargin,
-    backgroundColor: Color.white,
-    ...Shadow.elevation0,
   },
 });
