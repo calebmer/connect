@@ -6,10 +6,12 @@ import {CacheSingleton} from "./framework/CacheSingleton";
 /**
  * Caches accounts by their ID.
  */
-export const AccountCache = new Cache<AccountID, AccountProfile>(async id => {
-  const {account} = await API.account.getProfile({id});
-  if (account == null) throw new Error("Account not found.");
-  return account;
+export const AccountCache = new Cache<AccountID, AccountProfile>({
+  async load(id) {
+    const {account} = await API.account.getProfile({id});
+    if (account == null) throw new Error("Account not found.");
+    return account;
+  },
 });
 
 /**

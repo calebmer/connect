@@ -14,10 +14,12 @@ import {CacheList} from "./framework/CacheList";
 /**
  * Caches posts by their ID.
  */
-export const PostCache = new Cache<PostID, Post>(async id => {
-  const {post} = await API.post.get({id});
-  if (post == null) throw new Error("Post not found.");
-  return post;
+export const PostCache = new Cache<PostID, Post>({
+  async load(id) {
+    const {post} = await API.post.get({id});
+    if (post == null) throw new Error("Post not found.");
+    return post;
+  },
 });
 
 /**
@@ -44,55 +46,60 @@ export const postCountMore = 8;
 export const PostCacheList = new Cache<
   GroupID,
   CacheList<PostCursor, PostCacheListEntry>
->(async groupID => {
-  // Create the post cache list...
-  const postCacheList = new CacheList<PostCursor, PostCacheListEntry>({
-    cursor: PostCursor.get,
+>({
+  async load(groupID) {
+    // Create the post cache list...
+    const postCacheList = new CacheList<PostCursor, PostCacheListEntry>({
+      cursor: PostCursor.get,
 
-    async load(range) {
-      // Fetch the posts for this range from our API.
-      const {posts} = await API.group.getPosts({groupID, ...range});
+      async load(range) {
+        // Fetch the posts for this range from our API.
+        const {posts} = await API.group.getPosts({groupID, ...range});
 
-      // A set of all the accounts who authored posts.
-      const accountIDSet = new Set<AccountID>();
+        // A set of all the accounts who authored posts.
+        const accountIDSet = new Set<AccountID>();
 
-      // Loop through all the posts and create cache entries for our post list.
-      // Also insert each post into our `PostCache`.
-      const entries = posts.map<PostCacheListEntry>(post => {
-        PostCache.insert(post.id, post);
-        accountIDSet.add(post.authorID);
-        return {
-          id: post.id,
-          publishedAt: post.publishedAt,
-        };
-      });
-
-      // A set of all the accounts we want to fetch from our API.
-      const accountIDs: Array<AccountID> = [];
-
-      // We want to fetch all the account IDs which we do not have in our cache.
-      accountIDSet.forEach(accountID => {
-        if (!AccountCache.has(accountID)) {
-          accountIDs.push(accountID);
-        }
-      });
-
-      // If there are some accounts we have not yet loaded in our cache then
-      // send an API request to fetch those accounts.
-      if (accountIDs.length > 0) {
-        const {accounts} = await API.account.getManyProfiles({ids: accountIDs});
-        accounts.forEach(account => {
-          AccountCache.insert(account.id, account);
+        // Loop through all the posts and create cache entries for our post
+        // list. Also insert each post into our `PostCache`.
+        const entries = posts.map<PostCacheListEntry>(post => {
+          PostCache.insert(post.id, post);
+          accountIDSet.add(post.authorID);
+          return {
+            id: post.id,
+            publishedAt: post.publishedAt,
+          };
         });
-      }
 
-      return entries;
-    },
-  });
+        // A set of all the accounts we want to fetch from our API.
+        const accountIDs: Array<AccountID> = [];
 
-  // Load the first few posts into our cache. We will suspend until we’ve loaded
-  // the first few posts.
-  await postCacheList.loadFirst(postCountInitial);
+        // We want to fetch all the account IDs which we do not have in
+        // our cache.
+        accountIDSet.forEach(accountID => {
+          if (!AccountCache.has(accountID)) {
+            accountIDs.push(accountID);
+          }
+        });
 
-  return postCacheList;
+        // If there are some accounts we have not yet loaded in our cache then
+        // send an API request to fetch those accounts.
+        if (accountIDs.length > 0) {
+          const {accounts} = await API.account.getManyProfiles({
+            ids: accountIDs,
+          });
+          accounts.forEach(account => {
+            AccountCache.insert(account.id, account);
+          });
+        }
+
+        return entries;
+      },
+    });
+
+    // Load the first few posts into our cache. We will suspend until we’ve
+    // loaded the first few posts.
+    await postCacheList.loadFirst(postCountInitial);
+
+    return postCacheList;
+  },
 });

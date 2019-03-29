@@ -28,7 +28,7 @@ export class Cache<Key extends string | number, Data> {
    */
   private readonly entries = new Map<Key, Mutable<Async<Data>>>();
 
-  constructor(load: (key: Key) => Promise<Data>) {
+  constructor({load}: {load: (key: Key) => Promise<Data>}) {
     this._load = load;
   }
 
