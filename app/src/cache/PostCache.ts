@@ -18,6 +18,7 @@ export const PostCache = new Cache<PostID, Post>({
   async load(id) {
     const {post} = await API.post.get({id});
     if (post == null) throw new Error("Post not found.");
+    AccountCache.preload(post.authorID); // Preload the post’s author. We will probably need that.
     return post;
   },
 });
@@ -56,41 +57,23 @@ export const PostCacheList = new Cache<
         // Fetch the posts for this range from our API.
         const {posts} = await API.group.getPosts({groupID, ...range});
 
-        // A set of all the accounts who authored posts.
-        const accountIDSet = new Set<AccountID>();
+        // All the accounts we want to preload.
+        const accountIDs: Array<AccountID> = [];
 
         // Loop through all the posts and create cache entries for our post
         // list. Also insert each post into our `PostCache`.
         const entries = posts.map<PostCacheListEntry>(post => {
           PostCache.insert(post.id, post);
-          accountIDSet.add(post.authorID);
+          accountIDs.push(post.authorID);
           return {
             id: post.id,
             publishedAt: post.publishedAt,
           };
         });
 
-        // A set of all the accounts we want to fetch from our API.
-        const accountIDs: Array<AccountID> = [];
-
-        // We want to fetch all the account IDs which we do not have in
-        // our cache.
-        accountIDSet.forEach(accountID => {
-          if (!AccountCache.has(accountID)) {
-            accountIDs.push(accountID);
-          }
-        });
-
-        // If there are some accounts we have not yet loaded in our cache then
-        // send an API request to fetch those accounts.
-        if (accountIDs.length > 0) {
-          const {accounts} = await API.account.getManyProfiles({
-            ids: accountIDs,
-          });
-          accounts.forEach(account => {
-            AccountCache.insert(account.id, account);
-          });
-        }
+        // Preload post authors since we’ll probably want those when
+        // rendering a post.
+        AccountCache.preloadMany(accountIDs);
 
         return entries;
       },

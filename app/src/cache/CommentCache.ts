@@ -18,6 +18,7 @@ export const CommentCache = new Cache<CommentID, Comment>({
   async load(id) {
     const {comment} = await API.comment.get({id});
     if (comment == null) throw new Error("Comment not found.");
+    AccountCache.preload(comment.authorID); // Preload the comment’s author. We will probably need that.
     return comment;
   },
 });
@@ -59,41 +60,23 @@ export const CommentCacheList = new Cache<
         // Fetch the comments for this range from our API.
         const {comments} = await API.post.getComments({postID, ...range});
 
-        // A set of all the accounts who authored posts.
-        const accountIDSet = new Set<AccountID>();
+        // All the accounts we want to preload.
+        const accountIDs: Array<AccountID> = [];
 
         // Loop through all the comments and create cache entries for our
         // comment list. Also insert each post into our `CommentCache`.
         const entries = comments.map<CommentCacheListEntry>(comment => {
           CommentCache.insert(comment.id, comment);
-          accountIDSet.add(comment.authorID);
+          accountIDs.push(comment.authorID);
           return {
             id: comment.id,
             postedAt: comment.postedAt,
           };
         });
 
-        // A set of all the accounts we want to fetch from our API.
-        const accountIDs: Array<AccountID> = [];
-
-        // We want to fetch all the account IDs which we do not have in
-        // our cache.
-        accountIDSet.forEach(accountID => {
-          if (!AccountCache.has(accountID)) {
-            accountIDs.push(accountID);
-          }
-        });
-
-        // If there are some accounts we have not yet loaded in our cache then
-        // send an API request to fetch those accounts.
-        if (accountIDs.length > 0) {
-          const {accounts} = await API.account.getManyProfiles({
-            ids: accountIDs,
-          });
-          accounts.forEach(account => {
-            AccountCache.insert(account.id, account);
-          });
-        }
+        // Preload comment authors since we’ll probably want those when
+        // rendering a comment.
+        AccountCache.preloadMany(accountIDs);
 
         return entries;
       },
