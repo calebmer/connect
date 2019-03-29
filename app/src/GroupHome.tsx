@@ -2,13 +2,12 @@ import {Breakpoint, useBreakpoint} from "./useBreakpoint";
 import {Group, GroupRoute as GroupRouteComponent} from "./Group";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import {Post, PostRoute as PostRouteComponent} from "./Post";
-import {PostCache, PostCacheList} from "./cache/PostCache";
 import React, {useCallback, useEffect} from "react";
 import {Shadow, Space} from "./atoms";
 import {StyleSheet, View} from "react-native";
-import {CommentCacheList} from "./cache/CommentCache";
 import {CurrentAccountCache} from "./cache/AccountCache";
 import {GroupCache} from "./cache/GroupCache";
+import {PostCacheList} from "./cache/PostCache";
 import {PostID} from "@connect/api-client";
 import {PostRoute} from "./router/AllRoutes";
 import {Route} from "./router/Route";
@@ -18,7 +17,7 @@ import {useCacheListData} from "./cache/framework/CacheList";
 function GroupHome({
   route,
   groupSlug,
-  postID: _actualPostID,
+  postID: _postID,
 }: {
   route: Route;
   groupSlug: string;
@@ -28,48 +27,13 @@ function GroupHome({
   CurrentAccountCache.preload();
 
   // Parse a post ID from our props which comes from the URL.
-  const actualPostID =
-    _actualPostID != null ? (parseInt(_actualPostID, 10) as PostID) : undefined;
-
-  // If we were given a post ID, then let’s preload the data we will need for
-  // rendering our post! That way we can load it in parallel instead of waiting
-  // for all of our group data to finish loading.
-  if (actualPostID != null) {
-    PostCache.preload(actualPostID);
-    CommentCacheList.preload(actualPostID);
-  }
-
-  // Get the list of posts for this component.
-  const group = useCacheData(GroupCache, groupSlug);
-  const postCacheList = useCacheData(PostCacheList, group.id);
-  const {loading, items: posts} = useCacheListData(postCacheList);
-
-  // If we weren’t provided a post ID then use the ID of the first post in
-  // our group.
   const postID =
-    actualPostID == null && posts.length > 0 ? posts[0].id : actualPostID;
-
-  // If we are rendering a different post ID then the one we were provided,
-  // update our route so that it points to the actual post we are rendering.
-  useEffect(() => {
-    if (actualPostID !== postID) {
-      route.webReplace(PostRoute, {groupSlug, postID: String(postID)});
-    }
-  }, [actualPostID, groupSlug, postID, route]);
+    _postID != null ? (parseInt(_postID, 10) as PostID) : undefined;
 
   return (
     <View style={styles.container}>
       <View style={styles.group}>
-        <Group
-          route={route}
-          group={group}
-          posts={posts}
-          selectedPostID={postID}
-          loadingMorePosts={loading}
-          onLoadMorePosts={useCallback(count => postCacheList.loadNext(count), [
-            postCacheList,
-          ])}
-        />
+        <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
       </View>
       <View style={styles.post}>
         {postID != null && (
@@ -82,6 +46,45 @@ function GroupHome({
         )}
       </View>
     </View>
+  );
+}
+
+function GroupSuspense({
+  route,
+  groupSlug,
+  postID,
+}: {
+  route: Route;
+  groupSlug: string;
+  postID: PostID | undefined;
+}) {
+  // Get the list of posts for this component.
+  const group = useCacheData(GroupCache, groupSlug);
+  const postCacheList = useCacheData(PostCacheList, group.id);
+  const {loading, items: posts} = useCacheListData(postCacheList);
+
+  // If we are rendering a different post ID then the one we were provided,
+  // update our route so that it points to the actual post we are rendering.
+  //
+  // NOTE: Ideally there should be no flash of empty content in the post panel
+  // before we redirect.
+  useEffect(() => {
+    if (postID == null && posts.length > 0) {
+      route.webReplace(PostRoute, {groupSlug, postID: String(posts[0].id)});
+    }
+  }, [groupSlug, postID, posts, route]);
+
+  return (
+    <Group
+      route={route}
+      group={group}
+      posts={posts}
+      selectedPostID={postID}
+      loadingMorePosts={loading}
+      onLoadMorePosts={useCallback(count => postCacheList.loadNext(count), [
+        postCacheList,
+      ])}
+    />
   );
 }
 
