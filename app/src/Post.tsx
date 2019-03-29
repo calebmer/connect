@@ -1,17 +1,14 @@
-import {BodyText, Color, LabelText, MetaText, Space} from "./atoms";
-import {Breakpoint, useBreakpoint} from "./useBreakpoint";
+import {Color, Space} from "./atoms";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import {Platform, ScrollView, StyleSheet, View} from "react-native";
 import React, {useContext, useState} from "react";
 import {Trough, TroughTitle} from "./Trough";
-import {AccountAvatar} from "./AccountAvatar";
-import {AccountCache} from "./cache/AccountCache";
 import {GroupCache} from "./cache/GroupCache";
 import {NavbarNative} from "./NavbarNative";
-import {PostCache} from "./cache/PostCache";
+import {PostComments} from "./PostComments";
+import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "./router/Route";
-import {communicateTime} from "./communicateTime";
 import {useCacheData} from "./cache/framework/Cache";
 
 function Post({
@@ -23,31 +20,15 @@ function Post({
   groupSlug: string;
   postID: PostID;
 }) {
-  // Load the group in parallel while we load the post...
-  GroupCache.preload(groupSlug);
-
-  const post = useCacheData(PostCache, postID);
-  const author = useCacheData(AccountCache, post.authorID);
-  const group = useCacheData(GroupCache, groupSlug);
-
   const [hideNavbarBackground, setHideNavbarBackground] = useState(true);
-
-  // Get information about the current screen size.
-  const groupHomeLayout = useContext(GroupHomeLayoutContext);
-  const breakpoint = useBreakpoint();
-  const indentContent = breakpoint >= Breakpoint.LaptopLarge;
-
-  // NOTE: `new Date()` is a side-effect in render! Ideally we would use
-  // `useEffect()` to watch for when the time changes, but this is good enough
-  // for now.
-  const publishedAt = communicateTime(new Date(), new Date(post.publishedAt));
+  const isLaptop =
+    useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop;
 
   return (
     <>
-      <NavbarNative
-        title={group.name}
-        leftIcon="arrow-left"
-        onLeftIconPress={() => route.pop()}
+      <PostNavbarNative
+        route={route}
+        groupSlug={groupSlug}
         hideBackground={hideNavbarBackground}
       />
       <ScrollView
@@ -60,44 +41,42 @@ function Post({
           }
         }}
       >
-        <View
-          style={
-            groupHomeLayout === GroupHomeLayout.Laptop
-              ? styles.postLaptop
-              : styles.postMobile
-          }
-        >
-          <View
-            style={[styles.header, indentContent && styles.headerIndentContent]}
-          >
-            <AccountAvatar account={author} />
-            <View style={styles.headerInfo}>
-              <LabelText>{author.name}</LabelText>
-              <MetaText>{publishedAt}</MetaText>
-            </View>
-          </View>
-          <View
-            style={[
-              styles.postContent,
-              indentContent && styles.postContentIndent,
-            ]}
-          >
-            <BodyText>{post.content}</BodyText>
-          </View>
+        <View style={isLaptop ? styles.postLaptop : styles.postMobile}>
+          <PostContent postID={postID} />
         </View>
         <Trough>
           <TroughTitle
             style={
-              groupHomeLayout === GroupHomeLayout.Laptop
-                ? styles.commentsTitleLaptop
-                : styles.commentsTitleMobile
+              isLaptop ? styles.commentsTitleLaptop : styles.commentsTitleMobile
             }
           >
             Comments
           </TroughTitle>
         </Trough>
+        <PostComments postID={postID} />
       </ScrollView>
     </>
+  );
+}
+
+function PostNavbarNative({
+  route,
+  groupSlug,
+  hideBackground,
+}: {
+  route: Route;
+  groupSlug: string;
+  hideBackground?: boolean;
+}) {
+  const group = useCacheData(GroupCache, groupSlug);
+
+  return (
+    <NavbarNative
+      title={group.name}
+      leftIcon="arrow-left"
+      onLeftIconPress={() => route.pop()}
+      hideBackground={hideBackground}
+    />
   );
 }
 
@@ -147,22 +126,6 @@ const styles = StyleSheet.create({
     paddingTop: NavbarNative.height + paddingLaptop,
     paddingBottom: paddingLaptop,
     paddingHorizontal: paddingLaptop,
-  },
-  header: {
-    flexDirection: "row",
-    paddingBottom: Space.space3,
-  },
-  headerIndentContent: {
-    paddingBottom: Space.space1,
-  },
-  headerInfo: {
-    paddingLeft: Space.space3,
-  },
-  postContent: {
-    maxWidth: Space.space15 - Space.space3 * 2,
-  },
-  postContentIndent: {
-    marginLeft: AccountAvatar.size + Space.space3,
   },
   commentsTitleMobile: {
     paddingHorizontal: paddingMobile,

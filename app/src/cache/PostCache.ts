@@ -22,7 +22,7 @@ export const PostCache = new Cache<PostID, Post>(async id => {
 
 /**
  * An entry for a `Post` in a `CacheList`. Notice how this only has the post ID?
- * To get the full post object use the ID to fetch the data from `postCache`.
+ * To get the full post object use the ID to fetch the data from `PostCache`.
  * We also include the time at which the post was published so that we can
  * create the `PostCursor` from a cache entry.
  */

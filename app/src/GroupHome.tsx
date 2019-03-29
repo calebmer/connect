@@ -2,12 +2,13 @@ import {Breakpoint, useBreakpoint} from "./useBreakpoint";
 import {Group, GroupRoute as GroupRouteComponent} from "./Group";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import {Post, PostRoute as PostRouteComponent} from "./Post";
+import {PostCache, PostCacheList} from "./cache/PostCache";
 import React, {useCallback, useEffect} from "react";
 import {Shadow, Space} from "./atoms";
 import {StyleSheet, View} from "react-native";
+import {CommentCacheList} from "./cache/CommentCache";
 import {CurrentAccountCache} from "./cache/AccountCache";
 import {GroupCache} from "./cache/GroupCache";
-import {PostCacheList} from "./cache/PostCache";
 import {PostID} from "@connect/api-client";
 import {PostRoute} from "./router/AllRoutes";
 import {Route} from "./router/Route";
@@ -29,6 +30,14 @@ function GroupHome({
   // Parse a post ID from our props which comes from the URL.
   const actualPostID =
     _actualPostID != null ? (parseInt(_actualPostID, 10) as PostID) : undefined;
+
+  // If we were given a post ID, then let’s preload the data we will need for
+  // rendering our post! That way we can load it in parallel instead of waiting
+  // for all of our group data to finish loading.
+  if (actualPostID != null) {
+    PostCache.preload(actualPostID);
+    CommentCacheList.preload(actualPostID);
+  }
 
   // Get the list of posts for this component.
   const group = useCacheData(GroupCache, groupSlug);
