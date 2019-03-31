@@ -1,8 +1,8 @@
 import {Border, Color, Space} from "./atoms";
-import {Platform, SafeAreaView, StyleSheet, View} from "react-native";
+import {Platform, SafeAreaView, StyleSheet, Text, View} from "react-native";
 import React, {ReactNode} from "react";
 
-export function SignUpLayout({children}: {children: ReactNode}) {
+export function Layout({children}: {children: ReactNode}) {
   if (Platform.OS === "ios") {
     return (
       <View style={styles.container}>
@@ -15,6 +15,10 @@ export function SignUpLayout({children}: {children: ReactNode}) {
   }
   return (
     <View style={[styles.container, styles.stroke]}>
+      {/* Planning on adding a <Header /> component here that will handle our navigation */}
+      {/* <View>
+        <Text>Header</Text>
+      </View> */}
       <View style={styles.card}>{children}</View>
     </View>
   );

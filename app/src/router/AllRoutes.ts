@@ -19,6 +19,11 @@ export const AccountTestRoute = new RouteConfig({
   component: () => import("../AccountTest").then(m => m.AccountTest),
 });
 
+export const Home = new RouteConfig({
+  path: Path.create(),
+  component: () => import("../Home").then(m => m.Home),
+});
+
 export const GroupRoute = new RouteConfig({
   path: Path.create("group", Path.variable("groupSlug")),
   component: () => import("../GroupHome").then(m => m.GroupHomeRoute),

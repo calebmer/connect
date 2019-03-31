@@ -14,7 +14,7 @@ import React, {useRef, useState} from "react";
 import {TextInput, TextInputInstance} from "./TextInput";
 import {API} from "./api/API";
 import {Route} from "./router/Route";
-import {SignUpLayout} from "./SignUpLayout";
+import {Layout} from "./Layout";
 import {displayErrorMessage} from "./ErrorMessage";
 
 export function SignUp({
@@ -122,7 +122,7 @@ export function SignUp({
   }
 
   return (
-    <SignUpLayout>
+    <Layout>
       <View style={styles.title}>
         <TitleText>Sign Up</TitleText>
       </View>
@@ -213,7 +213,7 @@ export function SignUp({
           <MetaLinkText>Sign in.</MetaLinkText>
         </TextLink>
       </View>
-    </SignUpLayout>
+    </Layout>
   );
 }
 
