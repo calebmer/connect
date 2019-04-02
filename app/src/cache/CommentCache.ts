@@ -16,7 +16,7 @@ import {CacheList} from "./framework/CacheList";
  */
 export const CommentCache = new Cache<CommentID, Comment>({
   async load(id) {
-    const {comment} = await API.comment.get({id});
+    const {comment} = await API.comment.getComment({id});
     if (comment == null) throw new Error("Comment not found.");
     AccountCache.preload(comment.authorID); // Preload the comment’s author. We will probably need that.
     return comment;
@@ -58,7 +58,7 @@ export const CommentCacheList = new Cache<
 
       async load(range) {
         // Fetch the comments for this range from our API.
-        const {comments} = await API.post.getComments({postID, ...range});
+        const {comments} = await API.post.getPostComments({postID, ...range});
 
         // All the accounts we want to preload.
         const accountIDs: Array<AccountID> = [];

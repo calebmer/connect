@@ -5,7 +5,7 @@ import {
   createGroupMember,
   createPost,
 } from "../../TestFactory";
-import {getBySlug, getPosts} from "../GroupMethods";
+import {getGroupBySlug, getGroupPosts} from "../GroupMethods";
 import {ContextTest} from "../../ContextTest";
 
 /**
@@ -22,13 +22,15 @@ async function arrayMake<T>(
   return array;
 }
 
-describe("getBySlug", () => {
+describe("getGroupBySlug", () => {
   test("does not return a group that does not exist", () => {
     return ContextTest.with(async ctx => {
       const account = await createAccount(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getBySlug(ctx, {slug: "nope"})).toEqual({group: null});
+        expect(await getGroupBySlug(ctx, {slug: "nope"})).toEqual({
+          group: null,
+        });
       });
     });
   });
@@ -39,7 +41,7 @@ describe("getBySlug", () => {
       const groupMember = await createGroupMember(ctx, {groupID: group.id});
 
       await ctx.withAuthorized(groupMember.accountID, async ctx => {
-        expect(await getBySlug(ctx, {slug: group.slug})).toEqual({group});
+        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({group});
       });
     });
   });
@@ -50,7 +52,9 @@ describe("getBySlug", () => {
       const group = await createGroup(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getBySlug(ctx, {slug: group.slug})).toEqual({group: null});
+        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({
+          group: null,
+        });
       });
     });
   });
@@ -63,7 +67,9 @@ describe("getBySlug", () => {
       await createGroupMember(ctx, {groupID: group.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getBySlug(ctx, {slug: group.slug})).toEqual({group: null});
+        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({
+          group: null,
+        });
       });
     });
   });
@@ -76,7 +82,9 @@ describe("getBySlug", () => {
       await createGroupMember(ctx, {accountID: account.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getBySlug(ctx, {slug: group.slug})).toEqual({group: null});
+        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({
+          group: null,
+        });
       });
     });
   });
@@ -91,7 +99,9 @@ describe("getBySlug", () => {
       await createGroupMember(ctx, {accountID: account.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getBySlug(ctx, {slug: group.slug})).toEqual({group: null});
+        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({
+          group: null,
+        });
       });
     });
   });
@@ -106,13 +116,13 @@ describe("getBySlug", () => {
       await createGroupMember(ctx, {accountID: account.id, groupID: group.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getBySlug(ctx, {slug: group.slug})).toEqual({group});
+        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({group});
       });
     });
   });
 });
 
-describe("getPosts", () => {
+describe("getGroupPosts", () => {
   test("gets the first 3 posts in a group", () => {
     return ContextTest.with(async ctx => {
       const accountID = (await createAccount(ctx)).id;
@@ -130,7 +140,7 @@ describe("getPosts", () => {
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.First,
             count: 3,
@@ -159,7 +169,7 @@ describe("getPosts", () => {
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.Last,
             count: 3,
@@ -192,7 +202,7 @@ describe("getPosts", () => {
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.First,
             count: 3,
@@ -201,7 +211,7 @@ describe("getPosts", () => {
           }),
         ).toEqual({posts: [posts1[1], posts1[2], posts1[3]]});
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.Last,
             count: 3,
@@ -210,7 +220,7 @@ describe("getPosts", () => {
           }),
         ).toEqual({posts: [posts1[2], posts1[3], posts1[4]]});
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.Last,
             count: 5,
@@ -243,7 +253,7 @@ describe("getPosts", () => {
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.Last,
             count: 3,
@@ -252,7 +262,7 @@ describe("getPosts", () => {
           }),
         ).toEqual({posts: [posts1[1], posts1[2], posts1[3]]});
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.First,
             count: 3,
@@ -261,7 +271,7 @@ describe("getPosts", () => {
           }),
         ).toEqual({posts: [posts1[0], posts1[1], posts1[2]]});
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.First,
             count: 5,
@@ -294,7 +304,7 @@ describe("getPosts", () => {
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.First,
             count: 5,
@@ -303,7 +313,7 @@ describe("getPosts", () => {
           }),
         ).toEqual({posts: [posts1[1], posts1[2], posts1[3]]});
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.Last,
             count: 5,
@@ -331,7 +341,7 @@ describe("getPosts", () => {
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.First,
             count: 3,
@@ -364,7 +374,7 @@ describe("getPosts", () => {
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group1.id,
             direction: RangeDirection.First,
             count: 3,
@@ -408,7 +418,7 @@ describe("getPosts", () => {
 
       await ctx.withAuthorized(account1.id, async ctx => {
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group3.id,
             direction: RangeDirection.First,
             count: 3,
@@ -433,7 +443,7 @@ describe("getPosts", () => {
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group.id,
             direction: RangeDirection.Last,
             count: 3,
@@ -442,7 +452,7 @@ describe("getPosts", () => {
           }),
         ).toEqual({posts: [post1, post2]});
         expect(
-          await getPosts(ctx, {
+          await getGroupPosts(ctx, {
             groupID: group.id,
             direction: RangeDirection.First,
             count: 3,

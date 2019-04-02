@@ -16,7 +16,7 @@ import {CacheList} from "./framework/CacheList";
  */
 export const PostCache = new Cache<PostID, Post>({
   async load(id) {
-    const {post} = await API.post.get({id});
+    const {post} = await API.post.getPost({id});
     if (post == null) throw new Error("Post not found.");
     AccountCache.preload(post.authorID); // Preload the post’s author. We will probably need that.
     return post;
@@ -55,7 +55,7 @@ export const PostCacheList = new Cache<
 
       async load(range) {
         // Fetch the posts for this range from our API.
-        const {posts} = await API.group.getPosts({groupID, ...range});
+        const {posts} = await API.group.getGroupPosts({groupID, ...range});
 
         // All the accounts we want to preload.
         const accountIDs: Array<AccountID> = [];

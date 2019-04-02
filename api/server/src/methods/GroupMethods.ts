@@ -7,7 +7,7 @@ import {sql} from "../PGSQL";
  * Gets a group by its slug, but only if the authenticated account is a member
  * of that group.
  */
-export async function getBySlug(
+export async function getGroupBySlug(
   ctx: Context,
   input: {readonly slug: string},
 ): Promise<{readonly group: Group | null}> {
@@ -39,7 +39,7 @@ const PGPaginationPost = new PGPagination(sql`post`, [
 /**
  * Get posts in a group by reverse chronological order.
  */
-export async function getPosts(
+export async function getGroupPosts(
   ctx: Context,
   input: {readonly groupID: GroupID} & Range<PostCursor>,
 ): Promise<{

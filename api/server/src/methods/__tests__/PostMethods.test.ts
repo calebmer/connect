@@ -5,16 +5,16 @@ import {
   createGroupMember,
   createPost,
 } from "../../TestFactory";
-import {get, getComments} from "../PostMethods";
+import {getPost, getPostComments} from "../PostMethods";
 import {ContextTest} from "../../ContextTest";
 
-describe("get", () => {
+describe("getPost", () => {
   test("does not get a post which does not exist", () => {
     return ContextTest.with(async ctx => {
       const account = await createAccount(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await get(ctx, {id: -42 as PostID})).toEqual({post: null});
+        expect(await getPost(ctx, {id: -42 as PostID})).toEqual({post: null});
       });
     });
   });
@@ -25,7 +25,7 @@ describe("get", () => {
       const groupMember = await createGroupMember(ctx, {groupID: post.groupID});
 
       await ctx.withAuthorized(groupMember.accountID, async ctx => {
-        expect(await get(ctx, {id: post.id})).toEqual({post});
+        expect(await getPost(ctx, {id: post.id})).toEqual({post});
       });
     });
   });
@@ -36,13 +36,13 @@ describe("get", () => {
       const account = await createAccount(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await get(ctx, {id: post.id})).toEqual({post: null});
+        expect(await getPost(ctx, {id: post.id})).toEqual({post: null});
       });
     });
   });
 });
 
-describe("getComments", () => {
+describe("getPostComments", () => {
   test("does not get comments from a post in a group we are not in", () => {
     return ContextTest.with(async ctx => {
       const post = await createPost(ctx);
@@ -56,7 +56,7 @@ describe("getComments", () => {
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getComments(ctx, {
+          await getPostComments(ctx, {
             postID: post.id,
             direction: RangeDirection.First,
             count: 3,
@@ -81,7 +81,7 @@ describe("getComments", () => {
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getComments(ctx, {
+          await getPostComments(ctx, {
             postID: post.id,
             direction: RangeDirection.First,
             count: 3,

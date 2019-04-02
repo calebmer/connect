@@ -6,7 +6,7 @@ import {sql} from "../PGSQL";
 /**
  * Get a single post from our database.
  */
-export async function get(
+export async function getPost(
   ctx: Context,
   input: {readonly id: PostID},
 ): Promise<{readonly post: Post | null}> {
@@ -39,7 +39,7 @@ const PGPaginationComment = new PGPagination(sql`comment`, [
 /**
  * Get the comments for a post.
  */
-export async function getComments(
+export async function getPostComments(
   ctx: Context,
   input: {readonly postID: PostID} & Range<CommentCursor>,
 ): Promise<{

@@ -5,7 +5,7 @@ import {sql} from "../PGSQL";
 /**
  * Get a single comment from our database.
  */
-export async function get(
+export async function getComment(
   ctx: Context,
   input: {readonly id: CommentID},
 ): Promise<{readonly comment: Comment | null}> {

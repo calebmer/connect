@@ -4,15 +4,15 @@ import {
   createGroupMember,
 } from "../../TestFactory";
 import {ContextTest} from "../../ContextTest";
-import {get} from "../CommentMethods";
+import {getComment} from "../CommentMethods";
 
-describe("get", () => {
+describe("getComment", () => {
   test("does not get a comment which does not exist", () => {
     return ContextTest.with(async ctx => {
       const account = await createAccount(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await get(ctx, {id: 42 as any})).toEqual({comment: null});
+        expect(await getComment(ctx, {id: 42 as any})).toEqual({comment: null});
       });
     });
   });
@@ -23,7 +23,9 @@ describe("get", () => {
       const comment = await createComment(ctx);
 
       await ctx.withAuthorized(accountID, async ctx => {
-        expect(await get(ctx, {id: comment.id})).toEqual({comment: null});
+        expect(await getComment(ctx, {id: comment.id})).toEqual({
+          comment: null,
+        });
       });
     });
   });
@@ -34,7 +36,7 @@ describe("get", () => {
       const comment = await createComment(ctx, {groupID});
 
       await ctx.withAuthorized(accountID, async ctx => {
-        expect(await get(ctx, {id: comment.id})).toEqual({comment});
+        expect(await getComment(ctx, {id: comment.id})).toEqual({comment});
       });
     });
   });

@@ -7,7 +7,7 @@ import {Group} from "@connect/api-client";
  */
 export const GroupCache = new Cache<string, Group>({
   async load(slug) {
-    const {group} = await API.group.getBySlug({slug});
+    const {group} = await API.group.getGroupBySlug({slug});
     if (group == null) throw new Error("Group not found.");
     return group;
   },

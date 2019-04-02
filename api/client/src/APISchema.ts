@@ -146,7 +146,7 @@ export const APISchema = Schema.namespace({
      * If we are not allowed to see a group or the group does not exist then
      * the method returns null.
      */
-    getBySlug: Schema.method({
+    getGroupBySlug: Schema.method({
       safe: true,
       input: {slug: SchemaInput.string()},
       output: SchemaOutput.t<{readonly group: Group | null}>(),
@@ -160,7 +160,7 @@ export const APISchema = Schema.namespace({
      * Uses cursor based pagination to only select a subset of posts. We always
      * require a limit to avoid selecting the entire table.
      */
-    getPosts: Schema.method({
+    getGroupPosts: Schema.method({
       safe: true,
       input: {
         groupID: SchemaInput.integer<GroupID>(),
@@ -179,7 +179,7 @@ export const APISchema = Schema.namespace({
      * If we are not allowed to see a group or the group does not exist then
      * the method returns null.
      */
-    get: Schema.method({
+    getPost: Schema.method({
       safe: true,
       input: {id: SchemaInput.integer<PostID>()},
       output: SchemaOutput.t<{readonly post: Post | null}>(),
@@ -193,7 +193,7 @@ export const APISchema = Schema.namespace({
      * the earliest comments. For example, if someone is participating in a
      * discussion then they’ll want to see the most up-to-date comments.
      */
-    getComments: Schema.method({
+    getPostComments: Schema.method({
       safe: true,
       input: {
         postID: SchemaInput.integer<PostID>(),
@@ -212,7 +212,7 @@ export const APISchema = Schema.namespace({
      * If we are not allowed to see a group or the group does not exist then
      * the method returns null.
      */
-    get: Schema.method({
+    getComment: Schema.method({
       safe: true,
       input: {id: SchemaInput.integer<CommentID>()},
       output: SchemaOutput.t<{readonly comment: Comment | null}>(),
