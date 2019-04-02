@@ -26,11 +26,16 @@ function Post({
 
   return (
     <>
-      <PostNavbarNative
-        route={route}
-        groupSlug={groupSlug}
-        hideBackground={hideNavbarBackground}
-      />
+      {Platform.OS !== "web" && (
+        // NOTE: This will load data from the group cache. We won’t even render
+        // the navbar on web so let’s avoid loading  that data if we aren’t on
+        // the web platform.
+        <PostNavbarNative
+          route={route}
+          groupSlug={groupSlug}
+          hideBackground={hideNavbarBackground}
+        />
+      )}
       <ScrollView
         style={styles.background}
         scrollIndicatorInsets={scrollIndicatorInsets}
