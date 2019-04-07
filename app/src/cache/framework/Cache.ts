@@ -90,7 +90,7 @@ export class Cache<Key extends string | number, Data> {
   /**
    * Loads some data from our cache and returns a promise which will resolve
    * with the cached data. If the data has already resolved then we return a
-   * promise which will resolve immediately.
+   * promise which immediately resolves.
    *
    * If you are loading data for a React component, please call the React hook
    * `useCacheData()` instead which will watch the cache for changes.
@@ -114,10 +114,41 @@ export class Cache<Key extends string | number, Data> {
   }
 
   /**
+   * Loads many keys into our cache and returns a promise which resolves when
+   * all of the keys have finished loading.
+   *
+   * If a `loadMany()` function was provided we use that to only make one API
+   * request instead of many API requests.
+   */
+  public async loadMany(keys: ReadonlyArray<Key>): Promise<Array<Data>> {
+    // The preload function does most of the work here, but it doesn’t
+    // return anything.
+    this.preloadMany(keys);
+
+    // Access all our mutable values at the current point in time.
+    //
+    // TODO: Test this?
+    const valuesAsync = keys.map(key => this.accessEntry(key).get());
+    const values = Array<Data>(valuesAsync.length);
+
+    // Wait for all of our asynchronous values to load. If an asynchronous value
+    // has already loaded then we don’t need to `await` which will add
+    // a microtask.
+    for (let i = 0; i < valuesAsync.length; i++) {
+      let value = valuesAsync[i].get();
+      if (value instanceof Promise) value = await value;
+      values[i] = value;
+    }
+
+    return values;
+  }
+
+  /**
    * Preloads many keys into our cache. If a key already exists with a cache
-   * entry then we don’t make another request. If a `loadMany()` function was
-   * provided we use that to only make one API request instead of many
-   * API requests.
+   * entry then we don’t make another request.
+   *
+   * If a `loadMany()` function was provided we use that to only make one API
+   * request instead of many API requests.
    *
    * TODO: test this
    */
@@ -167,9 +198,9 @@ export class Cache<Key extends string | number, Data> {
         throw new Error(
           `Expected ${
             actualKeys.length
-          } to be returned from \`loadMany()\` but instead we got ${
+          } item(s) to be returned from \`loadMany()\` but instead we got ${
             values.length
-          }.`,
+          } item(s).`,
         );
       } else {
         return values;

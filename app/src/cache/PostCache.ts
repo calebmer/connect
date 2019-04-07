@@ -71,9 +71,9 @@ export const PostCacheList = new Cache<
           };
         });
 
-        // Preload post authors since we’ll probably want those when
+        // Load post authors since we’ll probably want those when
         // rendering a post.
-        AccountCache.preloadMany(accountIDs);
+        await AccountCache.loadMany(accountIDs);
 
         return entries;
       },

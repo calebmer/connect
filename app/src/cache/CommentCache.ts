@@ -74,9 +74,9 @@ export const CommentCacheList = new Cache<
           };
         });
 
-        // Preload comment authors since we’ll probably want those when
+        // Load comment authors since we’ll probably want those when
         // rendering a comment.
-        AccountCache.preloadMany(accountIDs);
+        await AccountCache.loadMany(accountIDs);
 
         return entries;
       },

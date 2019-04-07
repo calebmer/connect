@@ -231,6 +231,11 @@ export function GroupRoute({
   const postCacheList = useCacheData(PostCacheList, group.id);
   const {loading, items: posts} = useCacheListData(postCacheList);
 
+  // NOTE: `<ScrollView>` on native doesn’t really like being re-rendered with
+  // Suspense. So make sure that the current account is loaded *before*
+  // rendering our `<ScrollView>`.
+  useCacheSingletonData(CurrentAccountCache);
+
   return (
     <Group
       route={route}
