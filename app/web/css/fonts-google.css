@@ -1,4 +1,7 @@
-/* Inlined from: https://fonts.googleapis.com/css?family=Faustina:400,400i,700,700i%7CWork+Sans:400,700 */
+/* Inlined from: https://fonts.googleapis.com/css?family=Faustina:400,400i,700,700i%7CWork+Sans:400,700
+ *
+ * ⚠️ IMPORTANT: We preload these fonts in `index.html`! If we ever change the
+ * URLs for the fonts then we need to update `index.html` to reflect this. */
 
 /* vietnamese */
 /* @font-face {
