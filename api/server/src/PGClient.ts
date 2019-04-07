@@ -15,7 +15,7 @@ if (TEST && !(process.env.PGHOST || "").includes("connect-test-postgres")) {
  * requests need to be serialized. With a pool we can have a set of connections
  * to draw from whenever we need.
  *
- * Don’t use `pool` directly! Instead use the `withClient()` function which
+ * Don’t use `pool` directly! Instead use the `PGClient.with()` function which
  * automatically handles acquiring and releasing a client.
  */
 const pool = new Pool({
