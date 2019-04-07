@@ -8,6 +8,17 @@
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
     <title>Connect</title>
+
+    <!-- preload fonts -->
+    <%=
+    ["https://fonts.gstatic.com/s/faustina/v3/XLYlIZPxYpJfTbZAFV-_HcxopH8u.woff2",
+    "https://fonts.gstatic.com/s/faustina/v3/XLYiIZPxYpJfTbZAFVcEONlFhnIET3Fs.woff2",
+    "https://fonts.gstatic.com/s/worksans/v4/QGYpz_wNahGAdqQ43Rh3x4X8mNhNy_r-Kw.woff2",
+    "https://fonts.gstatic.com/s/worksans/v4/QGYsz_wNahGAdqQ43Rh_fKDptfpA4Q.woff2",
+    ...Object.keys(compilation.assets).filter(asset =>
+    asset.endsWith("ttf")).map(asset => "/" + asset)].map(asset => `
+    <link as="font" crossorigin="anonymous" href="${asset}" rel="preload" />
+    `.trim()).join("") %>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
