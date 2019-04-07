@@ -1,4 +1,4 @@
-import {Color, Space} from "./atoms";
+import {Color, Font, Space} from "./atoms";
 import {Image, StyleSheet, View} from "react-native";
 import {AccountProfile} from "@connect/api-client";
 import React from "react";
@@ -13,7 +13,7 @@ export function AccountAvatar({account}: {account: AccountProfile}) {
   );
 }
 
-AccountAvatar.size = Space.space6 - Space.space0;
+AccountAvatar.size = Font.size2.lineHeight * 2 - Space.space0;
 
 const styles = StyleSheet.create({
   container: {

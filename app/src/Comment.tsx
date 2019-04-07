@@ -3,7 +3,7 @@ import {
   CommentID,
   Comment as _Comment,
 } from "@connect/api-client";
-import {BodyText, Space} from "./atoms";
+import {BodyText, Font, Space} from "./atoms";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountByline} from "./AccountByline";
@@ -93,14 +93,15 @@ function CommentWithoutByline({comment}: {comment: Comment}) {
 const styles = StyleSheet.create({
   comment: {
     flexDirection: "row",
-    padding: Space.space3,
+    paddingTop: Space.space3,
+    paddingHorizontal: Space.space3,
   },
   body: {
     flex: 1,
     paddingLeft: Space.space3,
   },
   commentWithoutByline: {
-    paddingBottom: Space.space3,
+    paddingTop: Font.size2.lineHeight / 3,
     paddingLeft: Space.space3 + AccountAvatar.size + Space.space3,
     paddingRight: Space.space3,
   },

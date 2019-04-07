@@ -22,7 +22,7 @@ export function PostContent({postID}: {postID: PostID}) {
   const publishedAt = communicateTime(new Date(), new Date(post.publishedAt));
 
   return (
-    <>
+    <View style={styles.container}>
       <View
         style={[styles.header, indentContent && styles.headerIndentContent]}
       >
@@ -35,17 +35,21 @@ export function PostContent({postID}: {postID: PostID}) {
       <View style={[styles.content, indentContent && styles.indentContent]}>
         <BodyText>{post.content}</BodyText>
       </View>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    maxWidth: Space.space15,
+  },
   header: {
     flexDirection: "row",
     padding: Space.space3,
+    paddingBottom: Space.space2,
   },
   headerIndentContent: {
-    paddingBottom: Space.space1,
+    paddingBottom: Space.space0,
   },
   headerInfo: {
     paddingLeft: Space.space3,

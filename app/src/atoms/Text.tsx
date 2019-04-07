@@ -77,7 +77,6 @@ const styles = StyleSheet.create({
     color: Color.black,
     ...Font.serifBold,
     ...Font.size2,
-    lineHeight: Font.size2.fontSize + 3,
   },
   title: {
     color: Color.black,

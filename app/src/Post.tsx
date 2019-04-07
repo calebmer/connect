@@ -1,7 +1,6 @@
-import {Color, Space} from "./atoms";
-import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
-import {Platform, ScrollView, StyleSheet, View} from "react-native";
-import React, {useContext, useState} from "react";
+import {Platform, ScrollView, StyleSheet} from "react-native";
+import React, {useState} from "react";
+import {Color} from "./atoms";
 import {GroupCache} from "./cache/GroupCache";
 import {NavbarNative} from "./NavbarNative";
 import {PostComments} from "./PostComments";
@@ -21,8 +20,6 @@ function Post({
   postID: PostID;
 }) {
   const [hideNavbarBackground, setHideNavbarBackground] = useState(true);
-  const isLaptop =
-    useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop;
 
   return (
     <>
@@ -47,13 +44,9 @@ function Post({
           }
         }}
       >
-        <View style={[styles.section, isLaptop && styles.sectionExtraPadding]}>
-          <PostContent postID={postID} />
-        </View>
+        <PostContent postID={postID} />
         <Trough title="Comments" />
-        <View style={[styles.section, isLaptop && styles.sectionExtraPadding]}>
-          <PostComments postID={postID} />
-        </View>
+        <PostComments postID={postID} />
       </ScrollView>
     </>
   );
@@ -117,14 +110,4 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: NavbarNative.height,
   },
-  section: {
-    maxWidth: Space.space15,
-  },
-  sectionExtraPadding: {
-    padding: Space.space4 - Space.space3,
-  },
-  // containerExtraPadding: {
-  //   padding: Space.space4 - Space.space3,
-  //   paddingTop: NavbarNative.height + (Space.space4 - Space.space3),
-  // },
 });

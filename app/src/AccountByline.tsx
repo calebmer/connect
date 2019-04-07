@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
       default: {
         // NOTE: Manually align to the baseline since `alignItems: "baseline"`
         // doesn’t do it.
-        bottom: -2.6,
+        bottom: -4.8,
       },
     }),
   },
