@@ -61,13 +61,13 @@ export const CommentCacheList = new Cache<
         const {comments} = await API.post.getPostComments({postID, ...range});
 
         // All the accounts we want to preload.
-        const accountIDs: Array<AccountID> = [];
+        const accountIDs = new Set<AccountID>();
 
         // Loop through all the comments and create cache entries for our
         // comment list. Also insert each post into our `CommentCache`.
         const entries = comments.map<CommentCacheListEntry>(comment => {
           CommentCache.insert(comment.id, comment);
-          accountIDs.push(comment.authorID);
+          accountIDs.add(comment.authorID);
           return {
             id: comment.id,
             postedAt: comment.postedAt,

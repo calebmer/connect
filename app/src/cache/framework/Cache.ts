@@ -89,18 +89,17 @@ export class Cache<Key extends string | number, Data> {
 
   /**
    * Loads some data from our cache and returns a promise which will resolve
-   * with the cached data. If the data has already resolved then we return a
-   * promise which immediately resolves.
+   * when the cached data has loaded.
    *
    * If you are loading data for a React component, please call the React hook
    * `useCacheData()` instead which will watch the cache for changes.
    */
-  public load(key: Key): Promise<Data> {
+  public load(key: Key): Promise<void> {
     return Promise.resolve(
       this.accessEntry(key)
         .get()
         .get(),
-    );
+    ).then(() => {});
   }
 
   /**
@@ -115,57 +114,52 @@ export class Cache<Key extends string | number, Data> {
 
   /**
    * Loads many keys into our cache and returns a promise which resolves when
-   * all of the keys have finished loading.
+   * all of our keys have finished loading.
    *
    * If a `loadMany()` function was provided we use that to only make one API
    * request instead of many API requests.
    */
-  public async loadMany(keys: ReadonlyArray<Key>): Promise<Array<Data>> {
+  public async loadMany(keys: ReadonlySet<Key>): Promise<void> {
     // The preload function does most of the work here, but it doesn’t
     // return anything.
     this.preloadMany(keys);
 
-    // Access all our mutable values at the current point in time.
-    //
-    // TODO: Test this?
-    const valuesAsync = keys.map(key => this.accessEntry(key).get());
-    const values = Array<Data>(valuesAsync.length);
-
-    // Wait for all of our asynchronous values to load. If an asynchronous value
-    // has already loaded then we don’t need to `await` which will add
-    // a microtask.
-    for (let i = 0; i < valuesAsync.length; i++) {
-      let value = valuesAsync[i].get();
-      if (value instanceof Promise) value = await value;
-      values[i] = value;
+    // Access all our mutable values at the time our function is called. We only
+    // want to wait for the *current* set of keys to load. We don’t care about
+    // reloads after this function is called.
+    const values = Array<Async<Data>>(keys.size);
+    let i = 0;
+    for (const key of keys) {
+      values[i++] = this.accessEntry(key).get();
     }
 
-    return values;
+    // Loop through all of our values. If the value is a promise then let’s
+    // wait for that value to resolve...
+    for (let i = 0; i < values.length; i++) {
+      const value = values[i].get();
+      if (value instanceof Promise) await value;
+    }
   }
 
   /**
    * Preloads many keys into our cache. If a key already exists with a cache
-   * entry then we don’t make another request.
+   * entry then we don’t make another request. Takes a set as a parameter to
+   * enforce that no duplicate keys are provided.
    *
    * If a `loadMany()` function was provided we use that to only make one API
    * request instead of many API requests.
    *
    * TODO: test this
    */
-  public preloadMany(keys: ReadonlyArray<Key>): void {
+  public preloadMany(keys: ReadonlySet<Key>): void {
     // If we don’t have a `loadMany` function then preload each
     // key individually.
     if (this._loadMany === undefined) {
-      for (let i = 0; i < keys.length; i++) {
-        this.preload(keys[i]);
+      for (const key of keys) {
+        this.preload(key);
       }
       return;
     }
-
-    // We use a key `Set` to remove duplicate keys. Note that we use
-    // `string | number` as the item type! This is important in case we ever
-    // allow object keys which would need to be hashed to a string or number.
-    const keySet = new Set<string | number>();
 
     // The actual array of keys we will send to our `loadMany` function. Does
     // not contain duplicates and does not contain keys we’ve already cached.
@@ -173,13 +167,7 @@ export class Cache<Key extends string | number, Data> {
 
     // Loop through all our provided keys. Remove duplicates and ignore keys
     // that are already cached.
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-
-      // If we’ve seen this key before then skip...
-      if (keySet.has(key)) continue;
-      keySet.add(key);
-
+    for (const key of keys) {
       // If we’ve already cached this key then skip...
       if (this.entries.has(key)) continue;
 

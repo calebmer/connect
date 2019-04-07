@@ -58,13 +58,13 @@ export const PostCacheList = new Cache<
         const {posts} = await API.group.getGroupPosts({groupID, ...range});
 
         // All the accounts we want to preload.
-        const accountIDs: Array<AccountID> = [];
+        const accountIDs = new Set<AccountID>();
 
         // Loop through all the posts and create cache entries for our post
         // list. Also insert each post into our `PostCache`.
         const entries = posts.map<PostCacheListEntry>(post => {
           PostCache.insert(post.id, post);
-          accountIDs.push(post.authorID);
+          accountIDs.add(post.authorID);
           return {
             id: post.id,
             publishedAt: post.publishedAt,
