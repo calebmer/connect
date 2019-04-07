@@ -10,22 +10,29 @@
  * the time to display against.
  */
 export function communicateTime(currentTime: Date, time: Date): string {
+  const millisecondsAgo = currentTime.getTime() - time.getTime();
+  const daysAgo = millisecondsAgo / 1000 / 60 / 60 / 24;
+
   // If the year changed, then communicate that.
   if (currentTime.getFullYear() !== time.getFullYear()) {
-    const yearsAgo = currentTime.getFullYear() - time.getFullYear();
-    return `${yearsAgo} year${yearsAgo === 1 ? "" : "s"} ago`;
+    const n = currentTime.getFullYear() - time.getFullYear();
+    return `${n} year${n === 1 ? "" : "s"}`;
   }
 
   // If the month changed, then communicate that.
-  if (currentTime.getMonth() !== time.getMonth()) {
-    const monthsAgo = currentTime.getMonth() - time.getMonth();
-    return `${monthsAgo} month${monthsAgo === 1 ? "" : "s"} ago`;
+  //
+  // However, only communicate the months if the date was more than 30 days ago.
+  // Because today could be the first day of a new month. In that case we don’t
+  // want to say “1 month ago”.
+  if (currentTime.getMonth() !== time.getMonth() && daysAgo >= 30) {
+    const n = currentTime.getMonth() - time.getMonth();
+    return `${n} month${n === 1 ? "" : "s"}`;
   }
 
   // If the day changed, then communicate that.
   if (currentTime.getDate() !== time.getDate()) {
-    const daysAgo = currentTime.getDate() - time.getDate();
-    return `${daysAgo} day${daysAgo === 1 ? "" : "s"} ago`;
+    const n = Math.max(1, Math.floor(daysAgo));
+    return `${n} day${n === 1 ? "" : "s"}`;
   }
 
   // Otherwise, return the time in hours/minutes.

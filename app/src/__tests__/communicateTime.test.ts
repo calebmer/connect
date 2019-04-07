@@ -12,43 +12,50 @@ const year = day * 365;
 test("shows years for a date 5 years ago", () => {
   expect(
     communicateTime(new Date(baseTime), new Date(baseTime - year * 5)),
-  ).toEqual("5 years ago");
+  ).toEqual("5 years");
 });
 
 test("shows years for a date 1 year ago", () => {
   expect(
     communicateTime(new Date(baseTime), new Date(baseTime - year)),
-  ).toEqual("1 year ago");
+  ).toEqual("1 year");
 });
 
 test("shows years for a date 12 months ago", () => {
   expect(
     communicateTime(new Date(baseTime), new Date(baseTime - month * 12)),
-  ).toEqual("1 year ago");
+  ).toEqual("1 year");
 });
 
 test("shows months for a date 3 months ago", () => {
   expect(
     communicateTime(new Date(baseTime), new Date(baseTime - month * 3)),
-  ).toEqual("3 months ago");
+  ).toEqual("3 months");
 });
 
 test("shows months for a date 1 month ago", () => {
   expect(
     communicateTime(new Date(baseTime), new Date(baseTime - month)),
-  ).toEqual("1 month ago");
+  ).toEqual("1 month");
 });
 
 test("shows days for a date 5 days ago", () => {
   expect(
     communicateTime(new Date(baseTime), new Date(baseTime - day * 5)),
-  ).toEqual("5 days ago");
+  ).toEqual("5 days");
 });
 
 test("shows yesterday for a date 1 day ago", () => {
   expect(communicateTime(new Date(baseTime), new Date(baseTime - day))).toEqual(
-    "1 day ago",
+    "1 day",
   );
+});
+
+test("shows days ago if today is the first day of a new month", () => {
+  const baseTime = Date.parse("2011-04-01 16:30:00");
+  expect(
+    communicateTime(new Date(baseTime), new Date(baseTime - day * 5)),
+  ).toEqual("5 days");
 });
 
 test("shows time for a date 5 hours ago", () => {
