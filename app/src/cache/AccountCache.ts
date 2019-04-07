@@ -2,6 +2,7 @@ import {AccountID, AccountProfile} from "@connect/api-client";
 import {API} from "../api/API";
 import {Cache} from "./framework/Cache";
 import {CacheSingleton} from "./framework/CacheSingleton";
+import {Image} from "react-native";
 
 /**
  * Caches accounts by their ID.
@@ -10,6 +11,7 @@ export const AccountCache = new Cache<AccountID, AccountProfile>({
   async load(id) {
     const {account} = await API.account.getProfile({id});
     if (account == null) throw new Error("Account not found.");
+    await preloadAccountAvatar(account);
     return account;
   },
 
@@ -28,14 +30,17 @@ export const AccountCache = new Cache<AccountID, AccountProfile>({
 
     // Return the account associated with each ID. If a particular account was
     // not returned by our API then return an error for that position instead.
-    return ids.map(id => {
-      const account = accountByID.get(id);
-      if (account === undefined) {
-        return new Error("Account not found.");
-      } else {
-        return account;
-      }
-    });
+    return Promise.all(
+      ids.map(async id => {
+        const account = accountByID.get(id);
+        if (account === undefined) {
+          return new Error("Account not found.");
+        } else {
+          await preloadAccountAvatar(account);
+          return account;
+        }
+      }),
+    );
   },
 });
 
@@ -46,5 +51,26 @@ export const AccountCache = new Cache<AccountID, AccountProfile>({
 export const CurrentAccountCache = new CacheSingleton<AccountID>(async () => {
   const {account} = await API.account.getCurrentProfile();
   AccountCache.insert(account.id, account);
+  await preloadAccountAvatar(account);
   return account.id;
 });
+
+/**
+ * Preloads the account’s avatar if one exists. Any errors while loading the
+ * avatar are ignored.
+ *
+ * NOTE: We need to call this everywhere we receive an account from the API!
+ *
+ * TODO: Maybe we should add an `onInsert` hook to `AccountCache`? So this runs
+ * on every insert. For example, I almost missed the account cache load in
+ * `CurrentAccountCache`.
+ */
+async function preloadAccountAvatar(account: AccountProfile): Promise<void> {
+  if (account.avatarURL != null) {
+    try {
+      await Image.prefetch(account.avatarURL);
+    } catch (error) {
+      // ignore error
+    }
+  }
+}
