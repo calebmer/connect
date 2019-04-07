@@ -32,9 +32,7 @@ export function PostContent({postID}: {postID: PostID}) {
           <MetaText>{publishedAt}</MetaText>
         </View>
       </View>
-      <View
-        style={[styles.postContent, indentContent && styles.postContentIndent]}
-      >
+      <View style={[styles.content, indentContent && styles.indentContent]}>
         <BodyText>{post.content}</BodyText>
       </View>
     </>
@@ -44,7 +42,7 @@ export function PostContent({postID}: {postID: PostID}) {
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
-    paddingBottom: Space.space3,
+    padding: Space.space3,
   },
   headerIndentContent: {
     paddingBottom: Space.space1,
@@ -52,10 +50,11 @@ const styles = StyleSheet.create({
   headerInfo: {
     paddingLeft: Space.space3,
   },
-  postContent: {
-    maxWidth: Space.space15 - Space.space3 * 2,
+  content: {
+    paddingBottom: Space.space3,
+    paddingHorizontal: Space.space3,
   },
-  postContentIndent: {
-    marginLeft: AccountAvatar.size + Space.space3,
+  indentContent: {
+    paddingLeft: Space.space3 + AccountAvatar.size + Space.space3,
   },
 });

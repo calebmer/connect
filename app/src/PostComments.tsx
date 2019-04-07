@@ -19,8 +19,12 @@ function PostCommentsSuspense({postID}: {postID: PostID}) {
   const {items: comments} = useCacheListData(commentCacheList);
   return (
     <>
-      {comments.map(comment => (
-        <Comment key={comment.id} commentID={comment.id} />
+      {comments.map((comment, i) => (
+        <Comment
+          key={comment.id}
+          commentID={comment.id}
+          lastCommentID={i > 0 ? comments[i - 1].id : undefined}
+        />
       ))}
     </>
   );

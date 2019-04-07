@@ -18,15 +18,14 @@ import {
 } from "./cache/PostCache";
 import {PostID, Group as _Group} from "@connect/api-client";
 import React, {useMemo, useRef, useState} from "react";
-import {Trough, TroughTitle} from "./Trough";
 import {GroupBanner} from "./GroupBanner";
 import {GroupCache} from "./cache/GroupCache";
-import {GroupItem} from "./GroupItem";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {Loading} from "./atoms/Loading";
 import {NavbarNative} from "./NavbarNative";
 import {Route} from "./router/Route";
+import {Trough} from "./Trough";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCacheListData} from "./cache/framework/CacheList";
 import {useCacheSingletonData} from "./cache/framework/CacheSingleton";
@@ -259,11 +258,7 @@ function GroupSectionHeader({
 }: {
   section: SectionListData<unknown>;
 }) {
-  return (
-    <Trough>
-      <TroughTitle style={styles.sectionTitle}>{title}</TroughTitle>
-    </Trough>
-  );
+  return <Trough title={title} />;
 }
 
 function GroupFooter({
@@ -308,9 +303,6 @@ const styles = StyleSheet.create({
   },
   header: {
     marginTop: GroupBanner.height,
-  },
-  sectionTitle: {
-    paddingHorizontal: GroupItem.padding,
   },
   footer: {
     flexDirection: "column",

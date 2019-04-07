@@ -2,13 +2,13 @@ import {Color, Space} from "./atoms";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import {Platform, ScrollView, StyleSheet, View} from "react-native";
 import React, {useContext, useState} from "react";
-import {Trough, TroughTitle} from "./Trough";
 import {GroupCache} from "./cache/GroupCache";
 import {NavbarNative} from "./NavbarNative";
 import {PostComments} from "./PostComments";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "./router/Route";
+import {Trough} from "./Trough";
 import {useCacheData} from "./cache/framework/Cache";
 
 function Post({
@@ -38,6 +38,7 @@ function Post({
       )}
       <ScrollView
         style={styles.background}
+        contentContainerStyle={styles.container}
         scrollIndicatorInsets={scrollIndicatorInsets}
         scrollEventThrottle={16}
         onScroll={event => {
@@ -46,19 +47,13 @@ function Post({
           }
         }}
       >
-        <View style={isLaptop ? styles.postLaptop : styles.postMobile}>
+        <View style={[styles.section, isLaptop && styles.sectionExtraPadding]}>
           <PostContent postID={postID} />
         </View>
-        <Trough>
-          <TroughTitle
-            style={
-              isLaptop ? styles.commentsTitleLaptop : styles.commentsTitleMobile
-            }
-          >
-            Comments
-          </TroughTitle>
-        </Trough>
-        <PostComments postID={postID} />
+        <Trough title="Comments" />
+        <View style={[styles.section, isLaptop && styles.sectionExtraPadding]}>
+          <PostComments postID={postID} />
+        </View>
       </ScrollView>
     </>
   );
@@ -114,28 +109,22 @@ export function PostRoute({
 
 const scrollIndicatorInsets = {top: NavbarNative.height};
 
-const paddingMobile = Space.space3;
-const paddingLaptop = Space.space4;
-
 const styles = StyleSheet.create({
   background: {
     flex: 1,
     backgroundColor: Color.white,
   },
-  postMobile: {
-    paddingTop: NavbarNative.height + paddingMobile,
-    paddingBottom: paddingMobile,
-    paddingHorizontal: paddingMobile,
+  container: {
+    paddingTop: NavbarNative.height,
   },
-  postLaptop: {
-    paddingTop: NavbarNative.height + paddingLaptop,
-    paddingBottom: paddingLaptop,
-    paddingHorizontal: paddingLaptop,
+  section: {
+    maxWidth: Space.space15,
   },
-  commentsTitleMobile: {
-    paddingHorizontal: paddingMobile,
+  sectionExtraPadding: {
+    padding: Space.space4 - Space.space3,
   },
-  commentsTitleLaptop: {
-    paddingHorizontal: paddingLaptop,
-  },
+  // containerExtraPadding: {
+  //   padding: Space.space4 - Space.space3,
+  //   paddingTop: NavbarNative.height + (Space.space4 - Space.space3),
+  // },
 });

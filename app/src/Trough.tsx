@@ -1,6 +1,6 @@
 import {Color, Font, Shadow, Space} from "./atoms";
 import React, {ReactNode} from "react";
-import {StyleProp, StyleSheet, Text, TextStyle, View} from "react-native";
+import {StyleSheet, Text, View} from "react-native";
 
 /**
  * Name comes from a [“trough”][1] that animals drink out of. Also used in
@@ -9,10 +9,12 @@ import {StyleProp, StyleSheet, Text, TextStyle, View} from "react-native";
  * [1]: https://en.wiktionary.org/wiki/trough
  */
 export function Trough({
+  title,
   hideTopShadow,
   hideBottomShadow,
   children,
 }: {
+  title?: string;
   hideTopShadow?: boolean;
   hideBottomShadow?: boolean;
   children?: ReactNode;
@@ -22,21 +24,9 @@ export function Trough({
       {!hideTopShadow && <View style={styles.troughShadowTop} />}
       {!hideBottomShadow && <View style={styles.troughShadowBottom} />}
       {children}
+      {title && <Text style={styles.troughTitle}>{title}</Text>}
     </View>
   );
-}
-
-/**
- * A title in `<Trough>` component.
- */
-export function TroughTitle({
-  style,
-  children,
-}: {
-  style?: StyleProp<TextStyle>;
-  children?: string;
-}) {
-  return <Text style={[style, styles.troughTitle]}>{children}</Text>;
 }
 
 Trough.backgroundColor = Color.grey0;
@@ -46,6 +36,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     position: "relative",
     minHeight: Space.space3,
+    paddingHorizontal: Space.space3,
     backgroundColor: Trough.backgroundColor,
   },
   troughShadowTop: {
