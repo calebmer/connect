@@ -37,7 +37,6 @@ export function GroupPostPrompt({account}: {account: AccountProfile}) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: "center",
     paddingRight: Space.space4,
     padding: Space.space3,
     backgroundColor: Color.white,
@@ -55,6 +54,7 @@ const styles = StyleSheet.create({
     height: Space.space5,
     justifyContent: "center",
     alignItems: "center",
+    alignSelf: "center",
     borderRadius: Space.space5,
     backgroundColor: Color.yellow1,
   },
