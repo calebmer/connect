@@ -19,6 +19,7 @@ const styles = StyleSheet.create({
   container: {
     width: AccountAvatar.size,
     height: AccountAvatar.size,
+    marginVertical: (Font.size2.lineHeight * 2 - AccountAvatar.size) / 2,
     borderRadius: AccountAvatar.size / 2,
     backgroundColor: Color.grey1,
   },
