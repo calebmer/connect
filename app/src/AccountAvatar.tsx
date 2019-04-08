@@ -1,11 +1,17 @@
 import {Color, Font, Space} from "./atoms";
-import {Image, StyleSheet, View} from "react-native";
+import {Image, StyleProp, StyleSheet, View, ViewStyle} from "react-native";
 import {AccountProfile} from "@connect/api-client";
 import React from "react";
 
-export function AccountAvatar({account}: {account: AccountProfile}) {
+export function AccountAvatar({
+  account,
+  style,
+}: {
+  account: AccountProfile;
+  style?: StyleProp<ViewStyle>;
+}) {
   return (
-    <View style={styles.container}>
+    <View style={[style, styles.container]}>
       {account.avatarURL && (
         <Image style={styles.image} source={{uri: account.avatarURL}} />
       )}

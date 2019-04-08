@@ -7,7 +7,7 @@ import {AccountProfile} from "@connect/api-client";
 
 export function GroupItem({
   account,
-  active,
+  active: _active,
   selected,
   onSelect,
   children,
@@ -40,10 +40,20 @@ export function GroupItem({
    */
   children: ReactNode;
 }) {
+  // Is this component pressed?
   const [pressed, setPressed] = useState(false);
 
+  // This component is active when it is pressed. Not just when it’s parent
+  // passes the active prop.
+  const active = _active || pressed;
+
+  // Are we on the laptop `<GroupHome>` layout?
   const isLaptop =
     useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop;
+
+  // Should we decrease the opacity of this group item’s content?
+  const unselectedOpacity =
+    isLaptop && !(active || selected) && styles.unselectedOpacity;
 
   function handleSelect() {
     if (!selected && onSelect) {
@@ -60,7 +70,7 @@ export function GroupItem({
       <View
         style={[
           styles.container,
-          (active || pressed) && styles.containerActive,
+          active && styles.containerActive,
           selected && styles.containerSelected,
         ]}
         accessible
@@ -69,8 +79,8 @@ export function GroupItem({
         accessibilityRole="button"
         accessibilityStates={selected ? ["selected"] : []}
       >
-        <AccountAvatar account={account} />
-        <View style={styles.body}>{children}</View>
+        <AccountAvatar style={unselectedOpacity} account={account} />
+        <View style={[styles.body, unselectedOpacity]}>{children}</View>
         {!isLaptop && (
           <View style={styles.icon}>
             <Icon name="chevron-right" color={Color.grey4} />
@@ -107,6 +117,9 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     paddingHorizontal: GroupItem.padding,
+  },
+  unselectedOpacity: {
+    opacity: 0.4,
   },
   icon: {
     justifyContent: "center",
