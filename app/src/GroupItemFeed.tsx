@@ -3,11 +3,13 @@ import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import React, {useContext} from "react";
 import {AccountByline} from "./AccountByline";
 import {AccountCache} from "./cache/AccountCache";
+import {CommentCacheList} from "./cache/CommentCache";
 import {GroupItem} from "./GroupItem";
 import {PostCache} from "./cache/PostCache";
 import {PostID} from "@connect/api-client";
 import {PostRoute} from "./router/AllRoutes";
 import {Route} from "./router/Route";
+import {stall} from "./stall";
 import {useCacheData} from "./cache/framework/Cache";
 
 function GroupItemFeed({
@@ -35,7 +37,10 @@ function GroupItemFeed({
       account={account}
       selected={selected}
       onSelect={() => {
-        route.push(PostRoute, {groupSlug, postID: String(postID)});
+        // Wait for comments to load before pushing the new route...
+        stall(CommentCacheList.load(postID), () => {
+          route.push(PostRoute, {groupSlug, postID: String(postID)});
+        });
       }}
     >
       <AccountByline account={account} time={post.publishedAt} />
