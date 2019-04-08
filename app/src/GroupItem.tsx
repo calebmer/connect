@@ -51,10 +51,6 @@ export function GroupItem({
   const isLaptop =
     useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop;
 
-  // Should we decrease the opacity of this group item’s content?
-  const unselectedOpacity =
-    isLaptop && !(active || selected) && styles.unselectedOpacity;
-
   function handleSelect() {
     if (!selected && onSelect) {
       onSelect();
@@ -79,8 +75,8 @@ export function GroupItem({
         accessibilityRole="button"
         accessibilityStates={selected ? ["selected"] : []}
       >
-        <AccountAvatar style={unselectedOpacity} account={account} />
-        <View style={[styles.body, unselectedOpacity]}>{children}</View>
+        <AccountAvatar account={account} />
+        <View style={styles.body}>{children}</View>
         {!isLaptop && (
           <View style={styles.icon}>
             <Icon name="chevron-right" color={Color.grey4} />
@@ -117,9 +113,6 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     paddingHorizontal: GroupItem.padding,
-  },
-  unselectedOpacity: {
-    opacity: 0.4,
   },
   icon: {
     justifyContent: "center",
