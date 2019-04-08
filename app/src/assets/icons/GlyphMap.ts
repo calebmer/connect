@@ -6,7 +6,7 @@
  * app if we don’t need all of them. Only uncomment the icons we actually want
  * to use!
  *
- * [1]: https://feathericons.com/
+ * [1]: https://feathericons.com
  */
 
 export const GlyphMap = {

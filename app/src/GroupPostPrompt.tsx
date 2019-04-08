@@ -12,7 +12,9 @@ export function GroupPostPrompt({account}: {account: AccountProfile}) {
         <LabelText>{account.name}</LabelText>
         <BodyText>Start a conversation…</BodyText>
       </View>
-      <Icon name="edit" />
+      <View style={styles.iconCircle}>
+        <Icon style={styles.icon} name="edit" color={Color.yellow8} />
+      </View>
     </View>
   );
 }
@@ -29,5 +31,18 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     paddingLeft: Space.space3,
+  },
+  iconCircle: {
+    width: Space.space5,
+    height: Space.space5,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: Space.space5,
+    backgroundColor: Color.yellow1,
+  },
+  icon: {
+    position: "relative",
+    top: -0.7,
+    right: -0.7,
   },
 });
