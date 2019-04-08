@@ -1,11 +1,9 @@
-import {Platform, ScrollView, StyleSheet} from "react-native";
-import React, {useState} from "react";
-import {Color} from "./atoms";
 import {GroupCache} from "./cache/GroupCache";
-import {NavbarNative} from "./NavbarNative";
+import {NavbarNativeScrollView} from "./NavbarNativeScrollView";
 import {PostComments} from "./PostComments";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
+import React from "react";
 import {Route} from "./router/Route";
 import {Trough} from "./Trough";
 import {useCacheData} from "./cache/framework/Cache";
@@ -19,57 +17,17 @@ function Post({
   groupSlug: string;
   postID: PostID;
 }) {
-  const [hideNavbarBackground, setHideNavbarBackground] = useState(true);
+  function useTitle() {
+    const group = useCacheData(GroupCache, groupSlug);
+    return group.name;
+  }
 
   return (
-    <>
-      {Platform.OS !== "web" && (
-        // NOTE: This will load data from the group cache. We won’t even render
-        // the navbar on web so let’s avoid loading  that data if we aren’t on
-        // the web platform.
-        <PostNavbarNative
-          route={route}
-          groupSlug={groupSlug}
-          hideBackground={hideNavbarBackground}
-        />
-      )}
-      <ScrollView
-        style={styles.background}
-        contentContainerStyle={styles.container}
-        scrollIndicatorInsets={scrollIndicatorInsets}
-        scrollEventThrottle={16}
-        onScroll={event => {
-          if (Platform.OS !== "web") {
-            setHideNavbarBackground(event.nativeEvent.contentOffset.y <= 0);
-          }
-        }}
-      >
-        <PostContent postID={postID} />
-        <Trough title="Comments" />
-        <PostComments postID={postID} />
-      </ScrollView>
-    </>
-  );
-}
-
-function PostNavbarNative({
-  route,
-  groupSlug,
-  hideBackground,
-}: {
-  route: Route;
-  groupSlug: string;
-  hideBackground?: boolean;
-}) {
-  const group = useCacheData(GroupCache, groupSlug);
-
-  return (
-    <NavbarNative
-      title={group.name}
-      leftIcon="arrow-left"
-      onLeftIconPress={() => route.pop()}
-      hideBackground={hideBackground}
-    />
+    <NavbarNativeScrollView route={route} useTitle={useTitle}>
+      <PostContent postID={postID} />
+      <Trough title="Comments" />
+      <PostComments postID={postID} />
+    </NavbarNativeScrollView>
   );
 }
 
@@ -99,15 +57,3 @@ export function PostRoute({
     />
   );
 }
-
-const scrollIndicatorInsets = {top: NavbarNative.height};
-
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    backgroundColor: Color.white,
-  },
-  container: {
-    paddingTop: NavbarNative.height,
-  },
-});
