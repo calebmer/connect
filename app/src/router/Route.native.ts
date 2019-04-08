@@ -114,4 +114,24 @@ export class Route extends RouteBase {
   ) {
     Navigation.setStackRoot(this.componentID, nextRoute.getLayout(props));
   }
+
+  /**
+   * Shows a modal on top of the current stack. While technically a modal
+   * creates a _new_ navigation stack, we still take care to provide an API
+   * which feels like we are still in the same navigation stack. As such calling
+   * `pop()` on a modal route will call `Navigation.dismissModal()` implicitly.
+   */
+  protected _nativeShowModal<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfig<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
+  ) {
+    Navigation.showModal({
+      stack: {
+        children: [nextRoute.getLayout(props)],
+      },
+    });
+  }
 }

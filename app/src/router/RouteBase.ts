@@ -346,4 +346,34 @@ export abstract class RouteBase {
     nextRoute: RouteConfigBase<NextPath, NextProps>,
     props: Omit<NextProps, "route">,
   ): void;
+
+  /**
+   * Shows the next route as a modal on native platforms. When we call `pop()`
+   * on a modal route, the modal will automatically be dismissed.
+   *
+   * On web, this will `push()` without any fancy navigation animations.
+   */
+  public nativeShowModal<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
+  ) {
+    nextRoute.waitForComponent(() => {
+      this._nativeShowModal(nextRoute, props);
+    });
+  }
+
+  /**
+   * Internal implementation of `nativeShowModal()` which child classes
+   * should override.
+   */
+  protected abstract _nativeShowModal<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
+  ): void;
 }

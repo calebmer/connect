@@ -196,4 +196,17 @@ export class Route extends RouteBase {
   ): void {
     this._push(nextRoute, props);
   }
+
+  /**
+   * Call `_push()` without a fancy animation.
+   */
+  protected _nativeShowModal<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfig<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
+  ): void {
+    this._push(nextRoute, props);
+  }
 }

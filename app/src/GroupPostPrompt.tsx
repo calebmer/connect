@@ -1,22 +1,25 @@
-import {
-  BodyItalicText,
-  BodyText,
-  Color,
-  Icon,
-  LabelText,
-  Shadow,
-  Space,
-} from "./atoms";
+import {BodyItalicText, Color, Icon, LabelText, Shadow, Space} from "./atoms";
 import React, {useState} from "react";
 import {StyleSheet, TouchableWithoutFeedback, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
+import {NewPostRoute} from "./router/AllRoutes";
+import {Route} from "./router/Route";
 
-export function GroupPostPrompt({account}: {account: AccountProfile}) {
+export function GroupPostPrompt({
+  route,
+  groupSlug,
+  account,
+}: {
+  route: Route;
+  groupSlug: string;
+  account: AccountProfile;
+}) {
   const [pressed, setPressed] = useState(false);
 
   return (
     <TouchableWithoutFeedback
+      onPress={() => route.nativeShowModal(NewPostRoute, {groupSlug})}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
     >

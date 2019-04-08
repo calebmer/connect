@@ -56,4 +56,12 @@ export class Route extends RouteBase {
     nextRoute: RouteConfigBase<NextPath, NextProps>,
     props: Omit<NextProps, "route">,
   ): void;
+
+  protected _nativeShowModal<
+    NextPath extends PathBase,
+    NextProps extends {readonly route: RouteBase} & PathVariableProps<NextPath>
+  >(
+    nextRoute: RouteConfigBase<NextPath, NextProps>,
+    props: Omit<NextProps, "route">,
+  ): void;
 }

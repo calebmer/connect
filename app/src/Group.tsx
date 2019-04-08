@@ -150,7 +150,9 @@ function Group({
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
-        ListHeaderComponent={GroupHeader}
+        ListHeaderComponent={
+          <GroupHeader route={route} groupSlug={group.slug} />
+        }
         ListFooterComponent={
           <GroupFooter
             loadingMorePosts={loadingMorePosts}
@@ -248,12 +250,16 @@ export function GroupRoute({
   );
 }
 
-function GroupHeader() {
+function GroupHeader({route, groupSlug}: {route: Route; groupSlug: string}) {
   const currentAccountID = useCacheSingletonData(CurrentAccountCache);
   const currentAccount = useCacheData(AccountCache, currentAccountID);
   return (
     <View style={styles.header}>
-      <GroupPostPrompt account={currentAccount} />
+      <GroupPostPrompt
+        route={route}
+        groupSlug={groupSlug}
+        account={currentAccount}
+      />
     </View>
   );
 }

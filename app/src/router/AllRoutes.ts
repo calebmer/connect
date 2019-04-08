@@ -33,3 +33,8 @@ export const PostRoute = new RouteConfig({
   ),
   component: () => import("../GroupHome").then(m => m.GroupHomeRoute),
 });
+
+export const NewPostRoute = new RouteConfig({
+  path: Path.create("group", Path.variable("groupSlug"), "new-post"),
+  component: () => import("../PostCreate").then(m => m.PostCreate),
+});
