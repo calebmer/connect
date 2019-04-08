@@ -27,7 +27,7 @@ export function PostContent({postID}: {postID: PostID}) {
         style={[styles.header, indentContent && styles.headerIndentContent]}
       >
         <AccountAvatar account={author} />
-        <View style={styles.headerInfo}>
+        <View style={styles.byline}>
           <LabelText>{author.name}</LabelText>
           <MetaText>{publishedAt}</MetaText>
         </View>
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   headerIndentContent: {
     paddingBottom: Space.space0,
   },
-  headerInfo: {
+  byline: {
     paddingLeft: Space.space3,
   },
   content: {

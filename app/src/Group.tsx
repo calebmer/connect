@@ -1,4 +1,3 @@
-import {AccountCache, CurrentAccountCache} from "./cache/AccountCache";
 import {
   Animated,
   Platform,
@@ -10,6 +9,7 @@ import {
   View,
 } from "react-native";
 import {Color, Font, Space} from "./atoms";
+import {CurrentAccountCache, useCurrentAccount} from "./cache/AccountCache";
 import {
   PostCacheList,
   PostCacheListEntry,
@@ -251,8 +251,7 @@ export function GroupRoute({
 }
 
 function GroupHeader({route, groupSlug}: {route: Route; groupSlug: string}) {
-  const currentAccountID = useCacheSingletonData(CurrentAccountCache);
-  const currentAccount = useCacheData(AccountCache, currentAccountID);
+  const currentAccount = useCurrentAccount();
   return (
     <View style={styles.header}>
       <GroupPostPrompt

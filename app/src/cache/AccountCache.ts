@@ -1,7 +1,10 @@
 import {AccountID, AccountProfile} from "@connect/api-client";
+import {Cache, useCacheData} from "./framework/Cache";
+import {
+  CacheSingleton,
+  useCacheSingletonData,
+} from "./framework/CacheSingleton";
 import {API} from "../api/API";
-import {Cache} from "./framework/Cache";
-import {CacheSingleton} from "./framework/CacheSingleton";
 import {Image} from "react-native";
 
 /**
@@ -73,4 +76,12 @@ async function preloadAccountAvatar(account: AccountProfile): Promise<void> {
       // ignore error
     }
   }
+}
+
+/**
+ * Utility hook to get the current account profile.
+ */
+export function useCurrentAccount(): AccountProfile {
+  const id = useCacheSingletonData(CurrentAccountCache);
+  return useCacheData(AccountCache, id);
 }

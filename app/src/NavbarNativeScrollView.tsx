@@ -1,4 +1,10 @@
-import {Platform, ScrollView, StyleSheet} from "react-native";
+import {
+  Platform,
+  ScrollView,
+  StyleProp,
+  StyleSheet,
+  ViewStyle,
+} from "react-native";
 import React, {ReactNode, useState} from "react";
 import {Color} from "./atoms";
 import {NavbarNative} from "./NavbarNative";
@@ -7,10 +13,12 @@ import {Route} from "./router/Route";
 export function NavbarNativeScrollView({
   route,
   useTitle,
+  contentContainerStyle,
   children,
 }: {
   route: Route;
   useTitle: () => string;
+  contentContainerStyle?: StyleProp<ViewStyle>;
   children: ReactNode;
 }) {
   const [hideBackground, setHideBackground] = useState(true);
@@ -29,7 +37,7 @@ export function NavbarNativeScrollView({
       )}
       <ScrollView
         style={styles.background}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[contentContainerStyle, styles.container]}
         scrollIndicatorInsets={scrollIndicatorInsets}
         scrollEventThrottle={16}
         onScroll={event => {
@@ -72,6 +80,6 @@ const styles = StyleSheet.create({
     backgroundColor: Color.white,
   },
   container: {
-    paddingTop: NavbarNative.height,
+    marginTop: NavbarNative.height,
   },
 });
