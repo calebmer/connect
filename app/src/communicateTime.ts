@@ -1,4 +1,9 @@
 /**
+ * [thin space (U+2009)](https://graphemica.com/2009)
+ */
+const thinSpace = "\u2009";
+
+/**
  * Communicates a time to a user.
  *
  * The units of time that are most relevant to a human will change as the time
@@ -16,7 +21,7 @@ export function communicateTime(currentTime: Date, time: Date): string {
   // If the year changed, then communicate that.
   if (currentTime.getFullYear() !== time.getFullYear()) {
     const n = currentTime.getFullYear() - time.getFullYear();
-    return `${n} year${n === 1 ? "" : "s"}`;
+    return `${n}${thinSpace}year${n === 1 ? "" : "s"}`;
   }
 
   // If the month changed, then communicate that.
@@ -26,13 +31,13 @@ export function communicateTime(currentTime: Date, time: Date): string {
   // want to say “1 month ago”.
   if (currentTime.getMonth() !== time.getMonth() && daysAgo >= 30) {
     const n = currentTime.getMonth() - time.getMonth();
-    return `${n} month${n === 1 ? "" : "s"}`;
+    return `${n}${thinSpace}month${n === 1 ? "" : "s"}`;
   }
 
   // If the day changed, then communicate that.
   if (currentTime.getDate() !== time.getDate()) {
     const n = Math.max(1, Math.floor(daysAgo));
-    return `${n} day${n === 1 ? "" : "s"}`;
+    return `${n}${thinSpace}day${n === 1 ? "" : "s"}`;
   }
 
   // Otherwise, return the time in hours/minutes.
