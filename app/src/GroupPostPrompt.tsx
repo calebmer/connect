@@ -1,21 +1,36 @@
-import {BodyText, Color, Icon, LabelText, Shadow, Space} from "./atoms";
-import {StyleSheet, View} from "react-native";
+import {
+  BodyItalicText,
+  BodyText,
+  Color,
+  Icon,
+  LabelText,
+  Shadow,
+  Space,
+} from "./atoms";
+import React, {useState} from "react";
+import {StyleSheet, TouchableWithoutFeedback, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
-import React from "react";
 
 export function GroupPostPrompt({account}: {account: AccountProfile}) {
+  const [pressed, setPressed] = useState(false);
+
   return (
-    <View style={styles.container}>
-      <AccountAvatar account={account} />
-      <View style={styles.body}>
-        <LabelText>{account.name}</LabelText>
-        <BodyText>Start a conversation…</BodyText>
+    <TouchableWithoutFeedback
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+    >
+      <View style={[styles.container, pressed && styles.containerPressed]}>
+        <AccountAvatar account={account} />
+        <View style={styles.body}>
+          <LabelText>{account.name}</LabelText>
+          <BodyItalicText>Start a conversation…</BodyItalicText>
+        </View>
+        <View style={styles.iconCircle}>
+          <Icon style={styles.icon} name="edit" color={Color.yellow8} />
+        </View>
       </View>
-      <View style={styles.iconCircle}>
-        <Icon style={styles.icon} name="edit" color={Color.yellow8} />
-      </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -27,6 +42,9 @@ const styles = StyleSheet.create({
     padding: Space.space3,
     backgroundColor: Color.white,
     ...Shadow.elevation0,
+  },
+  containerPressed: {
+    backgroundColor: Color.yellow0,
   },
   body: {
     flex: 1,
