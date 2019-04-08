@@ -1,4 +1,4 @@
-import {Border, Color, Space} from "./atoms";
+import {Border, Color, Icon, Space} from "./atoms";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import React, {ReactNode, useContext, useState} from "react";
 import {StyleSheet, TouchableWithoutFeedback, View} from "react-native";
@@ -17,7 +17,8 @@ export function GroupItem({
   children: ReactNode;
 }) {
   const [isPressed, setIsPressed] = useState(false);
-  const groupHomeLayout = useContext(GroupHomeLayoutContext);
+  const isLaptop =
+    useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop;
 
   function handleSelect() {
     if (!selected && onSelect) {
@@ -36,8 +37,7 @@ export function GroupItem({
           styles.container,
           (selected || isPressed) && [
             styles.containerSelected,
-            groupHomeLayout === GroupHomeLayout.Laptop &&
-              styles.containerSelectedLaptop,
+            isLaptop && styles.containerSelectedLaptop,
           ],
         ]}
         accessible
@@ -48,6 +48,11 @@ export function GroupItem({
       >
         <AccountAvatar account={account} />
         <View style={styles.body}>{children}</View>
+        {!isLaptop && (
+          <View style={styles.icon}>
+            <Icon name="chevron-right" color={Color.grey4} />
+          </View>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -78,5 +83,8 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     paddingHorizontal: GroupItem.padding,
+  },
+  icon: {
+    justifyContent: "center",
   },
 });

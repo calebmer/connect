@@ -58,7 +58,7 @@ export const GlyphMap = {
   // check: 0xe92d,
   // "chevron-down": 0xe92e,
   // "chevron-left": 0xe92f,
-  // "chevron-right": 0xe930,
+  "chevron-right": 0xe930,
   // "chevron-up": 0xe931,
   // "chevrons-down": 0xe932,
   // "chevrons-left": 0xe933,
