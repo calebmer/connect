@@ -75,3 +75,8 @@ export const size6 = {
   fontSize: 48,
   lineHeight: 48,
 };
+
+/**
+ * The suggested maximum width for text using `Font.size2`.
+ */
+export const maxWidth = size2.fontSize * 35;

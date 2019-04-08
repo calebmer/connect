@@ -1,4 +1,4 @@
-import {BodyText, LabelText, MetaText, Space} from "./atoms";
+import {BodyText, Font, LabelText, MetaText, Space} from "./atoms";
 import {Breakpoint, useBreakpoint} from "./useBreakpoint";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
@@ -39,9 +39,13 @@ export function PostContent({postID}: {postID: PostID}) {
   );
 }
 
+const indentContentWidth = Space.space3 + AccountAvatar.size + Space.space3;
+
+PostContent.maxWidth = Font.maxWidth + indentContentWidth;
+
 const styles = StyleSheet.create({
   container: {
-    maxWidth: Space.space15,
+    maxWidth: PostContent.maxWidth,
   },
   header: {
     flexDirection: "row",
@@ -59,6 +63,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Space.space3,
   },
   indentContent: {
-    paddingLeft: Space.space3 + AccountAvatar.size + Space.space3,
+    paddingLeft: indentContentWidth,
   },
 });
