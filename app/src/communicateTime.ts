@@ -1,7 +1,18 @@
+import {TEST} from "./RunConfig";
+
 /**
- * [thin space (U+2009)](https://graphemica.com/2009)
+ * Using [narrow no-break space (U+202F)][1] to get a smaller space mark which
+ * ends up looking better.
+ *
+ * First we tried using [thin space (U+2009)][2] but that looked too thin
+ * on iOS.
+ *
+ * When testing we use a normal space.
+ *
+ * [1]: https://graphemica.com/202F
+ * [2]: https://graphemica.com/2009
  */
-const thinSpace = "\u2009";
+const thinSpace = TEST ? " " : "\u202F";
 
 /**
  * Communicates a time to a user.
