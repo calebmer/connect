@@ -21,11 +21,18 @@ export class RouteConfig<
   protected registerComponent(LazyComponent: React.ComponentType<Props>): void {
     // Register the navigation component at our route’s path.
     Navigation.registerComponent(this.path.getID(), () => {
-      return function RouteRoot({componentId, ...props}) {
+      return function RouteRoot({
+        componentId: componentID,
+        componentModalRoot = false,
+        ...props
+      }) {
         // Create the lazy component element with all the appropriate props.
         // Make sure to use the default props object in case some of our
         // required props were not provided!
-        const route = useMemo(() => new Route(componentId), [componentId]);
+        const route = useMemo(() => {
+          return new Route({componentID, componentModalRoot});
+        }, [componentID, componentModalRoot]);
+
         props.route = route;
         const element = React.createElement(LazyComponent, props);
 
@@ -55,10 +62,18 @@ export class RouteConfig<
  */
 export class Route extends RouteBase {
   private readonly componentID: string;
+  private readonly componentModalRoot: boolean;
 
-  constructor(componentID: string) {
+  constructor({
+    componentID,
+    componentModalRoot,
+  }: {
+    componentID: string;
+    componentModalRoot: boolean;
+  }) {
     super();
     this.componentID = componentID;
+    this.componentModalRoot = componentModalRoot;
   }
 
   /**
@@ -78,7 +93,11 @@ export class Route extends RouteBase {
    * Pops the current route of the stack and shows us the previous route.
    */
   protected _pop() {
-    Navigation.pop(this.componentID);
+    if (!this.componentModalRoot) {
+      Navigation.pop(this.componentID);
+    } else {
+      Navigation.dismissModal(this.componentID);
+    }
   }
 
   /**
@@ -130,8 +149,16 @@ export class Route extends RouteBase {
   ) {
     Navigation.showModal({
       stack: {
-        children: [nextRoute.getLayout(props)],
+        children: [nextRoute.getLayout({...props, componentModalRoot: true})],
       },
     });
+  }
+
+  /**
+   * Was this route pushed as a modal route? Will be true for routes created
+   * with `nativeShowModal()`.
+   */
+  public nativeIsModalRoot(): boolean {
+    return this.componentModalRoot;
   }
 }

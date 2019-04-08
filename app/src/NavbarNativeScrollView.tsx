@@ -57,7 +57,7 @@ function NavbarNativeContainer({
   return (
     <NavbarNative
       title={title}
-      leftIcon="arrow-left"
+      leftIcon={route.nativeIsModalRoot() ? "x" : "arrow-left"}
       onLeftIconPress={() => route.pop()}
       hideBackground={hideBackground}
     />

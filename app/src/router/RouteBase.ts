@@ -376,4 +376,12 @@ export abstract class RouteBase {
     nextRoute: RouteConfigBase<NextPath, NextProps>,
     props: Omit<NextProps, "route">,
   ): void;
+
+  /**
+   * Was this route pushed as a modal route? This will always be false on web,
+   * but will be true for routes created with `nativeShowModal()`.
+   */
+  public nativeIsModalRoot(): boolean {
+    return false;
+  }
 }
