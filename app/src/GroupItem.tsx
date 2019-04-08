@@ -8,20 +8,26 @@ import {AccountProfile} from "@connect/api-client";
 export function GroupItem({
   account,
   selected,
-  onPress,
+  onSelect,
   children,
 }: {
   account: AccountProfile;
   selected?: boolean;
-  onPress?: () => void;
+  onSelect?: () => void;
   children: ReactNode;
 }) {
   const [isPressed, setIsPressed] = useState(false);
   const groupHomeLayout = useContext(GroupHomeLayoutContext);
 
+  function handleSelect() {
+    if (!selected && onSelect) {
+      onSelect();
+    }
+  }
+
   return (
     <TouchableWithoutFeedback
-      onPress={onPress}
+      onPress={handleSelect}
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}
     >
@@ -34,6 +40,11 @@ export function GroupItem({
               styles.containerSelectedLaptop,
           ],
         ]}
+        accessible
+        accessibilityLabel={`Preview of a post by ${account.name}.`}
+        accessibilityHint={`Navigates to the full post by ${account.name}.`}
+        accessibilityRole="button"
+        accessibilityStates={selected ? ["selected"] : []}
       >
         <AccountAvatar account={account} />
         <View style={styles.body}>{children}</View>

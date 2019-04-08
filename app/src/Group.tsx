@@ -154,7 +154,7 @@ function Group({
         ListFooterComponent={
           <GroupFooter
             loadingMorePosts={loadingMorePosts}
-            onScrollTopTop={() => {
+            onScrollToTop={() => {
               if (scrollView.current) {
                 scrollView.current
                   .getNode()
@@ -268,10 +268,10 @@ function GroupSectionHeader({
 
 function GroupFooter({
   loadingMorePosts,
-  onScrollTopTop,
+  onScrollToTop,
 }: {
   loadingMorePosts: boolean;
-  onScrollTopTop: () => void;
+  onScrollToTop: () => void;
 }) {
   return (
     <Trough hideBottomShadow>
@@ -280,7 +280,7 @@ function GroupFooter({
           <Loading />
         ) : (
           // Decoration for the end of our list.
-          <TouchableOpacity onPress={onScrollTopTop}>
+          <TouchableOpacity onPress={onScrollToTop}>
             <Text style={styles.footerText}>Back to top ↑</Text>
           </TouchableOpacity>
         )}

@@ -34,7 +34,9 @@ function GroupItemFeed({
     <GroupItem
       account={account}
       selected={selected}
-      onPress={() => route.push(PostRoute, {groupSlug, postID: String(postID)})}
+      onSelect={() => {
+        route.push(PostRoute, {groupSlug, postID: String(postID)});
+      }}
     >
       <AccountByline account={account} time={post.publishedAt} />
       <BodyText
