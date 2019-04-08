@@ -7,16 +7,41 @@ import {AccountProfile} from "@connect/api-client";
 
 export function GroupItem({
   account,
+  active,
   selected,
   onSelect,
   children,
 }: {
+  /**
+   * The profile who authored the content in this group item.
+   */
   account: AccountProfile;
+
+  /**
+   * The item is currently activated, but not selected. It could be pressed or
+   * focused, for instance.
+   */
+  active?: boolean;
+
+  /**
+   * The item is currently selected. There can only be one selected item at a
+   * time in our application.
+   */
   selected?: boolean;
+
+  /**
+   * The item was selected by a press event or keyboard event.
+   */
   onSelect?: () => void;
+
+  /**
+   * The body content of our group item to the right of the item’s
+   * account avatar.
+   */
   children: ReactNode;
 }) {
-  const [isPressed, setIsPressed] = useState(false);
+  const [pressed, setPressed] = useState(false);
+
   const isLaptop =
     useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop;
 
@@ -29,16 +54,14 @@ export function GroupItem({
   return (
     <TouchableWithoutFeedback
       onPress={handleSelect}
-      onPressIn={() => setIsPressed(true)}
-      onPressOut={() => setIsPressed(false)}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
     >
       <View
         style={[
           styles.container,
-          (selected || isPressed) && [
-            styles.containerSelected,
-            isLaptop && styles.containerSelectedLaptop,
-          ],
+          (active || pressed) && styles.containerActive,
+          selected && styles.containerSelected,
         ]}
         accessible
         accessibilityLabel={`Preview of a post by ${account.name}.`}
@@ -73,11 +96,12 @@ const styles = StyleSheet.create({
     borderRightWidth: borderWidth,
     borderRightColor: GroupItem.backgroundColor,
   },
-  containerSelected: {
+  containerActive: {
     backgroundColor: Color.yellow0,
     borderRightColor: Color.yellow0,
   },
-  containerSelectedLaptop: {
+  containerSelected: {
+    backgroundColor: Color.yellow0,
     borderRightColor: Color.yellow4,
   },
   body: {

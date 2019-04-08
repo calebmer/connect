@@ -1,6 +1,6 @@
 import {BodyText, Font} from "./atoms";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
-import React, {useContext} from "react";
+import React, {useContext, useState} from "react";
 import {AccountByline} from "./AccountByline";
 import {AccountCache} from "./cache/AccountCache";
 import {CommentCacheList} from "./cache/CommentCache";
@@ -32,13 +32,19 @@ function GroupItemFeed({
   const numberOfLines =
     useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop ? 2 : 4;
 
+  // Are we in the process of selecting this group item?
+  const [selecting, setSelecting] = useState(false);
+
   return (
     <GroupItem
       account={account}
+      active={selecting}
       selected={selected}
       onSelect={() => {
         // Wait for comments to load before pushing the new route...
+        setSelecting(true);
         stall(CommentCacheList.load(postID), () => {
+          setSelecting(false);
           route.push(PostRoute, {groupSlug, postID: String(postID)});
         });
       }}
