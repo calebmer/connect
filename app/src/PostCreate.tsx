@@ -1,39 +1,21 @@
-import {
-  Keyboard,
-  KeyboardEvent,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  View,
-} from "react-native";
+import {Keyboard, KeyboardEvent, View} from "react-native";
 import React, {useEffect, useState} from "react";
 import {Color} from "./atoms";
 import {Editor} from "./Editor";
-import {NavbarNative} from "./NavbarNative";
+import {NavbarNativeScrollView} from "./NavbarNativeScrollView";
 import {Route} from "./router/Route";
 
 export function PostCreate({route}: {route: Route}) {
   return (
     <>
-      {Platform.OS !== "web" && (
-        <>
-          <NavbarNative
-            title="New Post"
-            leftIcon="x"
-            onLeftIconPress={() => {
-              Keyboard.dismiss();
-              route.pop();
-            }}
-          />
-          <SafeAreaView>
-            <View style={styles.navbarBuffer} />
-          </SafeAreaView>
-        </>
-      )}
+      <NavbarNativeScrollView route={route} useTitle={() => "New Post"}>
+        {/* TODO: There are a couple of bugs when writing a really long post. I
+            really want to fix them. Fixing will require native code, though. */}
+        <Editor autoFocus scrollDisabled />
+      </NavbarNativeScrollView>
 
-      <Editor autoFocus />
-
-      {/* Fill the space behind the keyboard when the keyboard is showing. */}
+      {/* Fill the space behind the keyboard so that the keyboard does not hide
+          any content. */}
       <View
         style={{
           height: useKeyboardHeight(),
@@ -70,9 +52,3 @@ function useKeyboardHeight() {
 
   return keyboardHeight;
 }
-
-const styles = StyleSheet.create({
-  navbarBuffer: {
-    height: NavbarNative.height,
-  },
-});

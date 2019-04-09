@@ -1,16 +1,14 @@
-import {
-  Keyboard,
-  Platform,
-  ScrollView,
-  ScrollViewProps,
-  StyleSheet,
-} from "react-native";
+import {Keyboard, Platform, ScrollView, StyleSheet} from "react-native";
 import React, {ReactNode, useState} from "react";
 import {Color} from "./atoms";
 import {NavbarNative} from "./NavbarNative";
 import {Route} from "./router/Route";
 
-interface NavbarNativeScrollViewProps extends ScrollViewProps {
+export function NavbarNativeScrollView({
+  route,
+  useTitle,
+  children,
+}: {
   /**
    * The current route which we can use for navigation.
    */
@@ -27,14 +25,7 @@ interface NavbarNativeScrollViewProps extends ScrollViewProps {
    * The content of the scroll view.
    */
   children: ReactNode;
-}
-
-export function NavbarNativeScrollView({
-  route,
-  useTitle,
-  children,
-  ...props
-}: NavbarNativeScrollViewProps) {
+}) {
   const [hideBackground, setHideBackground] = useState(true);
 
   return (
@@ -50,13 +41,11 @@ export function NavbarNativeScrollView({
         />
       )}
       <ScrollView
-        {...props}
-        style={[props.style, styles.background]}
-        contentContainerStyle={[props.contentContainerStyle, styles.container]}
+        style={styles.background}
+        contentContainerStyle={styles.container}
         scrollIndicatorInsets={scrollIndicatorInsets}
         scrollEventThrottle={16}
         onScroll={event => {
-          if (props.onScroll) props.onScroll(event);
           if (Platform.OS !== "web") {
             setHideBackground(event.nativeEvent.contentOffset.y <= 0);
           }
@@ -94,7 +83,7 @@ function NavbarNativeContainer({
   );
 }
 
-const scrollIndicatorInsets = {top: NavbarNative.height};
+const scrollIndicatorInsets = {top: NavbarNative.height, bottom: 0};
 
 const styles = StyleSheet.create({
   background: {
