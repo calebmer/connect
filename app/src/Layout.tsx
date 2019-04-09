@@ -16,9 +16,9 @@ export function Layout({children}: {children: ReactNode}) {
   return (
     <View style={[styles.container, styles.stroke]}>
       {/* Planning on adding a <Header /> component here that will handle our navigation */}
-      {/* <View>
+      <View>
         <Text>Header</Text>
-      </View> */}
+      </View>
       <View style={styles.card}>{children}</View>
     </View>
   );
