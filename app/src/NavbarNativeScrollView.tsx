@@ -80,6 +80,6 @@ const styles = StyleSheet.create({
     backgroundColor: Color.white,
   },
   container: {
-    marginTop: NavbarNative.height,
+    paddingTop: NavbarNative.height,
   },
 });
