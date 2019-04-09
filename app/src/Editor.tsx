@@ -13,6 +13,7 @@ import {StyleSheet, TextInput} from "react-native";
 export function Editor({
   autoFocus,
   scrollDisabled,
+  noPaddingBottom,
 }: {
   /**
    * Auto focus the editor when the component is mounted.
@@ -24,12 +25,18 @@ export function Editor({
    * editor in another scroll view.
    */
   scrollDisabled?: boolean;
+
+  /**
+   * Remove the padding from the bottom of our editor component. Used in a hack
+   * for nice iOS auto-grow behavior.
+   */
+  noPaddingBottom?: boolean;
 }) {
   const [content, setContent] = useState("");
 
   return (
     <TextInput
-      style={styles.input}
+      style={[styles.input, noPaddingBottom && {paddingBottom: 0}]}
       multiline
       value={content}
       placeholder="test"

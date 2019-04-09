@@ -1,4 +1,4 @@
-import {Keyboard, Platform, ScrollView, StyleSheet} from "react-native";
+import {Insets, Keyboard, Platform, ScrollView, StyleSheet} from "react-native";
 import React, {ReactNode, useState} from "react";
 import {Color} from "./atoms";
 import {NavbarNative} from "./NavbarNative";
@@ -7,6 +7,7 @@ import {Route} from "./router/Route";
 export function NavbarNativeScrollView({
   route,
   useTitle,
+  contentInset,
   children,
 }: {
   /**
@@ -20,6 +21,13 @@ export function NavbarNativeScrollView({
    * because it is called conditionally. (It’s not called on web, for instance.)
    */
   useTitle: () => string;
+
+  /**
+   * Optional content insets for our scroll view. Content insets are like
+   * padding. However, unlike adding padding to a child element, insets are
+   * respected when automatically scrolling based on text input changes.
+   */
+  contentInset?: Insets;
 
   /**
    * The content of the scroll view.
@@ -43,7 +51,8 @@ export function NavbarNativeScrollView({
       <ScrollView
         style={styles.background}
         contentContainerStyle={styles.container}
-        scrollIndicatorInsets={scrollIndicatorInsets}
+        contentInset={contentInset}
+        scrollIndicatorInsets={{top: NavbarNative.height, bottom: 0}}
         scrollEventThrottle={16}
         onScroll={event => {
           if (Platform.OS !== "web") {
@@ -82,8 +91,6 @@ function NavbarNativeContainer({
     />
   );
 }
-
-const scrollIndicatorInsets = {top: NavbarNative.height, bottom: 0};
 
 const styles = StyleSheet.create({
   background: {
