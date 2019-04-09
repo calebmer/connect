@@ -6,7 +6,7 @@ import {AppRegistry} from "react-native";
 
 declare const document: any;
 
-AppRegistry.registerComponent("App", () => App);
-AppRegistry.runApplication("App", {
+AppRegistry.registerComponent("Connect", () => App);
+AppRegistry.runApplication("Connect", {
   rootTag: document.getElementById("root"),
 });
