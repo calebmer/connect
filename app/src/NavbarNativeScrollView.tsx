@@ -1,5 +1,4 @@
 import {
-  Insets,
   Keyboard,
   Platform,
   ScrollView,

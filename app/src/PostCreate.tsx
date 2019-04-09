@@ -1,37 +1,38 @@
-import {Color, LabelText, Space} from "./atoms";
+import {Color, Font, LabelText, Space} from "./atoms";
 import {
   Keyboard,
   KeyboardEvent,
   Platform,
   StyleSheet,
+  TextInput,
   View,
 } from "react-native";
 import React, {useEffect, useState} from "react";
 import {AccountAvatar} from "./AccountAvatar";
-import {Editor} from "./Editor";
 import {NavbarNativeScrollView} from "./NavbarNativeScrollView";
 import {Route} from "./router/Route";
 import {useCurrentAccount} from "./cache/AccountCache";
 
 export function PostCreate({route}: {route: Route}) {
-  // When entering new content in a `UITextView`, iOS will scroll any parent
-  // `UIScrollView` down as the text view grows. We want to make sure that iOS
-  // scrolls all the way to the bottom of our content (which includes some
-  // padding). `paddingBottom` on `<Editor>` won’t be respected, but inset on
-  // the scroll view will be respected. So do that.
-  const iosInsetHack = Platform.OS === "ios";
+  const [content, setContent] = useState("");
 
   return (
     <>
       <NavbarNativeScrollView
         route={route}
         useTitle={() => "New Post"}
-        contentInset={iosInsetHack ? {bottom: Space.space3} : undefined} // Like padding but used when scrolling in response to text input changes.
         keyboardDismissMode="none"
         keyboardShouldPersistTaps="always"
+        // When entering new content in a `UITextView`, iOS will scroll any
+        // parent `UIScrollView` down as the text view grows. We want to make
+        // sure that iOS scrolls all the way to the bottom of our content (which
+        // includes some padding). `paddingBottom` on `<PostCreateInput>` won’t
+        // be respected, but inset on the scroll view will be respected. So
+        // do that.
+        contentInset={{bottom: Platform.OS === "ios" ? Space.space3 : 0}}
       >
         <PostCreateHeader />
-        <Editor autoFocus scrollDisabled noPaddingBottom={iosInsetHack} />
+        <PostCreateInput content={content} setContent={setContent} />
       </NavbarNativeScrollView>
 
       {/* Fill the space behind the keyboard so that the keyboard does not hide
@@ -55,6 +56,27 @@ function PostCreateHeader() {
         <LabelText>{currentAccount.name}</LabelText>
       </View>
     </View>
+  );
+}
+
+function PostCreateInput({
+  content,
+  setContent,
+}: {
+  content: string;
+  setContent: (content: string) => void;
+}) {
+  return (
+    <TextInput
+      style={styles.input}
+      multiline
+      value={content}
+      placeholder="Start a conversation…"
+      placeholderTextColor={Color.grey3}
+      onChangeText={setContent}
+      autoFocus
+      scrollEnabled={false}
+    />
   );
 }
 
@@ -86,13 +108,6 @@ function useKeyboardHeight() {
 }
 
 const styles = StyleSheet.create({
-  sink: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
   header: {
     flexDirection: "row",
     padding: Space.space3,
@@ -100,5 +115,14 @@ const styles = StyleSheet.create({
   },
   byline: {
     paddingLeft: Space.space3,
+  },
+  input: {
+    paddingTop: Space.space3,
+    paddingBottom: Platform.OS === "ios" ? 0 : Space.space3,
+    paddingHorizontal: Space.space3,
+    textAlignVertical: "top",
+    color: Color.grey8,
+    ...Font.serif,
+    ...Font.size3,
   },
 });
