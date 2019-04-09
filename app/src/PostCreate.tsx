@@ -27,6 +27,8 @@ export function PostCreate({route}: {route: Route}) {
         route={route}
         useTitle={() => "New Post"}
         contentInset={iosInsetHack ? {bottom: Space.space3} : undefined} // Like padding but used when scrolling in response to text input changes.
+        keyboardDismissMode="none"
+        keyboardShouldPersistTaps="always"
       >
         <PostCreateHeader />
         <Editor autoFocus scrollDisabled noPaddingBottom={iosInsetHack} />
@@ -84,6 +86,13 @@ function useKeyboardHeight() {
 }
 
 const styles = StyleSheet.create({
+  sink: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
   header: {
     flexDirection: "row",
     padding: Space.space3,
