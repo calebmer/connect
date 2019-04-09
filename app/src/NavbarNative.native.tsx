@@ -102,14 +102,12 @@ export function NavbarNative({
               </TouchableOpacity>
             )}
           </View>
-          {title && (
-            <Animated.Text
-              style={[styles.title, {opacity: titleOpacity}]}
-              numberOfLines={1}
-            >
-              {title}
-            </Animated.Text>
-          )}
+          <Animated.Text
+            style={[styles.title, {opacity: titleOpacity}]}
+            numberOfLines={1}
+          >
+            {title}
+          </Animated.Text>
           <View style={styles.icon} />
         </View>
       </SafeAreaView>

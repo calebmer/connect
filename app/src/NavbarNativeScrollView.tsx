@@ -1,26 +1,40 @@
 import {
+  Keyboard,
   Platform,
   ScrollView,
-  StyleProp,
+  ScrollViewProps,
   StyleSheet,
-  ViewStyle,
 } from "react-native";
 import React, {ReactNode, useState} from "react";
 import {Color} from "./atoms";
 import {NavbarNative} from "./NavbarNative";
 import {Route} from "./router/Route";
 
+interface NavbarNativeScrollViewProps extends ScrollViewProps {
+  /**
+   * The current route which we can use for navigation.
+   */
+  route: Route;
+
+  /**
+   * A hook which will fetch our navbar’s title. We accept this prop as a hook
+   * so that it can do data fetching or use subscriptions. This must be a hook
+   * because it is called conditionally. (It’s not called on web, for instance.)
+   */
+  useTitle: () => string;
+
+  /**
+   * The content of the scroll view.
+   */
+  children: ReactNode;
+}
+
 export function NavbarNativeScrollView({
   route,
   useTitle,
-  contentContainerStyle,
   children,
-}: {
-  route: Route;
-  useTitle: () => string;
-  contentContainerStyle?: StyleProp<ViewStyle>;
-  children: ReactNode;
-}) {
+  ...props
+}: NavbarNativeScrollViewProps) {
   const [hideBackground, setHideBackground] = useState(true);
 
   return (
@@ -36,11 +50,13 @@ export function NavbarNativeScrollView({
         />
       )}
       <ScrollView
-        style={styles.background}
-        contentContainerStyle={[contentContainerStyle, styles.container]}
+        {...props}
+        style={[props.style, styles.background]}
+        contentContainerStyle={[props.contentContainerStyle, styles.container]}
         scrollIndicatorInsets={scrollIndicatorInsets}
         scrollEventThrottle={16}
         onScroll={event => {
+          if (props.onScroll) props.onScroll(event);
           if (Platform.OS !== "web") {
             setHideBackground(event.nativeEvent.contentOffset.y <= 0);
           }
@@ -65,9 +81,15 @@ function NavbarNativeContainer({
   return (
     <NavbarNative
       title={title}
-      leftIcon={route.nativeIsModalRoot() ? "x" : "arrow-left"}
-      onLeftIconPress={() => route.pop()}
       hideBackground={hideBackground}
+      leftIcon={route.nativeIsModalRoot() ? "x" : "arrow-left"}
+      onLeftIconPress={() => {
+        // Dismiss the keyboard when navigating backwards since any component
+        // with focus will be unmounted.
+        Keyboard.dismiss();
+
+        route.pop();
+      }}
     />
   );
 }
