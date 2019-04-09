@@ -1,4 +1,4 @@
-import {BodyItalicText, Color, Icon, LabelText, Shadow, Space} from "./atoms";
+import {BodyText, Color, Icon, LabelText, Shadow, Space} from "./atoms";
 import React, {useState} from "react";
 import {StyleSheet, TouchableWithoutFeedback, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
@@ -27,7 +27,7 @@ export function GroupPostPrompt({
         <AccountAvatar account={account} />
         <View style={styles.body}>
           <LabelText>{account.name}</LabelText>
-          <BodyItalicText>Start a conversation…</BodyItalicText>
+          <BodyText>Start a conversation…</BodyText>
         </View>
         <View style={styles.iconCircle}>
           <Icon style={styles.icon} name="edit" color={Color.yellow8} />

@@ -39,7 +39,8 @@ export function Editor({
       style={[styles.input, noPaddingBottom && {paddingBottom: 0}]}
       multiline
       value={content}
-      placeholder="test"
+      placeholder="Start a conversation…"
+      placeholderTextColor={Color.grey3}
       onChangeText={setContent}
       autoFocus={autoFocus}
       scrollEnabled={!scrollDisabled}
