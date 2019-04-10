@@ -9,6 +9,7 @@ export function App() {
   const [location, setLocation] = useState(history.location);
 
   useEffect(() => {
+    setLocation(history.location);
     const unlisten = history.listen(newLocation => {
       setLocation(newLocation);
     });
