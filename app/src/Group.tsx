@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import {Color, Font, Space} from "./atoms";
 import {CurrentAccountCache, useCurrentAccount} from "./cache/AccountCache";
-import {Mutable, useMutableContainer} from "./cache/framework/Mutable";
 import {
   PostCacheList,
   PostCacheListEntry,
@@ -19,6 +18,7 @@ import {
 } from "./cache/PostCache";
 import {PostID, Group as _Group} from "@connect/api-client";
 import React, {useMemo, useRef, useState} from "react";
+import {ReadonlyMutable, useMutableContainer} from "./cache/framework/Mutable";
 import {GroupBanner} from "./GroupBanner";
 import {GroupCache} from "./cache/GroupCache";
 import {GroupItemFeed} from "./GroupItemFeed";
@@ -54,7 +54,7 @@ function Group({
   route: Route;
   group: Group;
   posts: Array<PostCacheListEntry>;
-  selectedPostID: Mutable<PostID | undefined>;
+  selectedPostID: ReadonlyMutable<PostID | undefined>;
   loadingMorePosts: boolean;
   onLoadMorePosts: (count: number) => Promise<unknown>;
 }) {

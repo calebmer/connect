@@ -1,7 +1,7 @@
 import {BodyText, Font} from "./atoms";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
-import {Mutable, useMutableSelect} from "./cache/framework/Mutable";
 import React, {useContext, useEffect, useState} from "react";
+import {ReadonlyMutable, useMutableSelect} from "./cache/framework/Mutable";
 import {AccountByline} from "./AccountByline";
 import {AccountCache} from "./cache/AccountCache";
 import {CommentCacheList} from "./cache/CommentCache";
@@ -22,7 +22,7 @@ function GroupItemFeed({
   route: Route;
   groupSlug: string;
   postID: PostID;
-  selectedPostID: Mutable<PostID | undefined>;
+  selectedPostID: ReadonlyMutable<PostID | undefined>;
 }) {
   // TODO: Suspense handler for _just_ this component.
   const post = useCacheData(PostCache, postID);
@@ -35,11 +35,6 @@ function GroupItemFeed({
     selectedPostID => selectedPostID === postID,
   );
 
-  // On a laptop, you can open a post without leaving the feed. So favor shorter
-  // post previews and more posts on screen.
-  const numberOfLines =
-    useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop ? 2 : 4;
-
   // Are we in the process of selecting this group item?
   const [selecting, setSelecting] = useState(false);
 
@@ -50,22 +45,31 @@ function GroupItemFeed({
     }
   }, [selected, selecting]);
 
+  function handleSelect() {
+    // While we wait for stuff to load, set selecting to true to give the
+    // user immediate visual feedback. We have an effect which will set
+    // this back to false once we’ve selected the component.
+    setSelecting(true);
+
+    // Wait for comments to load before pushing the new route...
+    //
+    // We assume that this will eventually change `selectedPostID`.
+    stall(CommentCacheList.load(postID), () => {
+      route.push(PostRoute, {groupSlug, postID: String(postID)});
+    });
+  }
+
+  // On a laptop, you can open a post without leaving the feed. So favor shorter
+  // post previews and more posts on screen.
+  const numberOfLines =
+    useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop ? 2 : 4;
+
   return (
     <GroupItem
       account={account}
       active={selecting}
       selected={selected}
-      onSelect={() => {
-        // While we wait for stuff to load, set selecting to true to give the
-        // user immediate visual feedback. We have an effect which will set
-        // this back to false once we’ve selected the component.
-        setSelecting(true);
-
-        // Wait for comments to load before pushing the new route...
-        stall(CommentCacheList.load(postID), () => {
-          route.push(PostRoute, {groupSlug, postID: String(postID)});
-        });
-      }}
+      onSelect={handleSelect}
     >
       <AccountByline account={account} time={post.publishedAt} />
       <BodyText

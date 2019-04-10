@@ -6,7 +6,7 @@ import {useConstant} from "../../useConstant";
  * important utility for working with mutable values that are not managed by
  * a declarative UI framework like React.
  */
-export class Mutable<Value> {
+export class Mutable<Value> implements ReadonlyMutable<Value> {
   /** The current value. */
   private value: Value;
 
@@ -69,6 +69,17 @@ export class Mutable<Value> {
   }
 }
 
+/**
+ * An interface which only gives access to the readonly properties of `Mutable`.
+ *
+ * NOTE: Perhaps there is some abstraction to be had on these methods alone.
+ * Some kind of “derivable” abstraction perhaps?
+ */
+export interface ReadonlyMutable<Value> {
+  getAtThisMomentInTime(): Value;
+  subscribe(subscriber: () => void): () => void;
+}
+
 /** The identity function. */
 function identity<T>(x: T): T {
   return x;
@@ -77,7 +88,7 @@ function identity<T>(x: T): T {
 /**
  * Uses a mutable value and subscribes to the value’s changes over time.
  */
-export function useMutable<Value>(mutable: Mutable<Value>): Value {
+export function useMutable<Value>(mutable: ReadonlyMutable<Value>): Value {
   return useMutableSelect(mutable, identity);
 }
 
@@ -89,7 +100,7 @@ export function useMutable<Value>(mutable: Mutable<Value>): Value {
  * does not change then the component will not re-render.
  */
 export function useMutableSelect<Value, ValueSelection>(
-  mutable: Mutable<Value>,
+  mutable: ReadonlyMutable<Value>,
   select: (value: Value) => ValueSelection,
 ): ValueSelection {
   // Use a new state variable with the initial value. Make sure to
@@ -127,8 +138,13 @@ export function useMutableSelect<Value, ValueSelection>(
  * When the value changes we update the mutable value in an effect. Which will
  * trigger another render in subscribers to this mutable value instead of
  * updating the value in the current render phase.
+ *
+ * Returns a `ReadonlyMutable` so that no one else can call `set()` on the
+ * mutable value.
  */
-export function useMutableContainer<Value>(value: Value): Mutable<Value> {
+export function useMutableContainer<Value>(
+  value: Value,
+): ReadonlyMutable<Value> {
   // Create a constant mutable container which will never change across
   // component renders. Use the initial value for that mutable container.
   const mutable = useConstant(() => new Mutable(value));
