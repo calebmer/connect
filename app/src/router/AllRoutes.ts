@@ -36,5 +36,5 @@ export const PostRoute = new RouteConfig({
 
 export const NewPostRoute = new RouteConfig({
   path: Path.create("group", Path.variable("groupSlug"), "new-post"),
-  component: () => import("../PostNew").then(m => m.PostNew),
+  component: () => import("../PostEditor").then(m => m.PostEditor),
 });

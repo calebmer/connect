@@ -16,7 +16,7 @@ import {useCurrentAccount} from "./cache/AccountCache";
 // TODO: Make this actually usable on mobile web. I’ll probably have to use
 // content editable since the default React Native Web `<TextInput>` does
 // not grow...
-export function PostNew({route}: {route: Route}) {
+export function PostEditor({route}: {route: Route}) {
   const [content, setContent] = useState("");
 
   return (
@@ -28,13 +28,13 @@ export function PostNew({route}: {route: Route}) {
         // When entering new content in a `UITextView`, iOS will scroll any
         // parent `UIScrollView` down as the text view grows. We want to make
         // sure that iOS scrolls all the way to the bottom of our content (which
-        // includes some padding). `paddingBottom` on `<PostNewInput>` won’t
+        // includes some padding). `paddingBottom` on `<PostEditorInput>` won’t
         // be respected, but inset on the scroll view will be respected. So
         // do that.
         contentInset={{bottom: Platform.OS === "ios" ? Space.space3 : 0}}
       >
-        <PostNewHeader />
-        <PostNewInput content={content} setContent={setContent} />
+        <PostEditorHeader />
+        <PostEditorInput content={content} setContent={setContent} />
       </NavbarNativeScrollView>
 
       {/* Fill the space behind the keyboard so that the keyboard does not hide
@@ -49,7 +49,7 @@ export function PostNew({route}: {route: Route}) {
   );
 }
 
-function PostNewHeader() {
+function PostEditorHeader() {
   const currentAccount = useCurrentAccount();
   return (
     <View style={styles.header}>
@@ -61,7 +61,7 @@ function PostNewHeader() {
   );
 }
 
-function PostNewInput({
+function PostEditorInput({
   content,
   setContent,
 }: {
