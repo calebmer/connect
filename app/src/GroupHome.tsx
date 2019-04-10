@@ -8,6 +8,7 @@ import {StyleSheet, View} from "react-native";
 import {CurrentAccountCache} from "./cache/AccountCache";
 import {GroupCache} from "./cache/GroupCache";
 import {PostCacheList} from "./cache/PostCache";
+import {PostEditorModalContext} from "./PostEditorModalContext";
 import {PostID} from "@connect/api-client";
 import {PostRoute} from "./router/AllRoutes";
 import {Route} from "./router/Route";
@@ -18,10 +19,12 @@ function GroupHome({
   route,
   groupSlug,
   postID: _postID,
+  breakpoint,
 }: {
   route: Route;
   groupSlug: string;
   postID?: string;
+  breakpoint: Breakpoint;
 }) {
   // Always preload the current account...
   CurrentAccountCache.preload();
@@ -31,21 +34,23 @@ function GroupHome({
     _postID != null ? (parseInt(_postID, 10) as PostID) : undefined;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.group}>
-        <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
+    <PostEditorModalContext available={breakpoint > Breakpoint.Tablet}>
+      <View style={styles.container}>
+        <View style={styles.group}>
+          <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
+        </View>
+        <View style={styles.post}>
+          {postID != null && (
+            <Post
+              key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
+              route={route}
+              groupSlug={groupSlug}
+              postID={postID}
+            />
+          )}
+        </View>
       </View>
-      <View style={styles.post}>
-        {postID != null && (
-          <Post
-            key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
-            route={route}
-            groupSlug={groupSlug}
-            postID={postID}
-          />
-        )}
-      </View>
-    </View>
+    </PostEditorModalContext>
   );
 }
 
@@ -118,7 +123,12 @@ export function GroupHomeRoute({
   } else {
     return (
       <GroupHomeLayoutContext.Provider value={GroupHomeLayout.Laptop}>
-        <GroupHome route={route} groupSlug={groupSlug} postID={postID} />
+        <GroupHome
+          route={route}
+          groupSlug={groupSlug}
+          postID={postID}
+          breakpoint={breakpoint}
+        />
       </GroupHomeLayoutContext.Provider>
     );
   }

@@ -5,6 +5,7 @@ import {AccountAvatar} from "./AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
 import {NewPostRoute} from "./router/AllRoutes";
 import {Route} from "./router/Route";
+import {usePostEditorModalContext} from "./PostEditorModalContext";
 
 export function GroupPostPrompt({
   route,
@@ -16,12 +17,19 @@ export function GroupPostPrompt({
   account: AccountProfile;
 }) {
   const [pressed, setPressed] = useState(false);
+  const postEditorModal = usePostEditorModalContext();
 
   return (
     <TouchableWithoutFeedback
-      onPress={() => route.nativeShowModal(NewPostRoute, {groupSlug})}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
+      onPress={() => {
+        if (postEditorModal.available) {
+          postEditorModal.show();
+        } else {
+          route.nativeShowModal(NewPostRoute, {groupSlug});
+        }
+      }}
     >
       <View style={[styles.container, pressed && styles.containerPressed]}>
         <AccountAvatar account={account} />
