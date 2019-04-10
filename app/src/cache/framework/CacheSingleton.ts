@@ -1,21 +1,17 @@
 import {Async} from "./Async";
+import {Lazy} from "./Lazy";
 
 /**
  * Caches some data which is the only one of its kind.
  */
 export class CacheSingleton<Data> {
   /**
-   * User provided function for loading a new cache entry.
-   */
-  private readonly _load: () => Promise<Data>;
-
-  /**
    * The currently cached entry.
    */
-  private entry: Async<Data> | undefined = undefined;
+  private entry: Lazy<Async<Data>>;
 
   constructor(load: () => Promise<Data>) {
-    this._load = load;
+    this.entry = new Lazy(() => new Async(load()));
   }
 
   /**
@@ -23,10 +19,7 @@ export class CacheSingleton<Data> {
    * we will first load the entry into our cache.
    */
   private accessEntry(): Async<Data> {
-    if (this.entry === undefined) {
-      this.entry = new Async(this._load());
-    }
-    return this.entry;
+    return this.entry.get();
   }
 
   /**
