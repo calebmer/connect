@@ -52,7 +52,7 @@ export function NavbarNativeScrollView({
       <ScrollView
         {...props}
         style={styles.background}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[props.contentContainerStyle, styles.container]}
         scrollIndicatorInsets={{top: NavbarNative.height, bottom: 0}}
         scrollEventThrottle={16}
         onScroll={event => {
@@ -99,6 +99,10 @@ const styles = StyleSheet.create({
     backgroundColor: Color.white,
   },
   container: {
+    // Override all padding provided by the `contentContainerStyle` prop.
+    paddingBottom: 0,
     paddingTop: NavbarNative.height,
+    paddingLeft: 0,
+    paddingRight: 0,
   },
 });

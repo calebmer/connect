@@ -13,6 +13,9 @@ import {NavbarNativeScrollView} from "./NavbarNativeScrollView";
 import {Route} from "./router/Route";
 import {useCurrentAccount} from "./cache/AccountCache";
 
+// TODO: Make this actually usable on mobile web. I’ll probably have to use
+// content editable since the default React Native Web `<TextInput>` does
+// not grow...
 export function PostCreate({route}: {route: Route}) {
   const [content, setContent] = useState("");
 
@@ -21,7 +24,6 @@ export function PostCreate({route}: {route: Route}) {
       <NavbarNativeScrollView
         route={route}
         useTitle={() => "New Post"}
-        keyboardDismissMode="none"
         keyboardShouldPersistTaps="always"
         // When entering new content in a `UITextView`, iOS will scroll any
         // parent `UIScrollView` down as the text view grows. We want to make
