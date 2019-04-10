@@ -10,9 +10,12 @@ import {Border, Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import React, {useEffect, useState} from "react";
 import {useConstant} from "./useConstant";
 
-export function PostEditorModal() {
+export function PostEditorModal({onClose}: {onClose: () => void}) {
   // Is this component minimized?
   const [minimized, setMinimized] = useState({state: false, animating: false});
+
+  // Are we closing the modal?
+  const [closing, setClosing] = useState(false);
 
   // When mounting this component, it starts offscreen. Then, in an effect, we
   // animate the component into view with a spring model.
@@ -23,14 +26,20 @@ export function PostEditorModal() {
   useEffect(() => {
     // Declare the spring animation which will shrink or grow our modal.
     const animation = Animated.spring(translateY, {
-      // If the modal is currently minimized then animate it so that the title bar
-      // still shows but no other part of the editor.
-      //
-      // Otherwise, animate until we have fully opened the modal.
-      toValue: minimized.state ? PostEditorModal.height - TitleBar.height : 0,
+      toValue:
+        // If we are closing the modal then animate it all the way until it
+        // is gone.
+        closing
+          ? PostEditorModal.height
+          : // If the modal is currently minimized then animate it so that the
+          // title bar still shows but no other part of the editor.
+          minimized.state
+          ? PostEditorModal.height - TitleBar.height
+          : // Otherwise, animate until we have fully opened the modal.
+            0,
 
       friction: 10,
-      tension: 45,
+      tension: 55,
       overshootClamping: true,
       useNativeDriver: Platform.OS !== "web",
     });
@@ -41,6 +50,11 @@ export function PostEditorModal() {
 
     // Run the animation! Update the actual props when we are done.
     animation.start(() => {
+      // If we were closing then make sure to call our `onClose` prop!
+      if (closing) {
+        onClose();
+      }
+
       if (!stopped) {
         // If we are animating `minimized` then set `animating` to false.
         // Otherwise don’t update the state.
@@ -58,7 +72,7 @@ export function PostEditorModal() {
       stopped = true;
       animation.stop();
     };
-  }, [minimized, translateY]);
+  }, [closing, minimized, onClose, translateY]);
 
   // If we are animating `minimized` then interpolate the width based
   // on `translateY`.
@@ -84,7 +98,7 @@ export function PostEditorModal() {
             animating: true,
           }));
         }}
-        onClose={() => {}}
+        onClose={() => setClosing(true)}
       />
       <View style={styles.content} />
     </Animated.View>
