@@ -167,7 +167,7 @@ export const GlyphMap = {
   // minimize: 0xe99a,
   // "minus-circle": 0xe99b,
   // "minus-square": 0xe99c,
-  // minus: 0xe99d,
+  minus: 0xe99d,
   // monitor: 0xe99e,
   // moon: 0xe99f,
   // "more-horizontal": 0xe9a0,

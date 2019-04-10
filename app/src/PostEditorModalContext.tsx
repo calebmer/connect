@@ -39,7 +39,7 @@ const _PostEditorModalContext = React.createContext<PostEditorModalContext>({
 });
 
 /**
- *
+ * Use the `PostEditorModalContext` provided by our context.
  */
 export function usePostEditorModalContext(): PostEditorModalContext {
   return useContext(_PostEditorModalContext);
@@ -82,7 +82,7 @@ export function PostEditorModalContext({
           to load. */}
       {available && (
         <React.Suspense fallback={null}>
-          <PostEditorModal />
+          <PostEditorModal visible={visible} />
         </React.Suspense>
       )}
     </_PostEditorModalContext.Provider>

@@ -22,3 +22,10 @@ export const elevation3 = {
   shadowColor: "black",
   shadowOpacity: 0.12,
 };
+
+export const elevation4 = {
+  shadowOffset: {width: 0, height: 10},
+  shadowRadius: 24,
+  shadowColor: "black",
+  shadowOpacity: 0.12,
+};
