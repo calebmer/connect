@@ -1,4 +1,4 @@
-import React, {ReactNode, useContext, useMemo, useState} from "react";
+import React, {ReactNode, useContext, useMemo, useRef, useState} from "react";
 
 const PostEditorModal = React.lazy(() => {
   return import("./PostEditorModal").then(m => ({default: m.PostEditorModal}));
@@ -80,9 +80,9 @@ export function PostEditorModalContext({
 
       {/* TODO: Some loading indicator when the bundle is taking too long
           to load. */}
-      {available && (
+      {available && visible && (
         <React.Suspense fallback={null}>
-          <PostEditorModal visible={visible} />
+          <PostEditorModal />
         </React.Suspense>
       )}
     </_PostEditorModalContext.Provider>

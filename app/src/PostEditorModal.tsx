@@ -2,14 +2,12 @@ import {Border, Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import React, {useState} from "react";
 import {StyleSheet, Text, TouchableWithoutFeedback, View} from "react-native";
 
-export function PostEditorModal({visible}: {visible: boolean}) {
+export function PostEditorModal() {
   return (
     <View style={styles.container}>
-      {visible && (
-        <View style={styles.modal}>
-          <TitleBar />
-        </View>
-      )}
+      <View style={styles.modal}>
+        <TitleBar />
+      </View>
     </View>
   );
 }
