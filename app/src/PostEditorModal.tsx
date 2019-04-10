@@ -12,8 +12,7 @@ import {useConstant} from "./useConstant";
 
 export function PostEditorModal() {
   // Is this component minimized?
-  const [animateMinimized, setAnimateMinimized] = useState(false);
-  const [minimized, setMinimized] = useState(animateMinimized);
+  const [minimized, setMinimized] = useState({state: false, animating: false});
 
   // When mounting this component, it starts offscreen. Then, in an effect, we
   // animate the component into view with a spring model.
@@ -22,50 +21,65 @@ export function PostEditorModal() {
   );
 
   useEffect(() => {
-    // What value should we animated to?
-    let toValue;
-
-    // If the modal is currently minimized then animate it so that the title bar
-    // still shows but no other part of the editor.
-    if (animateMinimized) {
-      toValue = PostEditorModal.height - TitleBar.height;
-    }
-    // Otherwise, animate until we have fully opened the modal.
-    else {
-      toValue = 0;
-    }
-
     // Declare the spring animation which will shrink or grow our modal.
     const animation = Animated.spring(translateY, {
-      toValue,
+      // If the modal is currently minimized then animate it so that the title bar
+      // still shows but no other part of the editor.
+      //
+      // Otherwise, animate until we have fully opened the modal.
+      toValue: minimized.state ? PostEditorModal.height - TitleBar.height : 0,
+
       friction: 10,
-      tension: 28,
+      tension: 45,
       overshootClamping: true,
       useNativeDriver: Platform.OS !== "web",
     });
 
     // Run the animation! Update the actual props when we are done.
-    animation.start();
-
-    // After a bit, update our actual state using the animation state. We do
-    // this in a timeout since spring animations may take a while to complete.
-    const timeoutID = setTimeout(() => {
-      setMinimized(animateMinimized);
-    }, 200);
+    animation.start(() => {
+      // If we are animating `minimized` then set `animating` to false.
+      // Otherwise don’t update the state.
+      setMinimized(minimized => {
+        if (minimized.animating === true) {
+          return {state: minimized.state, animating: false};
+        } else {
+          return minimized;
+        }
+      });
+    });
 
     return () => {
       animation.stop();
-      clearTimeout(timeoutID);
     };
-  }, [animateMinimized, translateY]);
+  }, [minimized, translateY]);
+
+  // If we are animating `minimized` then interpolate the width based
+  // on `translateY`.
+  const width = minimized.animating
+    ? translateY.interpolate({
+        inputRange: [0, PostEditorModal.height - TitleBar.height],
+        outputRange: [PostEditorModal.width, PostEditorModal.minimizedWidth],
+      })
+    : // If we are not animating `minimized` then width is a constant. Note that
+    // this includes all animations that are not specifically an animation
+    // on `minimized`!
+    minimized.state
+    ? PostEditorModal.minimizedWidth
+    : PostEditorModal.width;
 
   return (
-    <Animated.View style={[styles.modal, {transform: [{translateY}]}]}>
+    <Animated.View style={[styles.modal, {width, transform: [{translateY}]}]}>
       <TitleBar
-        minimized={minimized}
-        onMinimizeToggle={() => setAnimateMinimized(minimized => !minimized)}
+        minimized={minimized.state}
+        onMinimizeToggle={() => {
+          setMinimized(minimized => ({
+            state: !minimized.state,
+            animating: true,
+          }));
+        }}
         onClose={() => {}}
       />
+      <View style={styles.content} />
     </Animated.View>
   );
 }
@@ -123,15 +137,18 @@ function TitleBarButton({
 
 TitleBar.height = Font.size1.fontSize + Space.space2 * 2;
 
+PostEditorModal.width = Font.maxWidth;
 PostEditorModal.height = Space.space15;
+
+PostEditorModal.minimizedWidth = Space.space11;
 
 const styles = StyleSheet.create({
   modal: {
     position: "absolute",
     bottom: 0,
-    right: Space.space7,
+    right: Space.space6,
     overflow: "hidden",
-    width: Font.maxWidth,
+    width: PostEditorModal.width,
     height: PostEditorModal.height,
     borderTopLeftRadius: Border.radius1,
     borderTopRightRadius: Border.radius1,
@@ -163,5 +180,8 @@ const styles = StyleSheet.create({
   },
   titleBarButtonHovered: {
     backgroundColor: Color.grey5,
+  },
+  content: {
+    width: PostEditorModal.width,
   },
 });
