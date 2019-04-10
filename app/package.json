@@ -37,6 +37,7 @@
     "@types/react-native": "^0.57.40",
     "@types/react-test-renderer": "^16.8.1",
     "babel-loader": "^8.0.5",
+    "babel-plugin-optimize-react": "^0.0.4",
     "babel-plugin-react-native-web": "^0.10.0",
     "circular-dependency-plugin": "^5.0.2",
     "css-loader": "^2.1.1",
