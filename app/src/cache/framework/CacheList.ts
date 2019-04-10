@@ -259,7 +259,7 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
       if (newItems.length > 0) {
         segments = [
           ...segments.slice(0, -1),
-          [...last(segments), ...newItems] as NonEmptyArray<Item>,
+          [...last(segments)!, ...newItems] as NonEmptyArray<Item>,
         ];
       }
     } else if (isNonEmpty(newItems)) {
@@ -315,7 +315,7 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
 
     // Get the upper and lower bound for our fetch.
     const lastSegmentFirstCursor =
-      segments.length > 0 ? this._cursor(last(segments)[0]) : null;
+      segments.length > 0 ? this._cursor(last(segments)![0]) : null;
     const secondSegmentLastCursor =
       segments.length > 1
         ? this._cursor(last(segments[segments.length - 2]))
@@ -349,7 +349,7 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
       if (segments.length > 0) {
         segments = [
           ...segments.slice(0, -1),
-          [...newItems, ...last(segments)] as NonEmptyArray<Item>,
+          [...newItems, ...last(segments)!] as NonEmptyArray<Item>,
         ];
       } else {
         segments = [...segments, newItems];
@@ -390,7 +390,7 @@ function isNonEmpty<Item>(
  * Small utility to get the last item in a non-empty array.
  */
 function last<Item>(array: NonEmptyArray<Item>): Item;
-function last<Item>(array: ReadonlyArray<Item>): Item;
+function last<Item>(array: ReadonlyArray<Item>): Item | undefined;
 function last<Item>(array: ReadonlyArray<Item>): Item | undefined {
   return array[array.length - 1];
 }
