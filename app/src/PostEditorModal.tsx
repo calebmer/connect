@@ -35,20 +35,27 @@ export function PostEditorModal() {
       useNativeDriver: Platform.OS !== "web",
     });
 
+    // When we call `animation.stop()` the animation “done” callback will run.
+    // Use this variable to detect when the animation was explicitly stopped.
+    let stopped = false;
+
     // Run the animation! Update the actual props when we are done.
     animation.start(() => {
-      // If we are animating `minimized` then set `animating` to false.
-      // Otherwise don’t update the state.
-      setMinimized(minimized => {
-        if (minimized.animating === true) {
-          return {state: minimized.state, animating: false};
-        } else {
-          return minimized;
-        }
-      });
+      if (!stopped) {
+        // If we are animating `minimized` then set `animating` to false.
+        // Otherwise don’t update the state.
+        setMinimized(minimized => {
+          if (minimized.animating === true) {
+            return {state: minimized.state, animating: false};
+          } else {
+            return minimized;
+          }
+        });
+      }
     });
 
     return () => {
+      stopped = true;
       animation.stop();
     };
   }, [minimized, translateY]);
@@ -94,18 +101,20 @@ function TitleBar({
   onClose: () => void;
 }) {
   return (
-    <View style={styles.titleBar}>
-      <Text style={styles.title} selectable={false} numberOfLines={1}>
-        New Post
-      </Text>
-      <View style={styles.titleBarButtons}>
-        <TitleBarButton
-          icon={minimized ? "chevron-up" : "chevron-down"}
-          onPress={onMinimizeToggle}
-        />
-        <TitleBarButton icon="x" onPress={onClose} />
+    <TouchableWithoutFeedback onPress={onMinimizeToggle}>
+      <View style={styles.titleBar}>
+        <Text style={styles.title} selectable={false} numberOfLines={1}>
+          New Post
+        </Text>
+        <View style={styles.titleBarButtons}>
+          <TitleBarButton
+            icon={minimized ? "chevron-up" : "chevron-down"}
+            onPress={onMinimizeToggle}
+          />
+          <TitleBarButton icon="x" onPress={onClose} />
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
