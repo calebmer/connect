@@ -115,7 +115,11 @@ function TitleBar({
   onClose: () => void;
 }) {
   return (
-    <TouchableWithoutFeedback onPress={onMinimizeToggle}>
+    <TouchableWithoutFeedback
+      disabled={!minimized}
+      accessible={false}
+      onPress={onMinimizeToggle}
+    >
       <View style={styles.titleBar}>
         <Text style={styles.title} selectable={false} numberOfLines={1}>
           New Post
@@ -151,6 +155,7 @@ function TitleBarButton({
           `React.cloneElement()` with the correct props. */}
       <View
         style={[styles.titleBarButton, hovered && styles.titleBarButtonHovered]}
+        accessibilityRole="button"
       >
         <Icon name={icon} color={hovered ? Color.white : Color.grey2} />
       </View>
