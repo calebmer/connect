@@ -14,6 +14,7 @@ import {PostRoute} from "./router/AllRoutes";
 import {Route} from "./router/Route";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCacheListData} from "./cache/framework/CacheList";
+import {useMutableContainer} from "./cache/framework/Mutable";
 
 function GroupHome({
   route,
@@ -84,7 +85,7 @@ function GroupSuspense({
       route={route}
       group={group}
       posts={posts}
-      selectedPostID={postID}
+      selectedPostID={useMutableContainer(postID)}
       loadingMorePosts={loading}
       onLoadMorePosts={useCallback(count => postCacheList.loadNext(count), [
         postCacheList,

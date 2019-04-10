@@ -1,4 +1,5 @@
 import {useEffect, useState} from "react";
+import {useConstant} from "../../useConstant";
 
 /**
  * A mutable container of a value which you can watch for changes. This is an
@@ -20,9 +21,11 @@ export class Mutable<Value> {
   }
 
   /**
-   * Gets the current mutable value.
+   * Gets the current mutable value. The name is long and complicated to
+   * remind anyone calling this function that they are only getting the
+   * _current_ value. There is a way to subscribe to the value over time.
    */
-  public get(): Value {
+  public getAtThisMomentInTime(): Value {
     return this.value;
   }
 
@@ -66,30 +69,76 @@ export class Mutable<Value> {
   }
 }
 
+/** The identity function. */
+function identity<T>(x: T): T {
+  return x;
+}
+
 /**
  * Uses a mutable value and subscribes to the value’s changes over time.
  */
 export function useMutable<Value>(mutable: Mutable<Value>): Value {
+  return useMutableSelect(mutable, identity);
+}
+
+/**
+ * Uses a mutable value and subscribes to the value’s changes over time.
+ *
+ * We allow the caller to provide a selector function which will only select a
+ * part of the mutable value. If the mutable value changes but the selection
+ * does not change then the component will not re-render.
+ */
+export function useMutableSelect<Value, ValueSelection>(
+  mutable: Mutable<Value>,
+  select: (value: Value) => ValueSelection,
+): ValueSelection {
   // Use a new state variable with the initial value. Make sure to
   // update the value again if it changes between our render and our effect
   // where we add a subscription below.
-  const [value, setValue] = useState(mutable.get());
+  const [value, setValue] = useState(select(mutable.getAtThisMomentInTime()));
 
   useEffect(() => {
     // There might have been an update between the render phase and the commit
     // phase. Update our state with the latest value just in case. React will
     // skip the update if our new state is equal to the old one.
-    setValue(mutable.get());
+    setValue(select(mutable.getAtThisMomentInTime()));
 
     // Subscribe to all future updates. Whenever the value updates we will also
     // update our state with the new value.
     const unsubscribe = mutable.subscribe(() => {
-      setValue(mutable.get());
+      setValue(select(mutable.getAtThisMomentInTime()));
     });
 
     // Unsubscribe when the effect is done.
     return unsubscribe;
-  }, [mutable]);
+  }, [mutable, select]);
 
   return value;
+}
+
+/**
+ * Lifts a value into a mutable container. The mutable value is constant over
+ * the lifetime of its containing component which means it won’t update any
+ * `memo()` components when the value changes.
+ *
+ * It’s useful to put frequently changing values into a mutable container so
+ * they only update the components which need them.
+ *
+ * When the value changes we update the mutable value in an effect. Which will
+ * trigger another render in subscribers to this mutable value instead of
+ * updating the value in the current render phase.
+ */
+export function useMutableContainer<Value>(value: Value): Mutable<Value> {
+  // Create a constant mutable container which will never change across
+  // component renders. Use the initial value for that mutable container.
+  const mutable = useConstant(() => new Mutable(value));
+
+  // Whenever the value changes, update our mutable container. The updated value
+  // will not be reflected in listeners for this render phase, but it will
+  // trigger an update which will re-render the app.
+  useEffect(() => {
+    mutable.set(value);
+  }, [mutable, value]);
+
+  return mutable;
 }

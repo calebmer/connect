@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import {Color, Font, Space} from "./atoms";
 import {CurrentAccountCache, useCurrentAccount} from "./cache/AccountCache";
+import {Mutable, useMutableContainer} from "./cache/framework/Mutable";
 import {
   PostCacheList,
   PostCacheListEntry,
@@ -53,7 +54,7 @@ function Group({
   route: Route;
   group: Group;
   posts: Array<PostCacheListEntry>;
-  selectedPostID: PostID | undefined;
+  selectedPostID: Mutable<PostID | undefined>;
   loadingMorePosts: boolean;
   onLoadMorePosts: (count: number) => Promise<unknown>;
 }) {
@@ -107,7 +108,7 @@ function Group({
           route={route}
           groupSlug={group.slug}
           postID={postID}
-          selected={selectedPostID === postID}
+          selectedPostID={selectedPostID}
         />
       ),
     };
@@ -243,7 +244,7 @@ export function GroupRoute({
       route={route}
       group={group}
       posts={posts}
-      selectedPostID={undefined}
+      selectedPostID={useMutableContainer(undefined)}
       loadingMorePosts={loading}
       onLoadMorePosts={count => postCacheList.loadNext(count)}
     />

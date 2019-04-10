@@ -95,11 +95,10 @@ export class Cache<Key extends string | number, Data> {
    * `useCacheData()` instead which will watch the cache for changes.
    */
   public load(key: Key): Promise<void> {
-    return Promise.resolve(
-      this.accessEntry(key)
-        .get()
-        .get(),
-    ).then(() => {});
+    const value = this.accessEntry(key)
+      .getAtThisMomentInTime()
+      .get();
+    return Promise.resolve(value).then(() => {});
   }
 
   /**
@@ -130,7 +129,7 @@ export class Cache<Key extends string | number, Data> {
     const values = Array<Async<Data>>(keys.size);
     let i = 0;
     for (const key of keys) {
-      values[i++] = this.accessEntry(key).get();
+      values[i++] = this.accessEntry(key).getAtThisMomentInTime();
     }
 
     // Loop through all of our values. If the value is a promise then let’s

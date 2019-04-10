@@ -66,10 +66,10 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
   public async loadFirst(count: number): Promise<ReadonlyArray<Item>> {
     // If the segments entry is pending then don’t update it! Instead let’s wait
     // for the segments entry to resolve and then we’ll try again.
-    let segments = this.segments.get().get();
+    let segments = this.segments.getAtThisMomentInTime().get();
     while (segments instanceof Promise) {
       await segments;
-      segments = this.segments.get().get();
+      segments = this.segments.getAtThisMomentInTime().get();
     }
 
     const newSegmentsPromise = this._loadFirst(segments, count);
@@ -139,10 +139,10 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
   public async loadNext(count: number): Promise<ReadonlyArray<Item>> {
     // If the segments entry is pending then don’t update it! Instead let’s wait
     // for the segments entry to resolve and then we’ll try again.
-    let segments = this.segments.get().get();
+    let segments = this.segments.getAtThisMomentInTime().get();
     while (segments instanceof Promise) {
       await segments;
-      segments = this.segments.get().get();
+      segments = this.segments.getAtThisMomentInTime().get();
     }
 
     const newSegmentsPromise = this._loadNext(segments, count);
@@ -218,10 +218,10 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
   public async loadLast(count: number): Promise<ReadonlyArray<Item>> {
     // If the segments entry is pending then don’t update it! Instead let’s wait
     // for the segments entry to resolve and then we’ll try again.
-    let segments = this.segments.get().get();
+    let segments = this.segments.getAtThisMomentInTime().get();
     while (segments instanceof Promise) {
       await segments;
-      segments = this.segments.get().get();
+      segments = this.segments.getAtThisMomentInTime().get();
     }
 
     const newSegmentsPromise = this._loadLast(segments, count);
@@ -291,10 +291,10 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
   async loadPrev(count: number): Promise<ReadonlyArray<Item>> {
     // If the segments entry is pending then don’t update it! Instead let’s wait
     // for the segments entry to resolve and then we’ll try again.
-    let segments = this.segments.get().get();
+    let segments = this.segments.getAtThisMomentInTime().get();
     while (segments instanceof Promise) {
       await segments;
-      segments = this.segments.get().get();
+      segments = this.segments.getAtThisMomentInTime().get();
     }
 
     const newSegmentsPromise = this._loadPrev(segments, count);
