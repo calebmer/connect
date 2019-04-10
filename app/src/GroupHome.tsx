@@ -35,8 +35,8 @@ function GroupHome({
     _postID != null ? (parseInt(_postID, 10) as PostID) : undefined;
 
   return (
-    <PostEditorModalContext available={breakpoint > Breakpoint.Tablet}>
-      <View style={styles.container}>
+    <View style={styles.container}>
+      <PostEditorModalContext available={breakpoint > Breakpoint.Tablet}>
         <View style={styles.group}>
           <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
         </View>
@@ -50,8 +50,8 @@ function GroupHome({
             />
           )}
         </View>
-      </View>
-    </PostEditorModalContext>
+      </PostEditorModalContext>
+    </View>
   );
 }
 
