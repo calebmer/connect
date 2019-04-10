@@ -1,6 +1,6 @@
 import {BodyText, Font} from "./atoms";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useState} from "react";
 import {ReadonlyMutable, useMutableSelect} from "./cache/framework/Mutable";
 import {AccountByline} from "./AccountByline";
 import {AccountCache} from "./cache/AccountCache";
@@ -38,13 +38,6 @@ function GroupItemFeed({
   // Are we in the process of selecting this group item?
   const [selecting, setSelecting] = useState(false);
 
-  // If we selected the component then we can set `selecting` back to false.
-  useEffect(() => {
-    if (selected && selecting) {
-      setSelecting(false);
-    }
-  }, [selected, selecting]);
-
   function handleSelect() {
     // While we wait for stuff to load, set selecting to true to give the
     // user immediate visual feedback. We have an effect which will set
@@ -56,6 +49,7 @@ function GroupItemFeed({
     // We assume that this will eventually change `selectedPostID`.
     stall(CommentCacheList.load(postID), () => {
       route.push(PostRoute, {groupSlug, postID: String(postID)});
+      setSelecting(false);
     });
   }
 

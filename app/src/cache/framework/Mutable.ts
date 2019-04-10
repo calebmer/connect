@@ -44,6 +44,24 @@ export class Mutable<Value> implements ReadonlyMutable<Value> {
   }
 
   /**
+   * Sets the current value and _synchronously_ calls all of our subscribers.
+   * Cancelling any asynchronous notifications which may have been scheduled.
+   *
+   * Use `set()` unless you absolutely must call the subscribers now. Any error
+   * thrown by a subscriber will be thrown from this function.
+   *
+   * If the current value is already equal by `===` to the new value then we
+   * don’t do anything.
+   */
+  public setSync(newValue: Value): void {
+    if (this.value !== newValue) {
+      this.value = newValue;
+      this.notifyScheduled = false; // Cancel any pending notifications.
+      this.subscribers.forEach(subscriber => subscriber());
+    }
+  }
+
+  /**
    * Subscribes to a value. The subscriber will be notified whenever the value
    * is updated. The subscriber may call `get()` to get the new value.
    */
@@ -62,8 +80,10 @@ export class Mutable<Value> implements ReadonlyMutable<Value> {
     if (this.notifyScheduled === false) {
       this.notifyScheduled = true;
       Promise.resolve().then(() => {
-        this.notifyScheduled = false;
-        this.subscribers.forEach(subscriber => subscriber());
+        if (this.notifyScheduled === true) {
+          this.notifyScheduled = false;
+          this.subscribers.forEach(subscriber => subscriber());
+        }
       });
     }
   }
@@ -149,12 +169,12 @@ export function useMutableContainer<Value>(
   // component renders. Use the initial value for that mutable container.
   const mutable = useConstant(() => new Mutable(value));
 
-  // Whenever the value changes, update our mutable container. The updated value
-  // will not be reflected in listeners for this render phase, but it will
-  // trigger an update which will re-render the app.
-  useEffect(() => {
-    mutable.set(value);
-  }, [mutable, value]);
+  // Update the mutable container. This does nothing if the mutable container
+  // already has this value.
+  //
+  // We do this synchronously in render to make sure the update happens in our
+  // current React commit before the next browser paint.
+  mutable.setSync(value);
 
   return mutable;
 }
