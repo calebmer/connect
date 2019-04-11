@@ -10,32 +10,30 @@ import {Border, Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import React, {useEffect, useState} from "react";
 import {useConstant} from "./useConstant";
 
-export function PostEditorModal({onClose}: {onClose: () => void}) {
+export function PostNewPopup({onClose}: {onClose: () => void}) {
   // Is this component minimized?
   const [minimized, setMinimized] = useState({state: false, animating: false});
 
-  // Are we closing the modal?
+  // Are we closing the editor?
   const [closing, setClosing] = useState(false);
 
   // When mounting this component, it starts offscreen. Then, in an effect, we
   // animate the component into view with a spring model.
-  const translateY = useConstant(
-    () => new Animated.Value(PostEditorModal.height),
-  );
+  const translateY = useConstant(() => new Animated.Value(PostNewPopup.height));
 
   useEffect(() => {
-    // Declare the spring animation which will shrink or grow our modal.
+    // Declare the spring animation which will shrink or grow our editor.
     const animation = Animated.spring(translateY, {
       toValue:
-        // If we are closing the modal then animate it all the way until it
+        // If we are closing the editor then animate it all the way until it
         // is gone.
         closing
-          ? PostEditorModal.height
-          : // If the modal is currently minimized then animate it so that the
+          ? PostNewPopup.height
+          : // If the editor is currently minimized then animate it so that the
           // title bar still shows but no other part of the editor.
           minimized.state
-          ? PostEditorModal.height - TitleBar.height
-          : // Otherwise, animate until we have fully opened the modal.
+          ? PostNewPopup.height - TitleBar.height
+          : // Otherwise, animate until we have fully opened the editor.
             0,
 
       friction: 10,
@@ -78,18 +76,20 @@ export function PostEditorModal({onClose}: {onClose: () => void}) {
   // on `translateY`.
   const width = minimized.animating
     ? translateY.interpolate({
-        inputRange: [0, PostEditorModal.height - TitleBar.height],
-        outputRange: [PostEditorModal.width, PostEditorModal.minimizedWidth],
+        inputRange: [0, PostNewPopup.height - TitleBar.height],
+        outputRange: [PostNewPopup.width, PostNewPopup.minimizedWidth],
       })
     : // If we are not animating `minimized` then width is a constant. Note that
     // this includes all animations that are not specifically an animation
     // on `minimized`!
     minimized.state
-    ? PostEditorModal.minimizedWidth
-    : PostEditorModal.width;
+    ? PostNewPopup.minimizedWidth
+    : PostNewPopup.width;
 
   return (
-    <Animated.View style={[styles.modal, {width, transform: [{translateY}]}]}>
+    <Animated.View
+      style={[styles.container, {width, transform: [{translateY}]}]}
+    >
       <TitleBar
         minimized={minimized.state}
         onMinimizeToggle={() => {
@@ -165,19 +165,19 @@ function TitleBarButton({
 
 TitleBar.height = Font.size1.fontSize + Space.space2 * 2;
 
-PostEditorModal.width = Font.maxWidth;
-PostEditorModal.height = Space.space15;
+PostNewPopup.width = Font.maxWidth;
+PostNewPopup.height = Space.space15;
 
-PostEditorModal.minimizedWidth = Space.space12;
+PostNewPopup.minimizedWidth = Space.space12;
 
 const styles = StyleSheet.create({
-  modal: {
+  container: {
     position: "absolute",
     bottom: 0,
     right: Space.space6,
     overflow: "hidden",
-    width: PostEditorModal.width,
-    height: PostEditorModal.height,
+    width: PostNewPopup.width,
+    height: PostNewPopup.height,
     borderTopLeftRadius: Border.radius1,
     borderTopRightRadius: Border.radius1,
     backgroundColor: Color.white,
@@ -210,6 +210,6 @@ const styles = StyleSheet.create({
     backgroundColor: Color.grey5,
   },
   content: {
-    width: PostEditorModal.width,
+    width: PostNewPopup.width,
   },
 });

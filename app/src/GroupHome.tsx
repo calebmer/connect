@@ -8,8 +8,8 @@ import {StyleSheet, View} from "react-native";
 import {CurrentAccountCache} from "./cache/AccountCache";
 import {GroupCache} from "./cache/GroupCache";
 import {PostCacheList} from "./cache/PostCache";
-import {PostEditorModalContext} from "./PostEditorModalContext";
 import {PostID} from "@connect/api-client";
+import {PostNewPopupContext} from "./PostNewPopupContext";
 import {PostRoute} from "./router/AllRoutes";
 import {Route} from "./router/Route";
 import {useCacheData} from "./cache/framework/Cache";
@@ -36,7 +36,7 @@ function GroupHome({
 
   return (
     <View style={styles.container}>
-      <PostEditorModalContext available={breakpoint > Breakpoint.Tablet}>
+      <PostNewPopupContext available={breakpoint > Breakpoint.Tablet}>
         <View style={styles.group}>
           <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
         </View>
@@ -50,7 +50,7 @@ function GroupHome({
             />
           )}
         </View>
-      </PostEditorModalContext>
+      </PostNewPopupContext>
     </View>
   );
 }
