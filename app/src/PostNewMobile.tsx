@@ -16,7 +16,7 @@ import {useCurrentAccount} from "./cache/AccountCache";
 // TODO: Make this actually usable on mobile web. I’ll probably have to use
 // content editable since the default React Native Web `<TextInput>` does
 // not grow...
-export function PostEditor({route}: {route: Route}) {
+export function PostNewMobile({route}: {route: Route}) {
   const [content, setContent] = useState("");
 
   return (
@@ -33,8 +33,8 @@ export function PostEditor({route}: {route: Route}) {
         // do that.
         contentInset={{bottom: Platform.OS === "ios" ? Space.space3 : 0}}
       >
-        <PostEditorHeader />
-        <PostEditorInput content={content} setContent={setContent} />
+        <PostNewMobileHeader />
+        <PostNewMobileInput content={content} setContent={setContent} />
       </NavbarNativeScrollView>
 
       {/* Fill the space behind the keyboard so that the keyboard does not hide
@@ -49,7 +49,7 @@ export function PostEditor({route}: {route: Route}) {
   );
 }
 
-function PostEditorHeader() {
+function PostNewMobileHeader() {
   const currentAccount = useCurrentAccount();
   return (
     <View style={styles.header}>
@@ -61,7 +61,7 @@ function PostEditorHeader() {
   );
 }
 
-function PostEditorInput({
+function PostNewMobileInput({
   content,
   setContent,
 }: {
