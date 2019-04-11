@@ -1,110 +1,38 @@
 import {EditorProps} from "./EditorProps";
 import React from "react";
 
-export function Editor({}: EditorProps) {
-  return (
-    <div
-      contentEditable
-      onInput={event => sanitizeNodeChildren(event.target)}
-    />
-  );
-}
-
-declare const Node: any;
-declare const document: any;
-declare const getComputedStyle: any;
-
-function sanitizeNodeChildren(parentNode: any) {
-  let previousRequiredLineBreakCount = -1;
-
-  let childNode = parentNode.firstChild;
-
-  while (childNode != null) {
-    const nextNode = childNode.nextSibling;
-
-    // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
-    switch (childNode.nodeType) {
-      // Text nodes are ok, don’t sanitize anything...
-      case Node.TEXT_NODE: {
-        previousRequiredLineBreakCount = 0;
-        break;
-      }
-
-      case Node.ELEMENT_NODE: {
-        let requiredLineBreakCount = 0;
-        const {display} = getComputedStyle(childNode);
-        if (isBlockLevelDisplay(display) || display === "table-caption") {
-          requiredLineBreakCount = 1;
-        }
-
-        switch (childNode.tagName) {
-          // Allow these tags...
-          case "DIV":
-          case "SPAN":
-          case "P":
-          case "BR":
-          case "STRONG":
-          case "EM":
-          case "B":
-          case "I": {
-            const attributeNames = childNode.getAttributeNames();
-            for (let i = 0; i < attributeNames.length; i++) {
-              childNode.removeAttribute(attributeNames[i]);
-            }
-            sanitizeNodeChildren(childNode);
-            break;
-          }
-
-          default: {
-            let innerText = childNode.innerText || "";
-
-            const actualRequiredLineBreakCount = Math.max(
-              previousRequiredLineBreakCount,
-              requiredLineBreakCount,
-            );
-            if (
-              previousRequiredLineBreakCount !== -1 &&
-              actualRequiredLineBreakCount > 0
-            ) {
-              innerText = "\n".repeat(actualRequiredLineBreakCount) + innerText;
-            }
-
-            parentNode.replaceChild(
-              document.createTextNode(innerText),
-              childNode,
-            );
-            break;
-          }
-        }
-
-        previousRequiredLineBreakCount = requiredLineBreakCount;
-        break;
-      }
-
-      default: {
-        parentNode.removeChild(childNode);
-        break;
-      }
-    }
-
-    childNode = nextNode;
-  }
-}
-
 /**
- * Is this a [`block-level`][1] display?
+ * Alright folks, let’s get crazy with our web editor component! Our web editor
+ * uses [`contentEditable`][1] which is known to be quite wild in everything
+ * it allows.
  *
- * [1]: https://drafts.csswg.org/css-display/#block-level
+ * There have been some pretty insane engineering efforts which have gone into
+ * taming `contentEditable`.
+ *
+ * - Facebook created [Draft.js][2] which is an absolutely huge library
+ *   effectively re-implementing browser editing.
+ * - Medium has a [fancy model][3] and they reinterpret all events as actions on
+ *   that model.
+ *
+ * These approaches are _big_ engineering solutions to the problem. Instead of
+ * doing something like that, our editor:
+ *
+ * - Accepts that we can’t tame `contentEditable`.
+ * - Embraces the browser engineering effort that goes into `contentEditable`.
+ * - Patches really bad ways the user can introduce non-standard styles.
+ * - Serializes content from the editor using, roughly, the HTML
+ *   [`innerText`][4] algorithm.
+ *
+ * Importantly, we don’t try to render HTML created with `contentEditable`
+ * anywhere outside of the editor it was created in. We serialize to a markup
+ * format (using an [`innerText`][4] like algorithm) and render that wherever
+ * the content is viewed.
+ *
+ * [1]: https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Editable_content
+ * [2]: https://draftjs.org
+ * [3]: https://medium.engineering/why-contenteditable-is-terrible-122d8a40e480
+ * [4]: https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
  */
-function isBlockLevelDisplay(display: string): boolean {
-  switch (display) {
-    case "block":
-    case "flow-root":
-    case "flex":
-    case "grid":
-    case "table":
-      return true;
-    default:
-      return false;
-  }
+export function Editor({}: EditorProps) {
+  return <div contentEditable />;
 }
