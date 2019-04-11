@@ -168,7 +168,7 @@ TitleBar.height = Font.size1.fontSize + Space.space2 * 2;
 PostEditorModal.width = Font.maxWidth;
 PostEditorModal.height = Space.space15;
 
-PostEditorModal.minimizedWidth = Space.space11;
+PostEditorModal.minimizedWidth = Space.space12;
 
 const styles = StyleSheet.create({
   modal: {
