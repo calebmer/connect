@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import {Border, Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import React, {useEffect, useState} from "react";
+import {PostNewHeader} from "./PostNewHeader";
 import {useConstant} from "./useConstant";
 
 export function PostNewPopup({onClose}: {onClose: () => void}) {
@@ -100,7 +101,9 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
         }}
         onClose={() => setClosing(true)}
       />
-      <View style={styles.content} />
+      <View style={styles.content}>
+        <PostNewHeader />
+      </View>
     </Animated.View>
   );
 }

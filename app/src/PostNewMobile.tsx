@@ -1,4 +1,4 @@
-import {Color, Font, LabelText, Space} from "./atoms";
+import {Color, Font, Space} from "./atoms";
 import {
   Keyboard,
   KeyboardEvent,
@@ -8,10 +8,9 @@ import {
   View,
 } from "react-native";
 import React, {useEffect, useState} from "react";
-import {AccountAvatar} from "./AccountAvatar";
 import {NavbarNativeScrollView} from "./NavbarNativeScrollView";
+import {PostNewHeader} from "./PostNewHeader";
 import {Route} from "./router/Route";
-import {useCurrentAccount} from "./cache/AccountCache";
 
 // TODO: Make this actually usable on mobile web. I’ll probably have to use
 // content editable since the default React Native Web `<TextInput>` does
@@ -33,7 +32,7 @@ export function PostNewMobile({route}: {route: Route}) {
         // do that.
         contentInset={{bottom: Platform.OS === "ios" ? Space.space3 : 0}}
       >
-        <PostNewMobileHeader />
+        <PostNewHeader />
         <PostNewMobileInput content={content} setContent={setContent} />
       </NavbarNativeScrollView>
 
@@ -46,18 +45,6 @@ export function PostNewMobile({route}: {route: Route}) {
         }}
       />
     </>
-  );
-}
-
-function PostNewMobileHeader() {
-  const currentAccount = useCurrentAccount();
-  return (
-    <View style={styles.header}>
-      <AccountAvatar account={currentAccount} />
-      <View style={styles.byline}>
-        <LabelText>{currentAccount.name}</LabelText>
-      </View>
-    </View>
   );
 }
 
@@ -110,14 +97,6 @@ function useKeyboardHeight() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    padding: Space.space3,
-    paddingBottom: 0,
-  },
-  byline: {
-    paddingLeft: Space.space3,
-  },
   input: {
     paddingTop: Space.space3,
     paddingBottom: Platform.OS === "ios" ? 0 : Space.space3,
