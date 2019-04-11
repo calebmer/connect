@@ -1,13 +1,7 @@
-import {Color, Font, Space} from "./atoms";
-import {
-  Keyboard,
-  KeyboardEvent,
-  Platform,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import {Color, Space} from "./atoms";
+import {Keyboard, KeyboardEvent, Platform, View} from "react-native";
 import React, {useEffect, useState} from "react";
+import {Editor} from "./Editor";
 import {NavbarNativeScrollView} from "./NavbarNativeScrollView";
 import {PostNewHeader} from "./PostNewHeader";
 import {Route} from "./router/Route";
@@ -18,22 +12,35 @@ import {Route} from "./router/Route";
 export function PostNewMobile({route}: {route: Route}) {
   const [content, setContent] = useState("");
 
+  // When entering new content in a `UITextView`, iOS will scroll any parent
+  // `UIScrollView` down as the text view grows. We want to make sure that iOS
+  // scrolls all the way to the bottom of our content (which includes some
+  // padding). `paddingBottom` on `<PostEditorInput>` won’t be respected, but
+  // inset on the scroll view will be respected. So do that.
+  const contentInsetHack = Platform.OS === "ios";
+
   return (
     <>
       <NavbarNativeScrollView
         route={route}
         useTitle={() => "New Post"}
         keyboardShouldPersistTaps="always"
-        // When entering new content in a `UITextView`, iOS will scroll any
-        // parent `UIScrollView` down as the text view grows. We want to make
-        // sure that iOS scrolls all the way to the bottom of our content (which
-        // includes some padding). `paddingBottom` on `<PostEditorInput>` won’t
-        // be respected, but inset on the scroll view will be respected. So
-        // do that.
-        contentInset={{bottom: Platform.OS === "ios" ? Space.space3 : 0}}
+        // Add some inset to the bottom of our scroll view which will replace
+        // our padding.
+        contentInset={contentInsetHack ? {bottom: Space.space3} : undefined}
       >
         <PostNewHeader />
-        <PostNewMobileInput content={content} setContent={setContent} />
+        <Editor
+          content={content}
+          placeholder="Start a conversation…"
+          autoFocus
+          onChange={setContent}
+        />
+        {contentInsetHack && (
+          // Use negative margin since we add padding to the scroll view in the
+          // form of content inset.
+          <View style={{marginBottom: -Space.space3}} />
+        )}
       </NavbarNativeScrollView>
 
       {/* Fill the space behind the keyboard so that the keyboard does not hide
@@ -45,27 +52,6 @@ export function PostNewMobile({route}: {route: Route}) {
         }}
       />
     </>
-  );
-}
-
-function PostNewMobileInput({
-  content,
-  setContent,
-}: {
-  content: string;
-  setContent: (content: string) => void;
-}) {
-  return (
-    <TextInput
-      style={styles.input}
-      multiline
-      value={content}
-      placeholder="Start a conversation…"
-      placeholderTextColor={Color.grey3}
-      onChangeText={setContent}
-      autoFocus
-      scrollEnabled={false}
-    />
   );
 }
 
@@ -95,15 +81,3 @@ function useKeyboardHeight() {
 
   return keyboardHeight;
 }
-
-const styles = StyleSheet.create({
-  input: {
-    paddingTop: Space.space3,
-    paddingBottom: Platform.OS === "ios" ? 0 : Space.space3,
-    paddingHorizontal: Space.space3,
-    textAlignVertical: "top",
-    color: Color.grey8,
-    ...Font.serif,
-    ...Font.size3,
-  },
-});
