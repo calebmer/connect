@@ -1,114 +1,175 @@
 import {
   Animated,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import {Border, Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useReducer, useState} from "react";
+import {Editor} from "./Editor";
 import {PostNewHeader} from "./PostNewHeader";
 import {useConstant} from "./useConstant";
 
+// The default width and height of our editor.
+PostNewPopup.width = Font.maxWidth;
+PostNewPopup.height = Space.space15;
+
+// When the editor is minimized we will use this width.
+PostNewPopup.minimizedWidth = Space.space12;
+
+// The height of our editor’s title bar.
+PostNewPopupTitleBar.height = Font.size1.fontSize + Space.space2 * 2;
+
+/**
+ * The state of our popup. We keep track of the current state type and the
+ * offset/width for each state.
+ */
+type PostNewPopupState = {
+  /** Is our popup opened or closed? */
+  type: "OPENED" | "MINIMIZED" | "CLOSED";
+  /** Is our popup currently animating? */
+  animating: boolean;
+  /** What is our popup’s offset from the bottom of the screen? */
+  offset: number;
+  /** What is the width of our popup? */
+  width: number;
+};
+
+/** An action which we trigger to change the state of our popup. */
+type PostNewPopupAction =
+  | {type: "MINIMIZE"}
+  | {type: "MAXIMIZE"}
+  | {type: "CLOSE"}
+  | {type: "ANIMATION_DONE"};
+
+/** The initial state of our popup. */
+const initialState: PostNewPopupState = {
+  type: "OPENED",
+  animating: true,
+  offset: PostNewPopup.height,
+  width: PostNewPopup.width,
+};
+
+/** Update our state based on an incoming action. */
+function reducer(
+  state: PostNewPopupState,
+  action: PostNewPopupAction,
+): PostNewPopupState {
+  switch (action.type) {
+    case "MINIMIZE":
+      return {
+        type: "MINIMIZED",
+        animating: true,
+        offset: PostNewPopupTitleBar.height,
+        width: PostNewPopup.minimizedWidth,
+      };
+    case "MAXIMIZE":
+      return {
+        type: "OPENED",
+        animating: true,
+        offset: PostNewPopup.height,
+        width: PostNewPopup.width,
+      };
+    case "CLOSE": {
+      return {
+        type: "CLOSED",
+        animating: true,
+        offset: 0,
+        width: state.width, // When closing the popup we keep the current width.
+      };
+    }
+    case "ANIMATION_DONE":
+      return state.animating ? {...state, animating: false} : state;
+    default: {
+      const never: never = action;
+      throw new Error(`Unexpected type: ${never["type"]}`);
+    }
+  }
+}
+
+/**
+ * The popup component renders the popup and manages its various animations as
+ * effects which react to the component state.
+ */
 export function PostNewPopup({onClose}: {onClose: () => void}) {
-  // Is this component minimized?
-  const [minimized, setMinimized] = useState({state: false, animating: false});
+  // Setup our component state...
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  // Are we closing the editor?
-  const [closing, setClosing] = useState(false);
-
-  // When mounting this component, it starts offscreen. Then, in an effect, we
-  // animate the component into view with a spring model.
+  // Setup our animated values...
   const translateY = useConstant(() => new Animated.Value(PostNewPopup.height));
+  const width = useConstant(() => new Animated.Value(PostNewPopup.width));
 
+  // When the popup closes we need to call our `onClose` callback which will
+  // remove our popup from the view hierarchy.
   useEffect(() => {
-    // Declare the spring animation which will shrink or grow our editor.
-    const animation = Animated.spring(translateY, {
-      toValue:
-        // If we are closing the editor then animate it all the way until it
-        // is gone.
-        closing
-          ? PostNewPopup.height
-          : // If the editor is currently minimized then animate it so that the
-          // title bar still shows but no other part of the editor.
-          minimized.state
-          ? PostNewPopup.height - TitleBar.height
-          : // Otherwise, animate until we have fully opened the editor.
-            0,
+    if (!state.animating && state.type === "CLOSED") {
+      onClose();
+    }
+  }, [onClose, state.animating, state.type]);
 
-      friction: 10,
-      tension: 55,
-      overshootClamping: true,
-      useNativeDriver: Platform.OS !== "web",
-    });
+  // When our state changes trigger our animations in response. When the
+  // animation finishes let our state know.
+  useEffect(() => {
+    if (!state.animating) {
+      translateY.setValue(PostNewPopup.height - state.offset);
+      return;
+    } else {
+      const animation = Animated.parallel([
+        Animated.spring(translateY, {
+          toValue: PostNewPopup.height - state.offset,
+          friction: 10,
+          tension: 55,
+          overshootClamping: true,
+          useNativeDriver: Platform.OS !== "web",
+        }),
+        Animated.spring(width, {
+          toValue: state.width,
+          friction: 10,
+          tension: 55,
+          overshootClamping: true,
+          useNativeDriver: Platform.OS !== "web",
+        }),
+      ]);
 
-    // When we call `animation.stop()` the animation “done” callback will run.
-    // Use this variable to detect when the animation was explicitly stopped.
-    let stopped = false;
+      animation.start(({finished}) => {
+        if (finished) {
+          dispatch({type: "ANIMATION_DONE"});
+        }
+      });
 
-    // Run the animation! Update the actual props when we are done.
-    animation.start(() => {
-      // If we were closing then make sure to call our `onClose` prop!
-      if (closing) {
-        onClose();
-      }
-
-      if (!stopped) {
-        // If we are animating `minimized` then set `animating` to false.
-        // Otherwise don’t update the state.
-        setMinimized(minimized => {
-          if (minimized.animating === true) {
-            return {state: minimized.state, animating: false};
-          } else {
-            return minimized;
-          }
-        });
-      }
-    });
-
-    return () => {
-      stopped = true;
-      animation.stop();
-    };
-  }, [closing, minimized, onClose, translateY]);
-
-  // If we are animating `minimized` then interpolate the width based
-  // on `translateY`.
-  const width = minimized.animating
-    ? translateY.interpolate({
-        inputRange: [0, PostNewPopup.height - TitleBar.height],
-        outputRange: [PostNewPopup.width, PostNewPopup.minimizedWidth],
-      })
-    : // If we are not animating `minimized` then width is a constant. Note that
-    // this includes all animations that are not specifically an animation
-    // on `minimized`!
-    minimized.state
-    ? PostNewPopup.minimizedWidth
-    : PostNewPopup.width;
+      return () => {
+        animation.stop();
+      };
+    }
+  }, [state.animating, state.offset, state.width, translateY, width]);
 
   return (
     <Animated.View
       style={[styles.container, {width, transform: [{translateY}]}]}
     >
-      <TitleBar
-        minimized={minimized.state}
+      <PostNewPopupTitleBar
+        minimized={state.type === "MINIMIZED"}
         onMinimizeToggle={() => {
-          setMinimized(minimized => ({
-            state: !minimized.state,
-            animating: true,
-          }));
+          if (state.type === "MINIMIZED") {
+            dispatch({type: "MAXIMIZE"});
+          } else {
+            dispatch({type: "MINIMIZE"});
+          }
         }}
-        onClose={() => setClosing(true)}
+        onClose={() => dispatch({type: "CLOSE"})}
       />
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <PostNewHeader />
-      </View>
+        <Editor placeholder="Start a conversation…" />
+      </ScrollView>
     </Animated.View>
   );
 }
 
-function TitleBar({
+function PostNewPopupTitleBar({
   minimized,
   onMinimizeToggle,
   onClose,
@@ -128,18 +189,18 @@ function TitleBar({
           New Post
         </Text>
         <View style={styles.titleBarButtons}>
-          <TitleBarButton
+          <PostNewPopupTitleBarButton
             icon={minimized ? "chevron-up" : "chevron-down"}
             onPress={onMinimizeToggle}
           />
-          <TitleBarButton icon="x" onPress={onClose} />
+          <PostNewPopupTitleBarButton icon="x" onPress={onClose} />
         </View>
       </View>
     </TouchableWithoutFeedback>
   );
 }
 
-function TitleBarButton({
+function PostNewPopupTitleBarButton({
   icon,
   onPress,
 }: {
@@ -166,13 +227,6 @@ function TitleBarButton({
   );
 }
 
-TitleBar.height = Font.size1.fontSize + Space.space2 * 2;
-
-PostNewPopup.width = Font.maxWidth;
-PostNewPopup.height = Space.space15;
-
-PostNewPopup.minimizedWidth = Space.space12;
-
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
@@ -190,7 +244,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: TitleBar.height,
+    height: PostNewPopupTitleBar.height,
     backgroundColor: Color.grey7,
   },
   title: {
@@ -213,6 +267,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.grey5,
   },
   content: {
+    flex: 1,
     width: PostNewPopup.width,
   },
 });
