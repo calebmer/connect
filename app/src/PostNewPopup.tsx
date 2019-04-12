@@ -8,8 +8,8 @@ import {
   View,
 } from "react-native";
 import {Border, Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
-import React, {useEffect, useReducer, useState} from "react";
-import {Editor} from "./Editor";
+import {Editor, EditorInstance} from "./Editor";
+import React, {useEffect, useReducer, useRef, useState} from "react";
 import {PostNewHeader} from "./PostNewHeader";
 import {useConstant} from "./useConstant";
 import {useCurrentAccount} from "./cache/AccountCache";
@@ -98,12 +98,24 @@ function reducer(
 export function PostNewPopup({onClose}: {onClose: () => void}) {
   const currentAccount = useCurrentAccount();
 
+  // Get a reference to our editor...
+  const editor = useRef<EditorInstance>(null);
+
   // Setup our component state...
   const [state, dispatch] = useReducer(reducer, initialState);
 
   // Setup our animated values...
   const translateY = useConstant(() => new Animated.Value(PostNewPopup.height));
   const width = useConstant(() => new Animated.Value(PostNewPopup.width));
+
+  // Whenever the popup opens, we want to focus the editor.
+  useEffect(() => {
+    if (!state.animating && state.type === "OPENED") {
+      if (editor.current) {
+        editor.current.focus();
+      }
+    }
+  }, [state.animating, state.type]);
 
   // When the popup closes we need to call our `onClose` callback which will
   // remove our popup from the view hierarchy.
@@ -166,7 +178,7 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
       />
       <ScrollView contentContainerStyle={styles.content}>
         <PostNewHeader currentAccount={currentAccount} />
-        <Editor placeholder="Start a conversation…" />
+        <Editor ref={editor} placeholder="Start a conversation…" />
       </ScrollView>
     </Animated.View>
   );
