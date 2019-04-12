@@ -226,20 +226,24 @@ function PostNewPopupTitleBarButton({
   onPress: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const active = hovered || focused;
 
   return (
     <TouchableWithoutFeedback
       onPress={onPress}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
     >
       {/* We need the <View> because <TouchableWithoutFeedback> works by calling
           `React.cloneElement()` with the correct props. */}
       <View
-        style={[styles.titleBarButton, hovered && styles.titleBarButtonHovered]}
+        style={[styles.titleBarButton, active && styles.titleBarButtonActive]}
         accessibilityRole="button"
       >
-        <Icon name={icon} color={hovered ? Color.white : Color.grey2} />
+        <Icon name={icon} color={active ? Color.white : Color.grey2} />
       </View>
     </TouchableWithoutFeedback>
   );
@@ -280,8 +284,9 @@ const styles = StyleSheet.create({
     padding: Space.space0 / 2,
     margin: Space.space0 / 2,
     borderRadius: 100,
+    outlineWidth: 0,
   },
-  titleBarButtonHovered: {
+  titleBarButtonActive: {
     backgroundColor: Color.grey5,
   },
   content: {

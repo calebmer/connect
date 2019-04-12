@@ -40,5 +40,19 @@ declare module "react-native" {
      * https://developer.mozilla.org/en-US/docs/Web/API/Element/mouseleave_event
      */
     onMouseLeave?: () => void;
+
+    /**
+     * The focus event fires when an element has received focus.
+     *
+     * https://developer.mozilla.org/en-US/docs/Web/API/Element/focus_event
+     */
+    onFocus?: () => void;
+
+    /**
+     * The blur event fires when an element has lost focus.
+     *
+     * https://developer.mozilla.org/en-US/docs/Web/API/Element/blur_event
+     */
+    onBlur?: () => void;
   }
 }
