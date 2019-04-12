@@ -3,20 +3,13 @@ import {StyleSheet, TextInput} from "react-native";
 import {EditorProps} from "./EditorProps";
 import React from "react";
 
-export function Editor({
-  content,
-  placeholder,
-  autoFocus,
-  onChange,
-}: EditorProps) {
+export function Editor({placeholder, autoFocus}: EditorProps) {
   return (
     <TextInput
       style={styles.editor}
       multiline
-      value={content}
       placeholder={placeholder}
       placeholderTextColor={Color.grey3}
-      onChangeText={onChange}
       autoFocus={autoFocus}
       scrollEnabled={false}
     />

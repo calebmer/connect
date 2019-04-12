@@ -1,5 +1,8 @@
+import {Color, Font, Space} from "./atoms";
+import React, {useRef, useState} from "react";
+import {StyleSheet, Text, View} from "react-native";
 import {EditorProps} from "./EditorProps";
-import React from "react";
+import {createElement} from "react-native-web";
 
 declare const document: any;
 
@@ -41,7 +44,14 @@ declare const document: any;
  * [5]: https://github.com/facebook/draft-js/blob/f9f5fd6ed1df237389b6bfe9db90e62fe7d4237c/src/component/base/DraftEditor.react.js#L392-L411
  * [6]: https://github.com/facebook/draft-js/tree/f9f5fd6ed1df237389b6bfe9db90e62fe7d4237c/src/component/handlers/edit
  */
-export function Editor({}: EditorProps) {
+export function Editor({placeholder}: EditorProps) {
+  const editor = useRef<HTMLDivElement>(null);
+  const [showPlaceholder, setShowPlaceholder] = useState(true);
+
+  function handleInput() {
+    setShowPlaceholder(editor.current ? isEditorEmpty(editor.current) : true);
+  }
+
   /**
    * Don’t allow the user to paste raw HTML into the editor. Instead, force the
    * clipboard data to plain text and then insert it.
@@ -64,5 +74,94 @@ export function Editor({}: EditorProps) {
     document.execCommand("insertText", false, pasteData);
   }
 
-  return <div contentEditable onPaste={handlePaste} />;
+  // Use the React Native Web styling engine to create a `contentEditable` div.
+  return (
+    <View style={styles.container}>
+      {showPlaceholder && (
+        <Text
+          style={styles.placeholder}
+          pointerEvents="none"
+          selectable={false}
+        >
+          {placeholder}
+        </Text>
+      )}
+      {createElement("div", {
+        ref: editor,
+        style: styles.editor,
+        contentEditable: true,
+        onInput: handleInput,
+        onPaste: handlePaste,
+      })}
+    </View>
+  );
 }
+
+/**
+ * Is our editor element empty? We use this to determine whether or not we
+ * should show the placeholder.
+ *
+ * Our document is considered empty when:
+ *
+ * - There are no text nodes with content.
+ * - There are no `<br>` elements.
+ */
+function isEditorEmpty(node: any): boolean {
+  // If there is a `<br>` element then that means we have an empty line in our
+  // editor so it is not empty.
+  //
+  // We want to consider a single `<br>` element in the editor to be an
+  // empty editor.
+  if (node.nodeType === 1 && node.tagName === "BR" && !isFirstNode(node)) {
+    return false;
+  }
+
+  // Is this a text node with some text content? If so then our editor is
+  // not empty.
+  if (node.nodeType === 3 && node.wholeText.length > 0) {
+    return false;
+  }
+
+  // Check to see if all of our child nodes are empty.
+  for (let i = 0; i < node.childNodes.length; i++) {
+    if (!isEditorEmpty(node.childNodes[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Is this the very first node in our content editable?
+ */
+function isFirstNode(node: any): boolean {
+  if (node.contentEditable === "true") {
+    return true;
+  }
+  if (node.parentNode.firstChild !== node) {
+    return false;
+  }
+  return isFirstNode(node.parentNode);
+}
+
+const styles = StyleSheet.create({
+  container: {
+    position: "relative",
+  },
+  placeholder: {
+    position: "absolute",
+    top: Space.space3,
+    left: Space.space3,
+    color: Color.grey3,
+    ...Font.serif,
+    ...Font.size2,
+  },
+  editor: {
+    padding: Space.space3,
+    color: Color.grey8,
+    ...Font.serif,
+    ...Font.size2,
+    outlineWidth: 0,
+  },
+});

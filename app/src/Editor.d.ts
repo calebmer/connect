@@ -11,5 +11,8 @@ import React from "react";
  *
  * On native it is implemented with a multiline `<TextInput>`. On web it is
  * implemented with `contentEditable`.
+ *
+ * Because of our implementation of the editor on web, computing the current
+ * value of the input can be costly. So all editor components are uncontrolled.
  */
 export const Editor: React.ComponentType<EditorProps>;
