@@ -109,13 +109,16 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
   const width = useConstant(() => new Animated.Value(PostNewPopup.width));
 
   // Whenever the popup opens, we want to focus the editor.
+  //
+  // NOTE: On the web we have to prevent our container from scrolling when we
+  // focus an offscreen element. We do so in `GroupHomeContainer.web.tsx`.
   useEffect(() => {
-    if (!state.animating && state.type === "OPENED") {
+    if (state.type === "OPENED") {
       if (editor.current) {
         editor.current.focus();
       }
     }
-  }, [state.animating, state.type]);
+  }, [state.type]);
 
   // When the popup closes we need to call our `onClose` callback which will
   // remove our popup from the view hierarchy.
@@ -226,9 +229,9 @@ function PostNewPopupTitleBarButton({
 
   return (
     <TouchableWithoutFeedback
+      onPress={onPress}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onPress={onPress}
     >
       {/* We need the <View> because <TouchableWithoutFeedback> works by calling
           `React.cloneElement()` with the correct props. */}

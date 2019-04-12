@@ -7,6 +7,7 @@ import {Shadow, Space} from "./atoms";
 import {StyleSheet, View} from "react-native";
 import {CurrentAccountCache} from "./cache/AccountCache";
 import {GroupCache} from "./cache/GroupCache";
+import {GroupHomeContainer} from "./GroupHomeContainer";
 import {PostCacheList} from "./cache/PostCache";
 import {PostID} from "@connect/api-client";
 import {PostNewPopupContext} from "./PostNewPopupContext";
@@ -35,7 +36,7 @@ function GroupHome({
     _postID != null ? (parseInt(_postID, 10) as PostID) : undefined;
 
   return (
-    <View style={styles.container}>
+    <GroupHomeContainer>
       <PostNewPopupContext available={breakpoint > Breakpoint.Tablet}>
         <View style={styles.group}>
           <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
@@ -51,7 +52,7 @@ function GroupHome({
           )}
         </View>
       </PostNewPopupContext>
-    </View>
+    </GroupHomeContainer>
   );
 }
 
@@ -136,11 +137,6 @@ export function GroupHomeRoute({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: "row",
-    overflow: "hidden",
-  },
   group: {
     flex: 3,
     maxWidth: Space.space12,
