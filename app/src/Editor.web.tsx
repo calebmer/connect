@@ -147,6 +147,7 @@ function isFirstNode(node: any): boolean {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     position: "relative",
   },
   placeholder: {
@@ -158,6 +159,7 @@ const styles = StyleSheet.create({
     ...Font.size2,
   },
   editor: {
+    flex: 1,
     padding: Space.space3,
     color: Color.grey8,
     ...Font.serif,

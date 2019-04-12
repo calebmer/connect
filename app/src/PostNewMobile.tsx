@@ -1,5 +1,11 @@
 import {Color, Space} from "./atoms";
-import {Keyboard, KeyboardEvent, Platform, View} from "react-native";
+import {
+  Keyboard,
+  KeyboardEvent,
+  Platform,
+  StyleSheet,
+  View,
+} from "react-native";
 import React, {useEffect, useState} from "react";
 import {Editor} from "./Editor";
 import {NavbarNativeScrollView} from "./NavbarNativeScrollView";
@@ -10,8 +16,6 @@ import {Route} from "./router/Route";
 // content editable since the default React Native Web `<TextInput>` does
 // not grow...
 export function PostNewMobile({route}: {route: Route}) {
-  const [content, setContent] = useState("");
-
   // When entering new content in a `UITextView`, iOS will scroll any parent
   // `UIScrollView` down as the text view grows. We want to make sure that iOS
   // scrolls all the way to the bottom of our content (which includes some
@@ -23,6 +27,7 @@ export function PostNewMobile({route}: {route: Route}) {
     <>
       <NavbarNativeScrollView
         route={route}
+        contentContainerStyle={styles.container}
         useTitle={() => "New Post"}
         keyboardShouldPersistTaps="always"
         // Add some inset to the bottom of our scroll view which will replace
@@ -30,12 +35,7 @@ export function PostNewMobile({route}: {route: Route}) {
         contentInset={contentInsetHack ? {bottom: Space.space3} : undefined}
       >
         <PostNewHeader />
-        <Editor
-          content={content}
-          placeholder="Start a conversation…"
-          autoFocus
-          onChange={setContent}
-        />
+        <Editor placeholder="Start a conversation…" autoFocus />
         {contentInsetHack && (
           // Use negative margin since we add padding to the scroll view in the
           // form of content inset.
@@ -81,3 +81,10 @@ function useKeyboardHeight() {
 
   return keyboardHeight;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    // Setting `flex: 1` on iOS gives us a scroll bar, so we don’t bother.
+    flex: Platform.OS === "web" ? 1 : undefined,
+  },
+});

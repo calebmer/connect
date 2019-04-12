@@ -18,6 +18,7 @@ export function Editor({placeholder, autoFocus}: EditorProps) {
 
 const styles = StyleSheet.create({
   editor: {
+    flex: 1,
     padding: Space.space3,
     paddingTop: Space.space3, // Manually override default `paddingTop` on `<TextInput>`
     textAlignVertical: "top",
