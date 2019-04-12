@@ -1,4 +1,4 @@
-import React, {ReactNode, useContext, useMemo, useState} from "react";
+import React, {useContext, useMemo, useState} from "react";
 
 const PostNewPopup = React.lazy(() => {
   return import("./PostNewPopup").then(m => ({default: m.PostNewPopup}));
@@ -54,7 +54,7 @@ export function PostNewPopupContext({
   children,
 }: {
   available?: boolean;
-  children: ReactNode;
+  children: React.Node;
 }) {
   const [visible, setVisible] = useState(false);
 

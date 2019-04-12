@@ -1,10 +1,10 @@
 import * as Color from "./Color";
 import * as Font from "./Font";
 import {TextProps as NativeTextProps, StyleSheet, Text} from "react-native";
-import React, {ReactNode} from "react";
+import React from "react";
 
 interface TextProps extends NativeTextProps {
-  readonly children: ReactNode;
+  readonly children: React.Node;
 }
 
 /**

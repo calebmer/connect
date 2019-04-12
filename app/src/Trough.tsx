@@ -1,6 +1,6 @@
 import {Color, Font, Shadow, Space} from "./atoms";
-import React, {ReactNode} from "react";
 import {StyleSheet, Text, View} from "react-native";
+import React from "react";
 
 /**
  * Name comes from a [“trough”][1] that animals drink out of. Also used in
@@ -17,7 +17,7 @@ export function Trough({
   title?: string;
   hideTopShadow?: boolean;
   hideBottomShadow?: boolean;
-  children?: ReactNode;
+  children?: React.Node;
 }) {
   return (
     <View style={styles.trough}>

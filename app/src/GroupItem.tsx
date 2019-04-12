@@ -1,6 +1,6 @@
 import {Border, Color, Icon, Space} from "./atoms";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
-import React, {ReactNode, useContext, useState} from "react";
+import React, {useContext, useState} from "react";
 import {StyleSheet, TouchableWithoutFeedback, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
@@ -38,7 +38,7 @@ export function GroupItem({
    * The body content of our group item to the right of the item’s
    * account avatar.
    */
-  children: ReactNode;
+  children: React.Node;
 }) {
   // Is this component pressed?
   const [pressed, setPressed] = useState(false);

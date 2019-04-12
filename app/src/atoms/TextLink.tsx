@@ -1,5 +1,5 @@
 import {Platform, TouchableOpacity} from "react-native";
-import React, {ReactNode} from "react";
+import React from "react";
 
 const hitSlop = {
   top: 5,
@@ -13,7 +13,7 @@ export function TextLink({
   children,
 }: {
   readonly onPress: () => void;
-  readonly children: ReactNode;
+  readonly children: React.Node;
 }) {
   if (Platform.OS === "web") {
     const _TouchableOpacity = TouchableOpacity as any;

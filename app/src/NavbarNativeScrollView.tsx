@@ -5,7 +5,7 @@ import {
   ScrollViewProps,
   StyleSheet,
 } from "react-native";
-import React, {ReactNode, useState} from "react";
+import React, {useState} from "react";
 import {Color} from "./atoms";
 import {NavbarNative} from "./NavbarNative";
 import {Route} from "./router/Route";
@@ -26,7 +26,7 @@ interface NavbarNativeScrollViewProps extends ScrollViewProps {
   /**
    * The content of the scroll view.
    */
-  children: ReactNode;
+  children: React.Node;
 }
 
 export function NavbarNativeScrollView({
