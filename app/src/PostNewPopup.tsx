@@ -82,8 +82,13 @@ function reducer(
         width: state.width, // When closing the popup we keep the current width.
       };
     }
-    case "ANIMATION_DONE":
-      return state.animating ? {...state, animating: false} : state;
+    case "ANIMATION_DONE": {
+      if (state.animating) {
+        return {...state, animating: false};
+      } else {
+        return state;
+      }
+    }
     default: {
       const never: never = action;
       throw new Error(`Unexpected type: ${never["type"]}`);
