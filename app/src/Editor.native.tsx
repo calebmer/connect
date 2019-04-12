@@ -3,7 +3,10 @@ import {EditorInstance, EditorProps} from "./EditorShared";
 import React, {useImperativeHandle, useRef} from "react";
 import {StyleSheet, TextInput} from "react-native";
 
-function Editor({placeholder}: EditorProps, ref: React.Ref<EditorInstance>) {
+function Editor(
+  {placeholder, disabled}: EditorProps,
+  ref: React.Ref<EditorInstance>,
+) {
   const editor = useRef<TextInput>(null);
 
   // Add instance methods to our component...
@@ -26,6 +29,7 @@ function Editor({placeholder}: EditorProps, ref: React.Ref<EditorInstance>) {
       multiline
       placeholder={placeholder}
       placeholderTextColor={Color.grey3}
+      editable={!disabled}
       scrollEnabled={false}
       // NOTE: We don’t support `autoFocus` in `Editor` because the React Native
       // implementation only triggers focus in `componentDidMount` since it is

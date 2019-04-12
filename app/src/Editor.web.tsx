@@ -44,7 +44,10 @@ declare const document: any;
  * [5]: https://github.com/facebook/draft-js/blob/f9f5fd6ed1df237389b6bfe9db90e62fe7d4237c/src/component/base/DraftEditor.react.js#L392-L411
  * [6]: https://github.com/facebook/draft-js/tree/f9f5fd6ed1df237389b6bfe9db90e62fe7d4237c/src/component/handlers/edit
  */
-function Editor({placeholder}: EditorProps, ref: React.Ref<EditorInstance>) {
+function Editor(
+  {placeholder, disabled}: EditorProps,
+  ref: React.Ref<EditorInstance>,
+) {
   const editor = useRef<HTMLDivElement>(null);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
 
@@ -106,7 +109,7 @@ function Editor({placeholder}: EditorProps, ref: React.Ref<EditorInstance>) {
       {createElement("div", {
         ref: editor,
         style: styles.editor,
-        contentEditable: true,
+        contentEditable: !disabled,
         onInput: handleInput,
         onPaste: handlePaste,
       })}

@@ -108,6 +108,10 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
   const translateY = useConstant(() => new Animated.Value(PostNewPopup.height));
   const width = useConstant(() => new Animated.Value(PostNewPopup.width));
 
+  // When the popup is not open we should hide its content from
+  // assistive technologies.
+  const hidden = state.type !== "OPENED";
+
   // Whenever the popup opens, we want to focus the editor.
   //
   // NOTE: On the web we have to prevent our container from scrolling when we
@@ -179,9 +183,16 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
         }}
         onClose={() => dispatch({type: "CLOSE"})}
       />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        importantForAccessibility={hidden ? "no-hide-descendants" : "auto"}
+      >
         <PostNewHeader currentAccount={currentAccount} />
-        <Editor ref={editor} placeholder="Start a conversation…" />
+        <Editor
+          ref={editor}
+          placeholder="Start a conversation…"
+          disabled={hidden}
+        />
       </ScrollView>
     </Animated.View>
   );
@@ -231,7 +242,10 @@ function PostNewPopupTitleBarButton({
 
   return (
     <TouchableWithoutFeedback
-      onPress={onPress}
+      onPress={() => {
+        setFocused(false);
+        onPress();
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}

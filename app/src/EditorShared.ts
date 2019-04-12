@@ -6,6 +6,12 @@ export type EditorProps = {
    * Optional placeholder content when the editor is empty.
    */
   placeholder?: string;
+
+  /**
+   * Is the editor disabled? The user will still be able to read the contents
+   * of the editor but they will not be able to change those contents.
+   */
+  disabled?: boolean;
 };
 
 /**
