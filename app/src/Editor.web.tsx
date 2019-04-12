@@ -1,5 +1,5 @@
 import {Color, Font, Space} from "./atoms";
-import React, {useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {StyleSheet, Text, View} from "react-native";
 import {EditorProps} from "./EditorProps";
 import {createElement} from "react-native-web";
@@ -44,10 +44,14 @@ declare const document: any;
  * [5]: https://github.com/facebook/draft-js/blob/f9f5fd6ed1df237389b6bfe9db90e62fe7d4237c/src/component/base/DraftEditor.react.js#L392-L411
  * [6]: https://github.com/facebook/draft-js/tree/f9f5fd6ed1df237389b6bfe9db90e62fe7d4237c/src/component/handlers/edit
  */
-export function Editor({placeholder}: EditorProps) {
+export function Editor({placeholder, autoFocus}: EditorProps) {
   const editor = useRef<HTMLDivElement>(null);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
 
+  /**
+   * When there’s an input event, compute whether or not we should hide
+   * the placeholder.
+   */
   function handleInput() {
     setShowPlaceholder(editor.current ? isEditorEmpty(editor.current) : true);
   }
@@ -73,6 +77,14 @@ export function Editor({placeholder}: EditorProps) {
     // would not work since we need to replace `\n` characters with `<br>`.
     document.execCommand("insertText", false, pasteData);
   }
+
+  // If our editor was given the `autoFocus` prop then focus our editor when
+  // the component mounts.
+  useEffect(() => {
+    if (autoFocus && editor.current) {
+      (editor.current as any).focus();
+    }
+  }, [autoFocus]);
 
   // Use the React Native Web styling engine to create a `contentEditable` div.
   return (
