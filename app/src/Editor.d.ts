@@ -1,4 +1,4 @@
-import {EditorProps} from "./EditorProps";
+import {EditorInstance, EditorProps} from "./EditorShared";
 import React from "react";
 
 /**
@@ -15,4 +15,9 @@ import React from "react";
  * Because of our implementation of the editor on web, computing the current
  * value of the input can be costly. So all editor components are uncontrolled.
  */
-export const Editor: React.ComponentType<EditorProps>;
+export const Editor: React.ForwardRefExoticComponent<
+  EditorProps & React.RefAttributes<EditorInstance>
+>;
+
+// Re-export editor types...
+export * from "./EditorShared";

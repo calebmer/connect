@@ -1,4 +1,5 @@
 import {Color, Space} from "./atoms";
+import {Editor, EditorInstance} from "./Editor";
 import {
   Keyboard,
   KeyboardEvent,
@@ -6,16 +7,31 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import React, {useEffect, useState} from "react";
-import {Editor} from "./Editor";
+import React, {useEffect, useRef, useState} from "react";
 import {NavbarNativeScrollView} from "./NavbarNativeScrollView";
 import {PostNewHeader} from "./PostNewHeader";
 import {Route} from "./router/Route";
+import {useCurrentAccount} from "./cache/AccountCache";
 
 // TODO: Make this actually usable on mobile web. I’ll probably have to use
 // content editable since the default React Native Web `<TextInput>` does
 // not grow...
 export function PostNewMobile({route}: {route: Route}) {
+  // Fetch our current account and suspend this component. We want to suspend
+  // in the component where we add the auto-focus effect. Otherwise the focus
+  // will be a noop since the component is only “shadow mounted”.
+  const currentAccount = useCurrentAccount();
+
+  // Get an instance to our editor.
+  const editor = useRef<EditorInstance>(null);
+
+  // Focus our editor when the component mounts!
+  useEffect(() => {
+    if (editor.current) {
+      editor.current.focus();
+    }
+  }, []);
+
   // When entering new content in a `UITextView`, iOS will scroll any parent
   // `UIScrollView` down as the text view grows. We want to make sure that iOS
   // scrolls all the way to the bottom of our content (which includes some
@@ -34,8 +50,8 @@ export function PostNewMobile({route}: {route: Route}) {
         // our padding.
         contentInset={contentInsetHack ? {bottom: Space.space3} : undefined}
       >
-        <PostNewHeader />
-        <Editor placeholder="Start a conversation…" autoFocus />
+        <PostNewHeader currentAccount={currentAccount} />
+        <Editor ref={editor} placeholder="Start a conversation…" />
         {contentInsetHack && (
           // Use negative margin since we add padding to the scroll view in the
           // form of content inset.

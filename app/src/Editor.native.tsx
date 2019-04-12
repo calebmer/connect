@@ -1,20 +1,44 @@
 import {Color, Font, Space} from "./atoms";
+import {EditorInstance, EditorProps} from "./EditorShared";
+import React, {useImperativeHandle, useRef} from "react";
 import {StyleSheet, TextInput} from "react-native";
-import {EditorProps} from "./EditorProps";
-import React from "react";
 
-export function Editor({placeholder, autoFocus}: EditorProps) {
+function Editor({placeholder}: EditorProps, ref: React.Ref<EditorInstance>) {
+  const editor = useRef<TextInput>(null);
+
+  // Add instance methods to our component...
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        if (editor.current) {
+          editor.current.focus();
+        }
+      },
+    }),
+    [],
+  );
+
   return (
     <TextInput
+      ref={editor}
       style={styles.editor}
       multiline
       placeholder={placeholder}
       placeholderTextColor={Color.grey3}
-      autoFocus={autoFocus}
       scrollEnabled={false}
+      // NOTE: We don’t support `autoFocus` in `Editor` because the React Native
+      // implementation only triggers focus in `componentDidMount` since it is
+      // a class component. Instead we provide a `focus()` method and expect
+      // the component rendering an editor to implement auto focusing if they
+      // want it.
+      autoFocus={false}
     />
   );
 }
+
+const _Editor = React.forwardRef(Editor);
+export {_Editor as Editor};
 
 const styles = StyleSheet.create({
   editor: {

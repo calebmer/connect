@@ -1,11 +1,14 @@
 import {LabelText, Space} from "./atoms";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
+import {AccountProfile} from "@connect/api-client";
 import React from "react";
-import {useCurrentAccount} from "./cache/AccountCache";
 
-export function PostNewHeader() {
-  const currentAccount = useCurrentAccount();
+export function PostNewHeader({
+  currentAccount,
+}: {
+  currentAccount: AccountProfile;
+}) {
   return (
     <View style={styles.header}>
       <AccountAvatar account={currentAccount} />

@@ -12,6 +12,7 @@ import React, {useEffect, useReducer, useState} from "react";
 import {Editor} from "./Editor";
 import {PostNewHeader} from "./PostNewHeader";
 import {useConstant} from "./useConstant";
+import {useCurrentAccount} from "./cache/AccountCache";
 
 // The default width and height of our editor.
 PostNewPopup.width = Font.maxWidth;
@@ -95,6 +96,8 @@ function reducer(
  * effects which react to the component state.
  */
 export function PostNewPopup({onClose}: {onClose: () => void}) {
+  const currentAccount = useCurrentAccount();
+
   // Setup our component state...
   const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -162,7 +165,7 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
         onClose={() => dispatch({type: "CLOSE"})}
       />
       <ScrollView contentContainerStyle={styles.content}>
-        <PostNewHeader />
+        <PostNewHeader currentAccount={currentAccount} />
         <Editor placeholder="Start a conversation…" />
       </ScrollView>
     </Animated.View>

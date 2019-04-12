@@ -6,9 +6,14 @@ export type EditorProps = {
    * Optional placeholder content when the editor is empty.
    */
   placeholder?: string;
+};
 
+/**
+ * The instance of an `<Editor>` component.
+ */
+export type EditorInstance = {
   /**
-   * Automatically focuses the editor when it mounts.
+   * Focuses the editor text input area.
    */
-  autoFocus?: boolean;
+  readonly focus: () => void;
 };
