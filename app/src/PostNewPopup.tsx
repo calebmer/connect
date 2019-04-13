@@ -16,7 +16,7 @@ import {useCurrentAccount} from "./cache/AccountCache";
 
 // The default width and height of our editor.
 PostNewPopup.width = Font.maxWidth;
-PostNewPopup.height = Space.space15;
+PostNewPopup.height = Space.space14;
 
 // When the editor is minimized we will use this width.
 PostNewPopup.minimizedWidth = Space.space12;
