@@ -10,8 +10,7 @@ import React from "react";
 export type IconName = keyof typeof GlyphMap;
 
 /**
- * An icon in our application. We use Font Awesome for our icon set since it
- * is _very_ flexible.
+ * An icon in our application.
  */
 export function Icon({
   name,

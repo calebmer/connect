@@ -211,7 +211,7 @@ export const GlyphMap = {
   // save: 0xe9c6,
   // scissors: 0xe9c7,
   // search: 0xe9c8,
-  // send: 0xe9c9,
+  send: 0xe9c9,
   // server: 0xe9ca,
   // settings: 0xe9cb,
   // "share-2": 0xe9cc,

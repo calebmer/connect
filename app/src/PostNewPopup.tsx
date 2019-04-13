@@ -7,7 +7,16 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import {Border, Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
+import {
+  Border,
+  Button,
+  Color,
+  Font,
+  Icon,
+  IconName,
+  Shadow,
+  Space,
+} from "./atoms";
 import {Editor, EditorInstance} from "./Editor";
 import React, {useEffect, useReducer, useRef, useState} from "react";
 import {PostNewHeader} from "./PostNewHeader";
@@ -199,6 +208,7 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
           disabled={hidden}
         />
       </ScrollView>
+      <PostNewPopupActionBar />
     </Animated.View>
   );
 }
@@ -268,6 +278,15 @@ function PostNewPopupTitleBarButton({
   );
 }
 
+function PostNewPopupActionBar() {
+  return (
+    <View style={styles.actionBar}>
+      <View style={styles.actionBarSpace} />
+      <Button label="Send" icon="send" theme="primary" onPress={() => {}} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
@@ -307,6 +326,13 @@ const styles = StyleSheet.create({
   },
   titleBarButtonActive: {
     backgroundColor: Color.grey5,
+  },
+  actionBar: {
+    flexDirection: "row",
+    padding: Space.space3,
+  },
+  actionBarSpace: {
+    flex: 1,
   },
   content: {
     flex: 1,

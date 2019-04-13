@@ -195,7 +195,7 @@ export function SignUp({
         />
       </View>
       <View style={styles.input}>
-        <Button label="Sign Up" onPress={handleSignUp} />
+        <Button label="Sign Up" size="large" onPress={handleSignUp} />
       </View>
       <View style={styles.meta}>
         <MetaText>
