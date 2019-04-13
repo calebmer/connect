@@ -23,15 +23,27 @@ import {PostNewHeader} from "./PostNewHeader";
 import {useConstant} from "./useConstant";
 import {useCurrentAccount} from "./cache/AccountCache";
 
+// The height of our editor’s title bar.
+PostNewPopupTitleBar.height = Font.size1.fontSize + Space.space2 * 2;
+
+// The minimum height of our editor.
+PostNewPopup.editorMinHeight = Font.size2.lineHeight * 15 + Space.space3 * 2;
+
+// The padding and height that goes into our action bar.
+PostNewPopupActionBar.padding = Space.space2;
+PostNewPopupActionBar.height =
+  Button.heightSmall + PostNewPopupActionBar.padding * 2;
+
 // The default width and height of our editor.
 PostNewPopup.width = Font.maxWidth;
-PostNewPopup.height = Space.space14;
+PostNewPopup.height =
+  PostNewPopupTitleBar.height +
+  PostNewHeader.height +
+  PostNewPopup.editorMinHeight +
+  PostNewPopupActionBar.height;
 
 // When the editor is minimized we will use this width.
 PostNewPopup.minimizedWidth = Space.space12;
-
-// The height of our editor’s title bar.
-PostNewPopupTitleBar.height = Font.size1.fontSize + Space.space2 * 2;
 
 /**
  * The state of our popup. We keep track of the current state type and the
@@ -182,6 +194,10 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
     }
   }, [state.animating, state.offset, state.width, translateY, width]);
 
+  // State variable for whether or not we should show a shadow above our action
+  // bar. True when we have enough content that we need to scroll.
+  const [actionBarShadow, setActionBarShadow] = useState(false);
+
   return (
     <Animated.View
       style={[styles.container, {width, transform: [{translateY}]}]}
@@ -200,15 +216,24 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
       <ScrollView
         contentContainerStyle={styles.content}
         importantForAccessibility={hidden ? "no-hide-descendants" : "auto"}
+        scrollEventThrottle={100}
+        onScroll={event => {
+          setActionBarShadow(
+            event.nativeEvent.contentSize.height >
+              event.nativeEvent.contentOffset.y +
+                event.nativeEvent.layoutMeasurement.height,
+          );
+        }}
       >
         <PostNewHeader currentAccount={currentAccount} />
         <Editor
           ref={editor}
+          minHeight={PostNewPopup.editorMinHeight}
           placeholder="Start a conversation…"
           disabled={hidden}
         />
       </ScrollView>
-      <PostNewPopupActionBar />
+      <PostNewPopupActionBar showShadow={actionBarShadow} />
     </Animated.View>
   );
 }
@@ -278,9 +303,9 @@ function PostNewPopupTitleBarButton({
   );
 }
 
-function PostNewPopupActionBar() {
+function PostNewPopupActionBar({showShadow}: {showShadow?: boolean}) {
   return (
-    <View style={styles.actionBar}>
+    <View style={[styles.actionBar, showShadow && styles.actionBarShadow]}>
       <View style={styles.actionBarSpace} />
       <Button label="Send" icon="send" theme="primary" onPress={() => {}} />
     </View>
@@ -329,7 +354,12 @@ const styles = StyleSheet.create({
   },
   actionBar: {
     flexDirection: "row",
-    padding: Space.space3,
+    height: PostNewPopupActionBar.height,
+    padding: PostNewPopupActionBar.padding,
+  },
+  actionBarShadow: {
+    ...Shadow.elevation0,
+    shadowOffset: {width: 0, height: 0},
   },
   actionBarSpace: {
     flex: 1,

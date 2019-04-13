@@ -4,7 +4,7 @@ import React, {useImperativeHandle, useRef} from "react";
 import {StyleSheet, TextInput} from "react-native";
 
 function Editor(
-  {placeholder, disabled}: EditorProps,
+  {minHeight, placeholder, disabled}: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
   const editor = useRef<TextInput>(null);
@@ -25,7 +25,7 @@ function Editor(
   return (
     <TextInput
       ref={editor}
-      style={styles.editor}
+      style={[styles.editor, {minHeight}]}
       multiline
       placeholder={placeholder}
       placeholderTextColor={Color.grey3}
@@ -46,7 +46,6 @@ export {_Editor as Editor};
 
 const styles = StyleSheet.create({
   editor: {
-    flex: 1,
     padding: Space.space3,
     paddingTop: Space.space3, // Manually override default `paddingTop` on `<TextInput>`
     textAlignVertical: "top",

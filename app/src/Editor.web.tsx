@@ -45,7 +45,7 @@ declare const document: any;
  * [6]: https://github.com/facebook/draft-js/tree/f9f5fd6ed1df237389b6bfe9db90e62fe7d4237c/src/component/handlers/edit
  */
 function Editor(
-  {placeholder, disabled}: EditorProps,
+  {minHeight, placeholder, disabled}: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
   const editor = useRef<HTMLDivElement>(null);
@@ -108,7 +108,7 @@ function Editor(
       )}
       {createElement("div", {
         ref: editor,
-        style: styles.editor,
+        style: [styles.editor, {minHeight}],
         contentEditable: !disabled,
         onInput: handleInput,
         onPaste: handlePaste,
@@ -170,7 +170,6 @@ function isFirstNode(node: any): boolean {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     position: "relative",
   },
   placeholder: {
@@ -182,7 +181,7 @@ const styles = StyleSheet.create({
     ...Font.size2,
   },
   editor: {
-    flex: 1,
+    boxSizing: "border-box",
     padding: Space.space3,
     color: Color.grey8,
     ...Font.serif,

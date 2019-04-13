@@ -3,6 +3,12 @@
  */
 export type EditorProps = {
   /**
+   * The minimum height of our editor. The editor may always grow so we never
+   * accept anything more than a minimum height.
+   */
+  minHeight?: number;
+
+  /**
    * Optional placeholder content when the editor is empty.
    */
   placeholder?: string;

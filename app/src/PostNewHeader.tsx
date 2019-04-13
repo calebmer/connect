@@ -19,9 +19,12 @@ export function PostNewHeader({
   );
 }
 
+PostNewHeader.height = AccountAvatar.size + Space.space3;
+
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
+    height: PostNewHeader.height,
     padding: Space.space3,
     paddingBottom: 0,
   },

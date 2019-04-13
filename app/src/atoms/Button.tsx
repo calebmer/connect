@@ -77,6 +77,8 @@ const themeColors = {
   },
 };
 
+Button.heightSmall = Space.space5;
+
 const styles = StyleSheet.create({
   button: {
     flexDirection: "row",
@@ -89,7 +91,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.radius2,
   },
   buttonSmall: {
-    height: Space.space5,
+    height: Button.heightSmall,
     borderRadius: Border.radius0,
   },
   label: {
