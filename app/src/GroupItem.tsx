@@ -1,14 +1,20 @@
+import {
+  Animated,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import {Border, Color, Icon, Space} from "./atoms";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import React, {useContext, useState} from "react";
-import {StyleSheet, TouchableWithoutFeedback, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
+import {useAnimatedSpring} from "./useAnimatedValue";
 
 export function GroupItem({
   account,
   active: _active,
-  selected,
+  selected = false,
   onSelect,
   children,
 }: {
@@ -51,6 +57,10 @@ export function GroupItem({
   const isLaptop =
     useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop;
 
+  /**
+   * Selects the item if it is not already selected could be triggered by a
+   * press or by navigating to the item with the keyboard.
+   */
   function handleSelect() {
     if (!selected && onSelect) {
       onSelect();
@@ -66,8 +76,7 @@ export function GroupItem({
       <View
         style={[
           styles.container,
-          active && styles.containerActive,
-          selected && styles.containerSelected,
+          (active || selected) && styles.containerActive,
         ]}
         accessible
         accessibilityLabel={`Preview of a post by ${account.name}.`}
@@ -82,8 +91,32 @@ export function GroupItem({
             <Icon name="chevron-right" color={Color.grey4} />
           </View>
         )}
+
+        {/* When the group item is selected on a laptop layout we have a ribbon
+            that we display adjacent to the main content area. */}
+        {isLaptop && <GroupItemRibbon selected={selected} />}
       </View>
     </TouchableWithoutFeedback>
+  );
+}
+
+function GroupItemRibbon({selected}: {selected: boolean}) {
+  return (
+    <Animated.View
+      style={[
+        styles.ribbon,
+        {
+          transform: [
+            {
+              translateX: useAnimatedSpring(selected ? -borderWidth : 0, {
+                friction: 10,
+                tension: 200,
+              }),
+            },
+          ],
+        },
+      ]}
+    />
   );
 }
 
@@ -94,21 +127,23 @@ const borderWidth = Border.width3;
 
 const styles = StyleSheet.create({
   container: {
+    overflow: "hidden",
     flex: 1,
     flexDirection: "row",
     padding: GroupItem.padding,
-    paddingRight: GroupItem.padding - borderWidth,
+    paddingRight: GroupItem.padding,
     backgroundColor: GroupItem.backgroundColor,
-    borderRightWidth: borderWidth,
-    borderRightColor: GroupItem.backgroundColor,
   },
   containerActive: {
     backgroundColor: Color.yellow0,
-    borderRightColor: Color.yellow0,
   },
-  containerSelected: {
-    backgroundColor: Color.yellow0,
-    borderRightColor: Color.yellow4,
+  ribbon: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: -(borderWidth * 2),
+    width: borderWidth * 2,
+    backgroundColor: Color.yellow4,
   },
   body: {
     flex: 1,
