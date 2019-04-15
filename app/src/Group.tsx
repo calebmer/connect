@@ -28,10 +28,10 @@ import {Loading} from "./atoms/Loading";
 import {Navbar} from "./Navbar";
 import {Route} from "./router/Route";
 import {Trough} from "./Trough";
+import {useAnimatedValue} from "./useAnimatedValue";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCacheListData} from "./cache/framework/CacheList";
 import {useCacheSingletonData} from "./cache/framework/CacheSingleton";
-import {useConstant} from "./useConstant";
 
 // NOTE: Having a React component and a type with the same name is ok in
 // TypeScript, but eslint complains when it’s an import. So import the type with
@@ -74,7 +74,7 @@ function Group({
   // There’s some weirdness on iOS where where `scrollY` starts at some negative
   // value like -20 (or -44 on an iPhone X) instead of 0, so we record the first
   // value of `scrollY` and use it as an offset.
-  const scrollY = useConstant(() => new Animated.Value(0));
+  const scrollY = useAnimatedValue(0);
   const [offsetScrollY, setOffsetScrollY] = useState<null | number>(
     Platform.OS === "ios" ? null : 0,
   );

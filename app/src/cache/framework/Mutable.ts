@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useConstant} from "../../useConstant";
 
 /**
@@ -167,14 +167,17 @@ export function useMutableContainer<Value>(
 ): ReadonlyMutable<Value> {
   // Create a constant mutable container which will never change across
   // component renders. Use the initial value for that mutable container.
-  const mutable = useConstant(() => new Mutable(value));
+  const mutable = useRef<null | Mutable<Value>>(null);
+  if (mutable.current === null) {
+    mutable.current = new Mutable(value);
+  }
 
   // Update the mutable container. This does nothing if the mutable container
   // already has this value.
   //
   // We do this synchronously in render to make sure the update happens in our
   // current React commit before the next browser paint.
-  mutable.setSync(value);
+  mutable.current.setSync(value);
 
-  return mutable;
+  return mutable.current;
 }

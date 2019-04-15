@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import {Icon, IconName} from "./Icon";
 import React from "react";
-import {useConstant} from "../useConstant";
+import {useAnimatedValue} from "../useAnimatedValue";
 
 export function Button({
   label,
@@ -25,7 +25,7 @@ export function Button({
   size?: "large" | "small";
   onPress: () => void;
 }) {
-  const pressed = useConstant(() => new Animated.Value(0));
+  const pressed = useAnimatedValue(0);
   const backgroundColor = pressed.interpolate({
     inputRange: [0, 1],
     outputRange: [themeColors[theme].color, themeColors[theme].activeColor],

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import {Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import React, {useEffect} from "react";
-import {useConstant} from "./useConstant";
+import {useAnimatedValue} from "./useAnimatedValue";
 
 type NavbarProps = {
   /**
@@ -59,9 +59,7 @@ export function Navbar({
   hideTitleWithBackground,
   lightContentWithoutBackground,
 }: NavbarProps) {
-  const backgroundOpacity = useConstant(() => {
-    return new Animated.Value(hideBackground ? 0 : 1);
-  });
+  const backgroundOpacity = useAnimatedValue(hideBackground ? 0 : 1);
 
   const titleOpacity = hideTitleWithBackground ? backgroundOpacity : undefined;
 

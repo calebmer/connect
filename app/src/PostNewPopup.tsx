@@ -20,7 +20,7 @@ import {
 import {Editor, EditorInstance} from "./Editor";
 import React, {useEffect, useReducer, useRef, useState} from "react";
 import {PostNewHeader} from "./PostNewHeader";
-import {useConstant} from "./useConstant";
+import {useAnimatedValue} from "./useAnimatedValue";
 import {useCurrentAccount} from "./cache/AccountCache";
 
 // The height of our editor’s title bar.
@@ -131,8 +131,8 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   // Setup our animated values...
-  const translateY = useConstant(() => new Animated.Value(PostNewPopup.height));
-  const width = useConstant(() => new Animated.Value(PostNewPopup.width));
+  const translateY = useAnimatedValue(PostNewPopup.height);
+  const width = useAnimatedValue(PostNewPopup.width);
 
   // When the popup is not open we should hide its content from
   // assistive technologies.
