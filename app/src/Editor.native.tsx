@@ -1,10 +1,10 @@
 import {Color, Font, Space} from "./atoms";
 import {EditorInstance, EditorProps} from "./EditorShared";
-import React, {useImperativeHandle, useRef} from "react";
+import React, {useImperativeHandle, useRef, useState} from "react";
 import {StyleSheet, TextInput} from "react-native";
 
 function Editor(
-  {minHeight, placeholder, disabled}: EditorProps,
+  {minHeight, placeholder, disabled, onChange}: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
   const editor = useRef<TextInput>(null);
@@ -22,10 +22,24 @@ function Editor(
     [],
   );
 
+  const [text, setText] = useState();
+
+  function handleChangeText(newText: string) {
+    setText(newText);
+
+    if (onChange) {
+      onChange({
+        isWhitespaceOnly: /^\s*$/.test(newText),
+      });
+    }
+  }
+
   return (
     <TextInput
       ref={editor}
       style={[styles.editor, {minHeight}]}
+      value={text}
+      onChangeText={handleChangeText}
       multiline
       placeholder={placeholder}
       placeholderTextColor={Color.grey3}

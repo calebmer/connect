@@ -32,6 +32,9 @@ export function PostNewMobile({route}: {route: Route}) {
     }
   }, []);
 
+  // Is the send button in our navbar enabled?
+  const [sendEnabled, setSendEnabled] = useState(false);
+
   // When entering new content in a `UITextView`, iOS will scroll any parent
   // `UIScrollView` down as the text view grows. We want to make sure that iOS
   // scrolls all the way to the bottom of our content (which includes some
@@ -46,7 +49,7 @@ export function PostNewMobile({route}: {route: Route}) {
         contentContainerStyle={styles.container}
         useTitle={() => "New Post"}
         rightIcon="send"
-        rightIconDisabled
+        rightIconDisabled={!sendEnabled}
         onRightIconPress={() => {}}
         keyboardShouldPersistTaps="always"
         // Add some inset to the bottom of our scroll view which will replace
@@ -54,7 +57,11 @@ export function PostNewMobile({route}: {route: Route}) {
         contentInset={contentInsetHack ? {bottom: Space.space3} : undefined}
       >
         <PostNewHeader currentAccount={currentAccount} />
-        <Editor ref={editor} placeholder="Start a conversation…" />
+        <Editor
+          ref={editor}
+          placeholder="Start a conversation…"
+          onChange={({isWhitespaceOnly}) => setSendEnabled(!isWhitespaceOnly)}
+        />
         {contentInsetHack && (
           // Use negative margin since we add padding to the scroll view in the
           // form of content inset.

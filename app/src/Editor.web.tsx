@@ -45,7 +45,7 @@ declare const document: any;
  * [6]: https://github.com/facebook/draft-js/tree/f9f5fd6ed1df237389b6bfe9db90e62fe7d4237c/src/component/handlers/edit
  */
 function Editor(
-  {minHeight, placeholder, disabled}: EditorProps,
+  {minHeight, placeholder, disabled, onChange}: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
   const editor = useRef<HTMLDivElement>(null);
@@ -67,9 +67,23 @@ function Editor(
   /**
    * When there’s an input event, compute whether or not we should hide
    * the placeholder.
+   *
+   * Also send an `onChange` event with the information that is cheap
+   * to compute.
    */
   function handleInput() {
-    setShowPlaceholder(editor.current ? isEditorEmpty(editor.current) : true);
+    const isEmpty = editor.current ? isEditorEmpty(editor.current) : true;
+
+    setShowPlaceholder(isEmpty);
+
+    // If we have an `onChange` handler then send an event...
+    if (onChange) {
+      const isWhitespaceOnly = editor.current
+        ? isEditorWhitespaceOnly(editor.current)
+        : true;
+
+      onChange({isWhitespaceOnly});
+    }
   }
 
   /**
@@ -166,6 +180,32 @@ function isFirstNode(node: any): boolean {
     return false;
   }
   return isFirstNode(node.parentNode);
+}
+
+/**
+ * Does our editor content only contain whitespace? We use this as a client side
+ * validation to determine whether we should submit the post.
+ *
+ * Our document is consider whitespace only when:
+ *
+ * - All the text nodes match `/^\s*$/`.
+ * - `<br>` nodes are whitespace so their existence does not change our result.
+ */
+function isEditorWhitespaceOnly(node: any): boolean {
+  // Is this a text node with some text content? If so then our editor is
+  // not empty.
+  if (node.nodeType === 3 && !/^\s*$/.test(node.wholeText)) {
+    return false;
+  }
+
+  // Check to see if all of our child nodes are empty.
+  for (let i = 0; i < node.childNodes.length; i++) {
+    if (!isEditorWhitespaceOnly(node.childNodes[i])) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 const styles = StyleSheet.create({
