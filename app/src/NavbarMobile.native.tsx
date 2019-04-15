@@ -1,5 +1,6 @@
 import {
   Animated,
+  Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -90,7 +91,12 @@ export function NavbarMobile({
             : "dark-content"
         }
       />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={styles.container}
+        accessibilityRole={
+          Platform.OS === "web" ? ("navigation" as any) : undefined
+        }
+      >
         <Animated.View
           style={[styles.background, {opacity: backgroundOpacity}]}
         />
