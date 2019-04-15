@@ -1,6 +1,6 @@
+import {Color, IconName} from "./atoms";
 import {Keyboard, ScrollView, ScrollViewProps, StyleSheet} from "react-native";
 import React, {useState} from "react";
-import {Color} from "./atoms";
 import {Navbar} from "./Navbar";
 import {Route} from "./router/Route";
 
@@ -23,6 +23,11 @@ interface NavbarScrollViewProps extends ScrollViewProps {
    */
   hideNavbar?: boolean;
 
+  // `<Navbar>` props.
+  rightIcon?: IconName;
+  rightIconDisabled?: boolean;
+  onRightIconPress?: () => void;
+
   /**
    * The content of the scroll view.
    */
@@ -33,6 +38,9 @@ export function NavbarScrollView({
   route,
   useTitle,
   hideNavbar,
+  rightIcon,
+  rightIconDisabled,
+  onRightIconPress,
   children,
   ...props
 }: NavbarScrollViewProps) {
@@ -48,6 +56,9 @@ export function NavbarScrollView({
           route={route}
           useTitle={useTitle}
           hideBackground={hideBackground}
+          rightIcon={rightIcon}
+          rightIconDisabled={rightIconDisabled}
+          onRightIconPress={onRightIconPress}
         />
       )}
       <ScrollView
@@ -74,10 +85,16 @@ function NavbarContainer({
   route,
   useTitle,
   hideBackground,
+  rightIcon,
+  rightIconDisabled,
+  onRightIconPress,
 }: {
   route: Route;
   useTitle: () => string;
   hideBackground: boolean;
+  rightIcon?: IconName;
+  rightIconDisabled?: boolean;
+  onRightIconPress?: () => void;
 }) {
   const title = useTitle();
   return (
@@ -92,6 +109,9 @@ function NavbarContainer({
 
         route.pop();
       }}
+      rightIcon={rightIcon}
+      rightIconDisabled={rightIconDisabled}
+      onRightIconPress={onRightIconPress}
     />
   );
 }

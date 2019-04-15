@@ -45,6 +45,9 @@ export function PostNewMobile({route}: {route: Route}) {
         route={route}
         contentContainerStyle={styles.container}
         useTitle={() => "New Post"}
+        rightIcon="send"
+        rightIconDisabled
+        onRightIconPress={() => {}}
         keyboardShouldPersistTaps="always"
         // Add some inset to the bottom of our scroll view which will replace
         // our padding.

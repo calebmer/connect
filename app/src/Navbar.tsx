@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import {Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import React, {useEffect} from "react";
+import {ButtonIcon} from "./ButtonIcon";
 import {useAnimatedValue} from "./useAnimatedValue";
 
 type NavbarProps = {
@@ -28,6 +29,24 @@ type NavbarProps = {
    * is a left icon present.
    */
   onLeftIconPress?: () => void;
+
+  /**
+   * The icon to be displayed on the right side of the navbar.
+   */
+  rightIcon?: IconName;
+
+  /**
+   * Is the right icon currently disabled? Providing a true or false value for
+   * this prop will change the color to help let the user know that it is an
+   * interactive element.
+   */
+  rightIconDisabled?: boolean;
+
+  /**
+   * When the right icon is pressed execute this function. Only works if there
+   * is a right icon present.
+   */
+  onRightIconPress?: () => void;
 
   /**
    * Should the background of our navbar be hidden to let the content
@@ -55,6 +74,9 @@ export function Navbar({
   title,
   leftIcon,
   onLeftIconPress,
+  rightIcon,
+  rightIconDisabled,
+  onRightIconPress,
   hideBackground,
   hideTitleWithBackground,
   lightContentWithoutBackground,
@@ -99,7 +121,7 @@ export function Navbar({
           style={[styles.background, {opacity: backgroundOpacity}]}
         />
         <View style={styles.navbar}>
-          <View style={styles.icon}>
+          <View style={styles.button}>
             {leftIcon && (
               <TouchableOpacity hitSlop={hitSlop} onPress={onLeftIconPress}>
                 <Icon name={leftIcon} size={Space.space4} />
@@ -112,7 +134,20 @@ export function Navbar({
           >
             {title}
           </Animated.Text>
-          <View style={styles.icon} />
+          <View style={styles.button}>
+            {rightIcon && (
+              <TouchableOpacity
+                hitSlop={hitSlop}
+                disabled={rightIconDisabled}
+                onPress={onRightIconPress}
+              >
+                <ButtonIcon
+                  icon={rightIcon}
+                  theme={rightIconDisabled ? "disabled" : "primary"}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </SafeAreaView>
     </>
@@ -122,10 +157,10 @@ export function Navbar({
 Navbar.height = Space.space6;
 
 const hitSlop = {
-  top: Space.space3,
-  bottom: Space.space3,
-  left: Space.space3,
-  right: Space.space3,
+  top: Space.space4,
+  bottom: Space.space4,
+  left: Space.space4,
+  right: Space.space4,
 };
 
 const styles = StyleSheet.create({
@@ -158,7 +193,7 @@ const styles = StyleSheet.create({
     ...Font.sans,
     ...Font.size1,
   },
-  icon: {
+  button: {
     width: Space.space4,
     marginHorizontal: Space.space3,
   },
