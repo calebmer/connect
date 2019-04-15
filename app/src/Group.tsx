@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import {Color, Font, Space} from "./atoms";
 import {CurrentAccountCache, useCurrentAccount} from "./cache/AccountCache";
+import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import {
   PostCacheList,
   PostCacheListEntry,
@@ -17,7 +18,7 @@ import {
   postCountMore,
 } from "./cache/PostCache";
 import {PostID, Group as _Group} from "@connect/api-client";
-import React, {useMemo, useRef, useState} from "react";
+import React, {useContext, useMemo, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableContainer} from "./cache/framework/Mutable";
 import {GroupBanner} from "./GroupBanner";
 import {GroupCache} from "./cache/GroupCache";
@@ -127,13 +128,15 @@ function Group({
         <GroupBanner group={group} />
       </Animated.View>
 
-      {/* Include the navbar. */}
-      <Navbar
-        title={group.name}
-        hideBackground={!showNavbar}
-        hideTitleWithBackground
-        lightContentWithoutBackground
-      />
+      {/* Include the navbar but only on mobile. */}
+      {useContext(GroupHomeLayoutContext) === GroupHomeLayout.Mobile && (
+        <Navbar
+          title={group.name}
+          hideBackground={!showNavbar}
+          hideTitleWithBackground
+          lightContentWithoutBackground
+        />
+      )}
 
       {/* All the scrollable content in the group. This is a scroll view which
        * will scroll above the group banner. */}
