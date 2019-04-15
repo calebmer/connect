@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {Color, Font, Space} from "./atoms";
+import {Color, Font, Loading, Space} from "./atoms";
 import {CurrentAccountCache, useCurrentAccount} from "./cache/AccountCache";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import {
@@ -24,7 +24,6 @@ import {GroupBanner} from "./GroupBanner";
 import {GroupCache} from "./cache/GroupCache";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
-import {Loading} from "./atoms/Loading";
 import {Navbar} from "./Navbar";
 import {Route} from "./router/Route";
 import {Trough} from "./Trough";

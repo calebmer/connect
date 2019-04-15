@@ -1,16 +1,12 @@
-import * as Border from "./Border";
-import * as Color from "./Color";
-import * as Font from "./Font";
-import * as Space from "./Space";
 import {
   Animated,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
 } from "react-native";
-import {Icon, IconName} from "./Icon";
+import {Border, Color, Font, Icon, IconName, Space} from "./atoms";
 import React from "react";
-import {useAnimatedValue} from "../useAnimatedValue";
+import {useAnimatedValue} from "./useAnimatedValue";
 
 export function Button({
   label,

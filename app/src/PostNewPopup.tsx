@@ -7,18 +7,10 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import {
-  Border,
-  Button,
-  Color,
-  Font,
-  Icon,
-  IconName,
-  Shadow,
-  Space,
-} from "./atoms";
+import {Border, Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import {Editor, EditorInstance} from "./Editor";
 import React, {useEffect, useReducer, useRef, useState} from "react";
+import {Button} from "./Button";
 import {PostNewHeader} from "./PostNewHeader";
 import {useAnimatedValue} from "./useAnimatedValue";
 import {useCurrentAccount} from "./cache/AccountCache";

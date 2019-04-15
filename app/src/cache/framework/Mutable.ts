@@ -1,5 +1,4 @@
 import {useEffect, useRef, useState} from "react";
-import {useConstant} from "../../useConstant";
 
 /**
  * A mutable container of a value which you can watch for changes. This is an

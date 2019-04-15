@@ -1,20 +1,14 @@
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {AccountTestRoute, SignInRoute} from "./router/AllRoutes";
-import {
-  BodyText,
-  Button,
-  MetaLinkText,
-  MetaText,
-  Space,
-  TextLink,
-  TitleText,
-} from "./atoms";
+import {BodyText, MetaLinkText, MetaText, Space, TitleText} from "./atoms";
 import {Platform, StyleSheet, View} from "react-native";
 import React, {useRef, useState} from "react";
 import {TextInput, TextInputInstance} from "./TextInput";
 import {API} from "./api/API";
+import {Button} from "./Button";
 import {Route} from "./router/Route";
 import {SignUpLayout} from "./SignUpLayout";
+import {TextLink} from "./TextLink";
 import {displayErrorMessage} from "./ErrorMessage";
 
 export function SignUp({
