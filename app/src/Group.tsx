@@ -24,7 +24,7 @@ import {GroupCache} from "./cache/GroupCache";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {Loading} from "./atoms/Loading";
-import {Navbar} from "./Navbar";
+import {Navbar} from "./Navbar.native";
 import {Route} from "./router/Route";
 import {Trough} from "./Trough";
 import {useCacheData} from "./cache/framework/Cache";
@@ -186,10 +186,6 @@ function Group({
           {
             useNativeDriver: Platform.OS !== "web",
             listener: (event: any) => {
-              // Skip all this on the web where we don’t need a scroll
-              // event listener.
-              if (Platform.OS === "web") return;
-
               // If we don’t yet have an `offsetScrollY` value then set one!
               if (offsetScrollY === null) {
                 setOffsetScrollY(event.nativeEvent.contentOffset.y);

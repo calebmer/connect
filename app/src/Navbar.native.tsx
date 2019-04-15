@@ -70,13 +70,13 @@ export function Navbar({
       Animated.timing(backgroundOpacity, {
         toValue: 0,
         duration: 180,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== "web",
       }).start();
     } else {
       Animated.timing(backgroundOpacity, {
         toValue: 1,
         duration: 180,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== "web",
       }).start();
     }
   }, [backgroundOpacity, hideBackground]);
