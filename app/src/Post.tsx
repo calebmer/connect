@@ -1,5 +1,5 @@
 import {GroupCache} from "./cache/GroupCache";
-import {NavbarMobileScrollView} from "./NavbarMobileScrollView";
+import {NavbarScrollView} from "./NavbarScrollView";
 import {PostComments} from "./PostComments";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
@@ -23,11 +23,11 @@ function Post({
   }
 
   return (
-    <NavbarMobileScrollView route={route} useTitle={useTitle}>
+    <NavbarScrollView route={route} useTitle={useTitle}>
       <PostContent postID={postID} />
       <Trough title="Comments" />
       <PostComments postID={postID} />
-    </NavbarMobileScrollView>
+    </NavbarScrollView>
   );
 }
 

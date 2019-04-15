@@ -1,1 +1,0 @@
-export * from "./NavbarMobile.native";

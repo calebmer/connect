@@ -7,10 +7,10 @@ import {
 } from "react-native";
 import React, {useState} from "react";
 import {Color} from "./atoms";
-import {NavbarMobile} from "./NavbarMobile";
+import {Navbar} from "./Navbar";
 import {Route} from "./router/Route";
 
-interface NavbarMobileScrollViewProps extends ScrollViewProps {
+interface NavbarScrollViewProps extends ScrollViewProps {
   /**
    * The current route which we can use for navigation.
    */
@@ -29,12 +29,12 @@ interface NavbarMobileScrollViewProps extends ScrollViewProps {
   children: React.Node;
 }
 
-export function NavbarMobileScrollView({
+export function NavbarScrollView({
   route,
   useTitle,
   children,
   ...props
-}: NavbarMobileScrollViewProps) {
+}: NavbarScrollViewProps) {
   const [hideBackground, setHideBackground] = useState(true);
 
   return (
@@ -43,7 +43,7 @@ export function NavbarMobileScrollView({
         // NOTE: This component might suspend when we call `useTitle()`. We
         // won’t even render the navbar on web so let’s avoid loading that data
         // if we aren’t on the web platform.
-        <NavbarMobileContainer
+        <NavbarContainer
           route={route}
           useTitle={useTitle}
           hideBackground={hideBackground}
@@ -53,7 +53,7 @@ export function NavbarMobileScrollView({
         {...props}
         style={styles.background}
         contentContainerStyle={[props.contentContainerStyle, styles.container]}
-        scrollIndicatorInsets={{top: NavbarMobile.height, bottom: 0}}
+        scrollIndicatorInsets={{top: Navbar.height, bottom: 0}}
         scrollEventThrottle={16}
         onScroll={event => {
           if (Platform.OS !== "web") {
@@ -67,7 +67,7 @@ export function NavbarMobileScrollView({
   );
 }
 
-function NavbarMobileContainer({
+function NavbarContainer({
   route,
   useTitle,
   hideBackground,
@@ -78,7 +78,7 @@ function NavbarMobileContainer({
 }) {
   const title = useTitle();
   return (
-    <NavbarMobile
+    <Navbar
       title={title}
       hideBackground={hideBackground}
       leftIcon={route.nativeIsModalRoot() ? "x" : "arrow-left"}
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   container: {
     // Override all padding provided by the `contentContainerStyle` prop.
     paddingBottom: 0,
-    paddingTop: NavbarMobile.height,
+    paddingTop: Navbar.height,
     paddingLeft: 0,
     paddingRight: 0,
   },

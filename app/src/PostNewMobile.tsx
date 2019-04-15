@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import React, {useEffect, useRef, useState} from "react";
-import {NavbarMobileScrollView} from "./NavbarMobileScrollView";
+import {NavbarScrollView} from "./NavbarScrollView";
 import {PostNewHeader} from "./PostNewHeader";
 import {Route} from "./router/Route";
 import {useCurrentAccount} from "./cache/AccountCache";
@@ -41,7 +41,7 @@ export function PostNewMobile({route}: {route: Route}) {
 
   return (
     <>
-      <NavbarMobileScrollView
+      <NavbarScrollView
         route={route}
         contentContainerStyle={styles.container}
         useTitle={() => "New Post"}
@@ -57,7 +57,7 @@ export function PostNewMobile({route}: {route: Route}) {
           // form of content inset.
           <View style={{marginBottom: -Space.space3}} />
         )}
-      </NavbarMobileScrollView>
+      </NavbarScrollView>
 
       {/* Fill the space behind the keyboard so that the keyboard does not hide
           any content. */}
