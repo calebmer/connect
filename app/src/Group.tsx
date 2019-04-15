@@ -62,6 +62,10 @@ function Group({
   // Keep a reference to our scroll view.
   const scrollView = useRef<any>(null);
 
+  // Are we using the mobile group home layout?
+  const isMobile =
+    useContext(GroupHomeLayoutContext) === GroupHomeLayout.Mobile;
+
   // On iOS you can scroll up which results in a negative value for `scrollY`.
   // When that happens we want to scale up our group banner so that it
   // fills in the extra space. That’s what the `bannerScale` value is for. It
@@ -129,7 +133,7 @@ function Group({
       </Animated.View>
 
       {/* Include the navbar but only on mobile. */}
-      {useContext(GroupHomeLayoutContext) === GroupHomeLayout.Mobile && (
+      {isMobile && (
         <Navbar
           title={group.name}
           hideBackground={!showNavbar}
@@ -189,20 +193,22 @@ function Group({
           {
             useNativeDriver: Platform.OS !== "web",
             listener: (event: any) => {
-              // If we don’t yet have an `offsetScrollY` value then set one!
-              if (offsetScrollY === null) {
-                setOffsetScrollY(event.nativeEvent.contentOffset.y);
+              if (isMobile) {
+                // If we don’t yet have an `offsetScrollY` value then set one!
+                if (offsetScrollY === null) {
+                  setOffsetScrollY(event.nativeEvent.contentOffset.y);
+                }
+
+                // We should show the navbar when scrolling anymore would mean
+                // scrolling under the navbar.
+                const shouldShowNavbar =
+                  event.nativeEvent.contentOffset.y - (offsetScrollY || 0) >=
+                  GroupBanner.height - Navbar.height;
+
+                // Update our navbar state depending on whether we should or
+                // should not show the navbar.
+                setShowNavbar(shouldShowNavbar);
               }
-
-              // We should show the navbar when scrolling anymore would mean
-              // scrolling under the navbar.
-              const shouldShowNavbar =
-                event.nativeEvent.contentOffset.y - (offsetScrollY || 0) >=
-                GroupBanner.height - Navbar.height;
-
-              // Update our navbar state depending on whether we should or
-              // should not show the navbar.
-              setShowNavbar(shouldShowNavbar);
             },
           },
         )}
