@@ -48,8 +48,8 @@ function GroupItemFeed({
     //
     // We assume that this will eventually change `selectedPostID`.
     stall(CommentCacheList.load(postID), () => {
-      route.push(PostRoute, {groupSlug, postID: String(postID)});
       setSelecting(false);
+      route.push(PostRoute, {groupSlug, postID: String(postID)});
     });
   }
 

@@ -1,13 +1,7 @@
-import {
-  Keyboard,
-  Platform,
-  ScrollView,
-  ScrollViewProps,
-  StyleSheet,
-} from "react-native";
+import {Keyboard, ScrollView, ScrollViewProps, StyleSheet} from "react-native";
 import React, {useState} from "react";
 import {Color} from "./atoms";
-import {Navbar} from "./Navbar";
+import {Navbar} from "./Navbar.native";
 import {Route} from "./router/Route";
 
 interface NavbarScrollViewProps extends ScrollViewProps {
@@ -39,16 +33,14 @@ export function NavbarScrollView({
 
   return (
     <>
-      {Platform.OS !== "web" && (
-        // NOTE: This component might suspend when we call `useTitle()`. We
-        // won’t even render the navbar on web so let’s avoid loading that data
-        // if we aren’t on the web platform.
-        <NavbarContainer
-          route={route}
-          useTitle={useTitle}
-          hideBackground={hideBackground}
-        />
-      )}
+      {/* NOTE: This component might suspend when we call `useTitle()`. We
+          won’t even render the navbar on web so let’s avoid loading that data
+          if we aren’t on the web platform. */}
+      <NavbarContainer
+        route={route}
+        useTitle={useTitle}
+        hideBackground={hideBackground}
+      />
       <ScrollView
         {...props}
         style={styles.background}
@@ -56,9 +48,7 @@ export function NavbarScrollView({
         scrollIndicatorInsets={{top: Navbar.height, bottom: 0}}
         scrollEventThrottle={16}
         onScroll={event => {
-          if (Platform.OS !== "web") {
-            setHideBackground(event.nativeEvent.contentOffset.y <= 0);
-          }
+          setHideBackground(event.nativeEvent.contentOffset.y <= 0);
         }}
       >
         {children}
