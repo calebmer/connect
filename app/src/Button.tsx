@@ -60,7 +60,6 @@ const themeColors = {
     color: Color.yellow3,
     activeColor: Color.yellow5,
     textColor: Color.yellow9,
-    iconColor: Color.yellow8,
   },
 };
 

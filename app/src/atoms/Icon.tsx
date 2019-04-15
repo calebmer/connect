@@ -1,6 +1,13 @@
 import * as Color from "./Color";
 import * as Space from "./Space";
-import {Platform, StyleProp, StyleSheet, Text, TextStyle} from "react-native";
+import {
+  Animated,
+  Platform,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextStyle,
+} from "react-native";
 import {GlyphMap} from "../assets/icons/GlyphMap";
 import React from "react";
 
@@ -20,16 +27,23 @@ export function Icon({
 }: {
   name: IconName;
   size?: number;
-  color?: string;
+  color?: string | Animated.AnimatedInterpolation;
   style?: StyleProp<TextStyle>;
 }) {
-  return (
+  return typeof color === "string" ? (
     <Text
       style={[style, styles.icon, {color, fontSize: size, lineHeight: size}]}
       selectable={false}
     >
       {String.fromCharCode(GlyphMap[name])}
     </Text>
+  ) : (
+    <Animated.Text
+      style={[style, styles.icon, {color, fontSize: size, lineHeight: size}]}
+      selectable={false}
+    >
+      {String.fromCharCode(GlyphMap[name])}
+    </Animated.Text>
   );
 }
 

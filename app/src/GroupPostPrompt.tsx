@@ -3,7 +3,7 @@ import React, {useState} from "react";
 import {StyleSheet, TouchableWithoutFeedback, View} from "react-native";
 import {AccountAvatar} from "./AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
-import {ButtonIcon} from "./ButtonIcon";
+import {IconPatch} from "./IconPatch";
 import {NewPostRoute} from "./router/AllRoutes";
 import {Route} from "./router/Route";
 import {usePostNewPopupContext} from "./PostNewPopupContext";
@@ -38,7 +38,7 @@ export function GroupPostPrompt({
           <LabelText>{account.name}</LabelText>
           <BodyText>Start a conversation…</BodyText>
         </View>
-        <ButtonIcon icon="edit" />
+        <IconPatch icon="edit" />
       </View>
     </TouchableWithoutFeedback>
   );

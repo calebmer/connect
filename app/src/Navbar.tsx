@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import {Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import React, {useEffect} from "react";
-import {ButtonIcon} from "./ButtonIcon";
+import {IconPatchButton} from "./IconPatchButton";
 import {useAnimatedValue} from "./useAnimatedValue";
 
 type NavbarProps = {
@@ -136,16 +136,11 @@ export function Navbar({
           </Animated.Text>
           <View style={styles.button}>
             {rightIcon && (
-              <TouchableOpacity
-                hitSlop={hitSlop}
+              <IconPatchButton
+                icon={rightIcon}
                 disabled={rightIconDisabled}
                 onPress={onRightIconPress}
-              >
-                <ButtonIcon
-                  icon={rightIcon}
-                  theme={rightIconDisabled ? "disabled" : "primary"}
-                />
-              </TouchableOpacity>
+              />
             )}
           </View>
         </View>
