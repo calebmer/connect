@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.radius0,
   },
   label: {
+    flex: 1,
     textAlign: "center",
   },
   labelLarge: {
