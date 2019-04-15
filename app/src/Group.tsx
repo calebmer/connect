@@ -25,7 +25,7 @@ import {GroupCache} from "./cache/GroupCache";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {Loading} from "./atoms/Loading";
-import {Navbar} from "./Navbar.native";
+import {Navbar} from "./Navbar";
 import {Route} from "./router/Route";
 import {Trough} from "./Trough";
 import {useCacheData} from "./cache/framework/Cache";

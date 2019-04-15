@@ -1,7 +1,7 @@
 import {Keyboard, ScrollView, ScrollViewProps, StyleSheet} from "react-native";
 import React, {useState} from "react";
 import {Color} from "./atoms";
-import {Navbar} from "./Navbar.native";
+import {Navbar} from "./Navbar";
 import {Route} from "./router/Route";
 
 interface NavbarScrollViewProps extends ScrollViewProps {
