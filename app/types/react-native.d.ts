@@ -4,13 +4,8 @@
 // [1]: https://www.typescriptlang.org/docs/handbook/declaration-merging.html
 
 import "react-native";
-import {UIEventHandler} from "react";
 
 declare module "react-native" {
-  interface ViewProps {
-    onScroll?: UIEventHandler<HTMLDivElement>;
-  }
-
   interface TextProps {
     /**
      * Controls whether the `Text` can be the target of touch events.

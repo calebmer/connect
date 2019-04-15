@@ -26,10 +26,14 @@ export function GroupHomeContainer({children}: {children: React.Node}) {
     (event.currentTarget as any).scrollTop = 0;
   }
 
+  // We pass some props allowed on web but not allowed in React Native to
+  // this view.
+  const _View = View as any;
+
   return (
-    <View style={styles.container} onScroll={handleScroll}>
+    <_View style={styles.container} onScroll={handleScroll}>
       {children}
-    </View>
+    </_View>
   );
 }
 
