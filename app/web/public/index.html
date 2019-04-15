@@ -17,7 +17,13 @@
     "https://fonts.gstatic.com/s/worksans/v4/QGYsz_wNahGAdqQ43Rh_fKDptfpA4Q.woff2",
     ...Object.keys(compilation.assets).filter(asset =>
     asset.endsWith("ttf")).map(asset => "/" + asset)].map(asset => `
-    <link as="font" crossorigin="anonymous" href="${asset}" rel="preload" />
+    <link
+      rel="preload"
+      as="font"
+      type="font/${asset.match(/\.([^.]+)$/)[1]}"
+      href="${asset}"
+      crossorigin
+    />
     `.trim()).join("") %>
   </head>
   <body>
