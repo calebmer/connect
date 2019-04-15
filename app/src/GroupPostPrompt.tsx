@@ -47,8 +47,9 @@ export function GroupPostPrompt({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
+    paddingVertical: Space.space2,
+    paddingLeft: Space.space3,
     paddingRight: Space.space4,
-    padding: Space.space3,
     backgroundColor: Color.white,
     ...Shadow.elevation0,
   },

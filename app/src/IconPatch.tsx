@@ -66,7 +66,7 @@ export function IconPatch({icon, theme = "primary", ...props}: IconPatchProps) {
   return (
     <Animated.View
       {...props}
-      style={[styles.container, {backgroundColor: patchColor}]}
+      style={[props.style, styles.container, {backgroundColor: patchColor}]}
     >
       <Icon
         style={[
