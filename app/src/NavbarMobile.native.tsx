@@ -10,7 +10,7 @@ import {Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import React, {useEffect} from "react";
 import {useConstant} from "./useConstant";
 
-type NavbarNativeProps = {
+type NavbarMobileProps = {
   /**
    * The navbar title. Will be displayed in the center of the navbar. Use this
    * to provide context about the current visible screen.
@@ -50,14 +50,14 @@ type NavbarNativeProps = {
   lightContentWithoutBackground?: boolean;
 };
 
-export function NavbarNative({
+export function NavbarMobile({
   title,
   leftIcon,
   onLeftIconPress,
   hideBackground,
   hideTitleWithBackground,
   lightContentWithoutBackground,
-}: NavbarNativeProps) {
+}: NavbarMobileProps) {
   const backgroundOpacity = useConstant(() => {
     return new Animated.Value(hideBackground ? 0 : 1);
   });
@@ -115,7 +115,7 @@ export function NavbarNative({
   );
 }
 
-NavbarNative.height = Space.space6;
+NavbarMobile.height = Space.space6;
 
 const hitSlop = {
   top: Space.space3,
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    height: NavbarNative.height,
+    height: NavbarMobile.height,
   },
   title: {
     flex: 1,

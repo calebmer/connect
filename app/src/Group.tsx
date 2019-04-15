@@ -24,7 +24,7 @@ import {GroupCache} from "./cache/GroupCache";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {Loading} from "./atoms/Loading";
-import {NavbarNative} from "./NavbarNative";
+import {NavbarMobile} from "./NavbarMobile";
 import {Route} from "./router/Route";
 import {Trough} from "./Trough";
 import {useCacheData} from "./cache/framework/Cache";
@@ -128,7 +128,7 @@ function Group({
       </Animated.View>
 
       {/* Include the navbar. */}
-      <NavbarNative
+      <NavbarMobile
         title={group.name}
         hideBackground={!showNavbar}
         hideTitleWithBackground
@@ -199,7 +199,7 @@ function Group({
               // scrolling under the navbar.
               const shouldShowNavbar =
                 event.nativeEvent.contentOffset.y - (offsetScrollY || 0) >=
-                GroupBanner.height - NavbarNative.height;
+                GroupBanner.height - NavbarMobile.height;
 
               // Update our navbar state depending on whether we should or
               // should not show the navbar.
@@ -295,7 +295,7 @@ function GroupFooter({
   );
 }
 
-const scrollIndicatorInsets = {top: NavbarNative.height};
+const scrollIndicatorInsets = {top: NavbarMobile.height};
 
 const styles = StyleSheet.create({
   container: {
