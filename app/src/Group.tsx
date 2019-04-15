@@ -63,7 +63,7 @@ function Group({
   const scrollView = useRef<any>(null);
 
   // Are we using the mobile group home layout?
-  const isMobile =
+  const showNavbar =
     useContext(GroupHomeLayoutContext) === GroupHomeLayout.Mobile;
 
   // On iOS you can scroll up which results in a negative value for `scrollY`.
@@ -89,7 +89,7 @@ function Group({
         });
 
   // Should we show the navbar or not?
-  const [showNavbar, setShowNavbar] = useState(false);
+  const [showNavbarBackground, setShowNavbarBackground] = useState(false);
 
   // All the section data that our list will render. Memoized to avoid
   // unnecessary calculations in the virtualized list.
@@ -133,10 +133,10 @@ function Group({
       </Animated.View>
 
       {/* Include the navbar but only on mobile. */}
-      {isMobile && (
+      {showNavbar && (
         <Navbar
           title={group.name}
-          hideBackground={!showNavbar}
+          hideBackground={!showNavbarBackground}
           hideTitleWithBackground
           lightContentWithoutBackground
         />
@@ -186,14 +186,14 @@ function Group({
         // don’t need near-realtime animations attached to scrolling. Also, on
         // native we can use the native animation driver. We don’t have that
         // luxury on web.
-        scrollIndicatorInsets={scrollIndicatorInsets}
+        scrollIndicatorInsets={{top: showNavbar ? Navbar.height : 0}}
         scrollEventThrottle={Platform.OS === "web" ? 16 : 1}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {
             useNativeDriver: Platform.OS !== "web",
             listener: (event: any) => {
-              if (isMobile) {
+              if (showNavbar) {
                 // If we don’t yet have an `offsetScrollY` value then set one!
                 if (offsetScrollY === null) {
                   setOffsetScrollY(event.nativeEvent.contentOffset.y);
@@ -201,13 +201,13 @@ function Group({
 
                 // We should show the navbar when scrolling anymore would mean
                 // scrolling under the navbar.
-                const shouldShowNavbar =
+                const shouldShowNavbarBackground =
                   event.nativeEvent.contentOffset.y - (offsetScrollY || 0) >=
                   GroupBanner.height - Navbar.height;
 
                 // Update our navbar state depending on whether we should or
                 // should not show the navbar.
-                setShowNavbar(shouldShowNavbar);
+                setShowNavbarBackground(shouldShowNavbarBackground);
               }
             },
           },
@@ -299,8 +299,6 @@ function GroupFooter({
     </Trough>
   );
 }
-
-const scrollIndicatorInsets = {top: Navbar.height};
 
 const styles = StyleSheet.create({
   container: {

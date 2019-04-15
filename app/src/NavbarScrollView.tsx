@@ -18,6 +18,12 @@ interface NavbarScrollViewProps extends ScrollViewProps {
   useTitle: () => string;
 
   /**
+   * Should we hide the navbar? This will make the component act like a regular
+   * scroll view.
+   */
+  hideNavbar?: boolean;
+
+  /**
    * The content of the scroll view.
    */
   children: React.Node;
@@ -26,6 +32,7 @@ interface NavbarScrollViewProps extends ScrollViewProps {
 export function NavbarScrollView({
   route,
   useTitle,
+  hideNavbar,
   children,
   ...props
 }: NavbarScrollViewProps) {
@@ -33,19 +40,25 @@ export function NavbarScrollView({
 
   return (
     <>
-      {/* NOTE: This component might suspend when we call `useTitle()`. We
-          won’t even render the navbar on web so let’s avoid loading that data
-          if we aren’t on the web platform. */}
-      <NavbarContainer
-        route={route}
-        useTitle={useTitle}
-        hideBackground={hideBackground}
-      />
+      {!hideNavbar && (
+        // NOTE: This component might suspend when we call `useTitle()`. We
+        // won’t even render the navbar on web so let’s avoid loading that data
+        // if we aren’t on the web platform.
+        <NavbarContainer
+          route={route}
+          useTitle={useTitle}
+          hideBackground={hideBackground}
+        />
+      )}
       <ScrollView
         {...props}
         style={styles.background}
-        contentContainerStyle={[props.contentContainerStyle, styles.container]}
-        scrollIndicatorInsets={{top: Navbar.height, bottom: 0}}
+        contentContainerStyle={[
+          props.contentContainerStyle,
+          styles.container,
+          hideNavbar && styles.containerHideNavbar,
+        ]}
+        scrollIndicatorInsets={{top: !hideNavbar ? Navbar.height : 0}}
         scrollEventThrottle={16}
         onScroll={event => {
           setHideBackground(event.nativeEvent.contentOffset.y <= 0);
@@ -94,5 +107,8 @@ const styles = StyleSheet.create({
     paddingTop: Navbar.height,
     paddingLeft: 0,
     paddingRight: 0,
+  },
+  containerHideNavbar: {
+    paddingTop: 0,
   },
 });
