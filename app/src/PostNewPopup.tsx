@@ -299,7 +299,7 @@ function PostNewPopupActionBar({showShadow}: {showShadow?: boolean}) {
   return (
     <View style={[styles.actionBar, showShadow && styles.actionBarShadow]}>
       <View style={styles.actionBarSpace} />
-      <Button label="Send" icon="send" theme="primary" onPress={() => {}} />
+      <Button label="Send" theme="primary" onPress={() => {}} />
     </View>
   );
 }

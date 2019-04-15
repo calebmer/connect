@@ -4,19 +4,17 @@ import {
   Text,
   TouchableWithoutFeedback,
 } from "react-native";
-import {Border, Color, Font, Icon, IconName, Space} from "./atoms";
+import {Border, Color, Font, Space} from "./atoms";
 import React from "react";
 import {useAnimatedValue} from "./useAnimatedValue";
 
 export function Button({
   label,
-  icon,
   theme = "primary",
   size = "small",
   onPress,
 }: {
   label: string;
-  icon?: IconName;
   theme?: "primary";
   size?: "large" | "small";
   onPress: () => void;
@@ -52,13 +50,6 @@ export function Button({
         >
           {label}
         </Text>
-        {icon && (
-          <Icon
-            style={styles.icon}
-            name={icon}
-            color={themeColors[theme].iconColor}
-          />
-        )}
       </Animated.View>
     </TouchableWithoutFeedback>
   );
@@ -101,8 +92,5 @@ const styles = StyleSheet.create({
   labelSmall: {
     ...Font.sans,
     ...Font.size2,
-  },
-  icon: {
-    paddingLeft: Space.space0,
   },
 });
