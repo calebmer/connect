@@ -186,6 +186,9 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
     }
   }, [state.animating, state.offset, state.width, translateY, width]);
 
+  // Is the send button in our navbar enabled?
+  const [sendEnabled, setSendEnabled] = useState(false);
+
   // State variable for whether or not we should show a shadow above our action
   // bar. True when we have enough content that we need to scroll.
   const [actionBarShadow, setActionBarShadow] = useState(false);
@@ -223,9 +226,13 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
           minHeight={PostNewPopup.editorMinHeight}
           placeholder="Start a conversation…"
           disabled={hidden}
+          onChange={({isWhitespaceOnly}) => setSendEnabled(!isWhitespaceOnly)}
         />
       </ScrollView>
-      <PostNewPopupActionBar showShadow={actionBarShadow} />
+      <PostNewPopupActionBar
+        sendEnabled={sendEnabled}
+        showShadow={actionBarShadow}
+      />
     </Animated.View>
   );
 }
@@ -295,11 +302,17 @@ function PostNewPopupTitleBarButton({
   );
 }
 
-function PostNewPopupActionBar({showShadow}: {showShadow?: boolean}) {
+function PostNewPopupActionBar({
+  sendEnabled,
+  showShadow,
+}: {
+  sendEnabled: boolean;
+  showShadow: boolean;
+}) {
   return (
     <View style={[styles.actionBar, showShadow && styles.actionBarShadow]}>
       <View style={styles.actionBarSpace} />
-      <Button label="Send" theme="primary" onPress={() => {}} />
+      <Button label="Send" disabled={!sendEnabled} onPress={() => {}} />
     </View>
   );
 }

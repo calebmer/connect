@@ -1,7 +1,7 @@
 import React, {useState} from "react";
-import {TouchableWithoutFeedback, View} from "react-native";
 import {IconName} from "./atoms";
 import {IconPatch} from "./IconPatch";
+import {TouchableWithoutFeedback} from "react-native";
 
 export function IconPatchButton({
   icon,
@@ -24,12 +24,10 @@ export function IconPatchButton({
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
     >
-      <View>
-        <IconPatch
-          icon={icon}
-          theme={disabled ? "disabled" : active ? "primary-active" : "primary"}
-        />
-      </View>
+      <IconPatch
+        icon={icon}
+        theme={disabled ? "disabled" : active ? "primary-active" : "primary"}
+      />
     </TouchableWithoutFeedback>
   );
 }

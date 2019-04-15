@@ -1,18 +1,25 @@
-import {Animated, StyleSheet} from "react-native";
+import {Animated, StyleSheet, ViewProps} from "react-native";
 import {Color, Icon, IconName, Space} from "./atoms";
 import React, {useEffect, useState} from "react";
+
+interface IconPatchProps extends ViewProps {
+  /**
+   * The icon to be rendered in our patch.
+   */
+  icon: IconName;
+
+  /**
+   * The color theme for our patch. If the color theme changes then we will
+   * update the theme with an animation.
+   */
+  theme?: "primary" | "primary-active" | "disabled";
+}
 
 /**
  * A way to make an icon more colorful and visually distinct. Puts a dark
  * colored icon on a lightly colored background.
  */
-export function IconPatch({
-  icon,
-  theme = "primary",
-}: {
-  icon: IconName;
-  theme?: "primary" | "primary-active" | "disabled";
-}) {
+export function IconPatch({icon, theme = "primary", ...props}: IconPatchProps) {
   // The state of the icon’s animation.
   const [animation, setAnimation] = useState(() => ({
     lastTheme: theme,
@@ -57,7 +64,10 @@ export function IconPatch({
   });
 
   return (
-    <Animated.View style={[styles.container, {backgroundColor: patchColor}]}>
+    <Animated.View
+      {...props}
+      style={[styles.container, {backgroundColor: patchColor}]}
+    >
       <Icon
         style={[
           icon === "edit" && styles.iconEdit,
