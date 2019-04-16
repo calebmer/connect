@@ -1,5 +1,5 @@
+import {APIError, APIErrorCode, AccountID} from "@connect/api-client";
 import {SQLQuery, sql} from "./PGSQL";
-import {AccountID} from "@connect/api-client";
 import {PGClient} from "./PGClient";
 import {QueryResult} from "pg";
 import createDebugger from "debug";
@@ -55,17 +55,33 @@ export class ContextUnauthorized implements ContextQueryable {
   }
 
   /**
-   * Executes a SQL query. We require a `SQLQuery` object to prevent SQL
-   * injection attacks entirely. We will also log the provided query
-   * for debugging.
+   * Executes a SQL query. We use a custom `query()` function so that we may do
+   * a couple of things.
+   *
+   * - We require a `SQLQuery` object to prevent SQL injection attacks entirely.
+   * - We log the provided query for debugging without parameters.
+   * - We convert some database error codes into API error codes.
+   * - We prevent querying after the client has been released back to the pool.
    */
   query(query: SQLQuery): Promise<QueryResult> {
     if (this.client === undefined) {
       throw new Error("Cannot query a context after it has been invalidated.");
     }
+
     const queryConfig = sql.compile(query);
     debug(typeof queryConfig === "string" ? queryConfig : queryConfig.text);
-    return this.client.query(queryConfig);
+
+    return this.client.query(queryConfig).catch(error => {
+      // https://www.postgresql.org/docs/current/errcodes-appendix.html
+      switch (error.code) {
+        // insufficient_privilege
+        case "42501":
+          throw new APIError(APIErrorCode.UNAUTHORIZED);
+
+        default:
+          throw error;
+      }
+    });
   }
 
   /**

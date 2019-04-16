@@ -188,10 +188,6 @@ export const APISchema = Schema.namespace({
     /**
      * All of the comment replies to a post. Sorted by the time they were posted
      * with the first comments at the beginning of the list.
-     *
-     * **TODO:** It should also be easy to read the latest comments. Not just
-     * the earliest comments. For example, if someone is participating in a
-     * discussion then they’ll want to see the most up-to-date comments.
      */
     getPostComments: Schema.method({
       safe: true,
@@ -201,6 +197,24 @@ export const APISchema = Schema.namespace({
       },
       output: SchemaOutput.t<{
         readonly comments: ReadonlyArray<Comment>;
+      }>(),
+    }),
+
+    /**
+     * Publishes a new post in the provided group. If the authorized user is not
+     * a member of the group then we will throw an unauthorized error.
+     *
+     * Only returns the new post ID to avoid sending all the content back over
+     * the network.
+     */
+    publishPost: Schema.method({
+      safe: false,
+      input: {
+        groupID: SchemaInput.integer<GroupID>(),
+        content: SchemaInput.string(),
+      },
+      output: SchemaOutput.t<{
+        readonly postID: PostID;
       }>(),
     }),
   }),

@@ -32,5 +32,5 @@ GRANT SELECT ON TABLE comment TO connect_api;
 -- select the comment. Policies are executed using the same permissions as the
 -- query they were added to. That means by selecting a post we will also be
 -- running the post `SELECT` policy.
-CREATE POLICY select_post ON comment FOR SELECT USING
+CREATE POLICY select_comment ON comment FOR SELECT USING
   (EXISTS (SELECT 1 FROM post WHERE id = post_id));

@@ -54,12 +54,12 @@ ALTER TABLE group_member ENABLE ROW LEVEL SECURITY;
 GRANT SELECT ON TABLE group_member TO connect_api;
 
 -- Account must be a member of the group to see it.
-CREATE POLICY select_member_of ON "group" FOR SELECT USING
+CREATE POLICY select_group ON "group" FOR SELECT USING
   (EXISTS (SELECT 1
              FROM group_member
             WHERE group_member.account_id = current_account_id() AND
                   group_member.group_id = "group".id));
 
 -- Account must own the group membership to see it.
-CREATE POLICY select_own ON group_member FOR SELECT USING
+CREATE POLICY select_group_member ON group_member FOR SELECT USING
   (account_id = current_account_id());

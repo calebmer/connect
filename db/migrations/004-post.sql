@@ -30,11 +30,22 @@ CREATE INDEX post_published_at ON post (group_id, published_at DESC, id DESC);
 -- security policies.
 ALTER TABLE post ENABLE ROW LEVEL SECURITY;
 GRANT SELECT ON TABLE post TO connect_api;
+GRANT INSERT ON TABLE post TO connect_api;
+GRANT USAGE ON SEQUENCE post_id_seq TO connect_api;
 
 -- Account must be a member of the group the post was published in to see
 -- the post.
-CREATE POLICY select_member_of ON post FOR SELECT USING
+CREATE POLICY select_post ON post FOR SELECT USING
   (EXISTS (SELECT 1
+             FROM group_member
+            WHERE group_member.account_id = current_account_id() AND
+                  group_member.group_id = post.group_id));
+
+-- Account may only insert a post that they authored in a group that they are
+-- a member of.
+CREATE POLICY insert_post ON post FOR INSERT WITH CHECK
+  (post.author_id = current_account_id() AND
+   EXISTS (SELECT 1
              FROM group_member
             WHERE group_member.account_id = current_account_id() AND
                   group_member.group_id = post.group_id));

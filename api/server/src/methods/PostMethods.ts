@@ -1,4 +1,11 @@
-import {Comment, CommentCursor, Post, PostID, Range} from "@connect/api-client";
+import {
+  Comment,
+  CommentCursor,
+  GroupID,
+  Post,
+  PostID,
+  Range,
+} from "@connect/api-client";
 import {Context} from "../Context";
 import {PGPagination} from "../PGPagination";
 import {sql} from "../PGSQL";
@@ -64,4 +71,27 @@ export async function getPostComments(
   );
 
   return {comments};
+}
+
+/**
+ * Publishes a new post.
+ */
+export async function publishPost(
+  ctx: Context,
+  input: {readonly groupID: GroupID; readonly content: string},
+): Promise<{
+  readonly postID: PostID;
+}> {
+  const {accountID} = ctx;
+  const {groupID, content} = input;
+
+  const {
+    rows: [row],
+  } = await ctx.query(
+    sql`INSERT INTO post (group_id, author_id, content) VALUES (${groupID}, ${accountID}, ${content}) RETURNING id`,
+  );
+
+  return {
+    postID: row.id,
+  };
 }
