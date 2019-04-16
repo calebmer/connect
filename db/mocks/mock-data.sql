@@ -108,18 +108,18 @@ INSERT INTO comment (post_id, author_id, posted_at, content)
          mock_comment.posted_at,
          mock_comment.content
     FROM post,
-         (SELECT 1, 1, now() + interval '0m', '@Dominic, @Joseph: what do you guys use to manage state across your app (react native)' UNION ALL
-          SELECT 2, 20, now() + interval '3m', 'Right now redux because the Context API only just got released and it isnt currently stable' UNION ALL
-          SELECT 3, 20, now() + interval '3m', 'Well hooks that is, I think context has been fine but Im waiting for hooks and context together first.' UNION ALL
-          SELECT 4, 3, now() + interval '4m', 'I want to use hooks & context so bad' UNION ALL
-          SELECT 5, 3, now() + interval '4m', 'Things may of changed as of today I''ll link you to the github tracking' UNION ALL
-          SELECT 6, 1, now() + interval '5m', 'I''m using expo for now, and that means no hooks yet' UNION ALL
-          SELECT 7, 3, now() + interval '5m', 'yup' UNION ALL
-          SELECT 8, 3, now() + interval '5m', 'To be noted I like expo' UNION ALL
-          SELECT 9, 20, now() + interval '5m', 'I don’t use expo as I tend to have to write custom java/objective-c modules for a lot of our scanning software here.' UNION ALL
-          SELECT 10, 20, now() + interval '5m', 'So easier to not have to worry about ejecting for me' UNION ALL
-          SELECT 11, 1, now() + interval '34m', 'I''m planning on ejecting probably by the end of this week tbh, there are too many things (functionality wise) that I''m missing with expo since the modules are not compatible')
-              AS mock_comment (id, author_id, posted_at, content);
+         unnest(ARRAY[(1, 1, NOW() + interval '0m', '@Dominic, @Joseph: what do you guys use to manage state across your app (react native)'::TEXT),
+                      (2, 20, NOW() + interval '3m', 'Right now redux because the Context API only just got released and it isnt currently stable'::TEXT),
+                      (3, 20, NOW() + interval '3m', 'Well hooks that is, I think context has been fine but Im waiting for hooks and context together first.'::TEXT),
+                      (4, 3, NOW() + interval '4m', 'I want to use hooks & context so bad'::TEXT),
+                      (5, 3, NOW() + interval '4m', 'Things may of changed as of today I''ll link you to the github tracking'::TEXT),
+                      (6, 1, NOW() + interval '5m', 'I''m using expo for now, and that means no hooks yet'::TEXT),
+                      (7, 3, NOW() + interval '5m', 'yup'::TEXT),
+                      (8, 3, NOW() + interval '5m', 'To be noted I like expo'::TEXT),
+                      (9, 20, NOW() + interval '5m', 'I don’t use expo as I tend to have to write custom java/objective-c modules for a lot of our scanning software here.'::TEXT),
+                      (10, 20, NOW() + interval '5m', 'So easier to not have to worry about ejecting for me'::TEXT),
+                      (11, 1, NOW() + interval '34m', 'I''m planning on ejecting probably by the end of this week tbh, there are too many things (functionality wise) that I''m missing with expo since the modules are not compatible'::TEXT)])
+                      AS mock_comment (id INT, author_id INT, posted_at TIMESTAMP WITH TIME ZONE, content TEXT);
 
 SELECT setval('comment_id_seq', (SELECT id FROM comment ORDER BY id DESC LIMIT 1));
 
