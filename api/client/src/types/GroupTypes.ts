@@ -54,5 +54,14 @@ export type GroupMembership = {
  * [1]: https://en.wikipedia.org/wiki/ISO_8601
  * [2]: https://xkcd.com/1179
  */
-export type DateTime = string & {readonly _type: typeof DateTime};
-declare const DateTime: unique symbol;
+export type DateTime = string & {readonly _type: typeof DateTimeType};
+declare const DateTimeType: unique symbol;
+
+export const DateTime = {
+  /**
+   * Get the current `DateTime` value.
+   */
+  now(): DateTime {
+    return new Date().toISOString() as DateTime;
+  },
+};

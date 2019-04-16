@@ -10,7 +10,7 @@ import {communicateTime} from "./communicateTime";
 import {useCacheData} from "./cache/framework/Cache";
 
 export function PostContent({postID}: {postID: PostID}) {
-  const post = useCacheData(PostCache, postID);
+  const {post} = useCacheData(PostCache, postID);
   const author = useCacheData(AccountCache, post.authorID);
 
   const breakpoint = useBreakpoint();

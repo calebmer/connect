@@ -1,3 +1,4 @@
+import {AccountCache, CurrentAccountCache} from "./AccountCache";
 import {
   AccountID,
   DateTime,
@@ -5,23 +6,51 @@ import {
   Post,
   PostCursor,
   PostID,
+  generateID,
 } from "@connect/api-client";
 import {API} from "../api/API";
-import {AccountCache} from "./AccountCache";
 import {Cache} from "./framework/Cache";
 import {CacheList} from "./framework/CacheList";
 
 /**
  * Caches posts by their ID.
  */
-export const PostCache = new Cache<PostID, Post>({
+export const PostCache = new Cache<PostID, PostCacheEntry>({
   async load(id) {
     const {post} = await API.post.getPost({id});
     if (post == null) throw new Error("Post not found.");
     AccountCache.preload(post.authorID); // Preload the post’s author. We will probably need that.
-    return post;
+    return {
+      status: PostCacheEntryStatus.Commit,
+      post,
+    };
   },
 });
+
+/**
+ * The status of a `PostCacheEntry`. Uses common lingo from transaction status.
+ */
+enum PostCacheEntryStatus {
+  /** The cache entry is optimistic and has not yet been committed. */
+  Pending,
+  /** The cache entry is fully commit to the backend, hooray! */
+  Commit,
+  /** The cache entry failed to commit so we need to roll it back. */
+  Rollback,
+}
+
+/**
+ * An entry for a post in our `PostCache`. It contains the post data from the
+ * API and other status information about the post.
+ *
+ * When we publish a post we insert a cache entry with a status of
+ * “pending”. When we finish publishing the post we change the status to
+ * “commit”. If we fail to publish the post we change the status to “rollback”.
+ */
+type PostCacheEntry = {
+  readonly status: PostCacheEntryStatus;
+  readonly post: Post;
+};
 
 /**
  * An entry for a `Post` in a `CacheList`. Notice how this only has the post ID?
@@ -63,7 +92,10 @@ export const PostCacheList = new Cache<
         // Loop through all the posts and create cache entries for our post
         // list. Also insert each post into our `PostCache`.
         const entries = posts.map<PostCacheListEntry>(post => {
-          PostCache.insert(post.id, post);
+          PostCache.insert(post.id, {
+            status: PostCacheEntryStatus.Commit,
+            post,
+          });
           accountIDs.add(post.authorID);
           return {
             id: post.id,
@@ -86,3 +118,63 @@ export const PostCacheList = new Cache<
     return postCacheList;
   },
 });
+
+/**
+ * Publishes a new post! Immediately inserts the new post into the cache while
+ * we wait for the API to tell us the post was successfully created. If the API
+ * fails then we will change the status of our cache entry to reflect
+ * the failure.
+ */
+export async function publishPost(
+  groupID: GroupID,
+  content: string,
+): Promise<void> {
+  // Get the current account ID. (It should really already be loaded.)
+  const authorID = await CurrentAccountCache.load();
+
+  // Generate a new ID for our post. The ID we generate should be globally
+  // unique thanks to our algorithm.
+  const postID = generateID<PostID>();
+
+  // Create a pending post object. This is what the final post _should_
+  // look like.
+  const pendingPost: Post = {
+    id: postID,
+    groupID,
+    authorID,
+    publishedAt: DateTime.now(), // The server will assign a definitive timestamp.
+    content,
+  };
+
+  // Insert our pending post into the cache! This way it will
+  // render immediately.
+  PostCache.insert(postID, {
+    status: PostCacheEntryStatus.Pending,
+    post: pendingPost,
+  });
+
+  try {
+    // Actually publish the post using our API! The API will give us the server
+    // assigned publish date.
+    const {publishedAt} = await API.post.publishPost({
+      id: postID,
+      groupID,
+      content,
+    });
+
+    // Insert the final post object into the cache and flip the status
+    // to “commit”.
+    PostCache.insert(postID, {
+      status: PostCacheEntryStatus.Commit,
+      post: {...pendingPost, publishedAt},
+    });
+  } catch (error) {
+    // If we failed to insert the post then make sure to reflect that in
+    // our UI.
+    PostCache.insert(postID, {
+      status: PostCacheEntryStatus.Rollback,
+      post: pendingPost,
+    });
+    throw error;
+  }
+}

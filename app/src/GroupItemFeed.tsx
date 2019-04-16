@@ -25,7 +25,7 @@ function GroupItemFeed({
   selectedPostID: ReadonlyMutable<PostID | undefined>;
 }) {
   // TODO: Suspense handler for _just_ this component.
-  const post = useCacheData(PostCache, postID);
+  const {post} = useCacheData(PostCache, postID);
   const account = useCacheData(AccountCache, post.authorID);
 
   // Is this post selected? We will only re-render if the value of
