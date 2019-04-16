@@ -4,6 +4,7 @@ import {
   DateTime,
   GroupID,
   PostID,
+  generateID,
 } from "@connect/api-client";
 import {ContextTest} from "./ContextTest";
 import {TEST} from "./RunConfig";
@@ -163,12 +164,13 @@ export async function createPost(
   ctx: ContextTest,
   config: FactoryPostConfig = {},
 ): Promise<FactoryPost> {
+  const id = generateID<PostID>();
   const n = postSequence(ctx);
 
-  const [groupID, authorID] = await Promise.all([
-    maybeCreateGroup(ctx, config.groupID),
-    maybeCreateAccount(ctx, config.authorID),
-  ]);
+  const {groupID, accountID: authorID} = await createGroupMember(ctx, {
+    groupID: config.groupID,
+    accountID: config.authorID,
+  });
 
   const content = `Post Content ${n}`;
   const publishedAt = config.publishedAt
@@ -177,16 +179,14 @@ export async function createPost(
         startPublishedAt + 1000 * 60 * 60 * (n - 1),
       ).toISOString() as DateTime);
 
-  const {
-    rows: [row],
-  } = await ctx.query(sql`
-    INSERT INTO post (group_id, author_id, published_at, content)
-         VALUES (${groupID}, ${authorID}, ${publishedAt}, ${content})
+  await ctx.query(sql`
+    INSERT INTO post (id, group_id, author_id, published_at, content)
+         VALUES (${id}, ${groupID}, ${authorID}, ${publishedAt}, ${content})
       RETURNING id
   `);
 
   return {
-    id: row.id,
+    id,
     groupID,
     authorID,
     publishedAt,

@@ -3,6 +3,7 @@ import {
   APIErrorCode,
   Comment,
   CommentCursor,
+  DateTime,
   GroupID,
   Post,
   PostID,
@@ -80,9 +81,13 @@ export async function getPostComments(
  */
 export async function publishPost(
   ctx: Context,
-  input: {readonly groupID: GroupID; readonly content: string},
+  input: {
+    readonly id: PostID;
+    readonly groupID: GroupID;
+    readonly content: string;
+  },
 ): Promise<{
-  readonly postID: PostID;
+  readonly publishedAt: DateTime;
 }> {
   // Reject post content that is empty or made up only of spaces.
   if (/^\s*$/.test(input.content)) {
@@ -90,15 +95,15 @@ export async function publishPost(
   }
 
   const {accountID} = ctx;
-  const {groupID, content} = input;
+  const {id, groupID, content} = input;
 
   const {
     rows: [row],
   } = await ctx.query(
-    sql`INSERT INTO post (group_id, author_id, content) VALUES (${groupID}, ${accountID}, ${content}) RETURNING id`,
+    sql`INSERT INTO post (id, group_id, author_id, content) VALUES (${id}, ${groupID}, ${accountID}, ${content}) RETURNING published_at`,
   );
 
   return {
-    postID: row.id,
+    publishedAt: row.published_at,
   };
 }

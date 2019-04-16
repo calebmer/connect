@@ -71,17 +71,7 @@ export class ContextUnauthorized implements ContextQueryable {
     const queryConfig = sql.compile(query);
     debug(typeof queryConfig === "string" ? queryConfig : queryConfig.text);
 
-    return this.client.query(queryConfig).catch(error => {
-      // https://www.postgresql.org/docs/current/errcodes-appendix.html
-      switch (error.code) {
-        // insufficient_privilege
-        case "42501":
-          throw new APIError(APIErrorCode.UNAUTHORIZED);
-
-        default:
-          throw error;
-      }
-    });
+    return this.client.query(queryConfig).catch(handlePGError);
   }
 
   /**
@@ -137,5 +127,29 @@ export class Context extends ContextUnauthorized {
   protected constructor(client: PGClient, accountID: AccountID) {
     super(client);
     this.accountID = accountID;
+  }
+}
+
+/**
+ * Handles an error thrown by Postgres. Depending on the error code, we will
+ * convert some common Postgres errors into API errors.
+ */
+function handlePGError(error: unknown): never {
+  if (!(error instanceof Error)) {
+    throw error;
+  }
+
+  // https://www.postgresql.org/docs/current/errcodes-appendix.html
+  switch ((error as any).code) {
+    // unique_violation
+    case "23505":
+      throw new APIError(APIErrorCode.ALREADY_EXISTS);
+
+    // insufficient_privilege
+    case "42501":
+      throw new APIError(APIErrorCode.UNAUTHORIZED);
+
+    default:
+      throw error;
   }
 }

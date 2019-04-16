@@ -22,7 +22,7 @@ describe("getPost", () => {
       const account = await createAccount(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getPost(ctx, {id: generateID() as PostID})).toEqual({
+        expect(await getPost(ctx, {id: generateID()})).toEqual({
           post: null,
         });
       });
@@ -112,7 +112,11 @@ describe("publishPost", () => {
       await ctx.withAuthorized(account.id, async ctx => {
         let error: any;
         try {
-          await publishPost(ctx, {groupID: 1 as GroupID, content: "test"});
+          await publishPost(ctx, {
+            id: generateID(),
+            groupID: 1 as GroupID,
+            content: "test",
+          });
         } catch (e) {
           error = e;
         }
@@ -130,7 +134,11 @@ describe("publishPost", () => {
       await ctx.withAuthorized(account.id, async ctx => {
         let error: any;
         try {
-          await publishPost(ctx, {groupID: group.id, content: "test"});
+          await publishPost(ctx, {
+            id: generateID(),
+            groupID: group.id,
+            content: "test",
+          });
         } catch (e) {
           error = e;
         }
@@ -145,7 +153,10 @@ describe("publishPost", () => {
       const membership = await createGroupMember(ctx);
 
       await ctx.withAuthorized(membership.accountID, async ctx => {
-        const {postID} = await publishPost(ctx, {
+        const postID = generateID<PostID>();
+
+        const {publishedAt} = await publishPost(ctx, {
+          id: postID,
           groupID: membership.groupID,
           content: "test",
         });
@@ -156,7 +167,7 @@ describe("publishPost", () => {
           id: postID,
           groupID: membership.groupID,
           authorID: membership.accountID,
-          publishedAt: expect.anything(),
+          publishedAt,
           content: "test",
         });
       });
@@ -177,7 +188,11 @@ describe("publishPost", () => {
 
         let error: any;
         try {
-          await publishPost(ctx, {groupID: group.id, content: "test"});
+          await publishPost(ctx, {
+            id: generateID(),
+            groupID: group.id,
+            content: "test",
+          });
         } catch (e) {
           error = e;
         }
@@ -195,7 +210,11 @@ describe("publishPost", () => {
       await ctx.withAuthorized(membership.accountID, async ctx => {
         let error: any;
         try {
-          await publishPost(ctx, {groupID: membership.groupID, content: ""});
+          await publishPost(ctx, {
+            id: generateID(),
+            groupID: membership.groupID,
+            content: "",
+          });
         } catch (e) {
           error = e;
         }
@@ -215,7 +234,11 @@ describe("publishPost", () => {
       await ctx.withAuthorized(membership.accountID, async ctx => {
         let error: any;
         try {
-          await publishPost(ctx, {groupID: membership.groupID, content});
+          await publishPost(ctx, {
+            id: generateID(),
+            groupID: membership.groupID,
+            content,
+          });
         } catch (e) {
           error = e;
         }
@@ -235,13 +258,74 @@ describe("publishPost", () => {
       await ctx.withAuthorized(membership.accountID, async ctx => {
         let error: any;
         try {
-          await publishPost(ctx, {groupID: membership.groupID, content});
+          await publishPost(ctx, {
+            id: generateID(),
+            groupID: membership.groupID,
+            content,
+          });
         } catch (e) {
           error = e;
         }
 
         expect(error).toBeInstanceOf(APIError);
         expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+      });
+    });
+  });
+
+  test("will not publish two posts with the same ID in the same group", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account.id,
+        groupID: post.groupID,
+      });
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        let error: any;
+        try {
+          await publishPost(ctx, {
+            id: post.id,
+            groupID: post.groupID,
+            content: "test",
+          });
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.ALREADY_EXISTS);
+      });
+    });
+  });
+
+  test("will not publish two posts with the same ID in different groups", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const group = await createGroup(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account.id,
+        groupID: group.id,
+      });
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        let error: any;
+        try {
+          await publishPost(ctx, {
+            id: post.id,
+            groupID: group.id,
+            content: "test",
+          });
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.ALREADY_EXISTS);
       });
     });
   });

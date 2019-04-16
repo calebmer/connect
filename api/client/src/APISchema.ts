@@ -1,7 +1,7 @@
 import {AccessToken, RefreshToken} from "./types/TokenTypes";
 import {AccountID, AccountProfile} from "./types/AccountTypes";
 import {Comment, CommentCursor, CommentID} from "./types/CommentTypes";
-import {Group, GroupID} from "./types/GroupTypes";
+import {DateTime, Group, GroupID} from "./types/GroupTypes";
 import {Post, PostCursor, PostID} from "./types/PostTypes";
 import {RangeInputFields} from "./Range";
 import {Schema} from "./Schema";
@@ -204,17 +204,25 @@ export const APISchema = Schema.namespace({
      * Publishes a new post in the provided group. If the authorized user is not
      * a member of the group then we will throw an unauthorized error.
      *
+     * We give the client the ability to generate a new ID for the post. That
+     * way the client can create an “optimistic” post for display in the UI.
+     *
+     * Only the server gets to decide the definitive time a post was published
+     * at. Since the time will be independent of time zones or skewed client
+     * device clocks.
+     *
      * Only returns the new post ID to avoid sending all the content back over
      * the network.
      */
     publishPost: Schema.method({
       safe: false,
       input: {
+        id: SchemaInput.string<PostID>(),
         groupID: SchemaInput.integer<GroupID>(),
         content: SchemaInput.string(),
       },
       output: SchemaOutput.t<{
-        readonly postID: PostID;
+        readonly publishedAt: DateTime;
       }>(),
     }),
   }),

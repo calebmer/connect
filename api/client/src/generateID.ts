@@ -40,7 +40,7 @@
  * [4]: https://github.com/ulid/spec
  * [5]: https://www.crockford.com/base32.html
  */
-export function generateID(): string {
+export function generateID<ID extends string>(): ID {
   // Implementation heavily inspired by:
   // https://github.com/ulid/javascript/blob/5e9727b527aec5b841737c395a20085c4361e971/lib/index.ts
 
@@ -60,7 +60,7 @@ export function generateID(): string {
     id += ENCODING[Math.floor(Math.random() * 32)];
   }
 
-  return id;
+  return id as ID;
 }
 
 const ENCODING = "0123456789abcdefghjkmnpqrstvwxyz"; // Crockford’s base32

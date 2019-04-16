@@ -31,6 +31,12 @@ export enum APIErrorCode {
   NOT_FOUND = "NOT_FOUND",
 
   /**
+   * The user tried to _create_ a new resource that already exists! Perhaps by
+   * choosing a unique ID that was already in use.
+   */
+  ALREADY_EXISTS = "ALREADY_EXISTS",
+
+  /**
    * A person’s access token expired. They should use their refresh token to get
    * a new one.
    */
@@ -45,6 +51,8 @@ export enum APIErrorCode {
   /**
    * When a person tries to sign up and the email they provided is already in
    * use by another account then we’ll throw this error.
+   *
+   * A special version of `ALREADY_EXISTS`.
    */
   SIGN_UP_EMAIL_ALREADY_USED = "SIGN_UP_EMAIL_ALREADY_USED",
 
