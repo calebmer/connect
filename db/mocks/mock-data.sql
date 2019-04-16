@@ -58,7 +58,7 @@ INSERT INTO group_member (account_id, group_id) VALUES
 -- in `api/client/generateID.ts`. We only use this when creating mock data since
 -- we want to only have one implementation of ID generation in production. We
 -- also haven’t thought about optimizing this.
-CREATE OR REPLACE FUNCTION mock_generate_id(TIMESTAMP WITH TIME ZONE) RETURNS CHAR(22) AS $$
+CREATE FUNCTION mock_generate_id(TIMESTAMP WITH TIME ZONE) RETURNS CHAR(22) AS $$
   DECLARE
     chars TEXT := '0123456789abcdefghjkmnpqrstvwxyz';
     seed BIGINT := extract(epoch FROM $1) * 1000;
