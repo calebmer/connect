@@ -3,7 +3,7 @@ import {AccountID} from "./AccountTypes";
 import {Cursor} from "../Range";
 
 /** A unique type which is used as an identifier for posts. */
-export type PostID = number & {readonly _type: typeof PostID};
+export type PostID = string & {readonly _type: typeof PostID};
 declare const PostID: unique symbol;
 
 /**

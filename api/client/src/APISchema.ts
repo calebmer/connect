@@ -181,7 +181,7 @@ export const APISchema = Schema.namespace({
      */
     getPost: Schema.method({
       safe: true,
-      input: {id: SchemaInput.integer<PostID>()},
+      input: {id: SchemaInput.string<PostID>()},
       output: SchemaOutput.t<{readonly post: Post | null}>(),
     }),
 
@@ -192,7 +192,7 @@ export const APISchema = Schema.namespace({
     getPostComments: Schema.method({
       safe: true,
       input: {
-        postID: SchemaInput.integer<PostID>(),
+        postID: SchemaInput.string<PostID>(),
         ...RangeInputFields<CommentCursor>(),
       },
       output: SchemaOutput.t<{

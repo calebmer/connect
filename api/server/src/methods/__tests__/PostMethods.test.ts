@@ -4,6 +4,7 @@ import {
   GroupID,
   PostID,
   RangeDirection,
+  generateID,
 } from "@connect/api-client";
 import {
   createAccount,
@@ -21,7 +22,9 @@ describe("getPost", () => {
       const account = await createAccount(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getPost(ctx, {id: -42 as PostID})).toEqual({post: null});
+        expect(await getPost(ctx, {id: generateID() as PostID})).toEqual({
+          post: null,
+        });
       });
     });
   });

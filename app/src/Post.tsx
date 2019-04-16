@@ -39,26 +39,3 @@ function Post({
 // Don’t re-render `<Post>` unless the props change.
 const PostMemo = React.memo(Post);
 export {PostMemo as Post};
-
-/**
- * Component we use for a post’s route. It takes `postID` as a string instead of
- * an integer. We convert it to a `PostID` in this component and pass
- * it to `<Post>`.
- */
-export function PostRoute({
-  route,
-  groupSlug,
-  postID,
-}: {
-  route: Route;
-  groupSlug: string;
-  postID: string;
-}) {
-  return (
-    <Post
-      route={route}
-      groupSlug={groupSlug}
-      postID={parseInt(postID, 10) as PostID}
-    />
-  );
-}

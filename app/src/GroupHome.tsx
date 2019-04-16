@@ -1,7 +1,7 @@
 import {Breakpoint, useBreakpoint} from "./useBreakpoint";
 import {Group, GroupRoute as GroupRouteComponent} from "./Group";
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
-import {Post, PostRoute as PostRouteComponent} from "./Post";
+import {Post, Post as PostRouteComponent} from "./Post";
 import React, {useCallback, useEffect} from "react";
 import {Shadow, Space} from "./atoms";
 import {StyleSheet, View} from "react-native";
@@ -20,20 +20,16 @@ import {useMutableContainer} from "./cache/framework/Mutable";
 function GroupHome({
   route,
   groupSlug,
-  postID: _postID,
+  postID,
   breakpoint,
 }: {
   route: Route;
   groupSlug: string;
-  postID?: string;
+  postID?: PostID;
   breakpoint: Breakpoint;
 }) {
   // Always preload the current account...
   CurrentAccountCache.preload();
-
-  // Parse a post ID from our props which comes from the URL.
-  const postID =
-    _postID != null ? (parseInt(_postID, 10) as PostID) : undefined;
 
   return (
     <GroupHomeContainer>
@@ -102,12 +98,14 @@ function GroupSuspense({
 export function GroupHomeRoute({
   route,
   groupSlug,
-  postID,
+  postID: _postID,
 }: {
   route: Route;
   groupSlug: string;
   postID?: string;
 }) {
+  const postID = _postID as PostID;
+
   const breakpoint = useBreakpoint();
 
   if (breakpoint <= Breakpoint.TabletSmall) {
