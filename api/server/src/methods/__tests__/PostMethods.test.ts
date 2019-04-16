@@ -184,4 +184,62 @@ describe("publishPost", () => {
       });
     });
   });
+
+  test("will not publish a post with no content", () => {
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        let error: any;
+        try {
+          await publishPost(ctx, {groupID: membership.groupID, content: ""});
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+      });
+    });
+  });
+
+  test("will not publish a post with only spaces", () => {
+    const content = "    ";
+
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        let error: any;
+        try {
+          await publishPost(ctx, {groupID: membership.groupID, content});
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+      });
+    });
+  });
+
+  test("will not publish a post with only whitespace", () => {
+    const content = "  \n   \n\n  \n   \t \r    \n\r  \r\n ";
+
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        let error: any;
+        try {
+          await publishPost(ctx, {groupID: membership.groupID, content});
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+      });
+    });
+  });
 });

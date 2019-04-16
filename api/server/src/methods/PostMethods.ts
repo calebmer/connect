@@ -1,4 +1,6 @@
 import {
+  APIError,
+  APIErrorCode,
   Comment,
   CommentCursor,
   GroupID,
@@ -82,6 +84,11 @@ export async function publishPost(
 ): Promise<{
   readonly postID: PostID;
 }> {
+  // Reject post content that is empty or made up only of spaces.
+  if (/^\s*$/.test(input.content)) {
+    throw new APIError(APIErrorCode.BAD_INPUT);
+  }
+
   const {accountID} = ctx;
   const {groupID, content} = input;
 
