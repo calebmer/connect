@@ -2,7 +2,7 @@
 -- can have any number of topics in that group.
 CREATE TABLE post (
   -- The unique identifier for this post.
-  id SERIAL PRIMARY KEY,
+  id CHAR(22) PRIMARY KEY,
   -- The group this was posted in.
   group_id INT NOT NULL REFERENCES "group"(id),
   -- The author of this post.
@@ -10,7 +10,7 @@ CREATE TABLE post (
   -- The time the post was published. In the future we might also have a
   -- `created_at` time which represents when the post was created for
   -- draft posts.
-  published_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  published_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   -- The contents of this post in markdown formatting.
   content TEXT NOT NULL
 );
@@ -31,7 +31,6 @@ CREATE INDEX post_published_at ON post (group_id, published_at DESC, id DESC);
 ALTER TABLE post ENABLE ROW LEVEL SECURITY;
 GRANT SELECT ON TABLE post TO connect_api;
 GRANT INSERT ON TABLE post TO connect_api;
-GRANT USAGE ON SEQUENCE post_id_seq TO connect_api;
 
 -- Account must be a member of the group the post was published in to see
 -- the post.
