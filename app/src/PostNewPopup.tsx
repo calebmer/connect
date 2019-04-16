@@ -290,8 +290,6 @@ function PostNewPopupTitleBarButton({
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
     >
-      {/* We need the <View> because <TouchableWithoutFeedback> works by calling
-          `React.cloneElement()` with the correct props. */}
       <View
         style={[styles.titleBarButton, active && styles.titleBarButtonActive]}
         accessibilityRole="button"

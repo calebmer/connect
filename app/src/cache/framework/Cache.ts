@@ -94,11 +94,11 @@ export class Cache<Key extends string | number, Data> {
    * If you are loading data for a React component, please call the React hook
    * `useCacheData()` instead which will watch the cache for changes.
    */
-  public load(key: Key): Promise<void> {
+  public load(key: Key): Promise<Data> {
     const value = this.accessEntry(key)
       .getAtThisMomentInTime()
       .get();
-    return Promise.resolve(value).then(() => {});
+    return Promise.resolve(value);
   }
 
   /**
@@ -113,7 +113,8 @@ export class Cache<Key extends string | number, Data> {
 
   /**
    * Loads many keys into our cache and returns a promise which resolves when
-   * all of our keys have finished loading.
+   * all of our keys have finished loading. We don’t return an array of loaded
+   * values, though. You can use `load()` to get individual values if you want.
    *
    * If a `loadMany()` function was provided we use that to only make one API
    * request instead of many API requests.
