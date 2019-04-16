@@ -32,10 +32,13 @@ function displayErrorCodeMessage(errorCode: APIErrorCode): string {
       return "Incorrect password.";
 
     case APIErrorCode.UNAUTHORIZED:
-      return "Unauthorized to access this resource. Please try signing in.";
+      return "You are not allowed to access this resource. Please try signing in.";
 
     case APIErrorCode.NOT_FOUND:
       return "Could not find the requested resource.";
+
+    case APIErrorCode.ALREADY_EXISTS:
+      return "The resource you tried to create already exists.";
 
     case APIErrorCode.BAD_INPUT:
     case APIErrorCode.UNRECOGNIZED_METHOD:
