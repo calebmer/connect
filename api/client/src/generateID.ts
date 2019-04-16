@@ -54,6 +54,9 @@ export function generateID(): string {
   }
 
   for (let i = 0; i < 12; i++) {
+    // I (@calebmer) am not worried right now about cryptographically secure
+    // random numbers. Even if an attacker were able to guess an ID they still
+    // shouldn’t be able to see content they don’t have access to.
     id += ENCODING[Math.floor(Math.random() * 32)];
   }
 

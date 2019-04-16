@@ -1,4 +1,4 @@
 module.exports = {
   testMatch: [],
-  projects: ["<rootDir>/api/server", "<rootDir>/app"],
+  projects: ["<rootDir>/api/client", "<rootDir>/api/server", "<rootDir>/app"],
 };
