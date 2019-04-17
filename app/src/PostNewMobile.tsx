@@ -8,19 +8,29 @@ import {
   View,
 } from "react-native";
 import React, {useEffect, useRef, useState} from "react";
+import {GroupCache} from "./cache/GroupCache";
 import {NavbarScrollView} from "./NavbarScrollView";
 import {PostNewHeader} from "./PostNewHeader";
 import {Route} from "./router/Route";
+import {publishPost} from "./cache/PostCache";
+import {useCacheData} from "./cache/framework/Cache";
 import {useCurrentAccount} from "./cache/AccountCache";
 
 // TODO: Make this actually usable on mobile web. I’ll probably have to use
 // content editable since the default React Native Web `<TextInput>` does
 // not grow...
-export function PostNewMobile({route}: {route: Route}) {
+export function PostNewMobile({
+  route,
+  groupSlug,
+}: {
+  route: Route;
+  groupSlug: string;
+}) {
   // Fetch our current account and suspend this component. We want to suspend
   // in the component where we add the auto-focus effect. Otherwise the focus
   // will be a noop since the component is only “shadow mounted”.
   const currentAccount = useCurrentAccount();
+  const group = useCacheData(GroupCache, groupSlug);
 
   // Get an instance to our editor.
   const editor = useRef<EditorInstance>(null);
@@ -42,6 +52,21 @@ export function PostNewMobile({route}: {route: Route}) {
   // inset on the scroll view will be respected. So do that.
   const contentInsetHack = Platform.OS === "ios";
 
+  function handleSend() {
+    if (editor.current) {
+      // Get the post content from the editor.
+      const content = editor.current.getContent();
+
+      // Publish the post using a utility function which will insert into all
+      // the right caches.
+      publishPost({groupID: group.id, content}); // TODO: Error handling!
+
+      // Dismiss the keyboard and exit the new post route.
+      Keyboard.dismiss();
+      route.pop();
+    }
+  }
+
   return (
     <>
       <NavbarScrollView
@@ -50,7 +75,7 @@ export function PostNewMobile({route}: {route: Route}) {
         useTitle={() => "New Post"}
         rightIcon="send"
         rightIconDisabled={!sendEnabled}
-        onRightIconPress={() => {}}
+        onRightIconPress={handleSend}
         keyboardShouldPersistTaps="always"
         // Add some inset to the bottom of our scroll view which will replace
         // our padding.
