@@ -1,7 +1,6 @@
 import {Async, useAsyncWithPrev} from "./Async";
 import {Cursor, JSONValue, Range, RangeDirection} from "@connect/api-client";
 import {Mutable, useMutable} from "./Mutable";
-import {TEST} from "../../RunConfig";
 
 /**
  * A cache for some list of items which will be lazily loaded from the server.
@@ -365,34 +364,6 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
     } else {
       return segments;
     }
-  }
-
-  public async insertFirst(newItem: Item): Promise<void> {
-    // If the segments entry is pending then don’t update it! Instead let’s wait
-    // for the segments entry to resolve and then we’ll try again.
-    let segments = this.segments.getAtThisMomentInTime().get();
-    while (segments instanceof Promise) {
-      await segments;
-      segments = this.segments.getAtThisMomentInTime().get();
-    }
-
-    // Add the new item as the very first in our cache list.
-    if (segments.length > 0) {
-      segments = [[newItem, ...segments[0]], ...segments.slice(1)];
-    } else {
-      segments = [[newItem], ...segments];
-    }
-
-    // Update our segments with the new list that contains the inserted item.
-    this.segments.set(new Async(segments));
-  }
-
-  public async test_getFirstAtThisMomentInTime(): Promise<ReadonlyArray<Item>> {
-    if (!TEST) {
-      throw new Error("Called outside of a test environment.");
-    }
-    const segments = await this.segments.getAtThisMomentInTime().get();
-    return segments[0] || [];
   }
 }
 

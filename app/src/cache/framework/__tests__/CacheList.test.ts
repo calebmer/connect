@@ -54,14 +54,6 @@ function testCacheList(
   });
 }
 
-/**
- * Calls `test_getFirstAtThisMomentInTime()` on the cache. That’s a long method
- * name so having a utility function to call makes our job easier.
- */
-function getFirst(cache: CacheList<Cursor<number>, number>) {
-  return cache.test_getFirstAtThisMomentInTime();
-}
-
 describe("loadFirst", () => {
   test("will load no items from a list", async () => {
     const recordCalls: Array<TestRange> = [];
@@ -1002,107 +994,5 @@ describe("loadPrev", () => {
       {direction: "last", count: 2, before: 209},
       {direction: "last", count: 2, before: 207},
     ]);
-  });
-});
-
-describe("insertFirst", () => {
-  test("will insert into an empty list", async () => {
-    const items: Array<number> = [];
-    const cache = testCacheList(items);
-    expect(await getFirst(cache)).toEqual([]);
-    await cache.insertFirst(1);
-    expect(await getFirst(cache)).toEqual([1]);
-  });
-
-  test("will insert into a list with some items", async () => {
-    const items: Array<number> = [2, 3, 4];
-    const cache = testCacheList(items);
-    await cache.loadFirst(3);
-    expect(await getFirst(cache)).toEqual([2, 3, 4]);
-    await cache.insertFirst(1);
-    expect(await getFirst(cache)).toEqual([1, 2, 3, 4]);
-  });
-
-  test("will ignore the inserted item when loading next", async () => {
-    const items: Array<number> = [1, 2];
-    const cache = testCacheList(items);
-    expect(await getFirst(cache)).toEqual([]);
-    await cache.insertFirst(3);
-    expect(await getFirst(cache)).toEqual([3]);
-    await cache.loadNext(5);
-    expect(await getFirst(cache)).toEqual([3, 1, 2]);
-  });
-
-  test("will load posts after the inserted post", async () => {
-    const items: Array<number> = [4, 5];
-    const cache = testCacheList(items);
-    await cache.loadFirst(5);
-    items.unshift(2, 3);
-    expect(await getFirst(cache)).toEqual([4, 5]);
-    await cache.insertFirst(1);
-    expect(await getFirst(cache)).toEqual([1, 4, 5]);
-    await cache.loadFirst(5);
-    expect(await getFirst(cache)).toEqual([2, 3, 1, 4, 5]);
-  });
-
-  test("will load posts before the inserted post", async () => {
-    const items: Array<number> = [4, 5];
-    const cache = testCacheList(items);
-    await cache.loadFirst(5);
-    expect(await getFirst(cache)).toEqual([4, 5]);
-    await cache.insertFirst(3);
-    expect(await getFirst(cache)).toEqual([3, 4, 5]);
-    items.unshift(1, 2);
-    await cache.loadFirst(5);
-    expect(await getFirst(cache)).toEqual([1, 2, 3, 4, 5]);
-  });
-
-  test("will load posts before and after the inserted post", async () => {
-    const items: Array<number> = [4, 5];
-    const cache = testCacheList(items);
-    await cache.loadFirst(5);
-    items.unshift(3);
-    expect(await getFirst(cache)).toEqual([4, 5]);
-    await cache.insertFirst(2);
-    expect(await getFirst(cache)).toEqual([2, 4, 5]);
-    items.unshift(1);
-    await cache.loadFirst(5);
-    expect(await getFirst(cache)).toEqual([1, 3, 2, 4, 5]);
-  });
-
-  test("will not filter the same inserted post from being loaded again when there are posts before", async () => {
-    const items: Array<number> = [4, 5];
-    const cache = testCacheList(items);
-    await cache.loadFirst(5);
-    expect(await getFirst(cache)).toEqual([4, 5]);
-    await cache.insertFirst(3);
-    expect(await getFirst(cache)).toEqual([3, 4, 5]);
-    items.unshift(1, 2, 3);
-    await cache.loadFirst(5);
-    expect(await getFirst(cache)).toEqual([1, 2, 3, 3, 4, 5]);
-  });
-
-  test("will not filter the same inserted post from being loaded again when there are posts after", async () => {
-    const items: Array<number> = [4, 5];
-    const cache = testCacheList(items);
-    await cache.loadFirst(5);
-    expect(await getFirst(cache)).toEqual([4, 5]);
-    await cache.insertFirst(1);
-    expect(await getFirst(cache)).toEqual([1, 4, 5]);
-    items.unshift(1, 2, 3);
-    await cache.loadFirst(5);
-    expect(await getFirst(cache)).toEqual([1, 2, 3, 1, 4, 5]);
-  });
-
-  test("will not filter the same inserted post from being loaded again when there are posts before and after", async () => {
-    const items: Array<number> = [4, 5];
-    const cache = testCacheList(items);
-    await cache.loadFirst(5);
-    expect(await getFirst(cache)).toEqual([4, 5]);
-    await cache.insertFirst(2);
-    expect(await getFirst(cache)).toEqual([2, 4, 5]);
-    items.unshift(1, 2, 3);
-    await cache.loadFirst(5);
-    expect(await getFirst(cache)).toEqual([1, 2, 3, 2, 4, 5]);
   });
 });
