@@ -11,6 +11,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {GroupCache} from "./cache/GroupCache";
 import {NavbarScrollView} from "./NavbarScrollView";
 import {PostNewHeader} from "./PostNewHeader";
+import {PostRoute} from "./router/AllRoutes";
 import {Route} from "./router/Route";
 import {publishPost} from "./cache/PostCache";
 import {useCacheData} from "./cache/framework/Cache";
@@ -22,9 +23,11 @@ import {useCurrentAccount} from "./cache/AccountCache";
 export function PostNewMobile({
   route,
   groupSlug,
+  lastRoute,
 }: {
   route: Route;
   groupSlug: string;
+  lastRoute?: Route;
 }) {
   // Fetch our current account and suspend this component. We want to suspend
   // in the component where we add the auto-focus effect. Otherwise the focus
@@ -59,11 +62,33 @@ export function PostNewMobile({
 
       // Publish the post using a utility function which will insert into all
       // the right caches.
-      publishPost({groupID: group.id, content}); // TODO: Error handling!
+      const postID = publishPost({
+        authorID: currentAccount.id,
+        groupID: group.id,
+        content,
+      });
 
-      // Dismiss the keyboard and exit the new post route.
+      // Dismiss the keyboard since we are done editing, yay!
       Keyboard.dismiss();
-      route.pop();
+
+      // Navigate us to the new post route...
+      if (Platform.OS === "web") {
+        // On web, the most effective way to replace the route is to
+        // call `webReplace()`. Calling `pop()` then `push()` has some
+        // odd behaviors.
+        route.webReplace(PostRoute, {groupSlug, postID});
+      } else {
+        // On native, we want to display the animations of first popping our
+        // editor and then pushing the post route.
+        //
+        // Because of our native navigation implementation, we can’t use our
+        // current `route` to push a new route after we’ve popped. We need the
+        // previous route object to do that.
+        route.pop();
+        if (lastRoute) {
+          lastRoute.push(PostRoute, {groupSlug, postID});
+        }
+      }
     }
   }
 

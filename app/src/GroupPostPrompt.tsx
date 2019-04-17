@@ -28,7 +28,7 @@ export function GroupPostPrompt({
         if (popup.available) {
           popup.show();
         } else {
-          route.nativeShowModal(NewPostRoute, {groupSlug});
+          route.nativeShowModal(NewPostRoute, {groupSlug, lastRoute: route});
         }
       }}
     >
