@@ -82,6 +82,12 @@ test("shows time for a date 1 minute ago", () => {
   ).toEqual("4:29pm");
 });
 
+test("shows time for a date where the minutes is less than ten", () => {
+  expect(
+    communicateTime(new Date(baseTime), new Date(baseTime - minute * 25)),
+  ).toEqual("4:05pm");
+});
+
 test("shows in local time", () => {
   const currentTime = new Date("2011-04-22T16:30:00-01:00");
   const time = new Date("2011-04-22T16:30:00-04:00");

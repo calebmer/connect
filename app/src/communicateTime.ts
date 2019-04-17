@@ -53,7 +53,8 @@ export function communicateTime(currentTime: Date, time: Date): string {
 
   // Otherwise, return the time in hours/minutes.
   const hours = time.getHours();
-  const minutes = time.getMinutes();
+  const minutes =
+    time.getMinutes() < 10 ? `0${time.getMinutes()}` : `${time.getMinutes()}`;
   if (hours === 0) {
     return `12:${minutes}am`;
   } else if (hours === 12) {
