@@ -53,7 +53,7 @@ function Group({
 }: {
   route: Route;
   group: Group;
-  posts: Array<PostCacheListEntry>;
+  posts: ReadonlyArray<PostCacheListEntry>;
   selectedPostID: ReadonlyMutable<PostID | undefined>;
   loadingMorePosts: boolean;
   onLoadMorePosts: (count: number) => Promise<unknown>;
@@ -105,7 +105,7 @@ function Group({
     // group in reverse chronological order.
     const feedSection: SectionListData<PostCacheListEntry> = {
       title: "Feed",
-      data: posts,
+      data: posts as Array<PostCacheListEntry>,
       keyExtractor: item => String(item.id),
       renderItem: ({item: {id: postID}}) => (
         <GroupItemFeed
