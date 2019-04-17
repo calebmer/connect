@@ -1,4 +1,5 @@
 import React, {useContext, useMemo, useState} from "react";
+import {Route} from "./router/Route";
 
 const PostNewPopup = React.lazy(() => {
   return import("./PostNewPopup").then(m => ({default: m.PostNewPopup}));
@@ -50,10 +51,12 @@ export function usePostNewPopupContext(): PostNewPopupContext {
  * component which allows them to control the editor.
  */
 export function PostNewPopupContext({
+  route,
   groupSlug,
   available = true,
   children,
 }: {
+  route: Route;
   groupSlug: string;
   available?: boolean;
   children: React.Node;
@@ -85,6 +88,7 @@ export function PostNewPopupContext({
       {available && visible && (
         <React.Suspense fallback={null}>
           <PostNewPopup
+            route={route}
             groupSlug={groupSlug}
             onClose={() => setVisible(false)}
           />

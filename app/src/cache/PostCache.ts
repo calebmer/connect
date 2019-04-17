@@ -1,4 +1,3 @@
-import {AccountCache, CurrentAccountCache} from "./AccountCache";
 import {
   AccountID,
   DateTime,
@@ -9,6 +8,7 @@ import {
   generateID,
 } from "@connect/api-client";
 import {API} from "../api/API";
+import {AccountCache} from "./AccountCache";
 import {Cache} from "./framework/Cache";
 import {CacheList} from "./framework/CacheList";
 
@@ -120,21 +120,23 @@ export const PostCacheList = new Cache<
 });
 
 /**
- * Publishes a new post! Immediately inserts the new post into the cache while
- * we wait for the API to tell us the post was successfully created. If the API
- * fails then we will change the status of our cache entry to reflect
- * the failure.
+ * Publishes a new post! Immediately generates a new post ID and inserts a
+ * pending post object into the cache. We return the new post ID synchronously
+ * so that the caller can optimistically display the new post.
+ *
+ * We then trigger an asynchronous API call to actually publish the post in the
+ * background. If the API fails then we will change the status of our cache
+ * entry to reflect the failure.
  */
-export async function publishPost({
+export function publishPost({
+  authorID,
   groupID,
   content,
 }: {
+  authorID: AccountID;
   groupID: GroupID;
   content: string;
-}): Promise<void> {
-  // Get the current account ID. (It should really already be loaded.)
-  const authorID = await CurrentAccountCache.load();
-
+}): PostID {
   // Generate a new ID for our post. The ID we generate should be globally
   // unique thanks to our algorithm.
   const postID = generateID<PostID>();
@@ -156,29 +158,34 @@ export async function publishPost({
     post: pendingPost,
   });
 
-  try {
-    // Actually publish the post using our API! The API will give us the server
-    // assigned publish date.
-    const {publishedAt} = await API.post.publishPost({
-      id: postID,
-      groupID,
-      content,
-    });
+  // TODO: Error handling!
+  (async () => {
+    try {
+      // Actually publish the post using our API! The API will give us the server
+      // assigned publish date.
+      const {publishedAt} = await API.post.publishPost({
+        id: postID,
+        groupID,
+        content,
+      });
 
-    // Insert the final post object into the cache and flip the status
-    // to “commit”.
-    PostCache.insert(postID, {
-      status: PostCacheEntryStatus.Commit,
-      post: {...pendingPost, publishedAt},
-    });
-  } catch (error) {
-    // If we failed to insert the post then make sure to reflect that in
-    // our UI.
-    PostCache.insert(postID, {
-      status: PostCacheEntryStatus.Rollback,
-      post: pendingPost,
-    });
+      // Insert the final post object into the cache and flip the status
+      // to “commit”.
+      PostCache.insert(postID, {
+        status: PostCacheEntryStatus.Commit,
+        post: {...pendingPost, publishedAt},
+      });
+    } catch (error) {
+      // If we failed to insert the post then make sure to reflect that in
+      // our UI.
+      PostCache.insert(postID, {
+        status: PostCacheEntryStatus.Rollback,
+        post: pendingPost,
+      });
 
-    throw error;
-  }
+      throw error;
+    }
+  })();
+
+  return postID;
 }

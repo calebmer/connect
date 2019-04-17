@@ -102,6 +102,24 @@ describe("getPostComments", () => {
       });
     });
   });
+
+  test("gets an empty list if the post does not exist", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        expect(
+          await getPostComments(ctx, {
+            postID: generateID(),
+            direction: RangeDirection.First,
+            count: 3,
+            after: null,
+            before: null,
+          }),
+        ).toEqual({comments: []});
+      });
+    });
+  });
 });
 
 describe("publishPost", () => {

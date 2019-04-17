@@ -34,6 +34,7 @@ function GroupHome({
   return (
     <GroupHomeContainer>
       <PostNewPopupContext
+        route={route}
         groupSlug={groupSlug}
         available={breakpoint > Breakpoint.Tablet}
       >

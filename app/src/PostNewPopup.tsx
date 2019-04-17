@@ -13,6 +13,8 @@ import React, {useEffect, useReducer, useRef, useState} from "react";
 import {Button} from "./Button";
 import {GroupCache} from "./cache/GroupCache";
 import {PostNewHeader} from "./PostNewHeader";
+import {PostRoute} from "./router/AllRoutes";
+import {Route} from "./router/Route";
 import {publishPost} from "./cache/PostCache";
 import {useAnimatedValue} from "./useAnimatedValue";
 import {useCacheData} from "./cache/framework/Cache";
@@ -117,9 +119,11 @@ function reducer(
  * effects which react to the component state.
  */
 export function PostNewPopup({
+  route,
   groupSlug,
   onClose,
 }: {
+  route: Route;
   groupSlug: string;
   onClose: () => void;
 }) {
@@ -245,16 +249,23 @@ export function PostNewPopup({
         sendEnabled={sendEnabled}
         showShadow={actionBarShadow}
         onSend={() => {
-          // To send our post we:
-          //
-          // 1. Get the post content from the editor.
-          // 2. Publish the post using a utility function which will insert into
-          //    all the right caches.
-          // 3. Close the editor popup. We done here.
           if (editor.current) {
+            // Get the post content from the editor.
             const content = editor.current.getContent();
-            publishPost({groupID: group.id, content}); // TODO: Error handling!
+
+            // Publish the post using a utility function which will insert into
+            // all the right caches.
+            const postID = publishPost({
+              authorID: currentAccount.id,
+              groupID: group.id,
+              content,
+            });
+
+            // Close the editor popup. We done here.
             dispatch({type: "CLOSE"});
+
+            // Navigate to this post’s route.
+            route.push(PostRoute, {groupSlug, postID});
           }
         }}
       />
