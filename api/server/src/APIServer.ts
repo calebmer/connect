@@ -138,7 +138,7 @@ function initializeServerMethod<
   if (schema.safe === true) {
     APIServer.get(
       apiPath,
-      handleResponse<Output>(async req => {
+      handleResponse<Output>({safe: schema.safe}, async req => {
         const accessToken = await getRequestAuthorization(req);
         const input = getRequestQueryInput(req, schema.input);
         return Context.withAuthorized(accessToken.id, ctx => {
@@ -149,7 +149,7 @@ function initializeServerMethod<
   } else {
     APIServer.post(
       apiPath,
-      handleResponse<Output>(async req => {
+      handleResponse<Output>({safe: schema.safe}, async req => {
         const accessToken = await getRequestAuthorization(req);
         const input = getRequestBodyInput(req, schema.input);
         return Context.withAuthorized(accessToken.id, ctx => {
@@ -179,7 +179,7 @@ function initializeServerMethodUnauthorized<
   if (schema.safe === true) {
     APIServer.get(
       apiPath,
-      handleResponse<Output>(req => {
+      handleResponse<Output>({safe: schema.safe}, req => {
         const input = getRequestQueryInput(req, schema.input);
         return Context.withUnauthorized(ctx => {
           return definition(ctx, input);
@@ -189,7 +189,7 @@ function initializeServerMethodUnauthorized<
   } else {
     APIServer.post(
       apiPath,
-      handleResponse<Output>(req => {
+      handleResponse<Output>({safe: schema.safe}, req => {
         const input = getRequestBodyInput(req, schema.input);
         return Context.withUnauthorized(ctx => {
           return definition(ctx, input);
@@ -203,8 +203,28 @@ function initializeServerMethodUnauthorized<
  * Small utility for helping to build an API request. Handles turning an API
  * response into an HTTP response.
  */
-function handleResponse<Output>(handler: (req: Request) => Promise<Output>) {
+function handleResponse<Output>(
+  {safe}: {safe: boolean},
+  handler: (req: Request) => Promise<Output>,
+) {
   return (req: Request, res: Response, next: NextFunction) => {
+    // In development, throw an error from our API some percent of the time to
+    // force developers to think about the error state of their applications.
+    //
+    // For safe requests (`GET`) throw an error 2% of the time. For unsafe
+    // requests (`POST`) throw an error 10% of the time.
+    if (DEV) {
+      if (safe) {
+        if (Math.random() <= 0.02) {
+          throw new APIError(APIErrorCode.CHAOS_MONKEY);
+        }
+      } else {
+        if (Math.random() <= 0.1) {
+          throw new APIError(APIErrorCode.CHAOS_MONKEY);
+        }
+      }
+    }
+
     handler(req).then(output => {
       // Construct the successful result of an API request.
       const result: APIResult<Output> = {
@@ -362,6 +382,9 @@ APIServer.use(
             break;
           case APIErrorCode.NOT_FOUND:
             res.statusCode = 404;
+            break;
+          case APIErrorCode.CHAOS_MONKEY:
+            res.statusCode = 500;
             break;
           default:
             res.statusCode = 400;

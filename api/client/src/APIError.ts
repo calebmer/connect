@@ -69,6 +69,12 @@ export enum APIErrorCode {
   SIGN_IN_INCORRECT_PASSWORD = "SIGN_IN_INCORRECT_PASSWORD",
 
   /**
+   * In development, we intentionally throw this error so that developers are
+   * forced to think about the error state of their code.
+   */
+  CHAOS_MONKEY = "CHAOS_MONKEY",
+
+  /**
    * An unknown error occurred.
    */
   UNKNOWN = "UNKNOWN",
