@@ -8,6 +8,8 @@ import {
   JSON_KEYWORDS,
   SchemaBase,
   SchemaInput,
+  SchemaInputArray,
+  SchemaInputObject,
   SchemaKind,
   SchemaMethod,
   SchemaMethodUnauthorized,
@@ -234,7 +236,7 @@ function handleResponse<Output>(
  */
 function getRequestInput<Input extends JSONObjectValue>(
   req: Request,
-  schemaInput: SchemaInput<Input>,
+  schemaInput: SchemaInputObject<Input>,
 ): Input {
   switch (req.method) {
     case "GET":
@@ -251,7 +253,7 @@ function getRequestInput<Input extends JSONObjectValue>(
  */
 function getRequestQueryInput<Input extends JSONObjectValue>(
   req: Request,
-  schemaInput: SchemaInput<Input>,
+  schemaInput: SchemaInputObject<Input>,
 ): Input {
   // Get parsed URL query from our request object.
   const input: ParsedUrlQuery = req.query;
@@ -265,11 +267,29 @@ function getRequestQueryInput<Input extends JSONObjectValue>(
           value[i] = queryStringValueDeserialize(value[i]);
         }
       } else {
-        input[key] = queryStringValueDeserialize(value);
+        const actualValue = queryStringValueDeserialize(value);
+
+        // If this query parameter was supposed to be an array but only one
+        // query parameter was provided then lets convert it into an array with
+        // a single element.
+        if (schemaInput.inputs[key] instanceof SchemaInputArray) {
+          input[key] = [actualValue];
+        } else {
+          input[key] = actualValue;
+        }
       }
     }
   } catch (error) {
     throw new APIError(APIErrorCode.BAD_INPUT);
+  }
+
+  // If we expected an array but there were no query parameters for that key
+  // in our query then that means we have an empty array. Set an empty array
+  // to our input and continue.
+  for (const [key, schemaInputProp] of Object.entries(schemaInput.inputs)) {
+    if (schemaInputProp instanceof SchemaInputArray && input[key] == null) {
+      input[key] = [];
+    }
   }
 
   // Validate that the input from our request body is correct. If the input

@@ -16,6 +16,9 @@ const signIn: jest.Mock<typeof methods.account.signIn> = methods.account
   .signIn as any;
 const getCurrentProfile: jest.Mock<typeof methods.account.signIn> = methods
   .account.getCurrentProfile as any;
+const getManyProfiles: jest.Mock<
+  typeof methods.account.getManyProfiles
+> = methods.account.getManyProfiles as any;
 
 (signIn as any).mockImplementation(async () => {
   return {works: true};
@@ -26,6 +29,10 @@ const getCurrentProfile: jest.Mock<typeof methods.account.signIn> = methods
     works: true,
     accountID: ctx.accountID,
   };
+});
+
+(getManyProfiles as any).mockImplementation(async () => {
+  return {works: true};
 });
 
 test("GET /", async () => {
@@ -292,4 +299,50 @@ test("GET /account/getCurrentProfile - without input", async () => {
       data: {works: true, accountID: 42},
     });
   expect(getCurrentProfile).toHaveBeenCalledTimes(1);
+});
+
+test("GET /account/getManyProfiles - with many ids", async () => {
+  const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
+  await request(APIServer)
+    .get("/account/getManyProfiles")
+    .query("ids=1&ids=2&ids=3")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .expect("Content-Type", /json/)
+    .expect(200, {
+      ok: true,
+      data: {works: true},
+    });
+  expect(getManyProfiles).toHaveBeenCalledTimes(1);
+  expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {
+    ids: [1, 2, 3],
+  });
+});
+
+test("GET /account/getManyProfiles - with one id", async () => {
+  const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
+  await request(APIServer)
+    .get("/account/getManyProfiles")
+    .query("ids=1")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .expect("Content-Type", /json/)
+    .expect(200, {
+      ok: true,
+      data: {works: true},
+    });
+  expect(getManyProfiles).toHaveBeenCalledTimes(1);
+  expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {ids: [1]});
+});
+
+test("GET /account/getManyProfiles - with no ids", async () => {
+  const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
+  await request(APIServer)
+    .get("/account/getManyProfiles")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .expect("Content-Type", /json/)
+    .expect(200, {
+      ok: true,
+      data: {works: true},
+    });
+  expect(getManyProfiles).toHaveBeenCalledTimes(1);
+  expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {ids: []});
 });

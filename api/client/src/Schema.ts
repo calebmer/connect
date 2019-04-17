@@ -1,5 +1,5 @@
 import {JSONObjectValue, JSONValue} from "./JSONValue";
-import {SchemaInput, SchemaInputValue} from "./SchemaInput";
+import {SchemaInput, SchemaInputObject, SchemaInputValue} from "./SchemaInput";
 import {SchemaOutput} from "./SchemaOutput";
 
 /**
@@ -126,7 +126,7 @@ export type SchemaMethod<
 > = {
   readonly kind: SchemaKind.METHOD;
   readonly safe: Safe;
-  readonly input: SchemaInput<Input>;
+  readonly input: SchemaInputObject<Input>;
   readonly output: SchemaOutput<Output>;
 };
 
@@ -142,6 +142,6 @@ export type SchemaMethodUnauthorized<
 > = {
   readonly kind: SchemaKind.METHOD_UNAUTHORIZED;
   readonly safe: Safe;
-  readonly input: SchemaInput<Input>;
+  readonly input: SchemaInputObject<Input>;
   readonly output: SchemaOutput<Output>;
 };

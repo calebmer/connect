@@ -1,4 +1,4 @@
-import {JSONValue} from "./JSONValue";
+import {JSONObjectValue, JSONValue} from "./JSONValue";
 
 /**
  * Validates that some input to our API is in the correct format.
@@ -12,7 +12,7 @@ export class SchemaInput<Value extends JSONValue> {
   /** An optional variant of this `SchemaInput`. */
   private _optional: SchemaInput<Value | null> | undefined = undefined;
 
-  private constructor(validate: (value: unknown) => value is Value) {
+  constructor(validate: (value: unknown) => value is Value) {
     this.validate = validate;
   }
 
@@ -93,15 +93,7 @@ export class SchemaInput<Value extends JSONValue> {
   static array<Value extends JSONValue>(
     input: SchemaInput<Value>,
   ): SchemaInput<ReadonlyArray<Value>> {
-    return new SchemaInput(
-      (value): value is any => {
-        if (!Array.isArray(value)) return false;
-        for (let i = 0; i < value.length; i++) {
-          if (!input.validate(value[i])) return false;
-        }
-        return true;
-      },
-    );
+    return new SchemaInputArray(input);
   }
 
   /**
@@ -116,28 +108,8 @@ export class SchemaInput<Value extends JSONValue> {
     Inputs extends {readonly [key: string]: SchemaInput<JSONValue>}
   >(
     inputs: Inputs,
-  ): SchemaInput<{[Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>}> {
-    return new SchemaInput(
-      (value): value is any => {
-        // Make sure the value is an object but not an array.
-        if (typeof value !== "object") return false;
-        if (value === null) return false;
-        if (Array.isArray(value)) return false;
-
-        // Check to make sure that all of our inputs have a valid object key.
-        for (const [key, input] of Object.entries(inputs)) {
-          if (!input.validate((value as any)[key])) return false;
-        }
-
-        // If the value has a property that does not exist in our inputs then
-        // fail the validation.
-        for (const key of Object.keys(value)) {
-          if (inputs[key] === undefined) return false;
-        }
-
-        return true;
-      },
-    );
+  ): SchemaInputObject<{[Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>}> {
+    return new SchemaInputObject(inputs) as any;
   }
 
   /**
@@ -165,3 +137,60 @@ export class SchemaInput<Value extends JSONValue> {
 export type SchemaInputValue<
   Type extends SchemaInput<JSONValue>
 > = Type extends SchemaInput<infer Value> ? Value : never;
+
+/**
+ * A `SchemaInput` type specifically for arrays.
+ */
+export class SchemaInputArray<Value extends JSONValue> extends SchemaInput<
+  ReadonlyArray<Value>
+> {
+  constructor(input: SchemaInput<Value>) {
+    super(
+      (value): value is any => {
+        if (!Array.isArray(value)) return false;
+        for (let i = 0; i < value.length; i++) {
+          if (!input.validate(value[i])) return false;
+        }
+        return true;
+      },
+    );
+  }
+}
+
+/**
+ * A `SchemaInput` type specifically for objects.
+ */
+export class SchemaInputObject<
+  Value extends JSONObjectValue
+> extends SchemaInput<Value> {
+  constructor(
+    /**
+     * The input schemas for each of our object schema’s properties.
+     */
+    public readonly inputs: {
+      readonly [Key in keyof Value]: SchemaInput<Value[Key]>
+    },
+  ) {
+    super(
+      (value): value is any => {
+        // Make sure the value is an object but not an array.
+        if (typeof value !== "object") return false;
+        if (value === null) return false;
+        if (Array.isArray(value)) return false;
+
+        // Check to make sure that all of our inputs have a valid object key.
+        for (const [key, input] of Object.entries(inputs)) {
+          if (!input.validate((value as any)[key])) return false;
+        }
+
+        // If the value has a property that does not exist in our inputs then
+        // fail the validation.
+        for (const key of Object.keys(value)) {
+          if (inputs[key] === undefined) return false;
+        }
+
+        return true;
+      },
+    );
+  }
+}
