@@ -1,9 +1,3 @@
-/** The status of a lazy value. */
-enum LazyStatus {
-  Empty,
-  Filled,
-}
-
 /**
  * A lazy value is one which may be eventually computed. A lazy value will
  * _always_ return the same value after `get()` no matter when it is called. A
@@ -39,4 +33,10 @@ export class Lazy<Value> {
     }
     return this.value as Value;
   }
+}
+
+/** The status of a lazy value. */
+enum LazyStatus {
+  Empty,
+  Filled,
 }

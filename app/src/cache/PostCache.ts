@@ -125,10 +125,13 @@ export const PostCacheList = new Cache<
  * fails then we will change the status of our cache entry to reflect
  * the failure.
  */
-export async function publishPost(
-  groupID: GroupID,
-  content: string,
-): Promise<void> {
+export async function publishPost({
+  groupID,
+  content,
+}: {
+  groupID: GroupID;
+  content: string;
+}): Promise<void> {
   // Get the current account ID. (It should really already be loaded.)
   const authorID = await CurrentAccountCache.load();
 
