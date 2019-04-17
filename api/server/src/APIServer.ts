@@ -135,29 +135,16 @@ function initializeServerMethod<
 
   // Register this method on our API server. When this method is executed we
   // will call the appropriate function.
-  if (schema.safe === true) {
-    APIServer.get(
-      apiPath,
-      handleResponse<Output>({safe: schema.safe}, async req => {
-        const accessToken = await getRequestAuthorization(req);
-        const input = getRequestQueryInput(req, schema.input);
-        return Context.withAuthorized(accessToken.id, ctx => {
-          return definition(ctx, input);
-        });
-      }),
-    );
-  } else {
-    APIServer.post(
-      apiPath,
-      handleResponse<Output>({safe: schema.safe}, async req => {
-        const accessToken = await getRequestAuthorization(req);
-        const input = getRequestBodyInput(req, schema.input);
-        return Context.withAuthorized(accessToken.id, ctx => {
-          return definition(ctx, input);
-        });
-      }),
-    );
-  }
+  APIServer.use(
+    apiPath,
+    handleResponse<Output>({safe: schema.safe}, async req => {
+      const accessToken = await getRequestAuthorization(req);
+      const input = getRequestInput(req, schema.input);
+      return Context.withAuthorized(accessToken.id, ctx => {
+        return definition(ctx, input);
+      });
+    }),
+  );
 }
 
 /**
@@ -176,27 +163,15 @@ function initializeServerMethodUnauthorized<
 
   // Register this method on our API server. When this method is executed we
   // will call the appropriate function.
-  if (schema.safe === true) {
-    APIServer.get(
-      apiPath,
-      handleResponse<Output>({safe: schema.safe}, req => {
-        const input = getRequestQueryInput(req, schema.input);
-        return Context.withUnauthorized(ctx => {
-          return definition(ctx, input);
-        });
-      }),
-    );
-  } else {
-    APIServer.post(
-      apiPath,
-      handleResponse<Output>({safe: schema.safe}, req => {
-        const input = getRequestBodyInput(req, schema.input);
-        return Context.withUnauthorized(ctx => {
-          return definition(ctx, input);
-        });
-      }),
-    );
-  }
+  APIServer.use(
+    apiPath,
+    handleResponse<Output>({safe: schema.safe}, req => {
+      const input = getRequestInput(req, schema.input);
+      return Context.withUnauthorized(ctx => {
+        return definition(ctx, input);
+      });
+    }),
+  );
 }
 
 /**
@@ -208,6 +183,21 @@ function handleResponse<Output>(
   handler: (req: Request) => Promise<Output>,
 ) {
   return (req: Request, res: Response, next: NextFunction) => {
+    // Throw an error if the client is using the wrong HTTP method for this
+    // API request. Safe methods should use `GET` and unsafe methods should
+    // use `POST`.
+    if (safe) {
+      if (req.method !== "GET") {
+        res.statusCode = 405;
+        throw new APIError(APIErrorCode.BAD_INPUT);
+      }
+    } else {
+      if (req.method !== "POST") {
+        res.statusCode = 405;
+        throw new APIError(APIErrorCode.BAD_INPUT);
+      }
+    }
+
     // In development, throw an error from our API some percent of the time to
     // force developers to think about the error state of their applications.
     //
@@ -239,7 +229,25 @@ function handleResponse<Output>(
 }
 
 /**
- * Gets the input from the GET
+ * Gets the input depending on the request method. If the request method is
+ * not `GET` or `POST` then we throw an error.
+ */
+function getRequestInput<Input extends JSONObjectValue>(
+  req: Request,
+  schemaInput: SchemaInput<Input>,
+): Input {
+  switch (req.method) {
+    case "GET":
+      return getRequestQueryInput(req, schemaInput);
+    case "POST":
+      return getRequestBodyInput(req, schemaInput);
+    default:
+      throw new Error(`Unrecognized method ${req.method}.`);
+  }
+}
+
+/**
+ * Gets the input from the `GET`.
  */
 function getRequestQueryInput<Input extends JSONObjectValue>(
   req: Request,
@@ -286,8 +294,8 @@ function queryStringValueDeserialize(value: string): any {
 }
 
 /**
- * Gets the input for a request from the POST request’s body. Throws an error if
- * the input is not valid.
+ * Gets the input for a request from the `POST` request’s body. Throws an error
+ * if the input is not valid.
  */
 function getRequestBodyInput<Input extends JSONObjectValue>(
   req: Request,

@@ -55,9 +55,9 @@ test("GET /account/signIn", async () => {
     .get("/account/signIn")
     .ok(() => true)
     .expect("Content-Type", /json/)
-    .expect(404, {
+    .expect(405, {
       ok: false,
-      error: {code: APIErrorCode.UNRECOGNIZED_METHOD},
+      error: {code: APIErrorCode.BAD_INPUT},
     });
   expect(signIn).not.toHaveBeenCalled();
 });
@@ -189,9 +189,9 @@ test("POST /account/getCurrentProfile", async () => {
     .post("/account/getCurrentProfile")
     .ok(() => true)
     .expect("Content-Type", /json/)
-    .expect(404, {
+    .expect(405, {
       ok: false,
-      error: {code: APIErrorCode.UNRECOGNIZED_METHOD},
+      error: {code: APIErrorCode.BAD_INPUT},
     });
   expect(getCurrentProfile).not.toHaveBeenCalled();
 });
