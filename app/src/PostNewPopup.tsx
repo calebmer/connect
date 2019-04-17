@@ -11,8 +11,11 @@ import {Border, Color, Font, Icon, IconName, Shadow, Space} from "./atoms";
 import {Editor, EditorInstance} from "./Editor";
 import React, {useEffect, useReducer, useRef, useState} from "react";
 import {Button} from "./Button";
+import {GroupCache} from "./cache/GroupCache";
 import {PostNewHeader} from "./PostNewHeader";
+import {publishPost} from "./cache/PostCache";
 import {useAnimatedValue} from "./useAnimatedValue";
+import {useCacheData} from "./cache/framework/Cache";
 import {useCurrentAccount} from "./cache/AccountCache";
 
 // The height of our editor’s title bar.
@@ -113,8 +116,17 @@ function reducer(
  * The popup component renders the popup and manages its various animations as
  * effects which react to the component state.
  */
-export function PostNewPopup({onClose}: {onClose: () => void}) {
+export function PostNewPopup({
+  groupSlug,
+  onClose,
+}: {
+  groupSlug: string;
+  onClose: () => void;
+}) {
+  // Load the data we will need for our popup. Including the current account and
+  // the current group.
   const currentAccount = useCurrentAccount();
+  const group = useCacheData(GroupCache, groupSlug);
 
   // Get a reference to our editor...
   const editor = useRef<EditorInstance>(null);
@@ -232,6 +244,19 @@ export function PostNewPopup({onClose}: {onClose: () => void}) {
       <PostNewPopupActionBar
         sendEnabled={sendEnabled}
         showShadow={actionBarShadow}
+        onSend={() => {
+          // To send our post we:
+          //
+          // 1. Get the post content from the editor.
+          // 2. Publish the post using a utility function which will insert into
+          //    all the right caches.
+          // 3. Close the editor popup. We done here.
+          if (editor.current) {
+            const content = editor.current.getContent();
+            publishPost({groupID: group.id, content}); // TODO: Error handling!
+            dispatch({type: "CLOSE"});
+          }
+        }}
       />
     </Animated.View>
   );
@@ -303,14 +328,16 @@ function PostNewPopupTitleBarButton({
 function PostNewPopupActionBar({
   sendEnabled,
   showShadow,
+  onSend,
 }: {
   sendEnabled: boolean;
   showShadow: boolean;
+  onSend: () => void;
 }) {
   return (
     <View style={[styles.actionBar, showShadow && styles.actionBarShadow]}>
       <View style={styles.actionBarSpace} />
-      <Button label="Send" disabled={!sendEnabled} onPress={() => {}} />
+      <Button label="Send" disabled={!sendEnabled} onPress={onSend} />
     </View>
   );
 }

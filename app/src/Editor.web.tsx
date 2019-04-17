@@ -55,7 +55,18 @@ function Editor(
   useImperativeHandle(
     ref,
     () => ({
-      focus: () => {
+      getContent() {
+        if (editor.current) {
+          // The content of our editor is currently represented by the
+          // `innerText` property. Getting the inner text from our editor can
+          // be expensive. It is O(n) and will trigger a browser reflow if all
+          // the content hasn’t been laid out.
+          return (editor.current as any).innerText;
+        } else {
+          return "";
+        }
+      },
+      focus() {
         if (editor.current) {
           (editor.current as any).focus();
         }

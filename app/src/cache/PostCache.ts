@@ -178,6 +178,7 @@ export async function publishPost({
       status: PostCacheEntryStatus.Rollback,
       post: pendingPost,
     });
+
     throw error;
   }
 }

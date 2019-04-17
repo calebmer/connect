@@ -50,9 +50,11 @@ export function usePostNewPopupContext(): PostNewPopupContext {
  * component which allows them to control the editor.
  */
 export function PostNewPopupContext({
+  groupSlug,
   available = true,
   children,
 }: {
+  groupSlug: string;
   available?: boolean;
   children: React.Node;
 }) {
@@ -82,7 +84,10 @@ export function PostNewPopupContext({
           to load. */}
       {available && visible && (
         <React.Suspense fallback={null}>
-          <PostNewPopup onClose={() => setVisible(false)} />
+          <PostNewPopup
+            groupSlug={groupSlug}
+            onClose={() => setVisible(false)}
+          />
         </React.Suspense>
       )}
     </_PostNewPopupContext.Provider>

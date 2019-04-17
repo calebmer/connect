@@ -44,6 +44,12 @@ export type EditorChangeInfo = {
  */
 export type EditorInstance = {
   /**
+   * Get the content the user has currently input into the text area. This
+   * operation might be expensive.
+   */
+  readonly getContent: () => string;
+
+  /**
    * Focuses the editor text input area.
    */
   readonly focus: () => void;

@@ -33,7 +33,10 @@ function GroupHome({
 
   return (
     <GroupHomeContainer>
-      <PostNewPopupContext available={breakpoint > Breakpoint.Tablet}>
+      <PostNewPopupContext
+        groupSlug={groupSlug}
+        available={breakpoint > Breakpoint.Tablet}
+      >
         <View style={styles.group}>
           <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
         </View>
