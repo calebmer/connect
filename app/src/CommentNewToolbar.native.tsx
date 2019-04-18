@@ -5,11 +5,13 @@ import {StyleSheet} from "react-native";
 
 export function CommentNewToolbar() {
   return (
-    <KeyboardTrackingView style={styles.toolbar}>
+    <KeyboardTrackingView style={styles.toolbar} manageScrollView={false}>
       <CommentNew />
     </KeyboardTrackingView>
   );
 }
+
+CommentNewToolbar.minHeight = CommentNew.minHeight;
 
 const styles = StyleSheet.create({
   toolbar: {

@@ -1,4 +1,4 @@
-import {Color, Shadow} from "./atoms";
+import {Color, Font, Shadow, Space} from "./atoms";
 import {StyleSheet, View} from "react-native";
 import {Editor} from "./Editor";
 import React from "react";
@@ -10,6 +10,8 @@ export function CommentNew({disabled}: {disabled?: boolean}) {
     </View>
   );
 }
+
+CommentNew.minHeight = Font.size3.lineHeight + Space.space3 * 2;
 
 const styles = StyleSheet.create({
   container: {

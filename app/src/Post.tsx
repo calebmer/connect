@@ -7,6 +7,7 @@ import {PostComments} from "./PostComments";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "./router/Route";
+import {StyleSheet} from "react-native";
 import {Trough} from "./Trough";
 import {useCacheData} from "./cache/framework/Cache";
 
@@ -34,6 +35,8 @@ function Post({
         route={route}
         useTitle={useTitle}
         hideNavbar={hideNavbar}
+        contentContainerStyle={styles.container}
+        scrollIndicatorInsets={{bottom: CommentNewToolbar.minHeight}}
         keyboardDismissMode="on-drag"
       >
         <PostContent postID={postID} />
@@ -48,3 +51,9 @@ function Post({
 // Don’t re-render `<Post>` unless the props change.
 const PostMemo = React.memo(Post);
 export {PostMemo as Post};
+
+const styles = StyleSheet.create({
+  container: {
+    paddingBottom: CommentNewToolbar.minHeight,
+  },
+});

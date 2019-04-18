@@ -69,7 +69,10 @@ export function NavbarScrollView({
           styles.container,
           hideNavbar && styles.containerHideNavbar,
         ]}
-        scrollIndicatorInsets={{top: !hideNavbar ? Navbar.height : 0}}
+        scrollIndicatorInsets={{
+          ...props.scrollIndicatorInsets,
+          top: !hideNavbar ? Navbar.height : 0,
+        }}
         scrollEventThrottle={16}
         onScroll={event => {
           setHideBackground(event.nativeEvent.contentOffset.y <= 0);
@@ -122,11 +125,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.white,
   },
   container: {
-    // Override all padding provided by the `contentContainerStyle` prop.
-    paddingBottom: 0,
     paddingTop: Navbar.height,
-    paddingLeft: 0,
-    paddingRight: 0,
   },
   containerHideNavbar: {
     paddingTop: 0,
