@@ -1,12 +1,6 @@
 import {Color, Space} from "./atoms";
 import {Editor, EditorInstance} from "./Editor";
-import {
-  Keyboard,
-  KeyboardEvent,
-  Platform,
-  StyleSheet,
-  View,
-} from "react-native";
+import {Keyboard, Platform, StyleSheet, View} from "react-native";
 import React, {useEffect, useRef, useState} from "react";
 import {GroupCache} from "./cache/GroupCache";
 import {NavbarScrollView} from "./NavbarScrollView";
@@ -16,6 +10,7 @@ import {Route} from "./router/Route";
 import {publishPost} from "./cache/PostCache";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCurrentAccount} from "./cache/AccountCache";
+import {useKeyboardHeight} from "./useKeyboardHeight";
 
 // TODO: Make this actually usable on mobile web. I’ll probably have to use
 // content editable since the default React Native Web `<TextInput>` does
@@ -129,33 +124,6 @@ export function PostNewMobile({
       />
     </>
   );
-}
-
-/**
- * Return the current height of the keyboard. Will re-render the component when
- * the keyboard opens or closes.
- */
-function useKeyboardHeight() {
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  useEffect(() => {
-    function handleKeyboardWillShow(event: KeyboardEvent) {
-      setKeyboardHeight(event.endCoordinates.height);
-    }
-
-    function handleKeyboardWillHide() {
-      setKeyboardHeight(0);
-    }
-
-    Keyboard.addListener("keyboardWillShow", handleKeyboardWillShow);
-    Keyboard.addListener("keyboardWillHide", handleKeyboardWillHide);
-    return () => {
-      Keyboard.removeListener("keyboardWillShow", handleKeyboardWillShow);
-      Keyboard.removeListener("keyboardWillHide", handleKeyboardWillHide);
-    };
-  }, []);
-
-  return keyboardHeight;
 }
 
 const styles = StyleSheet.create({

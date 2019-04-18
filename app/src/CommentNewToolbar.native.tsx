@@ -1,7 +1,7 @@
-import {Platform, StyleSheet} from "react-native";
 import {CommentNew} from "./CommentNew";
 import {KeyboardTrackingView} from "react-native-keyboard-tracking-view";
 import React from "react";
+import {StyleSheet} from "react-native";
 
 export function CommentNewToolbar() {
   return (
@@ -14,7 +14,7 @@ export function CommentNewToolbar() {
 CommentNewToolbar.minHeight = CommentNew.minHeight;
 
 // For the iPhone X bottom area.
-const paddingBottom = Platform.OS === "ios" ? 50 : 0;
+const paddingBottom = 0; // Platform.OS === "ios" ? 50 : 0;
 
 const styles = StyleSheet.create({
   toolbar: {

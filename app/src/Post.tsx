@@ -7,9 +7,9 @@ import {PostComments} from "./PostComments";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "./router/Route";
-import {StyleSheet} from "react-native";
 import {Trough} from "./Trough";
 import {useCacheData} from "./cache/framework/Cache";
+import {useKeyboardHeight} from "./useKeyboardHeight";
 
 function Post({
   route,
@@ -29,14 +29,22 @@ function Post({
     return group.name;
   }
 
+  // Either add padding to the bottom for the new comment toolbar when the
+  // keyboard is down or add padding to the bottom to fill the keyboard space
+  // when the keyboard is up.
+  const paddingBottom = Math.max(
+    CommentNewToolbar.minHeight,
+    useKeyboardHeight(),
+  );
+
   return (
     <>
       <NavbarScrollView
         route={route}
         useTitle={useTitle}
         hideNavbar={hideNavbar}
-        contentContainerStyle={styles.container}
-        scrollIndicatorInsets={{bottom: CommentNewToolbar.minHeight}}
+        contentContainerStyle={{paddingBottom}}
+        scrollIndicatorInsets={{bottom: paddingBottom}}
         keyboardDismissMode="interactive"
       >
         <PostContent postID={postID} />
@@ -51,9 +59,3 @@ function Post({
 // Don’t re-render `<Post>` unless the props change.
 const PostMemo = React.memo(Post);
 export {PostMemo as Post};
-
-const styles = StyleSheet.create({
-  container: {
-    paddingBottom: CommentNewToolbar.minHeight,
-  },
-});
