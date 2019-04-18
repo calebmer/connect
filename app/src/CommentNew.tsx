@@ -1,11 +1,17 @@
 import {Color, Font, Shadow, Space} from "./atoms";
-import {StyleSheet, View} from "react-native";
+import {StyleProp, StyleSheet, View, ViewStyle} from "react-native";
 import {Editor} from "./Editor";
 import React from "react";
 
-export function CommentNew({disabled}: {disabled?: boolean}) {
+export function CommentNew({
+  style,
+  disabled,
+}: {
+  style?: StyleProp<ViewStyle>;
+  disabled?: boolean;
+}) {
   return (
-    <View style={styles.container}>
+    <View style={[style, styles.container]}>
       <Editor placeholder="Write a comment…" disabled={disabled} />
     </View>
   );
