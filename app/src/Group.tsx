@@ -107,11 +107,11 @@ function Group({
 
     // The feed section of our `<SectionList>`. Contains all the posts from the
     // group in reverse chronological order.
-    const feedSection: SectionListData<PostID> = {
+    const feedSection: SectionListData<PostCacheListEntry> = {
       title: "Feed",
-      data: posts as Array<PostID>,
-      keyExtractor: id => String(id),
-      renderItem: ({item: postID}) => (
+      data: posts as Array<PostCacheListEntry>,
+      keyExtractor: post => String(post.id),
+      renderItem: ({item: {id: postID}}) => (
         <GroupItemFeed
           route={route}
           groupSlug={group.slug}

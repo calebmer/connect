@@ -11,69 +11,70 @@ import {useEffect, useMemo, useState} from "react";
 export function useNewPosts(
   groupID: GroupID,
   posts: ReadonlyArray<PostCacheListEntry>,
-): ReadonlyArray<PostID> {
+): ReadonlyArray<PostCacheListEntry> {
   // Keep track of all the new posts we’ve seen while this component is mounted.
   const [state, setState] = useState(() => ({
-    newPosts: new Set<PostID>(),
-    newPostsBefore: new Map<PostID | null, ReadonlyArray<PostID>>(),
+    newPostIDs: new Set<PostID>(),
+    newPosts: [] as ReadonlyArray<PostCacheListEntry>,
   }));
 
   useEffect(() => {
-    // Listen to all new post publish events.
+    // Listen to all post publish events.
     return PostPublishEmitter.listen(newPost => {
       // If this post is not in our group then ignore it.
-      if (newPost.groupID !== groupID) {
-        return;
+      if (newPost.groupID === groupID) {
+        setState(prevState => ({
+          newPostIDs: new Set(prevState.newPostIDs).add(newPost.id),
+          newPosts: [
+            {id: newPost.id, publishedAt: newPost.publishedAt},
+            ...prevState.newPosts,
+          ],
+        }));
       }
-
-      setState(prevState => {
-        // Add this post to our `newPosts` set.
-        const newPosts = new Set(prevState.newPosts);
-        newPosts.add(newPost.id);
-
-        // We want this post to appear above the post which is currently first
-        // in the list.
-        const newPostsBefore = new Map(prevState.newPostsBefore);
-        const before = posts.length > 0 ? posts[0].id : null;
-        const otherPosts = newPostsBefore.get(before);
-        if (otherPosts) {
-          newPostsBefore.set(before, [newPost.id, ...otherPosts]);
-        } else {
-          newPostsBefore.set(before, [newPost.id]);
-        }
-
-        return {newPosts, newPostsBefore};
-      });
     });
-  }, [groupID, posts]);
+  }, [groupID]);
 
   // Whenever either the post array changes or our state changes, let’s
   // recompute the posts we want to render...
   return useMemo(() => {
-    const postIDs = [];
+    const {newPostIDs, newPosts} = state;
 
-    // Look at all of our posts. If there are some new posts we want to render
-    // above the current one, then go ahead and do that.
-    for (let i = 0; i < posts.length; i++) {
-      const postID = posts[i].id;
-      const newPostsBefore = state.newPostsBefore.get(postID);
-      if (newPostsBefore) {
-        for (let k = 0; k < newPostsBefore.length; k++) {
-          postIDs.push(newPostsBefore[k]);
+    // The final array of posts after we mix in all our new posts.
+    const finalPosts: Array<PostCacheListEntry> = [];
+
+    let i = 0; // Index for `posts`.
+    let k = 0; // Index for `newPosts`.
+
+    // For every post...
+    for (; i < posts.length; i++) {
+      const post = posts[i];
+
+      // If there is a new post with the same ID then skip this post. We’ll add
+      // the new post later. That way we don’t end up moving the new post which
+      // could be jarring for the user.
+      if (newPostIDs.has(post.id)) {
+        continue;
+      }
+
+      // Add all the new posts which were published _after_ the current post.
+      for (; k < newPosts.length; k++) {
+        const newPost = newPosts[k];
+        if (newPost.publishedAt >= post.publishedAt) {
+          finalPosts.push(newPost);
+        } else {
+          break;
         }
       }
-      postIDs.push(postID);
+
+      // Push this post.
+      finalPosts.push(post);
     }
 
-    // If there are any posts we want to render at the end of the list then
-    // go ahead and add them now.
-    const newPostsBefore = state.newPostsBefore.get(null);
-    if (newPostsBefore) {
-      for (let k = 0; k < newPostsBefore.length; k++) {
-        postIDs.push(newPostsBefore[k]);
-      }
+    // Push all of our remaining new posts...
+    for (; k < newPosts.length; k++) {
+      finalPosts.push(newPosts[k]);
     }
 
-    return postIDs;
+    return finalPosts;
   }, [posts, state]);
 }
