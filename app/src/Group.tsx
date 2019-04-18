@@ -31,6 +31,7 @@ import {useAnimatedValue} from "./useAnimatedValue";
 import {useCacheData} from "./cache/framework/Cache";
 import {useCacheListData} from "./cache/framework/CacheList";
 import {useCacheSingletonData} from "./cache/framework/CacheSingleton";
+import {useNewPosts} from "./useNewPosts";
 
 // NOTE: Having a React component and a type with the same name is ok in
 // TypeScript, but eslint complains when it’s an import. So import the type with
@@ -46,7 +47,7 @@ const AnimatedSectionList: SectionList<
 function Group({
   route,
   group,
-  posts,
+  posts: _posts,
   selectedPostID,
   loadingMorePosts,
   onLoadMorePosts,
@@ -90,6 +91,9 @@ function Group({
   // Should we show the navbar or not?
   const [showNavbarBackground, setShowNavbarBackground] = useState(false);
 
+  // Make sure to include all the new posts in our post list.
+  const posts = useNewPosts(group.id, _posts);
+
   // All the section data that our list will render. Memoized to avoid
   // unnecessary calculations in the virtualized list.
   const sections = useMemo(() => {
@@ -103,11 +107,11 @@ function Group({
 
     // The feed section of our `<SectionList>`. Contains all the posts from the
     // group in reverse chronological order.
-    const feedSection: SectionListData<PostCacheListEntry> = {
+    const feedSection: SectionListData<PostID> = {
       title: "Feed",
-      data: posts as Array<PostCacheListEntry>,
-      keyExtractor: item => String(item.id),
-      renderItem: ({item: {id: postID}}) => (
+      data: posts as Array<PostID>,
+      keyExtractor: id => String(id),
+      renderItem: ({item: postID}) => (
         <GroupItemFeed
           route={route}
           groupSlug={group.slug}

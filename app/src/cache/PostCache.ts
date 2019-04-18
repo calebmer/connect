@@ -11,6 +11,7 @@ import {API} from "../api/API";
 import {AccountCache} from "./AccountCache";
 import {Cache} from "./framework/Cache";
 import {CacheList} from "./framework/CacheList";
+import {Emitter} from "./framework/Emitter";
 
 /**
  * Caches posts by their ID.
@@ -120,6 +121,13 @@ export const PostCacheList = new Cache<
 });
 
 /**
+ * When a post is published, we send an event to this emitter. We don’t wait
+ * for the API to confirm that the post is published. We immediately send an
+ * event so that our UI can update appropriately.
+ */
+export const PostPublishEmitter = new Emitter<Post>();
+
+/**
  * Publishes a new post! Immediately generates a new post ID and inserts a
  * pending post object into the cache. We return the new post ID synchronously
  * so that the caller can optimistically display the new post.
@@ -157,6 +165,10 @@ export function publishPost({
     status: PostCacheEntryStatus.Pending,
     post: pendingPost,
   });
+
+  // Immediately emit our pending post so that our UI will render the
+  // new post.
+  PostPublishEmitter.emit(pendingPost);
 
   // TODO: Error handling!
   (async () => {
