@@ -61,6 +61,14 @@ export class Mutable<Value> implements ReadonlyMutable<Value> {
   }
 
   /**
+   * Updates the mutable value. We pass the current value into our updater and
+   * we set the new value.
+   */
+  public update(updater: (value: Value) => Value): void {
+    this.set(updater(this.value));
+  }
+
+  /**
    * Subscribes to a value. The subscriber will be notified whenever the value
    * is updated. The subscriber may call `get()` to get the new value.
    */

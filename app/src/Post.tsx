@@ -1,5 +1,6 @@
 import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import React, {useContext} from "react";
+import {CommentNewToolbar} from "./CommentNewToolbar";
 import {GroupCache} from "./cache/GroupCache";
 import {NavbarScrollView} from "./NavbarScrollView";
 import {PostComments} from "./PostComments";
@@ -28,11 +29,19 @@ function Post({
   }
 
   return (
-    <NavbarScrollView route={route} useTitle={useTitle} hideNavbar={hideNavbar}>
-      <PostContent postID={postID} />
-      <Trough title="Comments" />
-      <PostComments postID={postID} />
-    </NavbarScrollView>
+    <>
+      <NavbarScrollView
+        route={route}
+        useTitle={useTitle}
+        hideNavbar={hideNavbar}
+        keyboardDismissMode="on-drag"
+      >
+        <PostContent postID={postID} />
+        <Trough title="Comments" />
+        <PostComments postID={postID} />
+      </NavbarScrollView>
+      <CommentNewToolbar />
+    </>
   );
 }
 

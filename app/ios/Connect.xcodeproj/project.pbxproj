@@ -45,6 +45,7 @@
 		AD36D9FE222F113B00FA4E60 /* WorkSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD36D9FA222F113B00FA4E60 /* WorkSans-Bold.ttf */; };
 		AD36DA00222F113B00FA4E60 /* WorkSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD36D9FC222F113B00FA4E60 /* WorkSans-Regular.ttf */; };
 		AD8E4B19224ABE0100CC3B32 /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD8E4B18224ABE0100CC3B32 /* Feather.ttf */; };
+		AD8ED1F3226906CF005D32A5 /* libKeyboardTrackingView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD8ED1CA226906B1005D32A5 /* libKeyboardTrackingView.a */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
 		ADD566B1222E21DA00944552 /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADD566AE222E21CF00944552 /* libReactNativeNavigation.a */; };
 		ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
@@ -290,6 +291,13 @@
 			remoteGlobalIDString = 58B5119B1A9E6C1200147676;
 			remoteInfo = RCTText;
 		};
+		AD8ED1C9226906B1005D32A5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AD8ED1C5226906B1005D32A5 /* KeyboardTrackingView.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D834CED81CC64F2400FA5668;
+			remoteInfo = KeyboardTrackingView;
+		};
 		AD9C58E3222DCA5600895B0A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 146833FF1AC3E56700842450 /* React.xcodeproj */;
@@ -382,6 +390,7 @@
 		AD36D9FC222F113B00FA4E60 /* WorkSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "WorkSans-Regular.ttf"; path = "../../src/assets/fonts/WorkSans-Regular.ttf"; sourceTree = "<group>"; };
 		AD7EB53E2239B5B800A10674 /* Connect.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Connect.entitlements; path = Connect/Connect.entitlements; sourceTree = "<group>"; };
 		AD8E4B18224ABE0100CC3B32 /* Feather.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = Feather.ttf; path = ../../src/assets/icons/Feather.ttf; sourceTree = "<group>"; };
+		AD8ED1C5226906B1005D32A5 /* KeyboardTrackingView.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = KeyboardTrackingView.xcodeproj; path = "../node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingView.xcodeproj"; sourceTree = "<group>"; };
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
 		ADD566A8222E21CF00944552 /* ReactNativeNavigation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativeNavigation.xcodeproj; path = "../node_modules/react-native-navigation/lib/ios/ReactNativeNavigation.xcodeproj"; sourceTree = "<group>"; };
 		C4BE7B5AF70A40FC98040533 /* libRNCAsyncStorage.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNCAsyncStorage.a; sourceTree = "<group>"; };
@@ -403,6 +412,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD8ED1F3226906CF005D32A5 /* libKeyboardTrackingView.a in Frameworks */,
 				ADD566B1222E21DA00944552 /* libReactNativeNavigation.a in Frameworks */,
 				ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */,
 				ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */,
@@ -596,6 +606,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				AD8ED1C5226906B1005D32A5 /* KeyboardTrackingView.xcodeproj */,
 				ADD566A8222E21CF00944552 /* ReactNativeNavigation.xcodeproj */,
 				5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */,
 				146833FF1AC3E56700842450 /* React.xcodeproj */,
@@ -662,6 +673,14 @@
 				AD36D9FC222F113B00FA4E60 /* WorkSans-Regular.ttf */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		AD8ED1C6226906B1005D32A5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AD8ED1CA226906B1005D32A5 /* libKeyboardTrackingView.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		ADBDB9201DFEBF0600ED6528 /* Products */ = {
@@ -824,6 +843,10 @@
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
+				{
+					ProductGroup = AD8ED1C6226906B1005D32A5 /* Products */;
+					ProjectRef = AD8ED1C5226906B1005D32A5 /* KeyboardTrackingView.xcodeproj */;
+				},
 				{
 					ProductGroup = 00C302A81ABCB8CE00DB3ED1 /* Products */;
 					ProjectRef = 00C302A71ABCB8CE00DB3ED1 /* RCTActionSheet.xcodeproj */;
@@ -1114,6 +1137,13 @@
 			fileType = archive.ar;
 			path = libRCTText.a;
 			remoteRef = 832341B41AAA6A8300B99B32 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AD8ED1CA226906B1005D32A5 /* libKeyboardTrackingView.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libKeyboardTrackingView.a;
+			remoteRef = AD8ED1C9226906B1005D32A5 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		AD9C58E4222DCA5600895B0A /* libjsi.a */ = {

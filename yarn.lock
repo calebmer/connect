@@ -1981,11 +1981,6 @@ babel-plugin-jest-hoist@^24.3.0:
   dependencies:
     "@types/babel__traverse" "^7.0.6"
 
-babel-plugin-optimize-react@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/babel-plugin-optimize-react/-/babel-plugin-optimize-react-0.0.4.tgz#6326ac8f0f77e3fa3e8195b4d998287d47877c65"
-  integrity sha512-I3o7GW66dIpXraND0ZAYXEDQ/wOiuefUQqn1PZZcub2flREANb2NXejL52iTMUWtKM++lu5OasVtZewn+WvkNg==
-
 babel-plugin-react-native-web@^0.10.0:
   version "0.10.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-react-native-web/-/babel-plugin-react-native-web-0.10.0.tgz#ee12cbd6571b04c6799fd51c3272ceb1f1886d82"
@@ -8775,6 +8770,11 @@ react-lifecycles-compat@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-2.0.0.tgz#71d9c4cde47114c4102454f76da055c2bc48c948"
   integrity sha512-txfpPCQYiazVdcbMRhatqWKcAxJweUu2wDXvts5/7Wyp6+Y9cHojqXHsLPEckzutfHlxZhG8Oiundbmp8Fd6eQ==
+
+react-native-keyboard-tracking-view@^5.5.0:
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/react-native-keyboard-tracking-view/-/react-native-keyboard-tracking-view-5.5.0.tgz#87d28639f30e5b511de510e4063e476f23d6e4f2"
+  integrity sha512-e/tYhvccmLOSV+6qpU5Hlpn/U2gVu5K5F555oCUBBF229vv/V/fGoq2QyBnBEKmF9IKzBEOpzxBavUR3IfaKXw==
 
 react-native-navigation@^2.15.0:
   version "2.15.0"
