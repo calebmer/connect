@@ -37,7 +37,7 @@ function Post({
         hideNavbar={hideNavbar}
         contentContainerStyle={styles.container}
         scrollIndicatorInsets={{bottom: CommentNewToolbar.minHeight}}
-        keyboardDismissMode="on-drag"
+        keyboardDismissMode="interactive"
       >
         <PostContent postID={postID} />
         <Trough title="Comments" />
