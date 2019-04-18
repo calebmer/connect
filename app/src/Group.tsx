@@ -172,7 +172,7 @@ function Group({
                 scrollView.current
                   .getNode()
                   .getScrollResponder()
-                  .scrollTo({y: 0, animated: false});
+                  .scrollTo({y: offsetScrollY || 0, animated: false});
               }
             }}
           />
