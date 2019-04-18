@@ -1,27 +1,14 @@
-import {Color, Font, Shadow, Space} from "./atoms";
-import {StyleProp, StyleSheet, View, ViewStyle} from "react-native";
+import {Font, Space} from "./atoms";
 import {Editor} from "./Editor";
 import React from "react";
+import {View} from "react-native";
 
-export function CommentNew({
-  style,
-  disabled,
-}: {
-  style?: StyleProp<ViewStyle>;
-  disabled?: boolean;
-}) {
+export function CommentNew({disabled}: {disabled?: boolean}) {
   return (
-    <View style={[style, styles.container]}>
+    <View>
       <Editor placeholder="Write a comment…" disabled={disabled} />
     </View>
   );
 }
 
 CommentNew.minHeight = Font.size3.lineHeight + Space.space3 * 2;
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: Color.white,
-    ...Shadow.elevation2,
-  },
-});
