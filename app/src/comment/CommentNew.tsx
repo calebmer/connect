@@ -4,12 +4,11 @@ import {Editor} from "../editor/Editor";
 import {IconPatch} from "../molecules/IconPatch";
 import React from "react";
 
-export function CommentNew({disabled}: {disabled?: boolean}) {
+export function CommentNew() {
   return (
     <View style={styles.container}>
       <Editor
         placeholder="Write a comment…"
-        disabled={disabled}
         minHeight={CommentNew.minHeight}
         maxHeight={CommentNew.maxHeight}
         paddingRight={IconPatch.size + Space.space3 * 2}
@@ -21,12 +20,14 @@ export function CommentNew({disabled}: {disabled?: boolean}) {
   );
 }
 
-CommentNew.minHeight = Font.size2.lineHeight - 3 + Space.space3 * 2;
+CommentNew.minHeight = Font.size2.lineHeight + Space.space3 * 2;
 CommentNew.maxHeight = Font.size2.lineHeight * 5 + Space.space3 * 2;
 
 const styles = StyleSheet.create({
   container: {
     position: "relative",
+    minHeight: CommentNew.minHeight,
+    maxHeight: CommentNew.maxHeight,
   },
   send: {
     position: "absolute",

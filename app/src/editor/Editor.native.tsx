@@ -63,7 +63,6 @@ function Editor(
         large && styles.editorLarge,
         {minHeight, maxHeight, paddingRight},
       ]}
-      value={text}
       onChangeText={handleChangeText}
       multiline
       placeholder={placeholder}
@@ -76,7 +75,9 @@ function Editor(
       // the component rendering an editor to implement auto focusing if they
       // want it.
       autoFocus={false}
-    />
+    >
+      {text}
+    </TextInput>
   );
 }
 
