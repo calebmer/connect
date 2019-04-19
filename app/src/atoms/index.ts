@@ -7,5 +7,4 @@ import * as Space from "./Space";
 export {Border, Color, Font, Shadow, Space};
 
 export * from "./Icon";
-export * from "./Loading";
 export * from "./Text";
