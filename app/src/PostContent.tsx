@@ -33,7 +33,7 @@ export function PostContent({postID}: {postID: PostID}) {
         </View>
       </View>
       <View style={[styles.content, indentContent && styles.indentContent]}>
-        <BodyText>{post.content}</BodyText>
+        <BodyText selectable>{post.content}</BodyText>
       </View>
     </View>
   );

@@ -76,7 +76,7 @@ function CommentWithByline({
       <AccountAvatar account={author} />
       <View style={styles.body}>
         <AccountByline account={author} time={comment.postedAt} />
-        <BodyText>{comment.content}</BodyText>
+        <BodyText selectable>{comment.content}</BodyText>
       </View>
     </View>
   );
@@ -85,7 +85,7 @@ function CommentWithByline({
 function CommentWithoutByline({comment}: {comment: Comment}) {
   return (
     <View style={styles.commentWithoutByline}>
-      <BodyText>{comment.content}</BodyText>
+      <BodyText selectable>{comment.content}</BodyText>
     </View>
   );
 }
