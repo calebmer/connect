@@ -4,7 +4,7 @@ import React, {useImperativeHandle, useRef, useState} from "react";
 import {StyleSheet, TextInput} from "react-native";
 
 function Editor(
-  {minHeight, placeholder, disabled, onChange}: EditorProps,
+  {large, placeholder, minHeight, disabled, onChange}: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
   // A reference to the editor component itself. We can use this to focus
@@ -50,7 +50,7 @@ function Editor(
   return (
     <TextInput
       ref={editor}
-      style={[styles.editor, {minHeight}]}
+      style={[styles.editor, large && styles.editorLarge, {minHeight}]}
       value={text}
       onChangeText={handleChangeText}
       multiline
@@ -78,6 +78,9 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
     color: Color.grey8,
     ...Font.serif,
+    ...Font.size2,
+  },
+  editorLarge: {
     ...Font.size3,
   },
 });

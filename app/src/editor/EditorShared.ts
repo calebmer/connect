@@ -3,15 +3,20 @@
  */
 export type EditorProps = {
   /**
-   * The minimum height of our editor. The editor may always grow so we never
-   * accept anything more than a minimum height.
+   * Should we use a larger font size than the regular body font size?
    */
-  minHeight?: number;
+  large?: boolean;
 
   /**
    * Optional placeholder content when the editor is empty.
    */
   placeholder?: string;
+
+  /**
+   * The minimum height of our editor. The editor may always grow so we never
+   * accept anything more than a minimum height.
+   */
+  minHeight?: number;
 
   /**
    * Is the editor disabled? The user will still be able to read the contents

@@ -104,6 +104,7 @@ export function PostNewMobile({
         <PostNewHeader currentAccount={currentAccount} />
         <Editor
           ref={editor}
+          large
           placeholder="Start a conversation…"
           onChange={({isWhitespaceOnly}) => setSendEnabled(!isWhitespaceOnly)}
         />

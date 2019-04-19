@@ -45,7 +45,7 @@ declare const document: any;
  * [6]: https://github.com/facebook/draft-js/tree/f9f5fd6ed1df237389b6bfe9db90e62fe7d4237c/src/component/handlers/edit
  */
 function Editor(
-  {minHeight, placeholder, disabled, onChange}: EditorProps,
+  {large, placeholder, minHeight, disabled, onChange}: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
   const editor = useRef<HTMLDivElement>(null);
@@ -133,7 +133,7 @@ function Editor(
       )}
       {createElement("div", {
         ref: editor,
-        style: [styles.editor, {minHeight}],
+        style: [styles.editor, large && styles.editorLarge, {minHeight}],
         contentEditable: !disabled,
         onInput: handleInput,
         onPaste: handlePaste,
@@ -238,5 +238,8 @@ const styles = StyleSheet.create({
     ...Font.serif,
     ...Font.size2,
     outlineWidth: 0,
+  },
+  editorLarge: {
+    ...Font.size3,
   },
 });
