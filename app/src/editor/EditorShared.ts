@@ -13,16 +13,28 @@ export type EditorProps = {
   placeholder?: string;
 
   /**
+   * Is the editor disabled? The user will still be able to read the contents
+   * of the editor but they will not be able to change those contents.
+   */
+  disabled?: boolean;
+
+  /**
    * The minimum height of our editor. The editor may always grow so we never
    * accept anything more than a minimum height.
    */
   minHeight?: number;
 
   /**
-   * Is the editor disabled? The user will still be able to read the contents
-   * of the editor but they will not be able to change those contents.
+   * The maximum height of our editor. By setting this property you also enable
+   * scrolling. When the editor surpasses this height the user will be able to
+   * scroll to see content that is now out of view.
    */
-  disabled?: boolean;
+  maxHeight?: number;
+
+  /**
+   * Adds some padding to the editor.
+   */
+  paddingRight?: number;
 
   /**
    * Event that’s fired whenever the editor content changes. We don’t provide

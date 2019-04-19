@@ -4,7 +4,15 @@ import React, {useImperativeHandle, useRef, useState} from "react";
 import {StyleSheet, TextInput} from "react-native";
 
 function Editor(
-  {large, placeholder, minHeight, disabled, onChange}: EditorProps,
+  {
+    large,
+    placeholder,
+    disabled,
+    minHeight,
+    maxHeight,
+    paddingRight,
+    onChange,
+  }: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
   // A reference to the editor component itself. We can use this to focus
@@ -50,14 +58,18 @@ function Editor(
   return (
     <TextInput
       ref={editor}
-      style={[styles.editor, large && styles.editorLarge, {minHeight}]}
+      style={[
+        styles.editor,
+        large && styles.editorLarge,
+        {minHeight, maxHeight, paddingRight},
+      ]}
       value={text}
       onChangeText={handleChangeText}
       multiline
       placeholder={placeholder}
       placeholderTextColor={Color.grey3}
       editable={!disabled}
-      scrollEnabled={false}
+      scrollEnabled={maxHeight != null}
       // NOTE: We don’t support `autoFocus` in `Editor` because the React Native
       // implementation only triggers focus in `componentDidMount` since it is
       // a class component. Instead we provide a `focus()` method and expect

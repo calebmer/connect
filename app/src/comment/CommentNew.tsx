@@ -7,9 +7,13 @@ import React from "react";
 export function CommentNew({disabled}: {disabled?: boolean}) {
   return (
     <View style={styles.container}>
-      <View style={styles.editor}>
-        <Editor placeholder="Write a comment…" disabled={disabled} />
-      </View>
+      <Editor
+        placeholder="Write a comment…"
+        disabled={disabled}
+        minHeight={CommentNew.minHeight}
+        maxHeight={CommentNew.maxHeight}
+        paddingRight={IconPatch.size + Space.space3 * 2}
+      />
       <View style={styles.send}>
         <IconPatch icon="send" />
       </View>
@@ -22,16 +26,11 @@ CommentNew.maxHeight = Font.size2.lineHeight * 5 + Space.space3 * 2;
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    minHeight: CommentNew.minHeight,
-    maxHeight: CommentNew.maxHeight,
-  },
-  editor: {
-    flex: 1,
+    position: "relative",
   },
   send: {
-    paddingVertical: (CommentNew.minHeight - IconPatch.size) / 2,
-    paddingHorizontal: Space.space3,
+    position: "absolute",
+    top: (CommentNew.minHeight - IconPatch.size) / 2,
+    right: Space.space3,
   },
 });

@@ -45,9 +45,24 @@ declare const document: any;
  * [6]: https://github.com/facebook/draft-js/tree/f9f5fd6ed1df237389b6bfe9db90e62fe7d4237c/src/component/handlers/edit
  */
 function Editor(
-  {large, placeholder, minHeight, disabled, onChange}: EditorProps,
+  {
+    large,
+    placeholder,
+    disabled,
+    minHeight,
+    maxHeight,
+    paddingRight,
+    onChange,
+  }: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
+  if (maxHeight != null) {
+    console.warn("TODO: maxHeight is not implemented on web."); // eslint-disable-line no-console
+  }
+  if (paddingRight != null) {
+    console.warn("TODO: paddingRight is not implemented on web."); // eslint-disable-line no-console
+  }
+
   const editor = useRef<HTMLDivElement>(null);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
 
