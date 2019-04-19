@@ -30,6 +30,8 @@ const styles = StyleSheet.create({
     maxHeight: CommentNew.maxHeight,
   },
   send: {
+    // NOTE: We absolute position the send button so that the scroll indicator
+    // on the editor can be all the way at the screen’s edge.
     position: "absolute",
     top: (CommentNew.minHeight - IconPatch.size) / 2,
     right: Space.space3,
