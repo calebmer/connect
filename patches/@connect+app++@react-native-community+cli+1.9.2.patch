@@ -1,0 +1,15 @@
+diff --git a/node_modules/@connect/app/node_modules/@react-native-community/cli/build/commands/server/external/xsel b/node_modules/@connect/app/node_modules/@react-native-community/cli/build/commands/server/external/xsel
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@connect/app/node_modules/@react-native-community/cli/build/commands/server/runServer.js b/node_modules/@connect/app/node_modules/@react-native-community/cli/build/commands/server/runServer.js
+index 1059cd6..14e2652 100644
+--- a/node_modules/@connect/app/node_modules/@react-native-community/cli/build/commands/server/runServer.js
++++ b/node_modules/@connect/app/node_modules/@react-native-community/cli/build/commands/server/runServer.js
+@@ -75,7 +75,6 @@ async function runServer(argv, ctx, args) {
+     port: args.port,
+     resetCache: args.resetCache,
+     watchFolders: args.watchFolders,
+-    projectRoot: ctx.root,
+     sourceExts: args.sourceExts,
+     reporter
+   });

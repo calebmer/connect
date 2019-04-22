@@ -1,0 +1,29 @@
+diff --git a/node_modules/metro/src/lib/TerminalReporter.js b/node_modules/metro/src/lib/TerminalReporter.js
+index 5b35243..6c09b81 100644
+--- a/node_modules/metro/src/lib/TerminalReporter.js
++++ b/node_modules/metro/src/lib/TerminalReporter.js
+@@ -219,24 +219,6 @@ class TerminalReporter {
+   }
+ 
+   _logInitializing(port, projectRoots) {
+-    if (port) {
+-      this.terminal.log(
+-        formatBanner(
+-          "Running Metro Bundler on port " +
+-            port +
+-            ".\n\n" +
+-            "Keep Metro running while developing on any JS projects. Feel " +
+-            "free to close this tab and run your own Metro instance " +
+-            "if you prefer.\n\n" +
+-            "https://github.com/facebook/react-native",
+-          {
+-            paddingTop: 1,
+-            paddingBottom: 1
+-          }
+-        ) + "\n"
+-      );
+-    }
+-
+     this.terminal.log(
+       "Looking for JS files in\n  ",
+       chalk.dim(projectRoots.join("\n   ")),

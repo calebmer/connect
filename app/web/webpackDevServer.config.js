@@ -6,12 +6,16 @@
  */
 
 const path = require("path");
-
+const webpack = require("webpack");
 const errorOverlayMiddleware = require("react-dev-utils/errorOverlayMiddleware");
 const evalSourceMapMiddleware = require("react-dev-utils/evalSourceMapMiddleware");
 
 module.exports = {
   port: 3000,
+  // Only show Webpack errors in the console while we the dev server is running.
+  // We often run the dev server in the same console window as other processes
+  // so we need to be polite.
+  stats: {...webpack.Stats.presetToOptions("errors-only"), colors: true},
   // Silence WebpackDevServer's own logs since they're generally not useful.
   // It will still show compile warnings and errors with this setting.
   clientLogLevel: "none",

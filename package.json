@@ -8,21 +8,26 @@
     "db"
   ],
   "scripts": {
+    "dev": "yarn workspace @connect/db start && concurrently -n api,web,ntv -c magenta.dim,green.dim,cyan.dim 'DEBUG_COLORS=true yarn workspace @connect/api-server dev' 'yarn workspace @connect/app dev:web' 'yarn workspace @connect/app dev:native'",
     "types": "tsc",
     "lint": "eslint . --ext .js,.ts,.tsx",
     "format": "prettier \"**/*.{js,ts,tsx}\" --write",
-    "test": "jest --watch"
+    "test": "jest --watch",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@types/jest": "^24.0.9",
     "@typescript-eslint/eslint-plugin": "^1.4.1",
     "@typescript-eslint/parser": "^1.4.1",
+    "concurrently": "^4.1.0",
     "eslint": "5.12.0",
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-react": "^7.12.4",
     "eslint-plugin-react-hooks": "^1.2.0",
     "eslint-plugin-react-native": "^3.6.0",
     "jest": "^24.3.1",
+    "patch-package": "^6.1.2",
+    "postinstall-postinstall": "^2.0.0",
     "prettier": "^1.16.4",
     "typescript": "^3.3.3333"
   }
