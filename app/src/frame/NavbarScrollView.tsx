@@ -1,5 +1,11 @@
 import {Color, IconName} from "../atoms";
-import {Keyboard, ScrollView, ScrollViewProps, StyleSheet} from "react-native";
+import {
+  Keyboard,
+  Platform,
+  ScrollView,
+  ScrollViewProps,
+  StyleSheet,
+} from "react-native";
 import React, {useState} from "react";
 import {Navbar} from "./Navbar";
 import {Route} from "../router/Route";
@@ -45,6 +51,7 @@ export function NavbarScrollView({
   ...props
 }: NavbarScrollViewProps) {
   const [hideBackground, setHideBackground] = useState(true);
+  const paddingTop = !hideNavbar ? Navbar.height : 0;
 
   return (
     <>
@@ -66,16 +73,22 @@ export function NavbarScrollView({
         style={styles.background}
         contentContainerStyle={[
           props.contentContainerStyle,
-          styles.container,
-          hideNavbar && styles.containerHideNavbar,
+          {paddingTop: Platform.OS !== "ios" ? paddingTop : 0},
         ]}
-        scrollIndicatorInsets={{
-          ...props.scrollIndicatorInsets,
-          top: !hideNavbar ? Navbar.height : 0,
+        contentOffset={{
+          x: 0,
+          y: -paddingTop,
+        }}
+        contentInset={{
+          ...props.contentInset,
+          top: paddingTop,
         }}
         scrollEventThrottle={16}
         onScroll={event => {
-          setHideBackground(event.nativeEvent.contentOffset.y <= 0);
+          setHideBackground(
+            event.nativeEvent.contentOffset.y <=
+              -event.nativeEvent.contentInset.top + 4,
+          );
         }}
       >
         {children}
@@ -123,11 +136,5 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     backgroundColor: Color.white,
-  },
-  container: {
-    paddingTop: Navbar.height,
-  },
-  containerHideNavbar: {
-    paddingTop: 0,
   },
 });

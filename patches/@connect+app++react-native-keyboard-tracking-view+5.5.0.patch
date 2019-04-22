@@ -1,0 +1,53 @@
+diff --git a/node_modules/@connect/app/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m b/node_modules/@connect/app/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
+index 800bd35..7f56057 100644
+--- a/node_modules/@connect/app/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
++++ b/node_modules/@connect/app/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
+@@ -252,11 +252,14 @@ - (void)initializeAccessoryViewsAndHandleInsets
+     }
+
+ #if __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_10_3
+-    if (@available(iOS 11.0, *)) {
+-        if (_scrollViewToManage != nil) {
+-            _scrollViewToManage.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+-        }
+-    }
++    // NOTE: by setting `_scrollViewToManage.contentInsetAdjustmentBehavior` to `UIScrollViewContentInsetAdjustmentNever`
++    // we do not automatically adjust the content inset to take into account the unsafe area at the top of the screen.
++
++    // if (@available(iOS 11.0, *)) {
++    //     if (_scrollViewToManage != nil) {
++    //         _scrollViewToManage.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
++    //     }
++    // }
+ #endif
+
+     [self _updateScrollViewInsets];
+@@ -389,12 +392,26 @@ - (void)_updateScrollViewInsets
+     {
+         UIEdgeInsets insets = self.scrollViewToManage.contentInset;
+         CGFloat bottomSafeArea = [self getBottomSafeArea];
+-        CGFloat bottomInset = MAX(self.bounds.size.height, _observingInputAccessoryView.keyboardHeight + _observingInputAccessoryView.height);
++
++        CGFloat bottomInset = MAX(self.bounds.size.height,
++                                  _observingInputAccessoryView.keyboardHeight + _observingInputAccessoryView.height
++                                    // NOTE: we end up double counting the bottom safe area if we aren’t careful.
++                                    // Which is why we subtract `bottomSafeArea` to neutralize the effect of
++                                    // double counting.
++                                    //
++                                    // 1. The keyboard height includes the bottom safe area.
++                                    // 2. `contentInsetAdjustmentBehavior` will adjust `UIScrollView` insets to
++                                    //    include the bottom safe area.
++                                    //
++                                    // A more robust solution would check `contentInsetAdjustmentBehavior` to make
++                                    // sure we are actually double counting. If it is set to “never” then we
++                                    // aren’t double counting to begin with and so don’t need to
++                                    // subtract `bottomSafeArea`.
++                                    - bottomSafeArea);
+
+         CGFloat originalBottomInset = self.scrollIsInverted ? insets.top : insets.bottom;
+         CGPoint originalOffset = self.scrollViewToManage.contentOffset;
+
+-        bottomInset += (_observingInputAccessoryView.keyboardHeight == 0 ? bottomSafeArea : 0);
+         if(self.scrollIsInverted)
+         {
+             insets.top = bottomInset;

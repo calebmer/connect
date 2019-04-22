@@ -6,7 +6,7 @@ import React from "react";
 
 export function CommentNewToolbar() {
   return (
-    <KeyboardTrackingView style={styles.toolbar} manageScrollView={false}>
+    <KeyboardTrackingView style={styles.toolbar}>
       <View style={styles.background} />
       <CommentNew />
     </KeyboardTrackingView>
