@@ -4,15 +4,15 @@ const util = require("util");
 const path = require("path");
 const fs = require("fs");
 const chalk = require("chalk");
-const {Client} = require("pg");
-const runDrop = require("./drop");
-const runMigrate = require("./migrate");
+const createClient = require("./lib/createClient");
+const drop = require("./drop");
+const migrate = require("./migrate");
 
 const readFile = util.promisify(fs.readFile);
 
-async function run() {
-  await runDrop();
-  await runMigrate();
+async function reset() {
+  await drop();
+  await migrate();
 
   // Get the mock data insertion query.
   const mockDataPath = path.resolve(__dirname, "..", "mocks", "mock-data.sql");
@@ -21,7 +21,7 @@ async function run() {
   console.log(`${chalk.grey("▸")} Inserting mock data`);
 
   // Connect a Postgres client, insert the mock data, and release our client.
-  const client = new Client();
+  const client = createClient();
   try {
     await client.connect();
     await client.query("SET search_path = connect");
@@ -31,11 +31,11 @@ async function run() {
   }
 }
 
-module.exports = run;
+module.exports = reset;
 
 // Make unhandled promise exceptions an unhandled runtime exception.
 if (!module.parent) {
-  run().catch(error => {
+  reset().catch(error => {
     setImmediate(() => {
       throw error;
     });

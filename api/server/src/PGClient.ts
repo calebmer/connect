@@ -22,6 +22,11 @@ const pool = new Pool({
   // Always connect to Postgres with the `connect_api` role! No matter what
   // configuration we are given.
   user: "connect_api",
+
+  // If the port and database are available in environment variables then use
+  // them. Otherwise use our default values.
+  port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : 5000,
+  database: process.env.PGDATABASE || "connect",
 });
 
 // Whenever the pool newly connects a client this event is called and we can run

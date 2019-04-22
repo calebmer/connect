@@ -22,7 +22,7 @@ const cp = require("child_process");
 const debug = require("debug")("connect:test:pg");
 const getPort = require("get-port");
 const {Client} = require("pg");
-const runMigrations = require("@connect/db/scripts/migrate");
+const migrate = require("@connect/db/scripts/migrate");
 
 const osTempDir = os.tmpdir();
 const tempDirPrefix = "connect-test-postgres-";
@@ -162,7 +162,7 @@ module.exports = async () => {
   }
 
   debug("Running migrations");
-  await runMigrations({silent: true});
+  await migrate({silent: true});
 
   // Set a global which our teardown script can access to kill our
   // temporary database.

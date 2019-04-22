@@ -4,18 +4,18 @@ const util = require("util");
 const fs = require("fs");
 const path = require("path");
 const chalk = require("chalk");
-const {Client} = require("pg");
+const createClient = require("./lib/createClient");
 
 const readDir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
 
-async function run({silent = false} = {}) {
+async function migrate({silent = false} = {}) {
   // Get all of our migrations.
   const migrationsDir = path.resolve(__dirname, "..", "migrations");
   const migrations = new Set(await readDir(migrationsDir));
 
   // Connect a Postgres client.
-  const client = new Client();
+  const client = createClient();
   try {
     await client.connect();
 
@@ -77,11 +77,11 @@ async function run({silent = false} = {}) {
   }
 }
 
-module.exports = run;
+module.exports = migrate;
 
 // Make unhandled promise exceptions an unhandled runtime exception.
 if (!module.parent) {
-  run().catch(error => {
+  migrate().catch(error => {
     setImmediate(() => {
       throw error;
     });

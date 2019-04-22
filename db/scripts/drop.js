@@ -2,9 +2,9 @@
 
 const readline = require("readline");
 const chalk = require("chalk");
-const {Client} = require("pg");
+const createClient = require("./lib/createClient");
 
-async function run() {
+async function drop() {
   // Open up a readline interface to ask the user if they really want to drop
   // their database.
   const rl = readline.createInterface({
@@ -35,7 +35,7 @@ async function run() {
   });
 
   // Connect a Postgres client.
-  const client = new Client();
+  const client = createClient();
   try {
     await client.connect();
 
@@ -57,11 +57,11 @@ async function run() {
   }
 }
 
-module.exports = run;
+module.exports = drop;
 
 if (!module.parent) {
   // Make unhandled promise exceptions an unhandled runtime exception.
-  run().catch(error => {
+  drop().catch(error => {
     setImmediate(() => {
       throw error;
     });
