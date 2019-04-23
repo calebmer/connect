@@ -36,7 +36,7 @@ export function PostContent({postID}: {postID: PostID}) {
 
 const styles = StyleSheet.create({
   container: {
-    maxWidth: postMaxWidth,
+    // maxWidth: postMaxWidth,
   },
   header: {
     flexDirection: "row",

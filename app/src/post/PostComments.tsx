@@ -35,7 +35,7 @@ function PostCommentsSuspense({postID}: {postID: PostID}) {
 
 const styles = StyleSheet.create({
   container: {
-    maxWidth: postMaxWidth,
+    // maxWidth: postMaxWidth,
     paddingBottom: Space.space3,
   },
 });
