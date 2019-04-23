@@ -3,7 +3,7 @@ import React from "react";
 /**
  * The layout we’re using for the `<GroupHome>` component.
  */
-export enum GroupHomeLayout {
+enum GroupHomeLayout {
   /**
    * When we are on mobile the each of our layers from the laptop layout will
    * take up the entire screen.
@@ -16,6 +16,7 @@ export enum GroupHomeLayout {
   Laptop,
 }
 
-export const GroupHomeLayoutContext = React.createContext(
-  GroupHomeLayout.Mobile,
-);
+const GroupHomeLayoutContext = React.createContext(GroupHomeLayout.Mobile);
+
+const _GroupHomeLayout = {...GroupHomeLayout, Context: GroupHomeLayoutContext};
+export {_GroupHomeLayout as GroupHomeLayout};

@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import {Color, Font, Space} from "../atoms";
 import {CurrentAccountCache, useCurrentAccount} from "../account/AccountCache";
-import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import {
   PostCacheList,
   PostCacheListEntry,
@@ -22,6 +21,7 @@ import React, {useContext, useMemo, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableContainer} from "../cache/Mutable";
 import {GroupBanner} from "./GroupBanner";
 import {GroupCache} from "./GroupCache";
+import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {Loading} from "../molecules/Loading";
@@ -66,7 +66,7 @@ function Group({
 
   // Are we using the mobile group home layout?
   const showNavbar =
-    useContext(GroupHomeLayoutContext) === GroupHomeLayout.Mobile;
+    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Mobile;
 
   // On iOS the top of the content is not zero! It is
   // `-adjustedContentInset.top`. `adjustedContentInset` is `contentInset` plus

@@ -1,10 +1,10 @@
 import {BodyText, Font} from "../atoms";
-import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import React, {useContext, useState} from "react";
 import {ReadonlyMutable, useMutableSelect} from "../cache/Mutable";
 import {AccountByline} from "../account/AccountByline";
 import {AccountCache} from "../account/AccountCache";
 import {CommentCacheList} from "../comment/CommentCache";
+import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupItem} from "./GroupItem";
 import {PostCache} from "../post/PostCache";
 import {PostID} from "@connect/api-client";
@@ -59,7 +59,7 @@ function GroupItemFeed({
   // On a laptop, you can open a post without leaving the feed. So favor shorter
   // post previews and more posts on screen.
   const numberOfLines =
-    useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop ? 2 : 4;
+    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop ? 2 : 4;
 
   return (
     <GroupItem

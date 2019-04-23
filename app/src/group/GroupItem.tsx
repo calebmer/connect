@@ -5,10 +5,10 @@ import {
   View,
 } from "react-native";
 import {Border, Color, Icon, Space} from "../atoms";
-import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import React, {useContext, useState} from "react";
 import {AccountAvatar} from "../account/AccountAvatar";
 import {AccountProfile} from "@connect/api-client";
+import {GroupHomeLayout} from "./GroupHomeLayout";
 import {useAnimatedSpring} from "../utils/useAnimatedValue";
 
 export function GroupItem({
@@ -55,7 +55,7 @@ export function GroupItem({
 
   // Are we on the laptop `<GroupHome>` layout?
   const isLaptop =
-    useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop;
+    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
 
   /**
    * Selects the item if it is not already selected could be triggered by a

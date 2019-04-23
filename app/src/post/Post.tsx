@@ -1,10 +1,7 @@
-import {
-  GroupHomeLayout,
-  GroupHomeLayoutContext,
-} from "../group/GroupHomeLayout";
 import React, {useContext} from "react";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
+import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostComments} from "./PostComments";
 import {PostContent} from "./PostContent";
@@ -24,7 +21,7 @@ function Post({
 }) {
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar =
-    useContext(GroupHomeLayoutContext) === GroupHomeLayout.Laptop;
+    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
 
   function useTitle() {
     const group = useCacheData(GroupCache, groupSlug);

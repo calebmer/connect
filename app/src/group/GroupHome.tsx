@@ -1,6 +1,5 @@
 import {Breakpoint, useBreakpoint} from "../utils/useBreakpoint";
 import {Group, GroupRoute as GroupRouteComponent} from "./Group";
-import {GroupHomeLayout, GroupHomeLayoutContext} from "./GroupHomeLayout";
 import {Post, Post as PostRouteComponent} from "../post/Post";
 import React, {useCallback, useEffect} from "react";
 import {Shadow, Space} from "../atoms";
@@ -8,6 +7,7 @@ import {StyleSheet, View} from "react-native";
 import {CurrentAccountCache} from "../account/AccountCache";
 import {GroupCache} from "./GroupCache";
 import {GroupHomeContainer} from "./GroupHomeContainer";
+import {GroupHomeLayout} from "./GroupHomeLayout";
 import {PostCacheList} from "../post/PostCache";
 import {PostID} from "@connect/api-client";
 import {PostNewPopupContext} from "../post/PostNewPopupContext";
@@ -126,14 +126,14 @@ export function GroupHomeRoute({
     }
   } else {
     return (
-      <GroupHomeLayoutContext.Provider value={GroupHomeLayout.Laptop}>
+      <GroupHomeLayout.Context.Provider value={GroupHomeLayout.Laptop}>
         <GroupHome
           route={route}
           groupSlug={groupSlug}
           postID={postID}
           breakpoint={breakpoint}
         />
-      </GroupHomeLayoutContext.Provider>
+      </GroupHomeLayout.Context.Provider>
     );
   }
 }
