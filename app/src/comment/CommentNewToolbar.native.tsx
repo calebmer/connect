@@ -13,8 +13,6 @@ export function CommentNewToolbar() {
   );
 }
 
-CommentNewToolbar.minHeight = CommentNew.minHeight;
-
 // For the iPhone X bottom area.
 const paddingBottom = Platform.OS === "ios" ? 50 : 0;
 

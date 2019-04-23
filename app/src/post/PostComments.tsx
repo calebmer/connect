@@ -1,10 +1,10 @@
 import {StyleSheet, View} from "react-native";
 import {Comment} from "../comment/Comment";
 import {CommentCacheList} from "../comment/CommentCache";
-import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import React from "react";
 import {Space} from "../atoms";
+import {postMaxWidth} from "./postMaxWidth";
 import {useCacheData} from "../cache/Cache";
 import {useCacheListData} from "../cache/CacheList";
 
@@ -35,7 +35,7 @@ function PostCommentsSuspense({postID}: {postID: PostID}) {
 
 const styles = StyleSheet.create({
   container: {
-    maxWidth: PostContent.maxWidth,
+    maxWidth: postMaxWidth,
     paddingBottom: Space.space3,
   },
 });

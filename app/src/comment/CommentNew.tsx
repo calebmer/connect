@@ -14,7 +14,7 @@ export function CommentNew() {
         placeholder="Write a comment…"
         minHeight={CommentNew.minHeight}
         maxHeight={CommentNew.maxHeight}
-        paddingRight={IconPatch.size + Space.space3 * 2}
+        paddingRight={CommentNew.sendButtonWidth}
         onChange={info => setDisableSend(info.isWhitespaceOnly)}
       />
       <View style={styles.send}>
@@ -26,9 +26,11 @@ export function CommentNew() {
 
 CommentNew.minHeight = Font.size2.lineHeight + Space.space3 * 2;
 CommentNew.maxHeight = Font.size2.lineHeight * 5 + Space.space3 * 2;
+CommentNew.sendButtonWidth = IconPatch.size + Space.space3 * 2;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     position: "relative",
     minHeight: CommentNew.minHeight,
     maxHeight: CommentNew.maxHeight,

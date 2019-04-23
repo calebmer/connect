@@ -1,3 +1,3 @@
 import React from "react";
 
-export const CommentNewToolbar: React.ComponentType<{}> & {minHeight: number};
+export const CommentNewToolbar: React.ComponentType<{}>;

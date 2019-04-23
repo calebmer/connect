@@ -1,4 +1,4 @@
-import {BodyText, Font, LabelText, MetaText, Space} from "../atoms";
+import {BodyText, LabelText, MetaText, Space} from "../atoms";
 import {Breakpoint, useBreakpoint} from "../utils/useBreakpoint";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatar} from "../account/AccountAvatar";
@@ -7,6 +7,7 @@ import {PostCache} from "./PostCache";
 import {PostID} from "@connect/api-client";
 import React from "react";
 import {communicateTime} from "../utils/communicateTime";
+import {postMaxWidth} from "./postMaxWidth";
 import {useCacheData} from "../cache/Cache";
 
 export function PostContent({postID}: {postID: PostID}) {
@@ -39,13 +40,9 @@ export function PostContent({postID}: {postID: PostID}) {
   );
 }
 
-const indentContentWidth = Space.space3 + AccountAvatar.size + Space.space3;
-
-PostContent.maxWidth = Font.maxWidth + indentContentWidth;
-
 const styles = StyleSheet.create({
   container: {
-    maxWidth: PostContent.maxWidth,
+    maxWidth: postMaxWidth,
   },
   header: {
     flexDirection: "row",
@@ -63,6 +60,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Space.space3,
   },
   indentContent: {
-    paddingLeft: indentContentWidth,
+    paddingLeft: Space.space3 + AccountAvatar.size + Space.space3,
   },
 });
