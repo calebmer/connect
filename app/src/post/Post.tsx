@@ -7,18 +7,15 @@ import {PostComments} from "./PostComments";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
-import {ScrollView, StyleProp, StyleSheet, View, ViewStyle} from "react-native";
+import {ScrollView} from "react-native";
 import {Trough} from "../molecules/Trough";
 import {useCacheData} from "../cache/Cache";
-import {postMaxWidth} from "./postMaxWidth";
 
 function Post({
-  style,
   route,
   groupSlug,
   postID,
 }: {
-  style?: StyleProp<ViewStyle>;
   route: Route;
   groupSlug: string;
   postID: PostID;
@@ -35,7 +32,7 @@ function Post({
   }
 
   return (
-    <View style={styles.container}>
+    <>
       <NavbarScrollView
         ref={scrollViewRef}
         route={route}
@@ -48,17 +45,10 @@ function Post({
         <PostComments postID={postID} />
       </NavbarScrollView>
       <CommentNewToolbar scrollViewRef={scrollViewRef} />
-    </View>
+    </>
   );
 }
 
 // Don’t re-render `<Post>` unless the props change.
 const PostMemo = React.memo(Post);
 export {PostMemo as Post};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    maxWidth: postMaxWidth,
-  },
-});
