@@ -1,10 +1,13 @@
 import {Font, Space} from "../atoms";
+import React, {useState} from "react";
 import {StyleSheet, View} from "react-native";
 import {Editor} from "../editor/Editor";
 import {IconPatch} from "../molecules/IconPatch";
-import React from "react";
+import {IconPatchButton} from "../molecules/IconPatchButton";
 
 export function CommentNew() {
+  const [disableSend, setDisableSend] = useState(true);
+
   return (
     <View style={styles.container}>
       <Editor
@@ -12,9 +15,10 @@ export function CommentNew() {
         minHeight={CommentNew.minHeight}
         maxHeight={CommentNew.maxHeight}
         paddingRight={IconPatch.size + Space.space3 * 2}
+        onChange={info => setDisableSend(info.isWhitespaceOnly)}
       />
       <View style={styles.send}>
-        <IconPatch icon="send" />
+        <IconPatchButton icon="send" disabled={disableSend} />
       </View>
     </View>
   );
