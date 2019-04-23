@@ -49,15 +49,15 @@ function Editor(
     large,
     placeholder,
     disabled,
-    minHeight,
-    maxHeight,
+    minLines,
+    maxLines,
     paddingRight,
     onChange,
   }: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
-  if (maxHeight != null) {
-    console.warn("TODO: maxHeight is not implemented on web."); // eslint-disable-line no-console
+  if (maxLines != null) {
+    console.warn("TODO: maxLines is not implemented on web."); // eslint-disable-line no-console
   }
   if (paddingRight != null) {
     console.warn("TODO: paddingRight is not implemented on web."); // eslint-disable-line no-console
@@ -133,6 +133,16 @@ function Editor(
     // would not work since we need to replace `\n` characters with `<br>`.
     document.execCommand("insertText", false, pasteData);
   }
+
+  // Get the font size for our editor.
+  const fontSize = large ? Font.size3 : Font.size2;
+
+  // The minimum height of our editor is measured based on the font size
+  // and `minLines`.
+  const minHeight =
+    minLines !== undefined
+      ? fontSize.lineHeight * minLines + Space.space3 * 2
+      : undefined;
 
   // Use the React Native Web styling engine to create a `contentEditable` div.
   return (

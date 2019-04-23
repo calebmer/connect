@@ -24,7 +24,9 @@ import {useCurrentAccount} from "../account/AccountCache";
 PostNewPopupTitleBar.height = Font.size1.fontSize + Space.space2 * 2;
 
 // The minimum height of our editor.
-PostNewPopup.editorMinHeight = Font.size2.lineHeight * 15 + Space.space3 * 2;
+PostNewPopup.editorMinLines = 15;
+PostNewPopup.editorMinHeight =
+  Font.size2.lineHeight * PostNewPopup.editorMinLines + Space.space3 * 2;
 
 // The padding and height that goes into our action bar.
 PostNewPopupActionBar.padding = Space.space2;
@@ -239,7 +241,7 @@ export function PostNewPopup({
         <PostNewHeader currentAccount={currentAccount} />
         <Editor
           ref={editor}
-          minHeight={PostNewPopup.editorMinHeight}
+          minLines={PostNewPopup.editorMinLines}
           placeholder="Start a conversation…"
           disabled={hidden}
           onChange={({isWhitespaceOnly}) => setSendEnabled(!isWhitespaceOnly)}

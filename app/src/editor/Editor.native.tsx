@@ -8,8 +8,8 @@ function Editor(
     large,
     placeholder,
     disabled,
-    minHeight,
-    maxHeight,
+    minLines,
+    maxLines,
     paddingRight,
     onChange,
   }: EditorProps,
@@ -55,20 +55,33 @@ function Editor(
     }
   }
 
+  // Get the font size for our editor.
+  const fontSize = large ? Font.size3 : Font.size2;
+
+  // The minimum height of our editor is measured based on the font size
+  // and `minLines`.
+  const minHeight =
+    minLines !== undefined
+      ? fontSize.lineHeight * minLines + Space.space3 * 2
+      : undefined;
+
+  // The maximum height of our editor is measured based on the font size
+  // and `maxLines`.
+  const maxHeight =
+    maxLines !== undefined
+      ? fontSize.lineHeight * maxLines + Space.space3 * 2
+      : undefined;
+
   return (
     <TextInput
       ref={editor}
-      style={[
-        styles.editor,
-        large && styles.editorLarge,
-        {minHeight, maxHeight, paddingRight},
-      ]}
+      style={[styles.editor, {...fontSize, minHeight, maxHeight, paddingRight}]}
       onChangeText={handleChangeText}
       multiline
       placeholder={placeholder}
       placeholderTextColor={Color.grey3}
       editable={!disabled}
-      scrollEnabled={maxHeight != null}
+      scrollEnabled={maxLines !== undefined}
       // NOTE: We don’t support `autoFocus` in `Editor` because the React Native
       // implementation only triggers focus in `componentDidMount` since it is
       // a class component. Instead we provide a `focus()` method and expect
@@ -91,9 +104,5 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
     color: Color.grey8,
     ...Font.serif,
-    ...Font.size2,
-  },
-  editorLarge: {
-    ...Font.size3,
   },
 });

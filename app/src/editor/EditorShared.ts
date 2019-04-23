@@ -19,17 +19,17 @@ export type EditorProps = {
   disabled?: boolean;
 
   /**
-   * The minimum height of our editor. The editor may always grow so we never
-   * accept anything more than a minimum height.
+   * The minimum number of lines our editor will accept. The editor may grow
+   * past the minimum number of lines if more text is entered.
    */
-  minHeight?: number;
+  minLines?: number;
 
   /**
-   * The maximum height of our editor. By setting this property you also enable
-   * scrolling. When the editor surpasses this height the user will be able to
-   * scroll to see content that is now out of view.
+   * The maximum number of lines our editor will accept. By setting this
+   * property you also enable scrolling. When the editor surpasses this height
+   * the user will be able to scroll to see content that is now out of view.
    */
-  maxHeight?: number;
+  maxLines?: number;
 
   /**
    * Adds some padding to the editor.
