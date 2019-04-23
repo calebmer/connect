@@ -28,6 +28,7 @@ import {Loading} from "../molecules/Loading";
 import {Navbar} from "../frame/Navbar";
 import {Route} from "../router/Route";
 import {Trough} from "../molecules/Trough";
+import {getAdjustedContentInsetTop} from "../utils/getAdjustedContentInset";
 import {useAnimatedValue} from "../utils/useAnimatedValue";
 import {useCacheData} from "../cache/Cache";
 import {useCacheListData} from "../cache/CacheList";
@@ -203,18 +204,18 @@ function Group({
               if (showNavbar) {
                 // On iOS, `adjustedContentInset` factors in the top and bottom
                 // safe area.
-                const adjustedContentInset =
-                  event.nativeEvent.adjustedContentInset ||
-                  event.nativeEvent.contentInset;
+                const eventAdjustedContentInsetTop = getAdjustedContentInsetTop(
+                  event,
+                );
 
                 // Set our adjusted content inset state...
-                setAdjustedContentInsetTop(adjustedContentInset.top);
+                setAdjustedContentInsetTop(eventAdjustedContentInsetTop);
 
                 // We should show the navbar when scrolling anymore would mean
                 // scrolling under the navbar.
                 const shouldShowNavbarBackground =
                   event.nativeEvent.contentOffset.y +
-                    adjustedContentInset.top >=
+                    eventAdjustedContentInsetTop >=
                   GroupBanner.height - Navbar.height;
 
                 // Update our navbar state depending on whether we should or
