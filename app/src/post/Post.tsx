@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React, {useContext, useRef} from "react";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
@@ -7,6 +7,7 @@ import {PostComments} from "./PostComments";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
+import {ScrollView} from "react-native";
 import {Trough} from "../molecules/Trough";
 import {useCacheData} from "../cache/Cache";
 
@@ -19,6 +20,8 @@ function Post({
   groupSlug: string;
   postID: PostID;
 }) {
+  const scrollViewRef = useRef<ScrollView>(null);
+
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar =
     useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
@@ -31,6 +34,7 @@ function Post({
   return (
     <>
       <NavbarScrollView
+        ref={scrollViewRef}
         route={route}
         useTitle={useTitle}
         hideNavbar={hideNavbar}
@@ -40,7 +44,7 @@ function Post({
         <Trough title="Comments" />
         <PostComments postID={postID} />
       </NavbarScrollView>
-      <CommentNewToolbar />
+      <CommentNewToolbar scrollViewRef={scrollViewRef} />
     </>
   );
 }

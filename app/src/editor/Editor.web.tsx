@@ -91,12 +91,15 @@ function Editor(
    * to compute.
    */
   function handleInput() {
+    // Is the editor currently _completely_ empty? If there is whitespace in the
+    // editor, it is not empty.
     const isEmpty = editor.current ? isEditorEmpty(editor.current) : true;
 
+    // Only show the placeholder if the input is completely empty.
     setShowPlaceholder(isEmpty);
 
-    // If we have an `onChange` handler then send an event...
     if (onChange) {
+      // Does the editor only contain whitespace right now?
       const isWhitespaceOnly = editor.current
         ? isEditorWhitespaceOnly(editor.current)
         : true;
