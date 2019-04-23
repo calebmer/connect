@@ -2,7 +2,7 @@ import {History, Location} from "history";
 import {PathBase, PathPattern, PathVariableProps} from "./Path";
 import React, {ReactElement} from "react";
 import {RouteBase, RouteConfigBase} from "./RouteBase";
-import createBrowserHistory from "history/createBrowserHistory";
+import {createBrowserHistory} from "history";
 
 // Utility type for removing keys from an object.
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
