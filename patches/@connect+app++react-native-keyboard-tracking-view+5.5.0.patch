@@ -1,5 +1,5 @@
 diff --git a/node_modules/@connect/app/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m b/node_modules/@connect/app/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
-index 800bd35..7f56057 100644
+index 800bd35..ba9fc7b 100644
 --- a/node_modules/@connect/app/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 +++ b/node_modules/@connect/app/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 @@ -252,11 +252,14 @@ - (void)initializeAccessoryViewsAndHandleInsets
@@ -51,3 +51,19 @@ index 800bd35..7f56057 100644
          if(self.scrollIsInverted)
          {
              insets.top = bottomInset;
+@@ -417,8 +434,13 @@ - (void)_updateScrollViewInsets
+         }
+         else if(self.scrollBehavior == KeyboardTrackingScrollBehaviorFixedOffset && !self.isDraggingScrollView)
+         {
+-            CGFloat insetsDiff = (bottomInset - originalBottomInset) * (self.scrollIsInverted ? -1 : 1);
+-            self.scrollViewToManage.contentOffset = CGPointMake(originalOffset.x, originalOffset.y + insetsDiff);
++            // The first time `_updateScrollViewInsets` runs `originalBottomInset` will not include the
++            // accessory view so without this guard we will incorrectly scroll.
++            BOOL firstTime = _observingInputAccessoryView.keyboardHeight == 0 && _observingInputAccessoryView.keyboardState == KeyboardStateHidden;
++            if (!firstTime) {
++                CGFloat insetsDiff = (bottomInset - originalBottomInset) * (self.scrollIsInverted ? -1 : 1);
++                self.scrollViewToManage.contentOffset = CGPointMake(originalOffset.x, originalOffset.y + insetsDiff);
++            }
+         }
+
+         insets = self.scrollViewToManage.contentInset;
