@@ -1,5 +1,62 @@
+diff --git a/node_modules/@connect/app/node_modules/react-native/React/Base/RCTModuleData.mm b/node_modules/@connect/app/node_modules/react-native/React/Base/RCTModuleData.mm
+index ba2dbd5..aee870a 100644
+--- a/node_modules/@connect/app/node_modules/react-native/React/Base/RCTModuleData.mm
++++ b/node_modules/@connect/app/node_modules/react-native/React/Base/RCTModuleData.mm
+@@ -330,9 +330,13 @@ - (void)gatherConstants
+ 
+ - (dispatch_queue_t)methodQueue
+ {
+-  (void)[self instance];
+-  RCTAssert(_methodQueue != nullptr, @"Module %@ has no methodQueue (instance: %@, bridge.valid: %d)",
+-            self, _instance, _bridge.valid);
++  // Changes from: https://github.com/facebook/react-native/commit/dc893756b82051d48d6a776aeef1186c31cf310d
++
++  if (_bridge.valid) {
++    id instance = self.instance;
++    RCTAssert(_methodQueue != nullptr, @"Module %@ has no methodQueue (instance: %@)",
++              self, instance);
++  }
+   return _methodQueue;
+ }
+ 
+diff --git a/node_modules/@connect/app/node_modules/react-native/React/CxxModule/RCTNativeModule.mm b/node_modules/@connect/app/node_modules/react-native/React/CxxModule/RCTNativeModule.mm
+index 5d4a2b8..99bae0e 100644
+--- a/node_modules/@connect/app/node_modules/react-native/React/CxxModule/RCTNativeModule.mm
++++ b/node_modules/@connect/app/node_modules/react-native/React/CxxModule/RCTNativeModule.mm
+@@ -71,17 +71,21 @@
+     invokeInner(weakBridge, weakModuleData, methodId, std::move(params));
+   };
+ 
+-  if (m_bridge.valid) {
+-    dispatch_queue_t queue = m_moduleData.methodQueue;
+-    if (queue == RCTJSThread) {
+-      block();
+-    } else if (queue) {
+-      dispatch_async(queue, block);
+-    }
+-  } else {
+-    RCTLogWarn(@"Attempted to invoke `%u` (method ID) on `%@` (NativeModule name) with an invalid bridge.",
+-               methodId, m_moduleData.name);
++  // Changes from: https://github.com/facebook/react-native/commit/dc893756b82051d48d6a776aeef1186c31cf310d
++
++  dispatch_queue_t queue = m_moduleData.methodQueue;
++  if (queue == RCTJSThread) {
++    block();
++  } else if (queue) {
++    dispatch_async(queue, block);
+   }
++  
++#ifdef RCT_DEV
++  if (!queue) {
++    RCTLog(@"Attempted to invoke `%u` (method ID) on `%@` (NativeModule name) without a method queue.",
++           methodId, m_moduleData.name);
++  }
++#endif
+ }
+ 
+ MethodCallResult RCTNativeModule::callSerializableNativeHook(unsigned int reactMethodId, folly::dynamic &&params) {
 diff --git a/node_modules/@connect/app/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m b/node_modules/@connect/app/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
-index 58bff0f..c996a09 100644
+index 58bff0f..cee8b70 100644
 --- a/node_modules/@connect/app/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
 +++ b/node_modules/@connect/app/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
 @@ -29,6 +29,7 @@ - (instancetype)initWithEventName:(NSString *)eventName
