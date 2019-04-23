@@ -1,0 +1,75 @@
+diff --git a/node_modules/@connect/app/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m b/node_modules/@connect/app/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
+index 58bff0f..c996a09 100644
+--- a/node_modules/@connect/app/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
++++ b/node_modules/@connect/app/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
+@@ -29,6 +29,7 @@ - (instancetype)initWithEventName:(NSString *)eventName
+                          reactTag:(NSNumber *)reactTag
+           scrollViewContentOffset:(CGPoint)scrollViewContentOffset
+            scrollViewContentInset:(UIEdgeInsets)scrollViewContentInset
++   scrollViewAdjustedContentInset:(UIEdgeInsets)scrollViewAdjustedContentInset
+             scrollViewContentSize:(CGSize)scrollViewContentSize
+                   scrollViewFrame:(CGRect)scrollViewFrame
+               scrollViewZoomScale:(CGFloat)scrollViewZoomScale
+@@ -41,6 +42,7 @@ @implementation RCTScrollEvent
+ {
+   CGPoint _scrollViewContentOffset;
+   UIEdgeInsets _scrollViewContentInset;
++  UIEdgeInsets _scrollViewAdjustedContentInset;
+   CGSize _scrollViewContentSize;
+   CGRect _scrollViewFrame;
+   CGFloat _scrollViewZoomScale;
+@@ -55,6 +57,7 @@ - (instancetype)initWithEventName:(NSString *)eventName
+                          reactTag:(NSNumber *)reactTag
+           scrollViewContentOffset:(CGPoint)scrollViewContentOffset
+            scrollViewContentInset:(UIEdgeInsets)scrollViewContentInset
++   scrollViewAdjustedContentInset:(UIEdgeInsets)scrollViewAdjustedContentInset
+             scrollViewContentSize:(CGSize)scrollViewContentSize
+                   scrollViewFrame:(CGRect)scrollViewFrame
+               scrollViewZoomScale:(CGFloat)scrollViewZoomScale
+@@ -68,6 +71,7 @@ - (instancetype)initWithEventName:(NSString *)eventName
+     _viewTag = reactTag;
+     _scrollViewContentOffset = scrollViewContentOffset;
+     _scrollViewContentInset = scrollViewContentInset;
++    _scrollViewAdjustedContentInset = scrollViewAdjustedContentInset;
+     _scrollViewContentSize = scrollViewContentSize;
+     _scrollViewFrame = scrollViewFrame;
+     _scrollViewZoomScale = scrollViewZoomScale;
+@@ -97,6 +101,12 @@ - (NSDictionary *)body
+       @"bottom": @(_scrollViewContentInset.bottom),
+       @"right": @(_scrollViewContentInset.right)
+     },
++    @"adjustedContentInset": @{
++      @"top": @(_scrollViewAdjustedContentInset.top),
++      @"left": @(_scrollViewAdjustedContentInset.left),
++      @"bottom": @(_scrollViewAdjustedContentInset.bottom),
++      @"right": @(_scrollViewAdjustedContentInset.right)
++    },
+     @"contentSize": @{
+       @"width": @(_scrollViewContentSize.width),
+       @"height": @(_scrollViewContentSize.height)
+@@ -1135,10 +1145,17 @@ - (void)sendScrollEventWithName:(NSString *)eventName
+     _coalescingKey++;
+     _lastEmittedEventName = [eventName copy];
+   }
++  UIEdgeInsets adjustedContentInset;
++  if (@available(iOS 11.0, *)) {
++    adjustedContentInset = scrollView.adjustedContentInset;
++  } else {
++    adjustedContentInset = scrollView.contentInset;
++  }
+   RCTScrollEvent *scrollEvent = [[RCTScrollEvent alloc] initWithEventName:eventName
+                                                                  reactTag:self.reactTag
+                                                   scrollViewContentOffset:scrollView.contentOffset
+                                                    scrollViewContentInset:scrollView.contentInset
++                                           scrollViewAdjustedContentInset:adjustedContentInset
+                                                     scrollViewContentSize:scrollView.contentSize
+                                                           scrollViewFrame:scrollView.frame
+                                                       scrollViewZoomScale:scrollView.zoomScale
+@@ -1159,6 +1176,7 @@ - (void)sendFakeScrollEvent:(NSNumber *)reactTag
+                                                                      reactTag:reactTag
+                                                       scrollViewContentOffset:CGPointZero
+                                                        scrollViewContentInset:UIEdgeInsetsZero
++                                               scrollViewAdjustedContentInset:UIEdgeInsetsZero
+                                                         scrollViewContentSize:CGSizeZero
+                                                               scrollViewFrame:CGRectZero
+                                                           scrollViewZoomScale:0

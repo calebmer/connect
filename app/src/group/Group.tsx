@@ -67,23 +67,23 @@ function Group({
   const showNavbar =
     useContext(GroupHomeLayoutContext) === GroupHomeLayout.Mobile;
 
-  // On iOS you can scroll up which results in a negative value for `scrollY`.
-  // When that happens we want to scale up our group banner so that it
-  // fills in the extra space. That’s what the `bannerScale` value is for. It
-  // translates a negative scroll offset into a scale transformation.
-  //
-  // There’s some weirdness on iOS where where `scrollY` starts at some negative
-  // value like -20 (or -44 on an iPhone X) instead of 0, so we record the first
-  // value of `scrollY` and use it as an offset.
+  // On iOS the top of the content is not zero! It is
+  // `-adjustedContentInset.top`. `adjustedContentInset` is `contentInset` plus
+  // some safe area as determined by `contentInsetAdjustmentBehavior`. So say
+  // we have an iPhone X which has a notch. The notch is given a 44pt safe area.
+  // That means `adjustedContentInset.top` is 44 so the top of our scroll view
+  // is -44.
   const scrollY = useAnimatedValue(0);
-  const [offsetScrollY, setOffsetScrollY] = useState<null | number>(
+  const [adjustedContentInsetTop, setAdjustedContentInsetTop] = useState(
     Platform.OS === "ios" ? null : 0,
   );
   const bannerScale =
-    offsetScrollY === null
+    adjustedContentInsetTop === null
       ? 1
       : scrollY.interpolate({
-          inputRange: [-GroupBanner.height, 0].map(y => y + offsetScrollY),
+          inputRange: [-GroupBanner.height, 0].map(
+            y => y - adjustedContentInsetTop,
+          ),
           outputRange: [2.8, 1], // NOTE: I would expect this number to be 2 and not 2.8, but experimental evidence proves otherwise.
           extrapolateLeft: "extend",
           extrapolateRight: "clamp",
@@ -173,7 +173,10 @@ function Group({
                 scrollView.current
                   .getNode()
                   .getScrollResponder()
-                  .scrollTo({y: offsetScrollY || 0, animated: false});
+                  .scrollTo({
+                    y: -(adjustedContentInsetTop || 0),
+                    animated: false,
+                  });
               }
             }}
           />
@@ -198,15 +201,20 @@ function Group({
             useNativeDriver: Platform.OS !== "web",
             listener: (event: any) => {
               if (showNavbar) {
-                // If we don’t yet have an `offsetScrollY` value then set one!
-                if (offsetScrollY === null) {
-                  setOffsetScrollY(event.nativeEvent.contentOffset.y);
-                }
+                // On iOS, `adjustedContentInset` factors in the top and bottom
+                // safe area.
+                const adjustedContentInset =
+                  event.nativeEvent.adjustedContentInset ||
+                  event.nativeEvent.contentInset;
+
+                // Set our adjusted content inset state...
+                setAdjustedContentInsetTop(adjustedContentInset.top);
 
                 // We should show the navbar when scrolling anymore would mean
                 // scrolling under the navbar.
                 const shouldShowNavbarBackground =
-                  event.nativeEvent.contentOffset.y - (offsetScrollY || 0) >=
+                  event.nativeEvent.contentOffset.y +
+                    adjustedContentInset.top >=
                   GroupBanner.height - Navbar.height;
 
                 // Update our navbar state depending on whether we should or

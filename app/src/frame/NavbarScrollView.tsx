@@ -1,6 +1,7 @@
 import {Color, IconName} from "../atoms";
 import {
   Keyboard,
+  NativeScrollRectangle,
   Platform,
   ScrollView,
   ScrollViewProps,
@@ -85,9 +86,14 @@ export function NavbarScrollView({
         }}
         scrollEventThrottle={16}
         onScroll={event => {
+          // On iOS, `adjustedContentInset` factors in the top and bottom
+          // safe area.
+          const adjustedContentInset: NativeScrollRectangle =
+            (event as any).nativeEvent.adjustedContentInset ||
+            event.nativeEvent.contentInset;
+
           setHideBackground(
-            event.nativeEvent.contentOffset.y <=
-              -event.nativeEvent.contentInset.top + 4,
+            event.nativeEvent.contentOffset.y + adjustedContentInset.top <= 0,
           );
         }}
       >
