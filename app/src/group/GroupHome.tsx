@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
   },
   post: {
     flex: 4,
+    overflow: "hidden",
     ...Shadow.elevation3,
   },
 });
