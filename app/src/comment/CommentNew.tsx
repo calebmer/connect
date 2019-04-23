@@ -15,9 +15,9 @@ export function CommentNew() {
   return (
     <View style={styles.container}>
       <Editor
-        placeholder="Write a comment…"
+        placeholder="Send a message…"
         minLines={1}
-        maxLines={isLaptop ? 15 : 5}
+        maxLines={isLaptop ? 22 : 5}
         paddingRight={IconPatch.size + Space.space3 * 2}
         onChange={info => setDisableSend(info.isWhitespaceOnly)}
       />

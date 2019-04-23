@@ -56,13 +56,6 @@ function Editor(
   }: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
-  if (maxLines != null) {
-    console.warn("TODO: maxLines is not implemented on web."); // eslint-disable-line no-console
-  }
-  if (paddingRight != null) {
-    console.warn("TODO: paddingRight is not implemented on web."); // eslint-disable-line no-console
-  }
-
   const editor = useRef<HTMLDivElement>(null);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
 
@@ -144,6 +137,17 @@ function Editor(
       ? fontSize.lineHeight * minLines + Space.space3 * 2
       : undefined;
 
+  // The maximum height of our editor is measured based on the font size
+  // and `maxLines`.
+  const maxHeight =
+    maxLines !== undefined
+      ? fontSize.lineHeight * maxLines + Space.space3 * 2
+      : undefined;
+
+  // If we have a max height then when we have more content then the editor
+  // can fit we should scroll.
+  const overflowX = maxHeight !== undefined ? "scroll" : undefined;
+
   // Use the React Native Web styling engine to create a `contentEditable` div.
   return (
     <View style={styles.container}>
@@ -158,7 +162,11 @@ function Editor(
       )}
       {createElement("div", {
         ref: editor,
-        style: [styles.editor, large && styles.editorLarge, {minHeight}],
+        style: [
+          styles.editor,
+          large && styles.editorLarge,
+          {minHeight, maxHeight, overflowX, paddingRight},
+        ],
         contentEditable: !disabled,
         onInput: handleInput,
         onPaste: handlePaste,
