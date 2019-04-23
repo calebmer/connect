@@ -1,32 +1,15 @@
-import {Color, Shadow, Space} from "../atoms";
+import {Color, Shadow} from "../atoms";
 import {StyleSheet, View} from "react-native";
 import {CommentNew} from "./CommentNew";
-import React, {useContext} from "react";
-import {GroupHomeLayout} from "../group/GroupHomeLayout";
-import {AccountAvatar} from "../account/AccountAvatar";
-import {useCurrentAccount} from "../account/AccountCache";
+import React from "react";
 import {postMaxWidth} from "../post/postMaxWidth";
 
 export function CommentNewToolbar() {
-  const isLaptop =
-    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
-
   return (
     <View style={styles.background}>
       <View style={styles.toolbar}>
-        {isLaptop && <CommentNewToolbarAccountAvatar />}
         <CommentNew />
       </View>
-    </View>
-  );
-}
-
-function CommentNewToolbarAccountAvatar() {
-  const currentAccount = useCurrentAccount();
-
-  return (
-    <View style={styles.avatar}>
-      <AccountAvatar account={currentAccount} />
     </View>
   );
 }
@@ -38,11 +21,6 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 2},
   },
   toolbar: {
-    flexDirection: "row",
     maxWidth: postMaxWidth + CommentNew.sendButtonWidth,
-  },
-  avatar: {
-    paddingVertical: (CommentNew.minHeight - AccountAvatar.size) / 2,
-    paddingLeft: Space.space3,
   },
 });

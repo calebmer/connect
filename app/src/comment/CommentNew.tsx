@@ -32,8 +32,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: "relative",
-    minHeight: CommentNew.minHeight,
-    maxHeight: CommentNew.maxHeight,
   },
   send: {
     // NOTE: We absolute position the send button so that the scroll indicator
