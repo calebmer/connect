@@ -5,13 +5,12 @@ import {
 } from "@connect/api-client";
 import {BodyText, Font, Space} from "../atoms";
 import {StyleSheet, View} from "react-native";
-import {AccountAvatar} from "../account/AccountAvatar";
+import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 import {AccountByline} from "../account/AccountByline";
 import {AccountCache} from "../account/AccountCache";
 import {CommentCache} from "./CommentCache";
 import React from "react";
 import {useCacheData} from "../cache/Cache";
-import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 
 // NOTE: Having a React component and a type with the same name is ok in
 // TypeScript, but eslint complains when it’s an import. So import the type with
