@@ -140,11 +140,9 @@ export function GroupHomeRoute({
 
 const styles = StyleSheet.create({
   group: {
-    flex: 3,
     maxWidth: Space.space12,
   },
   post: {
-    flex: 4,
     overflow: "hidden",
     ...Shadow.elevation3,
   },
