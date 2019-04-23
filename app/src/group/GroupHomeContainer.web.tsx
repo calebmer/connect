@@ -1,5 +1,6 @@
 import {StyleSheet, View} from "react-native";
 import React from "react";
+import {Color} from "../atoms";
 
 export function GroupHomeContainer({children}: {children: React.Node}) {
   /**
@@ -42,5 +43,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     overflow: "hidden",
+    backgroundColor: Color.grey2,
   },
 });
