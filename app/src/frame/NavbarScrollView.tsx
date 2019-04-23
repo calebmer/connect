@@ -41,16 +41,19 @@ interface NavbarScrollViewProps extends ScrollViewProps {
   children: React.Node;
 }
 
-export function NavbarScrollView({
-  route,
-  useTitle,
-  hideNavbar,
-  rightIcon,
-  rightIconDisabled,
-  onRightIconPress,
-  children,
-  ...props
-}: NavbarScrollViewProps) {
+function NavbarScrollView(
+  {
+    route,
+    useTitle,
+    hideNavbar,
+    rightIcon,
+    rightIconDisabled,
+    onRightIconPress,
+    children,
+    ...props
+  }: NavbarScrollViewProps,
+  ref: React.Ref<ScrollView>,
+) {
   const [hideBackground, setHideBackground] = useState(true);
   const paddingTop = !hideNavbar ? Navbar.height : 0;
 
@@ -71,6 +74,7 @@ export function NavbarScrollView({
       )}
       <ScrollView
         {...props}
+        ref={ref}
         style={styles.background}
         contentContainerStyle={[
           props.contentContainerStyle,
@@ -91,6 +95,9 @@ export function NavbarScrollView({
               getAdjustedContentInsetTop(event) <=
               0,
           );
+          if (props.onScroll) {
+            props.onScroll(event);
+          }
         }}
       >
         {children}
@@ -98,6 +105,9 @@ export function NavbarScrollView({
     </>
   );
 }
+
+const _NavbarScrollView = React.forwardRef(NavbarScrollView);
+export {_NavbarScrollView as NavbarScrollView};
 
 function NavbarContainer({
   route,
