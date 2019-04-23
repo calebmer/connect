@@ -11,6 +11,7 @@ import {AccountCache} from "../account/AccountCache";
 import {CommentCache} from "./CommentCache";
 import React from "react";
 import {useCacheData} from "../cache/Cache";
+import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 
 // NOTE: Having a React component and a type with the same name is ok in
 // TypeScript, but eslint complains when it’s an import. So import the type with
@@ -73,8 +74,8 @@ function CommentWithByline({
 }) {
   return (
     <View style={styles.comment}>
-      <AccountAvatar account={author} />
-      <View style={styles.body}>
+      <AccountAvatarSmall style={styles.commentAvatar} account={author} />
+      <View style={styles.commentWithByline}>
         <AccountByline account={author} time={comment.postedAt} />
         <BodyText selectable>{comment.content}</BodyText>
       </View>
@@ -96,13 +97,17 @@ const styles = StyleSheet.create({
     paddingTop: Space.space3,
     paddingHorizontal: Space.space3,
   },
-  body: {
+  commentAvatar: {
+    position: "relative",
+    top: Font.size2.lineHeight - AccountAvatarSmall.size / 2 - 4,
+  },
+  commentWithByline: {
     flex: 1,
-    paddingLeft: Space.space3,
+    paddingLeft: Space.space2,
   },
   commentWithoutByline: {
     paddingTop: Font.size2.lineHeight / 3,
-    paddingLeft: Space.space3 + AccountAvatar.size + Space.space3,
+    paddingLeft: Space.space3 + AccountAvatarSmall.size + Space.space2,
     paddingRight: Space.space3,
   },
 });

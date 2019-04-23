@@ -1,5 +1,4 @@
 import {BodyText, LabelText, MetaText, Space} from "../atoms";
-import {Breakpoint, useBreakpoint} from "../utils/useBreakpoint";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatar} from "../account/AccountAvatar";
 import {AccountCache} from "../account/AccountCache";
@@ -14,9 +13,6 @@ export function PostContent({postID}: {postID: PostID}) {
   const {post} = useCacheData(PostCache, postID);
   const author = useCacheData(AccountCache, post.authorID);
 
-  const breakpoint = useBreakpoint();
-  const indentContent = breakpoint >= Breakpoint.LaptopLarge;
-
   // NOTE: `new Date()` is a side-effect in render! Ideally we would use
   // `useEffect()` to watch for when the time changes, but this is good enough
   // for now.
@@ -24,16 +20,14 @@ export function PostContent({postID}: {postID: PostID}) {
 
   return (
     <View style={styles.container}>
-      <View
-        style={[styles.header, indentContent && styles.headerIndentContent]}
-      >
+      <View style={styles.header}>
         <AccountAvatar account={author} />
         <View style={styles.byline}>
           <LabelText>{author.name}</LabelText>
           <MetaText>{publishedAt}</MetaText>
         </View>
       </View>
-      <View style={[styles.content, indentContent && styles.indentContent]}>
+      <View style={styles.content}>
         <BodyText selectable>{post.content}</BodyText>
       </View>
     </View>
@@ -49,17 +43,11 @@ const styles = StyleSheet.create({
     padding: Space.space3,
     paddingBottom: Space.space2,
   },
-  headerIndentContent: {
-    paddingBottom: Space.space0,
-  },
   byline: {
     paddingLeft: Space.space3,
   },
   content: {
     paddingBottom: Space.space3,
     paddingHorizontal: Space.space3,
-  },
-  indentContent: {
-    paddingLeft: Space.space3 + AccountAvatar.size + Space.space3,
   },
 });
