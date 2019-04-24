@@ -264,11 +264,7 @@ function queryStringSerialize<Input extends JSONObjectValue>(
 function queryStringValueSerialize<Value extends JSONValue>(
   value: Value,
 ): string {
-  if (
-    typeof value === "string" &&
-    /^[a-zA-Z]/.test(value) &&
-    !JSON_KEYWORDS.has(value)
-  ) {
+  if (typeof value === "string" && !isSyntaxJSON(value)) {
     return encodeURIComponent(value);
   } else {
     return encodeURIComponent(JSON.stringify(value));
@@ -276,14 +272,24 @@ function queryStringValueSerialize<Value extends JSONValue>(
 }
 
 /**
- * A set containing [JSON keywords][1]. We use this to determine which strings
- * we should escape in `queryStringSerialize()`. We export this set so that our
- * server will also be able to determine keywords vs strings.
+ * Basic check to see if the value is [JSON][1]. May return true for some values
+ * which are malformed JSON.
+ *
+ * In our query string format any string that is not JSON syntax is sent as a
+ * raw string. We use this function to determine if a string does or does not
+ * contain JSON syntax.
  *
  * [1]: https://json.org
  */
-export const JSON_KEYWORDS: ReadonlySet<string> = new Set([
-  "true",
-  "false",
-  "null",
-]);
+export function isSyntaxJSON(value: string): boolean {
+  return (
+    value === "true" ||
+    value === "false" ||
+    value === "null" ||
+    value[0] === "{" ||
+    value[0] === "[" ||
+    value[0] === '"' ||
+    // adapted from https://stackoverflow.com/a/13340826/1568890
+    /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$/.test(value)
+  );
+}

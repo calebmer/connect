@@ -5,7 +5,6 @@ import {
   APIResult,
   APISchema,
   JSONObjectValue,
-  JSON_KEYWORDS,
   SchemaBase,
   SchemaInput,
   SchemaInputArray,
@@ -14,6 +13,7 @@ import {
   SchemaMethod,
   SchemaMethodUnauthorized,
   SchemaNamespace,
+  isSyntaxJSON,
 } from "@connect/api-client";
 import {AccessTokenData, AccessTokenGenerator} from "./AccessToken";
 import {Context, ContextUnauthorized} from "./Context";
@@ -306,10 +306,10 @@ function getRequestQueryInput<Input extends JSONObjectValue>(
  * JSON keywords.
  */
 function queryStringValueDeserialize(value: string): any {
-  if (/^[a-zA-Z]/.test(value) && !JSON_KEYWORDS.has(value)) {
-    return value;
-  } else {
+  if (isSyntaxJSON(value)) {
     return JSON.parse(value);
+  } else {
+    return value;
   }
 }
 
