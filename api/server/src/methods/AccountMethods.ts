@@ -63,12 +63,12 @@ export async function signUp(
   // new account.
   const {
     rows: [row],
-  } = await ctx.query(
-    sql`INSERT INTO account (name, email, password_hash) VALUES (${sql.join(
-      [input.name, input.email, passwordHash].map(sql.value),
-      sql`, `,
-    )}) ON CONFLICT (email) DO NOTHING RETURNING id`,
-  );
+  } = await ctx.query(sql`
+    INSERT INTO account (name, email, password_hash)
+         VALUES (${input.name}, ${input.email}, ${passwordHash})
+    ON CONFLICT (email) DO NOTHING
+      RETURNING id
+  `);
 
   // Extract the account ID from the row.
   const newAccountID: AccountID | undefined = row ? row.id : undefined;
@@ -191,9 +191,12 @@ export async function refreshAccessToken(
   // associated account was active.
   const {
     rows: [row],
-  } = await ctx.query(
-    sql`UPDATE refresh_token SET last_used_at = now() WHERE token = ${refreshToken} RETURNING account_id`,
-  );
+  } = await ctx.query(sql`
+       UPDATE refresh_token
+          SET last_used_at = now()
+        WHERE token = ${refreshToken}
+    RETURNING account_id
+  `);
 
   // Extract the account ID from the query.
   const accountID: AccountID | undefined = row ? row.account_id : undefined;
@@ -230,9 +233,10 @@ async function generateTokens(
   const refreshToken = uuidV4() as RefreshToken;
 
   // Insert our refresh token into the database.
-  await ctx.query(
-    sql`INSERT INTO refresh_token (token, account_id) VALUES (${refreshToken}, ${accountID})`,
-  );
+  await ctx.query(sql`
+    INSERT INTO refresh_token (token, account_id)
+         VALUES (${refreshToken}, ${accountID})
+  `);
 
   // Create a new access token that lasts for one hour. When the access token
   // expires an API client may use the refresh token to get a new access token.
@@ -258,11 +262,11 @@ export async function getCurrentProfile(
   // Select the profile of our current account.
   const {
     rows: [row],
-  } = await ctx.query(
-    sql`SELECT name, avatar_url FROM account_profile WHERE id = ${
-      ctx.accountID
-    }`,
-  );
+  } = await ctx.query(sql`
+    SELECT name, avatar_url
+      FROM account_profile
+     WHERE id = ${ctx.accountID}
+  `);
 
   // If the account does not exist then throw an error! We expect our
   // authorized account to exist.

@@ -13,9 +13,11 @@ export async function getGroupBySlug(
 ): Promise<{readonly group: Group | null}> {
   const {
     rows: [row],
-  } = await ctx.query(
-    sql`SELECT id, name FROM "group" WHERE slug = ${input.slug}`,
-  );
+  } = await ctx.query(sql`
+    SELECT id, name
+      FROM "group"
+     WHERE slug = ${input.slug}
+  `);
 
   if (row === undefined) {
     return {group: null};

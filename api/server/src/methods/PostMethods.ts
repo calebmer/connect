@@ -23,9 +23,11 @@ export async function getPost(
   const postID = input.id;
   const {
     rows: [row],
-  } = await ctx.query(
-    sql`SELECT group_id, author_id, published_at, content FROM post WHERE id = ${postID}`,
-  );
+  } = await ctx.query(sql`
+    SELECT group_id, author_id, published_at, content
+      FROM post
+     WHERE id = ${postID}
+  `);
   if (row === undefined) {
     return {post: null};
   } else {
@@ -99,9 +101,11 @@ export async function publishPost(
 
   const {
     rows: [row],
-  } = await ctx.query(
-    sql`INSERT INTO post (id, group_id, author_id, content) VALUES (${id}, ${groupID}, ${accountID}, ${content}) RETURNING published_at`,
-  );
+  } = await ctx.query(sql`
+    INSERT INTO post (id, group_id, author_id, content)
+         VALUES (${id}, ${groupID}, ${accountID}, ${content})
+      RETURNING published_at
+  `);
 
   return {
     publishedAt: row.published_at,

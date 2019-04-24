@@ -12,9 +12,11 @@ export async function getComment(
   const commentID = input.id;
   const {
     rows: [row],
-  } = await ctx.query(
-    sql`SELECT post_id, author_id, published_at, content FROM comment WHERE id = ${commentID}`,
-  );
+  } = await ctx.query(sql`
+    SELECT post_id, author_id, published_at, content
+      FROM comment
+     WHERE id = ${commentID}
+  `);
   if (row === undefined) {
     return {comment: null};
   } else {
