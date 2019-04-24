@@ -2,7 +2,6 @@ import {Breakpoint, useBreakpoint} from "../utils/useBreakpoint";
 import {Group, GroupRoute as GroupRouteComponent} from "./Group";
 import {Post, Post as PostRouteComponent} from "../post/Post";
 import React, {useCallback, useEffect} from "react";
-import {Shadow, Space} from "../atoms";
 import {StyleSheet, View} from "react-native";
 import {CurrentAccountCache} from "../account/AccountCache";
 import {GroupCache} from "./GroupCache";
@@ -13,6 +12,7 @@ import {PostID} from "@connect/api-client";
 import {PostNewPopupContext} from "../post/PostNewPopupContext";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
+import {Space} from "../atoms";
 import {useCacheData} from "../cache/Cache";
 import {useCacheListData} from "../cache/CacheList";
 import {useMutableContainer} from "../cache/Mutable";
@@ -41,16 +41,14 @@ function GroupHome({
         <View style={styles.group}>
           <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
         </View>
-        <View style={styles.post}>
-          {postID != null && (
-            <Post
-              key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
-              route={route}
-              groupSlug={groupSlug}
-              postID={postID}
-            />
-          )}
-        </View>
+        {postID != null && (
+          <Post
+            key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
+            route={route}
+            groupSlug={groupSlug}
+            postID={postID}
+          />
+        )}
       </PostNewPopupContext>
     </GroupHomeContainer>
   );
@@ -141,9 +139,5 @@ export function GroupHomeRoute({
 const styles = StyleSheet.create({
   group: {
     maxWidth: Space.space12,
-  },
-  post: {
-    overflow: "hidden",
-    ...Shadow.elevation3,
   },
 });

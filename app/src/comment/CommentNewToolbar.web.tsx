@@ -2,7 +2,6 @@ import {Color, Shadow} from "../atoms";
 import {LayoutChangeEvent, ScrollView, StyleSheet, View} from "react-native";
 import React, {useRef} from "react";
 import {CommentNew} from "./CommentNew";
-import {postMaxWidth} from "../post/postMaxWidth";
 
 export function CommentNewToolbar({
   scrollViewRef,
@@ -64,21 +63,16 @@ export function CommentNewToolbar({
   }
 
   return (
-    <View style={styles.background} onLayout={handleLayout}>
-      <View style={styles.toolbar}>
-        <CommentNew />
-      </View>
+    <View style={styles.toolbar} onLayout={handleLayout}>
+      <CommentNew />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
+  toolbar: {
     backgroundColor: Color.white,
     ...Shadow.elevation2,
     shadowOffset: {width: 0, height: 2},
-  },
-  toolbar: {
-    maxWidth: postMaxWidth,
   },
 });

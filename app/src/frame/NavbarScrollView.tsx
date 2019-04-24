@@ -90,11 +90,12 @@ function NavbarScrollView(
         }}
         scrollEventThrottle={16}
         onScroll={event => {
-          setHideBackground(
+          // Measure the content offset
+          const contentOffsetY =
             event.nativeEvent.contentOffset.y +
-              getAdjustedContentInsetTop(event) <=
-              0,
-          );
+            getAdjustedContentInsetTop(event);
+          setHideBackground(contentOffsetY <= 10);
+
           if (props.onScroll) {
             props.onScroll(event);
           }

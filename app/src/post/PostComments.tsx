@@ -4,7 +4,6 @@ import {CommentCacheList} from "../comment/CommentCache";
 import {PostID} from "@connect/api-client";
 import React from "react";
 import {Space} from "../atoms";
-import {postMaxWidth} from "./postMaxWidth";
 import {useCacheData} from "../cache/Cache";
 import {useCacheListData} from "../cache/CacheList";
 
@@ -35,7 +34,6 @@ function PostCommentsSuspense({postID}: {postID: PostID}) {
 
 const styles = StyleSheet.create({
   container: {
-    maxWidth: postMaxWidth,
     paddingBottom: Space.space3,
   },
 });

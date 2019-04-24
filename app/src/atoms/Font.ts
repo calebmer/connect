@@ -78,5 +78,8 @@ export const size6 = {
 
 /**
  * The suggested maximum width for text using `Font.size2`.
+ *
+ * The recommendation is usually to use 20–35em for the maximum width of a line
+ * of text.
  */
 export const maxWidth = size2.fontSize * 35;

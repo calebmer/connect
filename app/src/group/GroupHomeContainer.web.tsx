@@ -1,6 +1,7 @@
 import {StyleSheet, View} from "react-native";
-import React from "react";
 import {Color} from "../atoms";
+import React from "react";
+import backgroundURL from "../assets/images/group-home-background.svg";
 
 export function GroupHomeContainer({children}: {children: React.Node}) {
   /**
@@ -44,5 +45,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     overflow: "hidden",
     backgroundColor: Color.grey2,
+    backgroundImage: `url(${backgroundURL})`,
   },
 });

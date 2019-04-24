@@ -1,4 +1,7 @@
+import {Color, Font, Shadow, Space} from "../atoms";
 import React, {useContext, useRef} from "react";
+import {ScrollView, StyleSheet, View} from "react-native";
+import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
@@ -7,18 +10,14 @@ import {PostComments} from "./PostComments";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
-import {ScrollView, StyleProp, StyleSheet, View, ViewStyle} from "react-native";
 import {Trough} from "../molecules/Trough";
 import {useCacheData} from "../cache/Cache";
-import {postMaxWidth} from "./postMaxWidth";
 
 function Post({
-  style,
   route,
   groupSlug,
   postID,
 }: {
-  style?: StyleProp<ViewStyle>;
   route: Route;
   groupSlug: string;
   postID: PostID;
@@ -59,6 +58,17 @@ export {PostMemo as Post};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    maxWidth: postMaxWidth,
+    overflow: "hidden",
+    backgroundColor: Color.white,
+    ...Shadow.elevation3,
+
+    // The maximum width is designed to give a comment `Font.maxWidth` which
+    // means the post text will end up being a bit wider.
+    maxWidth:
+      Space.space3 +
+      AccountAvatarSmall.size +
+      Space.space3 +
+      Font.maxWidth +
+      Space.space3,
   },
 });
