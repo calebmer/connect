@@ -28,7 +28,7 @@ export function Comment({
     CommentCache.preload(lastCommentID);
   }
 
-  const comment = useCacheData(CommentCache, commentID);
+  const {comment} = useCacheData(CommentCache, commentID);
   const author = useCacheData(AccountCache, comment.authorID);
 
   if (lastCommentID == null) {
@@ -53,7 +53,7 @@ function CommentAfterFirst({
   author: AccountProfile;
   lastCommentID: CommentID;
 }) {
-  const lastComment = useCacheData(CommentCache, lastCommentID);
+  const {comment: lastComment} = useCacheData(CommentCache, lastCommentID);
 
   // If this comment has the same author as our last comment then don’t add a
   // byline to our comment.
