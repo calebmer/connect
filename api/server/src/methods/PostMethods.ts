@@ -95,14 +95,14 @@ export async function publishPost(
     throw new APIError(APIErrorCode.BAD_INPUT);
   }
 
-  const {accountID} = ctx;
-  const {id, groupID, content} = input;
-
   const {
     rows: [row],
   } = await ctx.query(sql`
     INSERT INTO post (id, group_id, author_id, content)
-         VALUES (${id}, ${groupID}, ${accountID}, ${content})
+         VALUES (${input.id},
+                 ${input.groupID},
+                 ${ctx.accountID},
+                 ${input.content})
       RETURNING published_at
   `);
 

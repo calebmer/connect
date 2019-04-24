@@ -27,6 +27,7 @@ CREATE INDEX comment_published_at ON comment (post_id, published_at, id);
 -- security policies.
 ALTER TABLE comment ENABLE ROW LEVEL SECURITY;
 GRANT SELECT ON TABLE comment TO connect_api;
+GRANT INSERT ON TABLE comment TO connect_api;
 
 -- We must be able to select the post this comment was left on to be able to
 -- select the comment. Policies are executed using the same permissions as the
@@ -34,3 +35,14 @@ GRANT SELECT ON TABLE comment TO connect_api;
 -- running the post `SELECT` policy.
 CREATE POLICY select_comment ON comment FOR SELECT USING
   (EXISTS (SELECT 1 FROM post WHERE id = post_id));
+
+-- An account may only publish a comment as themselves in a group they are a
+-- member of.
+CREATE POLICY insert_comment ON comment FOR INSERT WITH CHECK
+  (comment.author_id = current_account_id() AND
+   EXISTS (SELECT 1
+             FROM group_member
+            WHERE group_member.account_id = current_account_id() AND
+                  group_member.group_id = (SELECT post.group_id
+                                             FROM post
+                                            WHERE post.id = comment.post_id)));

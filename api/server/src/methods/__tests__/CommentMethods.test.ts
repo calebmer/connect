@@ -1,11 +1,17 @@
-import {RangeDirection, generateID} from "@connect/api-client";
+import {
+  APIError,
+  APIErrorCode,
+  CommentID,
+  RangeDirection,
+  generateID,
+} from "@connect/api-client";
 import {
   createAccount,
   createComment,
   createGroupMember,
   createPost,
 } from "../../TestFactory";
-import {getComment, getPostComments} from "../CommentMethods";
+import {getComment, getPostComments, publishComment} from "../CommentMethods";
 import {ContextTest} from "../../ContextTest";
 
 describe("getComment", () => {
@@ -109,6 +115,264 @@ describe("getPostComments", () => {
             before: null,
           }),
         ).toEqual({comments: []});
+      });
+    });
+  });
+});
+
+describe("publishComment", () => {
+  test("will not publish a comment to a post that does not exist", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        let error: any;
+        try {
+          await publishComment(ctx, {
+            id: generateID(),
+            postID: generateID(),
+            content: "test",
+          });
+        } catch (e) {
+          error = e;
+        }
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.UNAUTHORIZED);
+      });
+    });
+  });
+
+  test("will not publish a comment to a post in a group the account is not a member of", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        let error: any;
+        try {
+          await publishComment(ctx, {
+            id: generateID(),
+            postID: post.id,
+            content: "test",
+          });
+        } catch (e) {
+          error = e;
+        }
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.UNAUTHORIZED);
+      });
+    });
+  });
+
+  test("will publish a comment to a post in a group the account is a member of", () => {
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID: membership.groupID});
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        const commentID = generateID<CommentID>();
+
+        const {publishedAt} = await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test",
+        });
+
+        const {comment} = await getComment(ctx, {id: commentID});
+
+        expect(comment).toEqual({
+          id: commentID,
+          postID: post.id,
+          authorID: membership.accountID,
+          publishedAt,
+          content: "test",
+        });
+      });
+    });
+  });
+
+  test("will publish a comment on a post authored by yourself", () => {
+    return ContextTest.with(async ctx => {
+      const post = await createPost(ctx);
+
+      await ctx.withAuthorized(post.authorID, async ctx => {
+        const commentID = generateID<CommentID>();
+
+        const {publishedAt} = await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test",
+        });
+
+        const {comment} = await getComment(ctx, {id: commentID});
+
+        expect(comment).toEqual({
+          id: commentID,
+          postID: post.id,
+          authorID: post.authorID,
+          publishedAt,
+          content: "test",
+        });
+      });
+    });
+  });
+
+  test("will not publish if the author ID is not the current account", () => {
+    return ContextTest.with(async ctx => {
+      const post = await createPost(ctx);
+      const membership1 = await createGroupMember(ctx, {groupID: post.groupID});
+      const membership2 = await createGroupMember(ctx, {groupID: post.groupID});
+
+      await ctx.withAuthorized(membership1.accountID, async ctx => {
+        // Hack: simulate providing a different author ID to `publishPost`. This
+        // is mostly testing our database policy. It should never be possible
+        // to change the context’s account ID in our API.
+        (ctx as any).accountID = membership2.accountID;
+
+        let error: any;
+        try {
+          await publishComment(ctx, {
+            id: generateID(),
+            postID: post.id,
+            content: "test",
+          });
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.UNAUTHORIZED);
+      });
+    });
+  });
+
+  test("will not publish a comment with no content", () => {
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID: membership.groupID});
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        let error: any;
+        try {
+          await publishComment(ctx, {
+            id: generateID(),
+            postID: post.id,
+            content: "",
+          });
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+      });
+    });
+  });
+
+  test("will not publish a comment with only spaces", () => {
+    const content = "    ";
+
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID: membership.groupID});
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        let error: any;
+        try {
+          await publishComment(ctx, {
+            id: generateID(),
+            postID: post.id,
+            content,
+          });
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+      });
+    });
+  });
+
+  test("will not publish a comment with only whitespace", () => {
+    const content = "  \n   \n\n  \n   \t \r    \n\r  \r\n ";
+
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID: membership.groupID});
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        let error: any;
+        try {
+          await publishComment(ctx, {
+            id: generateID(),
+            postID: post.id,
+            content,
+          });
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.BAD_INPUT);
+      });
+    });
+  });
+
+  test("will not publish two comments with the same ID in the same group", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const post = await createPost(ctx);
+      const comment = await createComment(ctx, {postID: post.id});
+
+      await createGroupMember(ctx, {
+        accountID: account.id,
+        groupID: post.groupID,
+      });
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        let error: any;
+        try {
+          await publishComment(ctx, {
+            id: comment.id,
+            postID: comment.postID,
+            content: "test",
+          });
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.ALREADY_EXISTS);
+      });
+    });
+  });
+
+  test("will not publish two comments with the same ID in different groups", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const post = await createPost(ctx);
+      const comment = await createComment(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account.id,
+        groupID: post.groupID,
+      });
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        let error: any;
+        try {
+          await publishComment(ctx, {
+            id: comment.id,
+            postID: post.id,
+            content: "test",
+          });
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error).toBeInstanceOf(APIError);
+        expect(error.code).toBe(APIErrorCode.ALREADY_EXISTS);
       });
     });
   });

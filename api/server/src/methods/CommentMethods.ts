@@ -1,4 +1,6 @@
 import {
+  APIError,
+  APIErrorCode,
   Comment,
   CommentCursor,
   CommentID,
@@ -88,5 +90,23 @@ export async function publishComment(
 ): Promise<{
   readonly publishedAt: DateTime;
 }> {
-  throw new Error("TODO");
+  // Reject comment content that is empty or made up only of spaces.
+  if (/^\s*$/.test(input.content)) {
+    throw new APIError(APIErrorCode.BAD_INPUT);
+  }
+
+  const {
+    rows: [row],
+  } = await ctx.query(sql`
+    INSERT INTO comment (id, post_id, author_id, content)
+         VALUES (${input.id},
+                 ${input.postID},
+                 ${ctx.accountID},
+                 ${input.content})
+      RETURNING published_at
+  `);
+
+  return {
+    publishedAt: row.published_at,
+  };
 }
