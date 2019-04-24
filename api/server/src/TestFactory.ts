@@ -204,7 +204,7 @@ type FactoryComment = {
   id: CommentID;
   postID: PostID;
   authorID: AccountID;
-  postedAt: DateTime;
+  publishedAt: DateTime;
   content: string;
 };
 
@@ -223,15 +223,15 @@ export async function createComment(
   ]);
 
   const content = `Comment Content ${n}`;
-  const postedAt = new Date(
+  const publishedAt = new Date(
     startPostedAt + 1000 * 60 * 60 * (n - 1),
   ).toISOString() as DateTime;
 
   const {
     rows: [row],
   } = await ctx.query(sql`
-    INSERT INTO comment (post_id, author_id, posted_at, content)
-         VALUES (${postID}, ${authorID}, ${postedAt}, ${content})
+    INSERT INTO comment (post_id, author_id, published_at, content)
+         VALUES (${postID}, ${authorID}, ${publishedAt}, ${content})
       RETURNING id
   `);
 
@@ -239,7 +239,7 @@ export async function createComment(
     id: row.id,
     postID,
     authorID,
-    postedAt,
+    publishedAt,
     content,
   };
 }

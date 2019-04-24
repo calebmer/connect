@@ -31,7 +31,7 @@ export const CommentCache = new Cache<CommentID, Comment>({
  */
 export type CommentCacheListEntry = {
   readonly id: CommentID;
-  readonly postedAt: DateTime;
+  readonly publishedAt: DateTime;
 };
 
 /** The number of comments we load for a post in our initial fetch. */
@@ -70,7 +70,7 @@ export const CommentCacheList = new Cache<
           accountIDs.add(comment.authorID);
           return {
             id: comment.id,
-            postedAt: comment.postedAt,
+            publishedAt: comment.publishedAt,
           };
         });
 

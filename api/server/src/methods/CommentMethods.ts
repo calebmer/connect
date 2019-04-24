@@ -13,7 +13,7 @@ export async function getComment(
   const {
     rows: [row],
   } = await ctx.query(
-    sql`SELECT post_id, author_id, posted_at, content FROM comment WHERE id = ${commentID}`,
+    sql`SELECT post_id, author_id, published_at, content FROM comment WHERE id = ${commentID}`,
   );
   if (row === undefined) {
     return {comment: null};
@@ -22,7 +22,7 @@ export async function getComment(
       id: input.id,
       postID: row.post_id,
       authorID: row.author_id,
-      postedAt: row.posted_at,
+      publishedAt: row.published_at,
       content: row.content,
     };
     return {comment};

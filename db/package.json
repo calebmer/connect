@@ -6,7 +6,8 @@
     "start": "node scripts/start.js",
     "migrate": "node scripts/migrate.js",
     "drop": "node scripts/drop.js",
-    "reset": "node scripts/reset.js"
+    "reset": "node scripts/reset.js",
+    "sql": "psql connect -p 5000"
   },
   "dependencies": {
     "chalk": "^2.4.2",

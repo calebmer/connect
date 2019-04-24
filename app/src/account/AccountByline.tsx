@@ -6,22 +6,22 @@ import {communicateTime} from "../utils/communicateTime";
 
 export function AccountByline({
   account,
-  time: _time,
+  publishedAt: _publishedAt,
 }: {
   account: AccountProfile;
-  time: DateTime;
+  publishedAt: DateTime;
 }) {
   // NOTE: It’s a side-effect to call `new Date()` in render! Ideally, we would
   // have a hook that subscribes to the system time and re-renders this
   // component when it changes. At the moment, it’s not a big issue. This
   // component is memoized anyway so the current date only changes when
   // the props change.
-  const time = communicateTime(new Date(), new Date(_time));
+  const publishedAt = communicateTime(new Date(), new Date(_publishedAt));
 
   return (
     <View style={styles.byline}>
       <LabelText>{account.name}</LabelText>
-      <MetaText style={styles.time}>{time}</MetaText>
+      <MetaText style={styles.time}>{publishedAt}</MetaText>
     </View>
   );
 }

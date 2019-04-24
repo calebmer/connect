@@ -2,14 +2,14 @@
 -- comments, at the moment. Only posts and their comments.
 CREATE TABLE comment (
   -- The unique identifier of this comment.
-  id SERIAL PRIMARY KEY,
+  id CHAR(22) PRIMARY KEY,
   -- The post this comment was left on.
   post_id CHAR(22) NOT NULL REFERENCES post(id),
   -- The author of this comment.
   author_id INT NOT NULL REFERENCES account(id),
-  -- The time this comment was posted. Could be different from the last time
+  -- The time this comment was published. Could be different from the last time
   -- this comment was updated.
-  posted_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  published_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   -- The contents of this comment with markdown formatting.
   content TEXT NOT NULL
 );
@@ -18,10 +18,10 @@ CREATE TABLE comment (
 --
 -- * `post_id` so that we can easily find all the comments for a
 --   particular post.
--- * `posted_at` so that we can fetch the comments for a post in
+-- * `published_at` so that we can fetch the comments for a post in
 --   chronological order.
 -- * `id` to disambiguate two comments which were posted at the exact same time.
-CREATE INDEX comment_posted_at ON comment (post_id, posted_at, id);
+CREATE INDEX comment_published_at ON comment (post_id, published_at, id);
 
 -- Allow our API to access this table, but only after passing row level
 -- security policies.

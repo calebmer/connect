@@ -84,10 +84,10 @@ $$ LANGUAGE plpgsql;
 -- Insert some mock posts into our database. Except insert the same set of mock
 -- posts 10 times.
 INSERT INTO post (id, group_id, author_id, published_at, content)
-  SELECT mock_generate_id(mock_post.published_at) AS id, mock_post.*
+  SELECT mock_generate_id(mock_post.published_at), mock_post.*
     FROM (SELECT mock_post.group_id,
                  mock_post.author_id,
-                 NOW() - make_interval(hours := section * 8 + mock_post.id) AS published_at,
+                 NOW() - make_interval(hours := section * 8 + mock_post.id) - interval '45m' AS published_at,
                  mock_post.content
             FROM unnest(ARRAY[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) AS section,
                  unnest(ARRAY[(0, 1, 6, 'Thoughts? https://brave.com'::TEXT),
@@ -102,25 +102,24 @@ INSERT INTO post (id, group_id, author_id, published_at, content)
 
 -- Insert some comments into our database. Insert the same set of comments for
 -- every mock post we’ve inserted!
-INSERT INTO comment (post_id, author_id, posted_at, content)
-  SELECT post.id as post_id,
-         mock_comment.author_id,
-         mock_comment.posted_at,
-         mock_comment.content
-    FROM post,
-         unnest(ARRAY[(1, 1, NOW() + interval '0m', '@Dominic, @Joseph: what do you guys use to manage state across your app (react native)'::TEXT),
-                      (2, 20, NOW() + interval '3m', 'Right now redux because the Context API only just got released and it isnt currently stable'::TEXT),
-                      (3, 20, NOW() + interval '3m', 'Well hooks that is, I think context has been fine but Im waiting for hooks and context together first.'::TEXT),
-                      (4, 3, NOW() + interval '4m', 'I want to use hooks & context so bad'::TEXT),
-                      (5, 3, NOW() + interval '4m', 'Things may of changed as of today I''ll link you to the github tracking'::TEXT),
-                      (6, 1, NOW() + interval '5m', 'I''m using expo for now, and that means no hooks yet'::TEXT),
-                      (7, 3, NOW() + interval '5m', 'yup'::TEXT),
-                      (8, 3, NOW() + interval '5m', 'To be noted I like expo'::TEXT),
-                      (9, 20, NOW() + interval '5m', 'I don’t use expo as I tend to have to write custom java/objective-c modules for a lot of our scanning software here.'::TEXT),
-                      (10, 20, NOW() + interval '5m', 'So easier to not have to worry about ejecting for me'::TEXT),
-                      (11, 1, NOW() + interval '34m', 'I''m planning on ejecting probably by the end of this week tbh, there are too many things (functionality wise) that I''m missing with expo since the modules are not compatible'::TEXT)])
-                      AS mock_comment (id INT, author_id INT, posted_at TIMESTAMP WITH TIME ZONE, content TEXT);
-
-SELECT setval('comment_id_seq', (SELECT id FROM comment ORDER BY id DESC LIMIT 1));
+INSERT INTO comment (id, post_id, author_id, published_at, content)
+  SELECT mock_generate_id(mock_comment.published_at), mock_comment.*
+    FROM (SELECT post.id as post_id,
+                 mock_comment.author_id,
+                 post.published_at + mock_comment.published_at + interval '1m' AS published_at,
+                 mock_comment.content
+            FROM (SELECT row_number() OVER (ORDER BY published_at, id), * FROM post ORDER BY published_at, id) AS post,
+                 unnest(ARRAY[(1, 1, interval '0m 0s', '@Dominic, @Joseph: what do you guys use to manage state across your app (react native)'::TEXT),
+                              (2, 20, interval '3m 0s', 'Right now redux because the Context API only just got released and it isnt currently stable'::TEXT),
+                              (3, 20, interval '3m 30s', 'Well hooks that is, I think context has been fine but Im waiting for hooks and context together first.'::TEXT),
+                              (4, 3, interval '4m 0s', 'I want to use hooks & context so bad'::TEXT),
+                              (5, 3, interval '4m 30s', 'Things may of changed as of today I''ll link you to the github tracking'::TEXT),
+                              (6, 1, interval '5m 0s', 'I''m using expo for now, and that means no hooks yet'::TEXT),
+                              (7, 3, interval '5m 12s', 'yup'::TEXT),
+                              (8, 3, interval '5m 24s', 'To be noted I like expo'::TEXT),
+                              (9, 20, interval '5m 36s', 'I don’t use expo as I tend to have to write custom java/objective-c modules for a lot of our scanning software here.'::TEXT),
+                              (10, 20, interval '5m 48s', 'So easier to not have to worry about ejecting for me'::TEXT),
+                              (11, 1, interval '34m 0s', 'I''m planning on ejecting probably by the end of this week tbh, there are too many things (functionality wise) that I''m missing with expo since the modules are not compatible'::TEXT)])
+                              AS mock_comment (id INT, author_id INT, published_at INTERVAL, content TEXT)) AS mock_comment;
 
 COMMIT;

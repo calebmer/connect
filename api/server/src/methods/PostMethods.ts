@@ -42,7 +42,7 @@ export async function getPost(
 
 // Create a paginator for comments.
 const PGPaginationComment = new PGPagination(sql`comment`, [
-  {column: sql`posted_at`},
+  {column: sql`published_at`},
   {column: sql`id`},
 ]);
 
@@ -58,7 +58,7 @@ export async function getPostComments(
   // Get a list of comments in chronological order using the pagination
   // parameters provided by our input.
   const {rows} = await PGPaginationComment.query(ctx, {
-    selection: sql`id, author_id, posted_at, content`,
+    selection: sql`id, author_id, published_at, content`,
     extraCondition: sql`post_id = ${sql.value(input.postID)}`,
     range: input,
   });
@@ -68,7 +68,7 @@ export async function getPostComments(
       id: row.id,
       postID: input.postID,
       authorID: row.author_id,
-      postedAt: row.posted_at,
+      publishedAt: row.published_at,
       content: row.content,
     }),
   );

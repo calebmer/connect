@@ -236,7 +236,7 @@ export const APISchema = Schema.namespace({
      */
     getComment: Schema.method({
       safe: true,
-      input: {id: SchemaInput.integer<CommentID>()},
+      input: {id: SchemaInput.string<CommentID>()},
       output: SchemaOutput.t<{readonly comment: Comment | null}>(),
     }),
   }),

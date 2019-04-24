@@ -75,7 +75,7 @@ function CommentWithByline({
     <View style={styles.comment}>
       <AccountAvatarSmall style={styles.commentAvatar} account={author} />
       <View style={styles.commentWithByline}>
-        <AccountByline account={author} time={comment.postedAt} />
+        <AccountByline account={author} publishedAt={comment.publishedAt} />
         <BodyText selectable>{comment.content}</BodyText>
       </View>
     </View>

@@ -68,7 +68,7 @@ function GroupItemFeed({
       selected={selected}
       onSelect={handleSelect}
     >
-      <AccountByline account={account} time={post.publishedAt} />
+      <AccountByline account={account} publishedAt={post.publishedAt} />
       <BodyText
         style={{maxHeight: Font.size2.lineHeight * numberOfLines}}
         numberOfLines={numberOfLines}

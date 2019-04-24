@@ -4,7 +4,7 @@ import {DateTime} from "./GroupTypes";
 import {PostID} from "./PostTypes";
 
 /** A unique type which is used as an identifier for comments. */
-export type CommentID = number & {readonly _type: typeof CommentID};
+export type CommentID = string & {readonly _type: typeof CommentID};
 declare const CommentID: unique symbol;
 
 /**
@@ -16,15 +16,15 @@ export type Comment = {
   readonly postID: PostID;
   /** The account which authored this comment. */
   readonly authorID: AccountID;
-  /** The time at which the comment was posted. */
-  readonly postedAt: DateTime;
+  /** The time at which the comment was published. */
+  readonly publishedAt: DateTime;
   /** The content of the comment in some kind of markdown-ish format. */
   readonly content: string;
 };
 
 /**
  * A cursor represents the position of a comment in a list ordered by the
- * comment’s `postedAt` date.
+ * comment’s `publishedAt` date.
  */
 export type CommentCursor = Cursor<[DateTime, CommentID]>;
 
@@ -32,7 +32,10 @@ export const CommentCursor = {
   /**
    * Get the cursor for a `Comment`.
    */
-  get(comment: Pick<Comment, "id" | "postedAt">): CommentCursor {
-    return Cursor.encode<[DateTime, CommentID]>([comment.postedAt, comment.id]);
+  get(comment: Pick<Comment, "id" | "publishedAt">): CommentCursor {
+    return Cursor.encode<[DateTime, CommentID]>([
+      comment.publishedAt,
+      comment.id,
+    ]);
   },
 };
