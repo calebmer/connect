@@ -5,8 +5,8 @@ const DATABASE = "connect";
 
 function createClient() {
   return new pg.Client({
-    port: PORT,
-    database: DATABASE,
+    port: process.env.PGPORT || PORT,
+    database: process.env.PGDATABASE || DATABASE,
   });
 }
 

@@ -87,28 +87,69 @@ type SQLQueryRaw = {
  * Creates a SQL template query.
  */
 export function sql(
-  strings: TemplateStringsArray,
+  templateStrings: TemplateStringsArray,
   ...values: Array<unknown>
 ): SQLQuery {
-  if (strings.length > 0 && strings.length !== values.length + 1) {
+  // Check to make sure we have the right number of values.
+  if (
+    templateStrings.length > 0 &&
+    templateStrings.length !== values.length + 1
+  ) {
     throw new Error(
       "Template string was given arguments in an incorrect format.",
     );
   }
+
+  let queryStrings: ReadonlyArray<string> = templateStrings;
+
+  // If our SQL query starts with a new line then we have a multiline template
+  // string. We want to strip out all new lines and whitespace so that the
+  // query fits on one line.
+  if (templateStrings[0][0] === "\n") {
+    const newStrings = Array<string>(queryStrings.length);
+    for (let i = 0; i < queryStrings.length; i++) {
+      const string = queryStrings[i];
+      let newString = "";
+      let j = 0;
+      let k = 0;
+      while (k < string.length) {
+        const c = string[k];
+        if (c === "\n") {
+          const isFirst = i === 0 && k === 0;
+          newString += string.slice(j, k);
+          k++;
+          while (k < string.length && string[k] === " ") {
+            k++;
+          }
+          j = k;
+          const isLast = i === queryStrings.length - 1 && k === string.length;
+          if (!isFirst && !isLast && string[k] !== "\n") {
+            newString += " ";
+          }
+        } else {
+          k++;
+        }
+      }
+      newString += string.slice(j, k);
+      newStrings[i] = newString;
+    }
+    queryStrings = newStrings;
+  }
+
+  // Wrap any values that are not SQL queries with `sql.value()`.
+  const wrappedValues = values.map<SQLQuery>(value =>
+    typeof value === "object" &&
+    value !== null &&
+    (value as any).$$typeof === sqlQuery
+      ? (value as SQLQuery)
+      : sql.value(value),
+  );
+
   return {
     $$typeof: sqlQuery,
     type: "TEMPLATE",
-    strings,
-
-    // Wrap any values that are not SQL queries with `sql.value()`.
-    values: values.map(
-      (value): SQLQuery =>
-        typeof value === "object" &&
-        value !== null &&
-        (value as any).$$typeof === sqlQuery
-          ? (value as SQLQuery)
-          : sql.value(value),
-    ),
+    strings: queryStrings,
+    values: wrappedValues,
   };
 }
 
