@@ -138,6 +138,7 @@ export function GroupHomeRoute({
 
 const styles = StyleSheet.create({
   group: {
+    flex: 3 / 4,
     maxWidth: Space.space12,
   },
 });
