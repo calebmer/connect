@@ -56,6 +56,7 @@ module.exports = {
     "no-var": "warn",
     "prefer-const": ["warn", {destructuring: "all"}],
     "sort-imports": "warn",
+    "no-constant-condition": "warn",
 
     "@typescript-eslint/adjacent-overload-signatures": "warn",
     "@typescript-eslint/array-type": ["warn", "generic"],

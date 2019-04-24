@@ -13,6 +13,7 @@ function testCacheList(
   recordCalls?: Array<TestRange>,
 ): CacheList<Cursor<number>, number> {
   return new CacheList({
+    key: item => item,
     cursor: item => Cursor.encode(item),
     load: async range => {
       const after = range.after && Cursor.decode(range.after);
@@ -135,16 +136,15 @@ describe("loadFirst", () => {
     ]);
   });
 
-  test("will load three items then five items", async () => {
+  test("will NOT load three items then five items", async () => {
     const recordCalls: Array<TestRange> = [];
     const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
     const cache = testCacheList(items, recordCalls);
     expect(await cache.loadFirst(3)).toEqual([201, 202, 203]);
-    expect(await cache.loadFirst(5)).toEqual([201, 202, 203, 204, 205]);
+    expect(await cache.loadFirst(5)).toEqual([201, 202, 203]);
     expect(recordCalls).toEqual([
       {direction: "first", count: 3},
       {direction: "first", count: 5, before: 201},
-      {direction: "first", count: 2, after: 203},
     ]);
   });
 
@@ -429,7 +429,7 @@ describe("loadNext", () => {
     ]);
   });
 
-  test("will load until count has been filled", async () => {
+  test("will NOT load until count has been filled", async () => {
     const recordCalls: Array<TestRange> = [];
     const items = [107, 108, 109];
     const cache = testCacheList(items, recordCalls);
@@ -438,24 +438,12 @@ describe("loadNext", () => {
     expect(await cache.loadFirst(2)).toEqual([104, 105]);
     items.unshift(101, 102, 103);
     expect(await cache.loadFirst(2)).toEqual([101, 102]);
-    expect(await cache.loadNext(100)).toEqual([
-      101,
-      102,
-      103,
-      104,
-      105,
-      106,
-      107,
-      108,
-      109,
-    ]);
+    expect(await cache.loadNext(100)).toEqual([101, 102, 103, 104, 105]);
     expect(recordCalls).toEqual([
       {direction: "first", count: 2},
       {direction: "first", count: 2, before: 107},
       {direction: "first", count: 2, before: 104},
       {direction: "first", count: 100, after: 102, before: 104},
-      {direction: "first", count: 97, after: 105, before: 107},
-      {direction: "first", count: 94, after: 108},
     ]);
   });
 
@@ -606,16 +594,15 @@ describe("loadLast", () => {
     ]);
   });
 
-  test("will load three items then five items", async () => {
+  test("will NOT load three items then five items", async () => {
     const recordCalls: Array<TestRange> = [];
     const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
     const cache = testCacheList(items, recordCalls);
     expect(await cache.loadLast(3)).toEqual([208, 209, 210]);
-    expect(await cache.loadLast(5)).toEqual([206, 207, 208, 209, 210]);
+    expect(await cache.loadLast(5)).toEqual([208, 209, 210]);
     expect(recordCalls).toEqual([
       {direction: "last", count: 3},
       {direction: "last", count: 5, after: 210},
-      {direction: "last", count: 2, before: 208},
     ]);
   });
 
@@ -694,7 +681,7 @@ describe("loadLast", () => {
     ]);
   });
 
-  test("will load some newly pushed items but a short load next won’t merge with previously cached items", async () => {
+  test("will load some newly pushed items but a short load prev won’t merge with previously cached items", async () => {
     const recordCalls: Array<TestRange> = [];
     const items = [201, 202, 203, 204, 205, 206, 207, 208, 209, 210];
     const cache = testCacheList(items, recordCalls);
@@ -901,7 +888,7 @@ describe("loadPrev", () => {
     ]);
   });
 
-  test("will load until count has been filled", async () => {
+  test("will NOT load until count has been filled", async () => {
     const recordCalls: Array<TestRange> = [];
     const items = [101, 102, 103];
     const cache = testCacheList(items, recordCalls);
@@ -910,24 +897,12 @@ describe("loadPrev", () => {
     expect(await cache.loadLast(2)).toEqual([105, 106]);
     items.push(107, 108, 109);
     expect(await cache.loadLast(2)).toEqual([108, 109]);
-    expect(await cache.loadPrev(100)).toEqual([
-      101,
-      102,
-      103,
-      104,
-      105,
-      106,
-      107,
-      108,
-      109,
-    ]);
+    expect(await cache.loadPrev(100)).toEqual([105, 106, 107, 108, 109]);
     expect(recordCalls).toEqual([
       {direction: "last", count: 2},
       {direction: "last", count: 2, after: 103},
       {direction: "last", count: 2, after: 106},
       {direction: "last", count: 100, after: 106, before: 108},
-      {direction: "last", count: 97, after: 103, before: 105},
-      {direction: "last", count: 94, before: 102},
     ]);
   });
 
