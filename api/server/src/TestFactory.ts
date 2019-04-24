@@ -182,7 +182,6 @@ export async function createPost(
   await ctx.query(sql`
     INSERT INTO post (id, group_id, author_id, published_at, content)
          VALUES (${id}, ${groupID}, ${authorID}, ${publishedAt}, ${content})
-      RETURNING id
   `);
 
   return {
@@ -215,6 +214,7 @@ export async function createComment(
   ctx: ContextTest,
   config: FactoryCommentConfig = {},
 ): Promise<FactoryComment> {
+  const id = generateID<CommentID>();
   const n = commentSequence(ctx);
 
   const [postID, authorID] = await Promise.all([
@@ -227,16 +227,13 @@ export async function createComment(
     startPostedAt + 1000 * 60 * 60 * (n - 1),
   ).toISOString() as DateTime;
 
-  const {
-    rows: [row],
-  } = await ctx.query(sql`
-    INSERT INTO comment (post_id, author_id, published_at, content)
-         VALUES (${postID}, ${authorID}, ${publishedAt}, ${content})
-      RETURNING id
+  await ctx.query(sql`
+    INSERT INTO comment (id, post_id, author_id, published_at, content)
+         VALUES (${id}, ${postID}, ${authorID}, ${publishedAt}, ${content})
   `);
 
   return {
-    id: row.id,
+    id,
     postID,
     authorID,
     publishedAt,

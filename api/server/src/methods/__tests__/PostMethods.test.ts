@@ -1,19 +1,20 @@
 import {
   APIError,
   APIErrorCode,
+  DateTime,
   GroupID,
+  PostCursor,
   PostID,
   RangeDirection,
   generateID,
 } from "@connect/api-client";
 import {
   createAccount,
-  createComment,
   createGroup,
   createGroupMember,
   createPost,
 } from "../../TestFactory";
-import {getPost, getPostComments, publishPost} from "../PostMethods";
+import {getGroupPosts, getPost, publishPost} from "../PostMethods";
 import {ContextTest} from "../../ContextTest";
 
 describe("getPost", () => {
@@ -52,71 +53,358 @@ describe("getPost", () => {
   });
 });
 
-describe("getPostComments", () => {
-  test("does not get comments from a post in a group we are not in", () => {
-    return ContextTest.with(async ctx => {
-      const post = await createPost(ctx);
-      const {accountID} = await createGroupMember(ctx);
+describe("getGroupPosts", () => {
+  /**
+   * Executes the `make()` function serially so that we get predictable outcomes.
+   */
+  async function arrayMake<T>(
+    length: number,
+    make: (i: number) => Promise<T>,
+  ): Promise<Array<T>> {
+    const array = Array(length);
+    for (let i = 0; i < length; i++) {
+      array[i] = await make(i);
+    }
+    return array;
+  }
 
-      await createComment(ctx, {postID: post.id});
-      await createComment(ctx, {postID: post.id});
-      await createComment(ctx, {postID: post.id});
-      await createComment(ctx, {postID: post.id});
-      await createComment(ctx, {postID: post.id});
+  test("gets the first 3 posts in a group", () => {
+    return ContextTest.with(async ctx => {
+      const accountID = (await createAccount(ctx)).id;
+      const group1 = await createGroup(ctx);
+      const group2 = await createGroup(ctx);
+      const group3 = await createGroup(ctx);
+      await createGroupMember(ctx, {accountID, groupID: group1.id});
+      await createGroupMember(ctx, {accountID, groupID: group2.id});
+
+      const [posts1] = await Promise.all([
+        arrayMake(4, () => createPost(ctx, {groupID: group1.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group2.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group3.id})),
+      ]);
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPostComments(ctx, {
-            postID: post.id,
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
             direction: RangeDirection.First,
             count: 3,
             after: null,
             before: null,
           }),
-        ).toEqual({comments: []});
+        ).toEqual({posts: [posts1[3], posts1[2], posts1[1]]});
       });
     });
   });
 
-  test("gets comments from a post in a group we are in", () => {
+  test("gets the last 3 posts in a group", () => {
     return ContextTest.with(async ctx => {
-      const {accountID, groupID} = await createGroupMember(ctx);
-      const post = await createPost(ctx, {groupID});
+      const accountID = (await createAccount(ctx)).id;
+      const group1 = await createGroup(ctx);
+      const group2 = await createGroup(ctx);
+      const group3 = await createGroup(ctx);
+      await createGroupMember(ctx, {accountID, groupID: group1.id});
+      await createGroupMember(ctx, {accountID, groupID: group2.id});
 
-      const comment1 = await createComment(ctx, {postID: post.id});
-      const comment2 = await createComment(ctx, {postID: post.id});
-      const comment3 = await createComment(ctx, {postID: post.id});
-      await createComment(ctx, {postID: post.id});
-      await createComment(ctx, {postID: post.id});
+      const [posts1] = await Promise.all([
+        arrayMake(4, () => createPost(ctx, {groupID: group1.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group2.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group3.id})),
+      ]);
 
       await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPostComments(ctx, {
-            postID: post.id,
-            direction: RangeDirection.First,
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
+            direction: RangeDirection.Last,
             count: 3,
             after: null,
             before: null,
           }),
-        ).toEqual({comments: [comment1, comment2, comment3]});
+        ).toEqual({posts: [posts1[2], posts1[1], posts1[0]]});
       });
     });
   });
 
-  test("gets an empty list if the post does not exist", () => {
+  test("gets the posts after a cursor", () => {
     return ContextTest.with(async ctx => {
-      const account = await createAccount(ctx);
+      const accountID = (await createAccount(ctx)).id;
+      const group1 = await createGroup(ctx);
+      const group2 = await createGroup(ctx);
+      const group3 = await createGroup(ctx);
+      await createGroupMember(ctx, {accountID, groupID: group1.id});
+      await createGroupMember(ctx, {accountID, groupID: group2.id});
 
-      await ctx.withAuthorized(account.id, async ctx => {
+      const [posts1] = await Promise.all([
+        arrayMake(5, () => createPost(ctx, {groupID: group1.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group2.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group3.id})),
+      ]);
+
+      // Makes the tests easier to think about. The latest posts are
+      // returned first.
+      posts1.reverse();
+
+      await ctx.withAuthorized(accountID, async ctx => {
         expect(
-          await getPostComments(ctx, {
-            postID: generateID(),
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
+            direction: RangeDirection.First,
+            count: 3,
+            after: PostCursor.get(posts1[0]),
+            before: null,
+          }),
+        ).toEqual({posts: [posts1[1], posts1[2], posts1[3]]});
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
+            direction: RangeDirection.Last,
+            count: 3,
+            after: PostCursor.get(posts1[0]),
+            before: null,
+          }),
+        ).toEqual({posts: [posts1[2], posts1[3], posts1[4]]});
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
+            direction: RangeDirection.Last,
+            count: 5,
+            after: PostCursor.get(posts1[0]),
+            before: null,
+          }),
+        ).toEqual({posts: [posts1[1], posts1[2], posts1[3], posts1[4]]});
+      });
+    });
+  });
+
+  test("gets the posts before a cursor", () => {
+    return ContextTest.with(async ctx => {
+      const accountID = (await createAccount(ctx)).id;
+      const group1 = await createGroup(ctx);
+      const group2 = await createGroup(ctx);
+      const group3 = await createGroup(ctx);
+      await createGroupMember(ctx, {accountID, groupID: group1.id});
+      await createGroupMember(ctx, {accountID, groupID: group2.id});
+
+      const [posts1] = await Promise.all([
+        arrayMake(5, () => createPost(ctx, {groupID: group1.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group2.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group3.id})),
+      ]);
+
+      // Makes the tests easier to think about. The latest posts are
+      // returned first.
+      posts1.reverse();
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
+            direction: RangeDirection.Last,
+            count: 3,
+            after: null,
+            before: PostCursor.get(posts1[4]),
+          }),
+        ).toEqual({posts: [posts1[1], posts1[2], posts1[3]]});
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
+            direction: RangeDirection.First,
+            count: 3,
+            after: null,
+            before: PostCursor.get(posts1[4]),
+          }),
+        ).toEqual({posts: [posts1[0], posts1[1], posts1[2]]});
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
+            direction: RangeDirection.First,
+            count: 5,
+            after: null,
+            before: PostCursor.get(posts1[4]),
+          }),
+        ).toEqual({posts: [posts1[0], posts1[1], posts1[2], posts1[3]]});
+      });
+    });
+  });
+
+  test("gets the posts between two cursor", () => {
+    return ContextTest.with(async ctx => {
+      const accountID = (await createAccount(ctx)).id;
+      const group1 = await createGroup(ctx);
+      const group2 = await createGroup(ctx);
+      const group3 = await createGroup(ctx);
+      await createGroupMember(ctx, {accountID, groupID: group1.id});
+      await createGroupMember(ctx, {accountID, groupID: group2.id});
+
+      const [posts1] = await Promise.all([
+        arrayMake(5, () => createPost(ctx, {groupID: group1.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group2.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group3.id})),
+      ]);
+
+      // Makes the tests easier to think about. The latest posts are
+      // returned first.
+      posts1.reverse();
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
+            direction: RangeDirection.First,
+            count: 5,
+            after: PostCursor.get(posts1[0]),
+            before: PostCursor.get(posts1[4]),
+          }),
+        ).toEqual({posts: [posts1[1], posts1[2], posts1[3]]});
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
+            direction: RangeDirection.Last,
+            count: 5,
+            after: PostCursor.get(posts1[0]),
+            before: PostCursor.get(posts1[4]),
+          }),
+        ).toEqual({posts: [posts1[1], posts1[2], posts1[3]]});
+      });
+    });
+  });
+
+  test("gets no posts", () => {
+    return ContextTest.with(async ctx => {
+      const accountID = (await createAccount(ctx)).id;
+      const group1 = await createGroup(ctx);
+      const group2 = await createGroup(ctx);
+      const group3 = await createGroup(ctx);
+      await createGroupMember(ctx, {accountID, groupID: group1.id});
+      await createGroupMember(ctx, {accountID, groupID: group2.id});
+
+      await Promise.all([
+        arrayMake(2, () => createPost(ctx, {groupID: group2.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group3.id})),
+      ]);
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
             direction: RangeDirection.First,
             count: 3,
             after: null,
             before: null,
           }),
-        ).toEqual({comments: []});
+        ).toEqual({posts: []});
+      });
+    });
+  });
+
+  test("gets one posts", () => {
+    return ContextTest.with(async ctx => {
+      const accountID = (await createAccount(ctx)).id;
+      const group1 = await createGroup(ctx);
+      const group2 = await createGroup(ctx);
+      const group3 = await createGroup(ctx);
+      await createGroupMember(ctx, {accountID, groupID: group1.id});
+      await createGroupMember(ctx, {accountID, groupID: group2.id});
+
+      const [posts1] = await Promise.all([
+        arrayMake(1, () => createPost(ctx, {groupID: group1.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group2.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group3.id})),
+      ]);
+
+      // Makes the tests easier to think about. The latest posts are
+      // returned first.
+      posts1.reverse();
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group1.id,
+            direction: RangeDirection.First,
+            count: 3,
+            after: null,
+            before: null,
+          }),
+        ).toEqual({posts: [posts1[0]]});
+      });
+    });
+  });
+
+  test("does not return posts from group account is not a member of", () => {
+    return ContextTest.with(async ctx => {
+      const account1 = await createAccount(ctx);
+      const account2 = await createAccount(ctx);
+      const group1 = await createGroup(ctx);
+      const group2 = await createGroup(ctx);
+      const group3 = await createGroup(ctx);
+      await createGroupMember(ctx, {
+        accountID: account1.id,
+        groupID: group1.id,
+      });
+      await createGroupMember(ctx, {
+        accountID: account1.id,
+        groupID: group2.id,
+      });
+      await createGroupMember(ctx, {
+        accountID: account2.id,
+        groupID: group2.id,
+      });
+      await createGroupMember(ctx, {
+        accountID: account2.id,
+        groupID: group3.id,
+      });
+
+      await Promise.all([
+        arrayMake(2, () => createPost(ctx, {groupID: group1.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group2.id})),
+        arrayMake(2, () => createPost(ctx, {groupID: group3.id})),
+      ]);
+
+      await ctx.withAuthorized(account1.id, async ctx => {
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group3.id,
+            direction: RangeDirection.First,
+            count: 3,
+            after: null,
+            before: null,
+          }),
+        ).toEqual({posts: []});
+      });
+    });
+  });
+
+  test("correctly uses cursors to select posts with the same publish time", () => {
+    return ContextTest.with(async ctx => {
+      const group = await createGroup(ctx);
+      const {accountID} = await createGroupMember(ctx, {groupID: group.id});
+      const publishedAt = new Date().toISOString() as DateTime;
+      const post5 = await createPost(ctx, {groupID: group.id, publishedAt});
+      const post4 = await createPost(ctx, {groupID: group.id, publishedAt});
+      const post3 = await createPost(ctx, {groupID: group.id, publishedAt});
+      const post2 = await createPost(ctx, {groupID: group.id, publishedAt});
+      const post1 = await createPost(ctx, {groupID: group.id, publishedAt});
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group.id,
+            direction: RangeDirection.Last,
+            count: 3,
+            after: null,
+            before: PostCursor.get(post3),
+          }),
+        ).toEqual({posts: [post1, post2]});
+        expect(
+          await getGroupPosts(ctx, {
+            groupID: group.id,
+            direction: RangeDirection.First,
+            count: 3,
+            after: PostCursor.get(post3),
+            before: null,
+          }),
+        ).toEqual({posts: [post4, post5]});
       });
     });
   });

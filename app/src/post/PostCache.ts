@@ -85,7 +85,7 @@ export const PostCacheList = new Cache<
 
       async load(range) {
         // Fetch the posts for this range from our API.
-        const {posts} = await API.group.getGroupPosts({groupID, ...range});
+        const {posts} = await API.post.getGroupPosts({groupID, ...range});
 
         // All the accounts we want to preload.
         const accountIDs = new Set<AccountID>();

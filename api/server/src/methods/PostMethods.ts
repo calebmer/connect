@@ -1,11 +1,10 @@
 import {
   APIError,
   APIErrorCode,
-  Comment,
-  CommentCursor,
   DateTime,
   GroupID,
   Post,
+  PostCursor,
   PostID,
   Range,
 } from "@connect/api-client";
@@ -42,40 +41,40 @@ export async function getPost(
   }
 }
 
-// Create a paginator for comments.
-const PGPaginationComment = new PGPagination(sql`comment`, [
-  {column: sql`published_at`},
-  {column: sql`id`},
+// Create a paginator for posts.
+const PGPaginationPost = new PGPagination(sql`post`, [
+  {column: sql`published_at`, descending: true},
+  {column: sql`id`, descending: true},
 ]);
 
 /**
- * Get the comments for a post.
+ * Get posts in a group by reverse chronological order.
  */
-export async function getPostComments(
+export async function getGroupPosts(
   ctx: Context,
-  input: {readonly postID: PostID} & Range<CommentCursor>,
+  input: {readonly groupID: GroupID} & Range<PostCursor>,
 ): Promise<{
-  readonly comments: ReadonlyArray<Comment>;
+  readonly posts: ReadonlyArray<Post>;
 }> {
-  // Get a list of comments in chronological order using the pagination
+  // Get a list of posts in reverse chronological order using the pagination
   // parameters provided by our input.
-  const {rows} = await PGPaginationComment.query(ctx, {
+  const {rows} = await PGPaginationPost.query(ctx, {
     selection: sql`id, author_id, published_at, content`,
-    extraCondition: sql`post_id = ${sql.value(input.postID)}`,
+    extraCondition: sql`group_id = ${sql.value(input.groupID)}`,
     range: input,
   });
 
-  const comments = rows.map(
-    (row): Comment => ({
+  const posts = rows.map(
+    (row): Post => ({
       id: row.id,
-      postID: input.postID,
+      groupID: input.groupID,
       authorID: row.author_id,
       publishedAt: row.published_at,
       content: row.content,
     }),
   );
 
-  return {comments};
+  return {posts};
 }
 
 /**

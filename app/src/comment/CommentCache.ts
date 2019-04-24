@@ -58,7 +58,10 @@ export const CommentCacheList = new Cache<
 
       async load(range) {
         // Fetch the comments for this range from our API.
-        const {comments} = await API.post.getPostComments({postID, ...range});
+        const {comments} = await API.comment.getPostComments({
+          postID,
+          ...range,
+        });
 
         // All the accounts we want to preload.
         const accountIDs = new Set<AccountID>();

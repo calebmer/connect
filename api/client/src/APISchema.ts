@@ -151,6 +151,20 @@ export const APISchema = Schema.namespace({
       input: {slug: SchemaInput.string()},
       output: SchemaOutput.t<{readonly group: Group | null}>(),
     }),
+  }),
+
+  post: Schema.namespace({
+    /**
+     * Fetches a post with the provided ID.
+     *
+     * If we are not allowed to see a group or the group does not exist then
+     * the method returns null.
+     */
+    getPost: Schema.method({
+      safe: true,
+      input: {id: SchemaInput.string<PostID>()},
+      output: SchemaOutput.t<{readonly post: Post | null}>(),
+    }),
 
     /**
      * Gets a list of the posts in a group in reverse chronological order.
@@ -168,35 +182,6 @@ export const APISchema = Schema.namespace({
       },
       output: SchemaOutput.t<{
         readonly posts: ReadonlyArray<Post>;
-      }>(),
-    }),
-  }),
-
-  post: Schema.namespace({
-    /**
-     * Fetches a post with the provided ID.
-     *
-     * If we are not allowed to see a group or the group does not exist then
-     * the method returns null.
-     */
-    getPost: Schema.method({
-      safe: true,
-      input: {id: SchemaInput.string<PostID>()},
-      output: SchemaOutput.t<{readonly post: Post | null}>(),
-    }),
-
-    /**
-     * All of the comment replies to a post. Sorted by the time they were posted
-     * with the first comments at the beginning of the list.
-     */
-    getPostComments: Schema.method({
-      safe: true,
-      input: {
-        postID: SchemaInput.string<PostID>(),
-        ...RangeInputFields<CommentCursor>(),
-      },
-      output: SchemaOutput.t<{
-        readonly comments: ReadonlyArray<Comment>;
       }>(),
     }),
 
@@ -238,6 +223,21 @@ export const APISchema = Schema.namespace({
       safe: true,
       input: {id: SchemaInput.string<CommentID>()},
       output: SchemaOutput.t<{readonly comment: Comment | null}>(),
+    }),
+
+    /**
+     * All of the comment replies to a post. Sorted by the time they were posted
+     * with the first comments at the beginning of the list.
+     */
+    getPostComments: Schema.method({
+      safe: true,
+      input: {
+        postID: SchemaInput.string<PostID>(),
+        ...RangeInputFields<CommentCursor>(),
+      },
+      output: SchemaOutput.t<{
+        readonly comments: ReadonlyArray<Comment>;
+      }>(),
     }),
 
     /**
