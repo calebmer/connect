@@ -28,3 +28,7 @@ export async function getComment(
     return {comment};
   }
 }
+
+export async function publishComment(): Promise<never> {
+  throw new Error("TODO");
+}

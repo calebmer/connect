@@ -211,8 +211,8 @@ export const APISchema = Schema.namespace({
      * at. Since the time will be independent of time zones or skewed client
      * device clocks.
      *
-     * Only returns the new post ID to avoid sending all the content back over
-     * the network.
+     * Only returns the the time the server decided the post was published to
+     * avoid sending all the content back over the network.
      */
     publishPost: Schema.method({
       safe: false,
@@ -238,6 +238,33 @@ export const APISchema = Schema.namespace({
       safe: true,
       input: {id: SchemaInput.string<CommentID>()},
       output: SchemaOutput.t<{readonly comment: Comment | null}>(),
+    }),
+
+    /**
+     * Publishes a new comment on the provided post. If the authorized user is
+     * not a member of the group the post was published in then we will throw an
+     * unauthorized error.
+     *
+     * We give the client the ability to generate a new ID for the comment. That
+     * way the client can create an “optimistic” comment for display in the UI.
+     *
+     * Only the server gets to decide the definitive time a comment was
+     * published at. Since the time will be independent of time zones or skewed
+     * client device clocks.
+     *
+     * Only returns the the time the server decided the comment was published to
+     * avoid sending all the content back over the network.
+     */
+    publishComment: Schema.method({
+      safe: false,
+      input: {
+        id: SchemaInput.string<CommentID>(),
+        postID: SchemaInput.string<PostID>(),
+        content: SchemaInput.string(),
+      },
+      output: SchemaOutput.t<{
+        readonly publishedAt: DateTime;
+      }>(),
     }),
   }),
 });
