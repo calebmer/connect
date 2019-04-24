@@ -1,4 +1,4 @@
-import {Comment, CommentID} from "@connect/api-client";
+import {Comment, CommentID, DateTime, PostID} from "@connect/api-client";
 import {Context} from "../Context";
 import {sql} from "../PGSQL";
 
@@ -31,6 +31,18 @@ export async function getComment(
   }
 }
 
-export async function publishComment(): Promise<never> {
+/**
+ * Publishes a new comment.
+ */
+export async function publishComment(
+  ctx: Context,
+  input: {
+    readonly id: CommentID;
+    readonly postID: PostID;
+    readonly content: string;
+  },
+): Promise<{
+  readonly publishedAt: DateTime;
+}> {
   throw new Error("TODO");
 }
