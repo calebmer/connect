@@ -780,12 +780,20 @@ class CacheListSegments<Item> {
    * then the phantom item will be de-duplicated.
    */
   public insertPhantomFirst(item: Item): CacheListSegments<Item> {
-    const firstSegment = [item, ...this.segments[0]];
-    return new CacheListSegments(
-      this.getKey,
-      new Set(this.phantomKeys).add(this.getKey(item)),
-      [firstSegment as NonEmptyArray<Item>, ...this.segments.slice(1)],
-    );
+    if (this.segments.length > 0) {
+      const firstSegment = [item, ...this.segments[0]];
+      return new CacheListSegments(
+        this.getKey,
+        new Set(this.phantomKeys).add(this.getKey(item)),
+        [firstSegment as NonEmptyArray<Item>, ...this.segments.slice(1)],
+      );
+    } else {
+      return new CacheListSegments(
+        this.getKey,
+        new Set(this.phantomKeys).add(this.getKey(item)),
+        [[item]],
+      );
+    }
   }
 
   /**
@@ -796,12 +804,20 @@ class CacheListSegments<Item> {
    * then the phantom item will be de-duplicated.
    */
   public insertPhantomLast(item: Item): CacheListSegments<Item> {
-    const lastSegment = [...this.segments[this.segments.length - 1], item];
-    return new CacheListSegments(
-      this.getKey,
-      new Set(this.phantomKeys).add(this.getKey(item)),
-      [...this.segments.slice(0, -1), lastSegment as NonEmptyArray<Item>],
-    );
+    if (this.segments.length > 0) {
+      const lastSegment = [...this.segments[this.segments.length - 1], item];
+      return new CacheListSegments(
+        this.getKey,
+        new Set(this.phantomKeys).add(this.getKey(item)),
+        [...this.segments.slice(0, -1), lastSegment as NonEmptyArray<Item>],
+      );
+    } else {
+      return new CacheListSegments(
+        this.getKey,
+        new Set(this.phantomKeys).add(this.getKey(item)),
+        [[item]],
+      );
+    }
   }
 }
 
