@@ -1,7 +1,7 @@
-import {Color, Font, Shadow, Space} from "../atoms";
+import {Color, Font, Shadow} from "../atoms";
 import React, {useContext, useRef} from "react";
 import {ScrollView, StyleSheet, View} from "react-native";
-import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
+import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
@@ -64,11 +64,6 @@ const styles = StyleSheet.create({
 
     // The maximum width is designed to give a comment `Font.maxWidth` which
     // means the post text will end up being a bit wider.
-    maxWidth:
-      Space.space3 +
-      AccountAvatarSmall.size +
-      Space.space3 +
-      Font.maxWidth +
-      Space.space3,
+    maxWidth: Comment.paddingLeft + Font.maxWidth + Comment.paddingRight,
   },
 });

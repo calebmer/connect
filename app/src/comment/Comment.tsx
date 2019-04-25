@@ -57,7 +57,14 @@ function Comment({
   }
 }
 
-const CommentMemo = React.memo(Comment);
+Comment.paddingLeft = Space.space3 + AccountAvatarSmall.size + Space.space2;
+Comment.paddingRight = Space.space4;
+
+const CommentMemo = Object.assign(React.memo(Comment), {
+  paddingLeft: Comment.paddingLeft,
+  paddingRight: Comment.paddingRight,
+});
+
 export {CommentMemo as Comment};
 
 // Used to conditionally suspend on some data.
@@ -177,10 +184,11 @@ const styles = StyleSheet.create({
   commentWithByline: {
     flex: 1,
     paddingLeft: Space.space2,
+    paddingRight: Comment.paddingRight,
   },
   commentWithoutByline: {
     paddingTop: Font.size2.lineHeight / 3,
-    paddingLeft: Space.space3 + AccountAvatarSmall.size + Space.space2,
-    paddingRight: Space.space3,
+    paddingLeft: Comment.paddingLeft,
+    paddingRight: Comment.paddingRight,
   },
 });
