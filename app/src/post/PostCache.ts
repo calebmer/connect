@@ -81,6 +81,7 @@ export const PostCacheList = new Cache<
   async load(groupID) {
     // Create the post cache list...
     const postCacheList = new CacheList<PostCursor, PostCacheListEntry>({
+      key: ({id}) => id,
       cursor: PostCursor.get,
 
       async load(range) {

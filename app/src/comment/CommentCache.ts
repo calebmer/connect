@@ -84,6 +84,7 @@ export const CommentCacheList = new Cache<
       CommentCursor,
       CommentCacheListEntry
     >({
+      key: ({id}) => id,
       cursor: CommentCursor.get,
 
       async load(range) {
