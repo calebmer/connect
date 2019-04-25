@@ -13,8 +13,8 @@ import {PostNewPopupContext} from "../post/PostNewPopupContext";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {Space} from "../atoms";
-import {useCacheData} from "../cache/Cache";
-import {useCacheListData} from "../cache/CacheList";
+import {useCache} from "../cache/Cache";
+import {useCacheList} from "../cache/CacheList";
 import {useMutableContainer} from "../cache/Mutable";
 
 function GroupHome({
@@ -64,9 +64,9 @@ function GroupSuspense({
   postID: PostID | undefined;
 }) {
   // Get the list of posts for this component.
-  const group = useCacheData(GroupCache, groupSlug);
-  const postCacheList = useCacheData(PostCacheList, group.id);
-  const {loading, items: posts} = useCacheListData(postCacheList);
+  const group = useCache(GroupCache, groupSlug);
+  const postCacheList = useCache(PostCacheList, group.id);
+  const {loading, items: posts} = useCacheList(postCacheList);
 
   // If we are rendering a different post ID then the one we were provided,
   // update our route so that it points to the actual post we are rendering.

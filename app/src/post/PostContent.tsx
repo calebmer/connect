@@ -6,11 +6,11 @@ import {PostCache} from "./PostCache";
 import {PostID} from "@connect/api-client";
 import React from "react";
 import {communicateTime} from "../utils/communicateTime";
-import {useCacheData} from "../cache/Cache";
+import {useCache} from "../cache/Cache";
 
 export function PostContent({postID}: {postID: PostID}) {
-  const {post} = useCacheData(PostCache, postID);
-  const author = useCacheData(AccountCache, post.authorID);
+  const {post} = useCache(PostCache, postID);
+  const author = useCache(AccountCache, post.authorID);
 
   // NOTE: `new Date()` is a side-effect in render! Ideally we would use
   // `useEffect()` to watch for when the time changes, but this is good enough

@@ -11,7 +11,7 @@ import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
 import {Trough} from "../molecules/Trough";
-import {useCacheData} from "../cache/Cache";
+import {useCache} from "../cache/Cache";
 
 function Post({
   route,
@@ -29,7 +29,7 @@ function Post({
     useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
 
   function useTitle() {
-    const group = useCacheData(GroupCache, groupSlug);
+    const group = useCache(GroupCache, groupSlug);
     return group.name;
   }
 

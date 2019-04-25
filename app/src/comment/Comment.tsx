@@ -10,7 +10,7 @@ import React, {useRef} from "react";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 import {AccountByline} from "../account/AccountByline";
 import {CommentCache} from "./CommentCache";
-import {useCacheData} from "../cache/Cache";
+import {useCache} from "../cache/Cache";
 
 // NOTE: Having a React component and a type with the same name is ok in
 // TypeScript, but eslint complains when it’s an import. So import the type with
@@ -35,8 +35,8 @@ function Comment({
   }
 
   // Load our comment data.
-  const {comment} = useCacheData(CommentCache, commentID);
-  const author = useCacheData(AccountCache, comment.authorID);
+  const {comment} = useCache(CommentCache, commentID);
+  const author = useCache(AccountCache, comment.authorID);
 
   // Scroll to the end of our scroll view if this is a realtime comment.
   useScrollToEnd(scrollViewRef, author, realtime);
@@ -77,7 +77,7 @@ function CommentAfterFirst({
   author: AccountProfile;
   lastCommentID: CommentID;
 }) {
-  const {comment: lastComment} = useCacheData(CommentCache, lastCommentID);
+  const {comment: lastComment} = useCache(CommentCache, lastCommentID);
 
   // If this comment has the same author as our last comment then don’t add a
   // byline to our comment.

@@ -8,7 +8,7 @@ import {PostNewHeader} from "./PostNewHeader";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {publishPost} from "./PostCache";
-import {useCacheData} from "../cache/Cache";
+import {useCache} from "../cache/Cache";
 import {useCurrentAccount} from "../account/AccountCache";
 import {useKeyboardHeight} from "../utils/useKeyboardHeight";
 
@@ -28,7 +28,7 @@ export function PostNewMobile({
   // in the component where we add the auto-focus effect. Otherwise the focus
   // will be a noop since the component is only “shadow mounted”.
   const currentAccount = useCurrentAccount();
-  const group = useCacheData(GroupCache, groupSlug);
+  const group = useCache(GroupCache, groupSlug);
 
   // Get an instance to our editor.
   const editor = useRef<EditorInstance>(null);

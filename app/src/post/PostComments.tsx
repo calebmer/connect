@@ -4,8 +4,8 @@ import {CommentCacheList} from "../comment/CommentCache";
 import {PostID} from "@connect/api-client";
 import React from "react";
 import {Space} from "../atoms";
-import {useCacheData} from "../cache/Cache";
-import {useCacheListData} from "../cache/CacheList";
+import {useCache} from "../cache/Cache";
+import {useCacheList} from "../cache/CacheList";
 
 export function PostComments({
   postID,
@@ -29,8 +29,8 @@ function PostCommentsSuspense({
   postID: PostID;
   scrollViewRef: React.RefObject<ScrollView>;
 }) {
-  const commentCacheList = useCacheData(CommentCacheList, postID);
-  const {items: comments} = useCacheListData(commentCacheList);
+  const commentCacheList = useCache(CommentCacheList, postID);
+  const {items: comments} = useCacheList(commentCacheList);
   return (
     <View style={styles.container}>
       {comments.map((comment, i) => (

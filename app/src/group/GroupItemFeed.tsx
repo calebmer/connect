@@ -11,7 +11,7 @@ import {PostID} from "@connect/api-client";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {stall} from "../utils/stall";
-import {useCacheData} from "../cache/Cache";
+import {useCache} from "../cache/Cache";
 
 function GroupItemFeed({
   route,
@@ -25,8 +25,8 @@ function GroupItemFeed({
   selectedPostID: ReadonlyMutable<PostID | undefined>;
 }) {
   // TODO: Suspense handler for _just_ this component.
-  const {post} = useCacheData(PostCache, postID);
-  const account = useCacheData(AccountCache, post.authorID);
+  const {post} = useCache(PostCache, postID);
+  const account = useCache(AccountCache, post.authorID);
 
   // Is this post selected? We will only re-render if the value of
   // `selected` changes.

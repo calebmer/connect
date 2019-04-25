@@ -353,7 +353,7 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
  * previously rendered with some items then we will render using the
  * previous items.
  */
-export function useCacheListData<ItemCursor extends Cursor<JSONValue>, Item>(
+export function useCacheList<ItemCursor extends Cursor<JSONValue>, Item>(
   cache: CacheList<ItemCursor, Item>,
 ): {
   loading: boolean;

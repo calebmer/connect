@@ -225,7 +225,7 @@ export class Cache<Key extends string | number, Data> {
  * subscribes to the data so that when it changes the hook will re-render the
  * React component it is in.
  */
-export function useCacheData<Key extends string | number, Data>(
+export function useCache<Key extends string | number, Data>(
   cache: Cache<Key, Data>,
   key: Key,
 ): Data {

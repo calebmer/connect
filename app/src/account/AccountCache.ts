@@ -1,5 +1,5 @@
 import {AccountID, AccountProfile} from "@connect/api-client";
-import {Cache, useCacheData} from "../cache/Cache";
+import {Cache, useCache} from "../cache/Cache";
 import {CacheSingleton, useCacheSingletonData} from "../cache/CacheSingleton";
 import {API} from "../api/API";
 import {Image} from "react-native";
@@ -80,5 +80,5 @@ async function preloadAccountAvatar(account: AccountProfile): Promise<void> {
  */
 export function useCurrentAccount(): AccountProfile {
   const id = useCacheSingletonData(CurrentAccountCache);
-  return useCacheData(AccountCache, id);
+  return useCache(AccountCache, id);
 }

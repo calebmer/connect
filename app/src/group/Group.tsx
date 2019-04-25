@@ -30,8 +30,8 @@ import {Route} from "../router/Route";
 import {Trough} from "../molecules/Trough";
 import {getAdjustedContentInsetTop} from "../utils/getAdjustedContentInset";
 import {useAnimatedValue} from "../utils/useAnimatedValue";
-import {useCacheData} from "../cache/Cache";
-import {useCacheListData} from "../cache/CacheList";
+import {useCache} from "../cache/Cache";
+import {useCacheList} from "../cache/CacheList";
 import {useCacheSingletonData} from "../cache/CacheSingleton";
 
 // NOTE: Having a React component and a type with the same name is ok in
@@ -283,9 +283,9 @@ export function GroupRoute({
   CurrentAccountCache.preload();
 
   // Load the data we need for our group.
-  const group = useCacheData(GroupCache, groupSlug);
-  const postCacheList = useCacheData(PostCacheList, group.id);
-  const {loading, items: posts} = useCacheListData(postCacheList);
+  const group = useCache(GroupCache, groupSlug);
+  const postCacheList = useCache(PostCacheList, group.id);
+  const {loading, items: posts} = useCacheList(postCacheList);
 
   // NOTE: `<ScrollView>` on native doesn’t really like being re-rendered with
   // Suspense. So make sure that the current account is loaded *before*

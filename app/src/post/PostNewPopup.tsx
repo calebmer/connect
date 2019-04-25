@@ -17,7 +17,7 @@ import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {publishPost} from "./PostCache";
 import {useAnimatedValue} from "../utils/useAnimatedValue";
-import {useCacheData} from "../cache/Cache";
+import {useCache} from "../cache/Cache";
 import {useCurrentAccount} from "../account/AccountCache";
 
 // The height of our editor’s title bar.
@@ -132,7 +132,7 @@ export function PostNewPopup({
   // Load the data we will need for our popup. Including the current account and
   // the current group.
   const currentAccount = useCurrentAccount();
-  const group = useCacheData(GroupCache, groupSlug);
+  const group = useCache(GroupCache, groupSlug);
 
   // Get a reference to our editor...
   const editor = useRef<EditorInstance>(null);
