@@ -1,4 +1,4 @@
-import {StyleSheet, View} from "react-native";
+import {ScrollView, StyleSheet, View} from "react-native";
 import {Comment} from "../comment/Comment";
 import {CommentCacheList} from "../comment/CommentCache";
 import {PostID} from "@connect/api-client";
@@ -7,16 +7,28 @@ import {Space} from "../atoms";
 import {useCacheData} from "../cache/Cache";
 import {useCacheListData} from "../cache/CacheList";
 
-export function PostComments({postID}: {postID: PostID}) {
+export function PostComments({
+  postID,
+  scrollViewRef,
+}: {
+  postID: PostID;
+  scrollViewRef: React.RefObject<ScrollView>;
+}) {
   return (
     // TODO: An actual fallback...
     <React.Suspense fallback={null}>
-      <PostCommentsSuspense postID={postID} />
+      <PostCommentsSuspense postID={postID} scrollViewRef={scrollViewRef} />
     </React.Suspense>
   );
 }
 
-function PostCommentsSuspense({postID}: {postID: PostID}) {
+function PostCommentsSuspense({
+  postID,
+  scrollViewRef,
+}: {
+  postID: PostID;
+  scrollViewRef: React.RefObject<ScrollView>;
+}) {
   const commentCacheList = useCacheData(CommentCacheList, postID);
   const {items: comments} = useCacheListData(commentCacheList);
   return (
@@ -25,7 +37,9 @@ function PostCommentsSuspense({postID}: {postID: PostID}) {
         <Comment
           key={comment.id}
           commentID={comment.id}
-          lastCommentID={i > 0 ? comments[i - 1].id : undefined}
+          lastCommentID={i > 0 ? comments[i - 1].id : null}
+          realtime={comment.realtime}
+          scrollViewRef={scrollViewRef}
         />
       ))}
     </View>

@@ -44,7 +44,7 @@ function Post({
       >
         <PostContent postID={postID} />
         <Trough title="Comments" />
-        <PostComments postID={postID} />
+        <PostComments postID={postID} scrollViewRef={scrollViewRef} />
       </NavbarScrollView>
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
     </View>

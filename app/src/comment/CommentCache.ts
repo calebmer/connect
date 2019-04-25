@@ -60,8 +60,16 @@ type CommentCacheEntry = {
  * that we can create the `CommentCursor` from a cache entry.
  */
 export type CommentCacheListEntry = {
+  /** The ID of this comment. */
   readonly id: CommentID;
+  /** The time this comment was published at. */
   readonly publishedAt: DateTime;
+
+  /**
+   * Was this comment added to our list as a part of a realtime event? Either
+   * a subscription or the user entering a new post.
+   */
+  readonly realtime: boolean;
 };
 
 /** The number of comments we load for a post in our initial fetch. */
@@ -108,6 +116,7 @@ export const CommentCacheList = new Cache<
           return {
             id: comment.id,
             publishedAt: comment.publishedAt,
+            realtime: false,
           };
         });
 
@@ -175,6 +184,7 @@ export function publishComment({
       return commentCacheList.insertPhantomLast({
         id: commentID,
         publishedAt: pendingComment.publishedAt,
+        realtime: true,
       });
     })
     .catch(() => {});

@@ -9,6 +9,7 @@ export function CommentNewToolbar({postID}: {postID: PostID}) {
   return (
     <KeyboardTrackingView
       style={styles.toolbar}
+      requiresSameParentToManageScrollView
       scrollBehavior="KeyboardTrackingScrollBehaviorFixedOffset"
     >
       <View style={styles.background} />
