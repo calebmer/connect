@@ -1,4 +1,7 @@
-import {NavbarLayout} from "./NavbarLayout";
-import {ScrollView} from "react-native";
+import React from "react";
+import {NavbarLayout, NavbarLayoutProps} from "./NavbarLayout";
+import {ScrollView, ScrollViewProps} from "react-native";
 
-export const NavbarScrollView = NavbarLayout.create(ScrollView);
+export const NavbarScrollView: React.ComponentType<
+  NavbarLayoutProps & ScrollViewProps & React.RefAttributes<ScrollView>
+> = NavbarLayout.create(ScrollView);
