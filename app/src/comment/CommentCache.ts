@@ -166,6 +166,19 @@ export function publishComment({
     comment: pendingComment,
   });
 
+  // Insert our post as a phantom item in our group post list immediately so
+  // that it’s shown in the UI.
+  //
+  // We don’t care about async errors here. They’ll show up in the UI.
+  CommentCacheList.load(postID)
+    .then(commentCacheList => {
+      return commentCacheList.insertPhantomLast({
+        id: commentID,
+        publishedAt: pendingComment.publishedAt,
+      });
+    })
+    .catch(() => {});
+
   // TODO: Error handling!
   (async () => {
     try {

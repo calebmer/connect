@@ -2,10 +2,13 @@ import {Color, Shadow} from "../atoms";
 import {LayoutChangeEvent, ScrollView, StyleSheet, View} from "react-native";
 import React, {useRef} from "react";
 import {CommentNew} from "./CommentNew";
+import {PostID} from "@connect/api-client";
 
 export function CommentNewToolbar({
+  postID,
   scrollViewRef,
 }: {
+  postID: PostID;
   scrollViewRef: React.RefObject<ScrollView>;
 }) {
   // The current height of the editor. `null` if the editor has not mounted yet.
@@ -64,7 +67,7 @@ export function CommentNewToolbar({
 
   return (
     <View style={styles.toolbar} onLayout={handleLayout}>
-      <CommentNew />
+      <CommentNew postID={postID} />
     </View>
   );
 }

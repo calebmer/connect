@@ -42,6 +42,12 @@ export type EditorProps = {
    * information that is cheap to compute.
    */
   onChange?: (info: EditorChangeInfo) => void;
+
+  /**
+   * When a key is pressed on _web_ we fire this event. This event is not
+   * available on iOS or Android editors.
+   */
+  onKeyDownWeb?: (event: React.KeyboardEvent) => void;
 };
 
 /**
@@ -65,6 +71,11 @@ export type EditorInstance = {
    * operation might be expensive.
    */
   readonly getContent: () => string;
+
+  /**
+   * Delete the current content from our editor so that it is now empty.
+   */
+  readonly clearContent: () => void;
 
   /**
    * Focuses the editor text input area.

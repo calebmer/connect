@@ -1,6 +1,6 @@
 import {Color, Font, Space} from "../atoms";
 import {EditorInstance, EditorProps} from "./EditorShared";
-import React, {useImperativeHandle, useRef, useState} from "react";
+import React, {useCallback, useImperativeHandle, useRef, useState} from "react";
 import {StyleSheet, TextInput} from "react-native";
 
 function Editor(
@@ -19,22 +19,6 @@ function Editor(
   // the editor and perform other imperative actions.
   const editor = useRef<TextInput>(null);
 
-  // Add instance methods to our component...
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContent() {
-        return content.current;
-      },
-      focus() {
-        if (editor.current) {
-          editor.current.focus();
-        }
-      },
-    }),
-    [],
-  );
-
   // Current state of the text in our editor component. Whenever this changes
   // the component re-renders.
   const [text, setText] = useState("");
@@ -43,17 +27,41 @@ function Editor(
   // change on every render so we can use it in `useImperativeHandle()`.
   const content = useRef("");
 
-  function handleChangeText(newText: string) {
-    // Set both our state and our ref.
-    setText(newText);
-    content.current = newText;
+  // Handles changes to our editor’s text content.
+  const handleChange = useCallback(
+    (newText: string) => {
+      // Set both our state and our ref.
+      setText(newText);
+      content.current = newText;
 
-    if (onChange) {
-      onChange({
-        isWhitespaceOnly: /^\s*$/.test(newText),
-      });
-    }
-  }
+      // Call our `onChange` callback with updated information.
+      if (onChange) {
+        onChange({
+          isWhitespaceOnly: /^\s*$/.test(newText),
+        });
+      }
+    },
+    [onChange],
+  );
+
+  // Add instance methods to our component...
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContent() {
+        return content.current;
+      },
+      clearContent() {
+        handleChange("");
+      },
+      focus() {
+        if (editor.current) {
+          editor.current.focus();
+        }
+      },
+    }),
+    [handleChange],
+  );
 
   // Get the font size for our editor.
   const fontSize = large ? Font.size3 : Font.size2;
@@ -76,7 +84,7 @@ function Editor(
     <TextInput
       ref={editor}
       style={[styles.editor, {...fontSize, minHeight, maxHeight, paddingRight}]}
-      onChangeText={handleChangeText}
+      onChangeText={handleChange}
       multiline
       placeholder={placeholder}
       placeholderTextColor={Color.grey3}

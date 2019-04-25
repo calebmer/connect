@@ -160,7 +160,9 @@ export function publishPost({
   });
 
   // Insert our post as a phantom item in our group post list immediately so
-  // that it’s shown in the UI. Ignore any async errors...
+  // that it’s shown in the UI.
+  //
+  // We don’t care about async errors here. They’ll show up in the UI.
   PostCacheList.load(groupID)
     .then(postCacheList => {
       return postCacheList.insertPhantomFirst({

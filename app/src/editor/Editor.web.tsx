@@ -1,6 +1,6 @@
 import {Color, Font, Space} from "../atoms";
 import {EditorInstance, EditorProps} from "./EditorShared";
-import React, {useImperativeHandle, useRef, useState} from "react";
+import React, {useCallback, useImperativeHandle, useRef, useState} from "react";
 import {StyleSheet, Text, View} from "react-native";
 import {createElement} from "react-native-web";
 
@@ -53,11 +53,37 @@ function Editor(
     maxLines,
     paddingRight,
     onChange,
+    onKeyDownWeb,
   }: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
   const editor = useRef<HTMLDivElement>(null);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
+
+  /**
+   * When there’s an input event, compute whether or not we should hide
+   * the placeholder.
+   *
+   * Also send an `onChange` event with the information that is cheap
+   * to compute.
+   */
+  const handleChange = useCallback(() => {
+    // Is the editor currently _completely_ empty? If there is whitespace in the
+    // editor, it is not empty.
+    const isEmpty = editor.current ? isEditorEmpty(editor.current) : true;
+
+    // Only show the placeholder if the input is completely empty.
+    setShowPlaceholder(isEmpty);
+
+    if (onChange) {
+      // Does the editor only contain whitespace right now?
+      const isWhitespaceOnly = editor.current
+        ? isEditorWhitespaceOnly(editor.current)
+        : true;
+
+      onChange({isWhitespaceOnly});
+    }
+  }, [onChange]);
 
   // Add instance methods to our component...
   useImperativeHandle(
@@ -74,39 +100,27 @@ function Editor(
           return "";
         }
       },
+      clearContent() {
+        // Remove all the children from our HTML editor element.
+        if (editor.current) {
+          const element: any = editor.current;
+          while (element.firstChild) {
+            element.removeChild(element.firstChild);
+          }
+        }
+
+        // Since we just changed the editor contents, let’s make sure to re-run
+        // our `handleChange` function.
+        handleChange();
+      },
       focus() {
         if (editor.current) {
           (editor.current as any).focus();
         }
       },
     }),
-    [],
+    [handleChange],
   );
-
-  /**
-   * When there’s an input event, compute whether or not we should hide
-   * the placeholder.
-   *
-   * Also send an `onChange` event with the information that is cheap
-   * to compute.
-   */
-  function handleInput() {
-    // Is the editor currently _completely_ empty? If there is whitespace in the
-    // editor, it is not empty.
-    const isEmpty = editor.current ? isEditorEmpty(editor.current) : true;
-
-    // Only show the placeholder if the input is completely empty.
-    setShowPlaceholder(isEmpty);
-
-    if (onChange) {
-      // Does the editor only contain whitespace right now?
-      const isWhitespaceOnly = editor.current
-        ? isEditorWhitespaceOnly(editor.current)
-        : true;
-
-      onChange({isWhitespaceOnly});
-    }
-  }
 
   /**
    * Don’t allow the user to paste raw HTML into the editor. Instead, force the
@@ -171,8 +185,9 @@ function Editor(
           {minHeight, maxHeight, overflowX, paddingRight},
         ],
         contentEditable: !disabled,
-        onInput: handleInput,
+        onInput: handleChange,
         onPaste: handlePaste,
+        onKeyDown: onKeyDownWeb,
       })}
     </View>
   );

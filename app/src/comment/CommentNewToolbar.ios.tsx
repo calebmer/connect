@@ -2,16 +2,17 @@ import {Color, Shadow} from "../atoms";
 import {Platform, StyleSheet, View} from "react-native";
 import {CommentNew} from "./CommentNew";
 import {KeyboardTrackingView} from "react-native-keyboard-tracking-view";
+import {PostID} from "@connect/api-client";
 import React from "react";
 
-export function CommentNewToolbar() {
+export function CommentNewToolbar({postID}: {postID: PostID}) {
   return (
     <KeyboardTrackingView
       style={styles.toolbar}
       scrollBehavior="KeyboardTrackingScrollBehaviorFixedOffset"
     >
       <View style={styles.background} />
-      <CommentNew />
+      <CommentNew postID={postID} />
     </KeyboardTrackingView>
   );
 }
