@@ -17,7 +17,7 @@ import {
   postCountMore,
 } from "../post/PostCache";
 import {PostID, Group as _Group} from "@connect/api-client";
-import React, {useContext, useMemo, useRef, useState} from "react";
+import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableContainer} from "../cache/Mutable";
 import {GroupBanner} from "./GroupBanner";
 import {GroupCache} from "./GroupCache";
@@ -58,7 +58,9 @@ function Group({
   posts: ReadonlyArray<PostCacheListEntry>;
   selectedPostID: ReadonlyMutable<PostID | undefined>;
   loadingMorePosts: boolean;
-  onLoadMorePosts: (count: number) => Promise<unknown>;
+  onLoadMorePosts: (
+    count: number,
+  ) => Promise<ReadonlyArray<PostCacheListEntry>>;
 }) {
   // Keep a reference to our scroll view.
   const scrollView = useRef<any>(null);
@@ -155,7 +157,7 @@ function Group({
         // trigger `onEndReached` when this list initially renders.
         initialNumToRender={postCountInitial}
         onEndReachedThreshold={0.3}
-        onEndReached={() => onLoadMorePosts(postCountMore)}
+        onEndReached={useEndReachedCallback(posts, onLoadMorePosts)}
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
@@ -228,6 +230,43 @@ function Group({
 
 const GroupMemo = React.memo(Group);
 export {GroupMemo as Group};
+
+/**
+ * When we reach the end of our group posts then we know that it’s impossible
+ * for a new post to ever be added. This wrapper only calls `onLoadMorePosts`
+ * when we know there might  be more posts to fetch.
+ */
+function useEndReachedCallback(
+  currentPosts: ReadonlyArray<PostCacheListEntry>,
+  onLoadMorePosts: (
+    count: number,
+  ) => Promise<ReadonlyArray<PostCacheListEntry>>,
+) {
+  const promise = useRef(Promise.resolve(currentPosts.length));
+  const noMorePosts = useRef(false);
+
+  return useCallback(() => {
+    // Wait for the last call to `onLoadMorePosts` to resolve...
+    promise.current = promise.current.then(async lastCount => {
+      // If there are no more posts then immediately return. We don’t want to
+      // load any more posts.
+      if (noMorePosts.current) {
+        return lastCount;
+      }
+
+      // Load some more posts.
+      const newPosts = await onLoadMorePosts(postCountMore);
+
+      // If we got fewer posts then we expected then we know that there are no
+      // more posts to be loaded.
+      if (newPosts.length < lastCount + postCountMore) {
+        noMorePosts.current = true;
+      }
+
+      return newPosts.length;
+    });
+  }, [onLoadMorePosts]);
+}
 
 /**
  * Component we use for a group’s route. It does data loading instead of letting
