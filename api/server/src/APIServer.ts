@@ -200,22 +200,24 @@ function handleResponse<Output>(
       }
     }
 
-    // In development, throw an error from our API some percent of the time to
-    // force developers to think about the error state of their applications.
+    // TODO: re-enable
     //
-    // For safe requests (`GET`) throw an error 2% of the time. For unsafe
-    // requests (`POST`) throw an error 10% of the time.
-    if (DEV) {
-      if (safe) {
-        if (Math.random() <= 0.02) {
-          throw new APIError(APIErrorCode.CHAOS_MONKEY);
-        }
-      } else {
-        if (Math.random() <= 0.1) {
-          throw new APIError(APIErrorCode.CHAOS_MONKEY);
-        }
-      }
-    }
+    // // In development, throw an error from our API some percent of the time to
+    // // force developers to think about the error state of their applications.
+    // //
+    // // For safe requests (`GET`) throw an error 2% of the time. For unsafe
+    // // requests (`POST`) throw an error 10% of the time.
+    // if (DEV) {
+    //   if (safe) {
+    //     if (Math.random() <= 0.02) {
+    //       throw new APIError(APIErrorCode.CHAOS_MONKEY);
+    //     }
+    //   } else {
+    //     if (Math.random() <= 0.1) {
+    //       throw new APIError(APIErrorCode.CHAOS_MONKEY);
+    //     }
+    //   }
+    // }
 
     handler(req).then(output => {
       // Construct the successful result of an API request.
