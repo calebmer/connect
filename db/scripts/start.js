@@ -99,7 +99,11 @@ async function start() {
             if (code == null || code === 0) {
               resolve();
             } else {
-              reject(new Error(`"pg_ctl start" exited with code ${code}.`));
+              reject(
+                new Error(
+                  `"pg_ctl start" exited with code ${code}. Check "${logFile}" for more information.`,
+                ),
+              );
             }
             done = true;
           }
