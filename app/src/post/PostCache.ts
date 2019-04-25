@@ -11,7 +11,6 @@ import {API} from "../api/API";
 import {AccountCache} from "../account/AccountCache";
 import {Cache} from "../cache/Cache";
 import {CacheList} from "../cache/CacheList";
-import {Emitter} from "../cache/Emitter";
 
 /**
  * Caches posts by their ID.
@@ -122,13 +121,6 @@ export const PostCacheList = new Cache<
 });
 
 /**
- * When a post is published, we send an event to this emitter. We don’t wait
- * for the API to confirm that the post is published. We immediately send an
- * event so that our UI can update appropriately.
- */
-export const PostPublishEmitter = new Emitter<Post>();
-
-/**
  * Publishes a new post! Immediately generates a new post ID and inserts a
  * pending post object into the cache. We return the new post ID synchronously
  * so that the caller can optimistically display the new post.
@@ -167,9 +159,16 @@ export function publishPost({
     post: pendingPost,
   });
 
-  // Immediately emit our pending post so that our UI will render the
-  // new post.
-  PostPublishEmitter.emit(pendingPost);
+  // Insert our post as a phantom item in our group post list immediately so
+  // that it’s shown in the UI. Ignore any async errors...
+  PostCacheList.load(groupID)
+    .then(postCacheList => {
+      return postCacheList.insertPhantomFirst({
+        id: postID,
+        publishedAt: pendingPost.publishedAt,
+      });
+    })
+    .catch(() => {});
 
   // TODO: Error handling!
   (async () => {

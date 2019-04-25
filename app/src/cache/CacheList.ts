@@ -307,6 +307,44 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
 
     return segments;
   }
+
+  /**
+   * Insert a phantom item into the beginning of our list. The phantom item will
+   * be de-duplicated from server loaded items and will not be used as a cursor.
+   *
+   * This method is async in case there are any pending loads for this
+   * cache list.
+   */
+  public async insertPhantomFirst(item: Item): Promise<void> {
+    // If the segments entry is pending then don’t update it! Instead let’s wait
+    // for the segments entry to resolve and then we’ll try again.
+    let segments = this.segments.getAtThisMomentInTime().get();
+    while (segments instanceof Promise) {
+      await segments;
+      segments = this.segments.getAtThisMomentInTime().get();
+    }
+
+    this.segments.set(new Async(segments.insertPhantomFirst(item)));
+  }
+
+  /**
+   * Insert a phantom item into the end of our list. The phantom item will be
+   * de-duplicated from server loaded items and will not be used as a cursor.
+   *
+   * This method is async in case there are any pending loads for this
+   * cache list.
+   */
+  public async insertPhantomLast(item: Item): Promise<void> {
+    // If the segments entry is pending then don’t update it! Instead let’s wait
+    // for the segments entry to resolve and then we’ll try again.
+    let segments = this.segments.getAtThisMomentInTime().get();
+    while (segments instanceof Promise) {
+      await segments;
+      segments = this.segments.getAtThisMomentInTime().get();
+    }
+
+    this.segments.set(new Async(segments.insertPhantomLast(item)));
+  }
 }
 
 /**
@@ -349,7 +387,10 @@ export function useCacheListData<ItemCursor extends Cursor<JSONValue>, Item>(
  * new items between the last batch of items was fetched and the time our
  * phantom item was inserted so we don’t ever use the cursor of a phantom item.
  *
- * _Important invariant:_ Every segment must have at least one non-phantom item.
+ * Unless there is a segment of _only_ phantom items. Then we will use the
+ * cursors of phantom items. Only because we need some notion of boundaries for
+ * every segment. Eventually we’ll merge into the segment of only phantom items
+ * and we’ll ignore the phantom items again.
  *
  * **Example**
  *
@@ -468,8 +509,6 @@ class CacheListSegments<Item> {
 
   /**
    * All of our items grouped together by their segment.
-   *
-   * **IMPORTANT:** All segments must have at least one non-phantom item!
    */
   private readonly segments: ReadonlyArray<NonEmptyArray<Item>>;
 
@@ -516,27 +555,27 @@ class CacheListSegments<Item> {
   }
 
   /**
-   * Get the first non-phantom item in a segment. We expect that every segment
-   * has at least one non-phantom item.
+   * Get the first non-phantom item in a segment. If there are only phantom
+   * items in the segment then we return the first phantom item.
    */
   private getSegmentFirstItem(segment: NonEmptyArray<Item>): Item {
     for (let i = 0; i < segment.length; i++) {
       const item = segment[i];
       if (!this.isPhantomItem(item)) return item;
     }
-    throw new Error("Cache list segment has only phantom items.");
+    return segment[0];
   }
 
   /**
-   * Get the first non-phantom item in a segment. We expect that every segment
-   * has at least one non-phantom item.
+   * Get the first non-phantom item in a segment. If there are only phantom
+   * items in the segment then we return the first phantom item.
    */
   private getSegmentLastItem(segment: NonEmptyArray<Item>): Item {
     for (let i = segment.length - 1; i >= 0; i--) {
       const item = segment[i];
       if (!this.isPhantomItem(item)) return item;
     }
-    throw new Error("Cache list segment has only phantom items.");
+    return segment[segment.length - 1];
   }
 
   /** Get the first item of the first segment. */
@@ -731,6 +770,38 @@ class CacheListSegments<Item> {
     } else {
       return this.prependLastSegment(rawNewItems);
     }
+  }
+
+  /**
+   * Inserts a phantom item into the beginning of the list. A phantom item will
+   * not be used when deciding what cursor to use to fetch new items.
+   *
+   * If a later function adds a batch of items that contains the phantom item
+   * then the phantom item will be de-duplicated.
+   */
+  public insertPhantomFirst(item: Item): CacheListSegments<Item> {
+    const firstSegment = [item, ...this.segments[0]];
+    return new CacheListSegments(
+      this.getKey,
+      new Set(this.phantomKeys).add(this.getKey(item)),
+      [firstSegment as NonEmptyArray<Item>, ...this.segments.slice(1)],
+    );
+  }
+
+  /**
+   * Inserts a phantom item into the end of the list. A phantom item will
+   * not be used when deciding what cursor to use to fetch new items.
+   *
+   * If a later function adds a batch of items that contains the phantom item
+   * then the phantom item will be de-duplicated.
+   */
+  public insertPhantomLast(item: Item): CacheListSegments<Item> {
+    const lastSegment = [...this.segments[this.segments.length - 1], item];
+    return new CacheListSegments(
+      this.getKey,
+      new Set(this.phantomKeys).add(this.getKey(item)),
+      [...this.segments.slice(0, -1), lastSegment as NonEmptyArray<Item>],
+    );
   }
 }
 

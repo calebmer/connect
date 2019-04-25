@@ -33,7 +33,6 @@ import {useAnimatedValue} from "../utils/useAnimatedValue";
 import {useCacheData} from "../cache/Cache";
 import {useCacheListData} from "../cache/CacheList";
 import {useCacheSingletonData} from "../cache/CacheSingleton";
-import {useNewPosts} from "./useNewPosts";
 
 // NOTE: Having a React component and a type with the same name is ok in
 // TypeScript, but eslint complains when it’s an import. So import the type with
@@ -49,7 +48,7 @@ const AnimatedSectionList: SectionList<
 function Group({
   route,
   group,
-  posts: _posts,
+  posts,
   selectedPostID,
   loadingMorePosts,
   onLoadMorePosts,
@@ -92,9 +91,6 @@ function Group({
 
   // Should we show the navbar or not?
   const [showNavbarBackground, setShowNavbarBackground] = useState(false);
-
-  // Make sure to include all the new posts in our post list.
-  const posts = useNewPosts(group.id, _posts);
 
   // All the section data that our list will render. Memoized to avoid
   // unnecessary calculations in the virtualized list.
