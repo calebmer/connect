@@ -102,7 +102,7 @@ export async function publishPost(
          VALUES (${input.id},
                  ${input.groupID},
                  ${ctx.accountID},
-                 ${input.content})
+                 ${input.content.trim()})
       RETURNING published_at
   `);
 

@@ -376,4 +376,91 @@ describe("publishComment", () => {
       });
     });
   });
+
+  test("trims whitespace from the front", () => {
+    const content = " \n  test";
+
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID: membership.groupID});
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        const commentID = generateID<CommentID>();
+
+        const {publishedAt} = await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content,
+        });
+
+        const {comment} = await getComment(ctx, {id: commentID});
+
+        expect(comment).toEqual({
+          id: commentID,
+          postID: post.id,
+          authorID: membership.accountID,
+          publishedAt,
+          content: "test",
+        });
+      });
+    });
+  });
+
+  test("trims whitespace from the back", () => {
+    const content = "test \n  ";
+
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID: membership.groupID});
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        const commentID = generateID<CommentID>();
+
+        const {publishedAt} = await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content,
+        });
+
+        const {comment} = await getComment(ctx, {id: commentID});
+
+        expect(comment).toEqual({
+          id: commentID,
+          postID: post.id,
+          authorID: membership.accountID,
+          publishedAt,
+          content: "test",
+        });
+      });
+    });
+  });
+
+  test("trims whitespace from the front and back", () => {
+    const content = " \n  test \n  ";
+
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID: membership.groupID});
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        const commentID = generateID<CommentID>();
+
+        const {publishedAt} = await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content,
+        });
+
+        const {comment} = await getComment(ctx, {id: commentID});
+
+        expect(comment).toEqual({
+          id: commentID,
+          postID: post.id,
+          authorID: membership.accountID,
+          publishedAt,
+          content: "test",
+        });
+      });
+    });
+  });
 });

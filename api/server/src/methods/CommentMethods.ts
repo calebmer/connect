@@ -102,7 +102,7 @@ export async function publishComment(
          VALUES (${input.id},
                  ${input.postID},
                  ${ctx.accountID},
-                 ${input.content})
+                 ${input.content.trim()})
       RETURNING published_at
   `);
 

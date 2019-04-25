@@ -149,7 +149,7 @@ export function publishPost({
     groupID,
     authorID,
     publishedAt: DateTime.now(), // The server will assign a definitive timestamp.
-    content,
+    content: content.trim(),
   };
 
   // Insert our pending post into the cache! This way it will

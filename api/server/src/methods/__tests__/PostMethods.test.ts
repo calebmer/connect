@@ -635,4 +635,88 @@ describe("publishPost", () => {
       });
     });
   });
+
+  test("trims whitespace from the front", () => {
+    const content = " \n  test";
+
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        const postID = generateID<PostID>();
+
+        const {publishedAt} = await publishPost(ctx, {
+          id: postID,
+          groupID: membership.groupID,
+          content,
+        });
+
+        const {post} = await getPost(ctx, {id: postID});
+
+        expect(post).toEqual({
+          id: postID,
+          groupID: membership.groupID,
+          authorID: membership.accountID,
+          publishedAt,
+          content: "test",
+        });
+      });
+    });
+  });
+
+  test("trims whitespace from the back", () => {
+    const content = "test \n  ";
+
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        const postID = generateID<PostID>();
+
+        const {publishedAt} = await publishPost(ctx, {
+          id: postID,
+          groupID: membership.groupID,
+          content,
+        });
+
+        const {post} = await getPost(ctx, {id: postID});
+
+        expect(post).toEqual({
+          id: postID,
+          groupID: membership.groupID,
+          authorID: membership.accountID,
+          publishedAt,
+          content: "test",
+        });
+      });
+    });
+  });
+
+  test("trims whitespace from the front and back", () => {
+    const content = " \n  test \n  ";
+
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        const postID = generateID<PostID>();
+
+        const {publishedAt} = await publishPost(ctx, {
+          id: postID,
+          groupID: membership.groupID,
+          content,
+        });
+
+        const {post} = await getPost(ctx, {id: postID});
+
+        expect(post).toEqual({
+          id: postID,
+          groupID: membership.groupID,
+          authorID: membership.accountID,
+          publishedAt,
+          content: "test",
+        });
+      });
+    });
+  });
 });

@@ -165,7 +165,7 @@ export function publishComment({
     postID,
     authorID,
     publishedAt: DateTime.now(), // The server will assign a definitive timestamp.
-    content,
+    content: content.trim(),
   };
 
   // Insert our pending comment into the cache! This way it will
