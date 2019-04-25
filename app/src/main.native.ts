@@ -1,5 +1,6 @@
 import {GroupRoute, SignInRoute} from "./router/AllRoutes";
 import {Navigation} from "react-native-navigation";
+import {YellowBox} from "react-native";
 import {loadTokensFromStorage} from "./api/API.native";
 
 // Load our authentication tokens from storage.
@@ -49,3 +50,10 @@ function main(isAuthenticated: boolean) {
     },
   });
 }
+
+YellowBox.ignoreWarnings([
+  // Do more investigation as to why this warning shows up. I’ve (Caleb) seen it
+  // on multiple projects, though and it doesn’t seem to mean much. Only that an
+  // image in a virtualized list was unmounted or something.
+  "Task orphaned",
+]);
