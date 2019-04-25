@@ -17,7 +17,7 @@ import {useCacheData} from "../cache/Cache";
 // a different name and alias it here.
 type Comment = _Comment;
 
-export function Comment({
+function Comment({
   commentID,
   lastCommentID,
 }: {
@@ -43,6 +43,9 @@ export function Comment({
     );
   }
 }
+
+const CommentMemo = React.memo(Comment);
+export {CommentMemo as Comment};
 
 function CommentAfterFirst({
   comment,
