@@ -1,17 +1,14 @@
 import {CacheList, useCacheListWithoutSuspense} from "../cache/CacheList";
 import {Color, Font, Shadow, Space} from "../atoms";
-import {
-  CommentCacheList,
-  CommentCacheListEntry,
-  commentCountInitial,
-} from "../comment/CommentCache";
+import {CommentCacheList, CommentCacheListEntry} from "../comment/CommentCache";
+import {Dimensions, ScrollView, StyleSheet, View} from "react-native";
 import React, {useContext, useRef} from "react";
-import {ScrollView, StyleSheet, View} from "react-native";
 import {useCache, useCacheWithoutSuspense} from "../cache/Cache";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
+import {Loading} from "../molecules/Loading";
 import {NavbarFlatList} from "../frame/NavbarFlatList";
 import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
@@ -48,7 +45,7 @@ function Post({
   // display immediately but not the comments. We want the comments to
   // asynchronously load in over time.
   const commentsCache = useCacheWithoutSuspense(CommentCacheList, postID);
-  const {items: comments} = useCacheListWithoutSuspense(
+  const {loading, items: comments} = useCacheListWithoutSuspense(
     commentsCache || CacheList.never(),
   );
 
@@ -70,10 +67,16 @@ function Post({
             <Trough title="Comments" />
           </>
         }
+        ListFooterComponent={
+          loading ? (
+            <View style={styles.loading}>
+              <Loading />
+            </View>
+          ) : null
+        }
         // `FlatList` data
         data={comments}
         keyExtractor={comment => comment.id}
-        initialNumToRender={commentCountInitial}
         renderItem={({item: comment, index}) => (
           <Comment
             key={comment.id}
@@ -82,6 +85,12 @@ function Post({
             realtime={comment.realtime}
             scrollViewRef={scrollViewRef}
           />
+        )}
+        initialNumToRender={Math.ceil(
+          // Estimate the maximum number of comments that can fit on screen at
+          // a time.
+          (Dimensions.get("screen").height * 0.75) /
+            (Font.size2.lineHeight * 2),
         )}
       />
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
@@ -106,5 +115,8 @@ const styles = StyleSheet.create({
   },
   container: {
     paddingBottom: Space.space3,
+  },
+  loading: {
+    paddingTop: Space.space3,
   },
 });
