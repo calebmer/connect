@@ -3,18 +3,17 @@ import {Group, GroupRoute as GroupRouteComponent} from "./Group";
 import {Post, Post as PostRouteComponent} from "../post/Post";
 import React, {useCallback, useEffect} from "react";
 import {StyleSheet, View} from "react-native";
+import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {CurrentAccountCache} from "../account/AccountCache";
 import {GroupCache} from "./GroupCache";
 import {GroupHomeContainer} from "./GroupHomeContainer";
 import {GroupHomeLayout} from "./GroupHomeLayout";
-import {PostCacheList} from "../post/PostCache";
+import {GroupPostsCache} from "../post/PostCache";
 import {PostID} from "@connect/api-client";
 import {PostNewPopupContext} from "../post/PostNewPopupContext";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {Space} from "../atoms";
-import {useCache} from "../cache/Cache";
-import {useCacheList} from "../cache/CacheList";
 import {useMutableContainer} from "../cache/Mutable";
 
 function GroupHome({
@@ -65,8 +64,7 @@ function GroupSuspense({
 }) {
   // Get the list of posts for this component.
   const group = useCache(GroupCache, groupSlug);
-  const postCacheList = useCache(PostCacheList, group.id);
-  const {loading, items: posts} = useCacheList(postCacheList);
+  const {loading, data: posts} = useCacheWithPrev(GroupPostsCache, group.id);
 
   // If we are rendering a different post ID then the one we were provided,
   // update our route so that it points to the actual post we are rendering.
@@ -74,21 +72,26 @@ function GroupSuspense({
   // NOTE: Ideally there should be no flash of empty content in the post panel
   // before we redirect.
   useEffect(() => {
-    if (postID == null && posts.length > 0) {
-      route.webReplace(PostRoute, {groupSlug, postID: String(posts[0].id)});
+    if (postID == null && posts.items.length > 0) {
+      route.webReplace(PostRoute, {
+        groupSlug,
+        postID: String(posts.items[0].id),
+      });
     }
-  }, [groupSlug, postID, posts, route]);
+  }, [groupSlug, postID, posts.items, route]);
 
   return (
     <Group
       route={route}
       group={group}
-      posts={posts}
+      posts={posts.items}
       selectedPostID={useMutableContainer(postID)}
-      loadingMorePosts={loading}
-      onLoadMorePosts={useCallback(count => postCacheList.loadNext(count), [
-        postCacheList,
-      ])}
+      loadingMorePosts={!posts.noMoreItems || loading}
+      onLoadMorePosts={useCallback(
+        count =>
+          GroupPostsCache.update(group.id, posts => posts.loadMore(count)),
+        [group.id],
+      )}
     />
   );
 }

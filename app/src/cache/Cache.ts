@@ -1,4 +1,4 @@
-import {Async, useAsyncWithToggle} from "./Async";
+import {Async, useAsyncWithPrev, useAsyncWithToggle} from "./Async";
 import {Mutable, ReadonlyMutable, useMutable} from "./Mutable";
 
 /**
@@ -50,10 +50,23 @@ export class Cache<Key extends string | number, Data> {
   }
 
   /**
+   * Retrieves an entry from our cache. If the entry does not exist yet then
+   * we will first load the entry into our cache.
+   */
+  private accessEntry(key: Key): Mutable<Async<Data>> {
+    let entry = this.entries.get(key);
+    if (entry === undefined) {
+      entry = new Mutable(new Async(this._load(key)));
+      this.entries.set(key, entry);
+    }
+    return entry;
+  }
+
+  /**
    * Inserts an async entry in our cache. If there is already an entry with
    * this key then that entry will be overridden.
    */
-  private insertEntry(key: Key, data: Async<Data>) {
+  private insertEntry(key: Key, data: Async<Data>): void {
     const entry = this.entries.get(key);
     if (entry === undefined) {
       this.entries.set(key, new Mutable(data));
@@ -66,8 +79,33 @@ export class Cache<Key extends string | number, Data> {
    * Inserts a resolved entry into the cache. If there is already an entry with
    * this key then that entry will be overridden.
    */
-  public insert(key: Key, data: Data) {
+  public insert(key: Key, data: Data): void {
     this.insertEntry(key, new Async(data));
+  }
+
+  /**
+   * Updates some data in our cache. If the data associated with the provided
+   * key does not exist then we will first load the data. If the data associated
+   * with the provided key is currently pending then we will wait for it to
+   * resolve before executing our updater.
+   */
+  public update(key: Key, updater: (data: Data) => Data | Promise<Data>): void {
+    const entry = this.accessEntry(key);
+
+    actuallyUpdate();
+
+    function actuallyUpdate(): void {
+      try {
+        const data = entry.getAtThisMomentInTime().get();
+        if (data instanceof Promise) {
+          data.then(() => actuallyUpdate(), () => actuallyUpdate());
+        } else {
+          entry.set(new Async(updater(data)));
+        }
+      } catch (error) {
+        // noop: we expect the error to be handled in our UI.
+      }
+    }
   }
 
   /**
@@ -75,12 +113,7 @@ export class Cache<Key extends string | number, Data> {
    * we will first load the entry into our cache.
    */
   public loadEntry(key: Key): ReadonlyMutable<Async<Data>> {
-    let entry = this.entries.get(key);
-    if (entry === undefined) {
-      entry = new Mutable(new Async(this._load(key)));
-      this.entries.set(key, entry);
-    }
-    return entry;
+    return this.accessEntry(key);
   }
 
   /**
@@ -91,7 +124,7 @@ export class Cache<Key extends string | number, Data> {
    * `useCacheData()` instead which will watch the cache for changes.
    */
   public load(key: Key): Promise<Data> {
-    const value = this.loadEntry(key)
+    const value = this.accessEntry(key)
       .getAtThisMomentInTime()
       .get();
     return Promise.resolve(value);
@@ -104,7 +137,7 @@ export class Cache<Key extends string | number, Data> {
    * ignore that information.
    */
   public preload(key: Key): void {
-    this.loadEntry(key);
+    this.accessEntry(key);
   }
 
   /**
@@ -126,7 +159,7 @@ export class Cache<Key extends string | number, Data> {
     const values = Array<Async<Data>>(keys.size);
     let i = 0;
     for (const key of keys) {
-      values[i++] = this.loadEntry(key).getAtThisMomentInTime();
+      values[i++] = this.accessEntry(key).getAtThisMomentInTime();
     }
 
     // Loop through all of our values. If the value is a promise then let’s
@@ -223,6 +256,24 @@ export function useCache<Key extends string | number, Data>(
 ): Data {
   const entry = cache.loadEntry(key);
   return useMutable(entry).suspend();
+}
+
+/**
+ * Use some data from the cache in a React component. If the data has not yet
+ * loaded and we have not rendered before with some data then we will throw a
+ * promise. (Suspense style.) If the data has rejected then we will throw
+ * an error.
+ *
+ * Remember that if that cache entry ever reloads we will return the previous
+ * data and set loading to true!
+ */
+export function useCacheWithPrev<Key extends string | number, Data>(
+  cache: Cache<Key, Data>,
+  key: Key,
+): {loading: boolean; data: Data} {
+  const entry = cache.loadEntry(key);
+  const {loading, value} = useAsyncWithPrev(useMutable(entry));
+  return {loading, data: value};
 }
 
 /**

@@ -11,14 +11,15 @@ import {
 import {Color, Font, Space} from "../atoms";
 import {CurrentAccountCache, useCurrentAccount} from "../account/AccountCache";
 import {
-  PostCacheList,
-  PostCacheListEntry,
+  GroupPostCacheEntry,
+  GroupPostsCache,
   postCountInitial,
   postCountMore,
 } from "../post/PostCache";
 import {PostID, Group as _Group} from "@connect/api-client";
-import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
+import React, {useContext, useMemo, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableContainer} from "../cache/Mutable";
+import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {GroupBanner} from "./GroupBanner";
 import {GroupCache} from "./GroupCache";
 import {GroupHomeLayout} from "./GroupHomeLayout";
@@ -30,8 +31,6 @@ import {Route} from "../router/Route";
 import {Trough} from "../molecules/Trough";
 import {getAdjustedContentInsetTop} from "../utils/getAdjustedContentInset";
 import {useAnimatedValue} from "../utils/useAnimatedValue";
-import {useCache} from "../cache/Cache";
-import {useCacheList} from "../cache/CacheList";
 import {useCacheSingletonData} from "../cache/CacheSingleton";
 
 // NOTE: Having a React component and a type with the same name is ok in
@@ -55,12 +54,10 @@ function Group({
 }: {
   route: Route;
   group: Group;
-  posts: ReadonlyArray<PostCacheListEntry>;
+  posts: ReadonlyArray<GroupPostCacheEntry>;
   selectedPostID: ReadonlyMutable<PostID | undefined>;
   loadingMorePosts: boolean;
-  onLoadMorePosts: (
-    count: number,
-  ) => Promise<ReadonlyArray<PostCacheListEntry>>;
+  onLoadMorePosts: (count: number) => void;
 }) {
   // Keep a reference to our scroll view.
   const scrollView = useRef<any>(null);
@@ -107,9 +104,9 @@ function Group({
 
     // The feed section of our `<SectionList>`. Contains all the posts from the
     // group in reverse chronological order.
-    const feedSection: SectionListData<PostCacheListEntry> = {
+    const feedSection: SectionListData<GroupPostCacheEntry> = {
       title: "Feed",
-      data: posts as Array<PostCacheListEntry>,
+      data: posts as Array<GroupPostCacheEntry>,
       keyExtractor: post => String(post.id),
       renderItem: ({item: {id: postID}}) => (
         <GroupItemFeed
@@ -157,7 +154,7 @@ function Group({
         // trigger `onEndReached` when this list initially renders.
         initialNumToRender={postCountInitial}
         onEndReachedThreshold={0.3}
-        onEndReached={useEndReachedCallback(posts, onLoadMorePosts)}
+        onEndReached={() => onLoadMorePosts(postCountMore)}
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
@@ -232,43 +229,6 @@ const GroupMemo = React.memo(Group);
 export {GroupMemo as Group};
 
 /**
- * When we reach the end of our group posts then we know that it’s impossible
- * for a new post to ever be added. This wrapper only calls `onLoadMorePosts`
- * when we know there might  be more posts to fetch.
- */
-function useEndReachedCallback(
-  currentPosts: ReadonlyArray<PostCacheListEntry>,
-  onLoadMorePosts: (
-    count: number,
-  ) => Promise<ReadonlyArray<PostCacheListEntry>>,
-) {
-  const promise = useRef(Promise.resolve(currentPosts.length));
-  const noMorePosts = useRef(false);
-
-  return useCallback(() => {
-    // Wait for the last call to `onLoadMorePosts` to resolve...
-    promise.current = promise.current.then(async lastCount => {
-      // If there are no more posts then immediately return. We don’t want to
-      // load any more posts.
-      if (noMorePosts.current) {
-        return lastCount;
-      }
-
-      // Load some more posts.
-      const newPosts = await onLoadMorePosts(postCountMore);
-
-      // If we got fewer posts then we expected then we know that there are no
-      // more posts to be loaded.
-      if (newPosts.length < lastCount + postCountMore) {
-        noMorePosts.current = true;
-      }
-
-      return newPosts.length;
-    });
-  }, [onLoadMorePosts]);
-}
-
-/**
  * Component we use for a group’s route. It does data loading instead of letting
  * the parent component do data loading.
  */
@@ -284,8 +244,7 @@ export function GroupRoute({
 
   // Load the data we need for our group.
   const group = useCache(GroupCache, groupSlug);
-  const postCacheList = useCache(PostCacheList, group.id);
-  const {loading, items: posts} = useCacheList(postCacheList);
+  const {loading, data: posts} = useCacheWithPrev(GroupPostsCache, group.id);
 
   // NOTE: `<ScrollView>` on native doesn’t really like being re-rendered with
   // Suspense. So make sure that the current account is loaded *before*
@@ -296,10 +255,12 @@ export function GroupRoute({
     <Group
       route={route}
       group={group}
-      posts={posts}
+      posts={posts.items}
       selectedPostID={useMutableContainer(undefined)}
-      loadingMorePosts={loading}
-      onLoadMorePosts={count => postCacheList.loadNext(count)}
+      loadingMorePosts={!posts.noMoreItems || loading}
+      onLoadMorePosts={count =>
+        GroupPostsCache.update(group.id, posts => posts.loadMore(count))
+      }
     />
   );
 }

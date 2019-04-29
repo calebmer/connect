@@ -5,12 +5,13 @@ import {
   Post,
   PostCursor,
   PostID,
+  RangeDirection,
   generateID,
 } from "@connect/api-client";
 import {API} from "../api/API";
 import {AccountCache} from "../account/AccountCache";
 import {Cache} from "../cache/Cache";
-import {CacheList} from "../cache/CacheList";
+import {Paginator} from "../cache/Paginator";
 
 /**
  * Caches posts by their ID.
@@ -58,7 +59,7 @@ type PostCacheEntry = {
  * We also include the time at which the post was published so that we can
  * create the `PostCursor` from a cache entry.
  */
-export type PostCacheListEntry = {
+export type GroupPostCacheEntry = {
   readonly id: PostID;
   readonly publishedAt: DateTime;
 };
@@ -73,14 +74,15 @@ export const postCountMore = 8;
  * A cache which holds a list of posts for each group. When loading a list from
  * this cache, we load the first few posts before returning the list.
  */
-export const PostCacheList = new Cache<
+export const GroupPostsCache = new Cache<
   GroupID,
-  CacheList<PostCursor, PostCacheListEntry>
+  Paginator<PostCursor, GroupPostCacheEntry>
 >({
   async load(groupID) {
-    // Create the post cache list...
-    const postCacheList = new CacheList<PostCursor, PostCacheListEntry>({
-      key: ({id}) => id,
+    // Create the group post paginator...
+    const groupPosts = await Paginator.load<PostCursor, GroupPostCacheEntry>({
+      direction: RangeDirection.First,
+      count: postCountInitial,
       cursor: PostCursor.get,
 
       async load(range) {
@@ -92,7 +94,7 @@ export const PostCacheList = new Cache<
 
         // Loop through all the posts and create cache entries for our post
         // list. Also insert each post into our `PostCache`.
-        const entries = posts.map<PostCacheListEntry>(post => {
+        const entries = posts.map<GroupPostCacheEntry>(post => {
           PostCache.insert(post.id, {
             status: PostCacheEntryStatus.Commit,
             post,
@@ -112,11 +114,7 @@ export const PostCacheList = new Cache<
       },
     });
 
-    // Load the first few posts into our cache. We will suspend until we’ve
-    // loaded the first few posts.
-    await postCacheList.loadFirst(postCountInitial);
-
-    return postCacheList;
+    return groupPosts;
   },
 });
 
@@ -161,16 +159,12 @@ export function publishPost({
 
   // Insert our post as a phantom item in our group post list immediately so
   // that it’s shown in the UI.
-  //
-  // We don’t care about async errors here. They’ll show up in the UI.
-  PostCacheList.load(groupID)
-    .then(postCacheList => {
-      return postCacheList.insertPhantomFirst({
-        id: postID,
-        publishedAt: pendingPost.publishedAt,
-      });
-    })
-    .catch(() => {});
+  GroupPostsCache.update(groupID, posts => {
+    return posts.insert({
+      id: postID,
+      publishedAt: pendingPost.publishedAt,
+    });
+  });
 
   // TODO: Error handling!
   (async () => {
