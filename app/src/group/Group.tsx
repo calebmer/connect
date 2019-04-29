@@ -258,9 +258,10 @@ export function GroupRoute({
       posts={posts.items}
       selectedPostID={useMutableContainer(undefined)}
       loadingMorePosts={!posts.noMoreItems || loading}
-      onLoadMorePosts={count =>
-        GroupPostsCache.update(group.id, posts => posts.loadMore(count))
-      }
+      onLoadMorePosts={count => {
+        if (!GroupPostsCache.isLoading(group.id))
+          GroupPostsCache.update(group.id, posts => posts.loadMore(count));
+      }}
     />
   );
 }

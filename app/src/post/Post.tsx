@@ -3,6 +3,7 @@ import {Dimensions, ScrollView, StyleSheet, View} from "react-native";
 import {
   PostCommentsCache,
   PostCommentsCacheEntry,
+  commentCountMore,
 } from "../comment/CommentCache";
 import React, {useContext, useRef} from "react";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
@@ -48,8 +49,8 @@ function Post({
   // asynchronously load in over time.
   const {loading, data: comments} = useCacheWithPrev<
     PostID,
-    {items: ReadonlyArray<PostCommentsCacheEntry>}
-  >(PostCommentsCache, postID, {items: []});
+    {items: ReadonlyArray<PostCommentsCacheEntry>; noMoreItems: boolean}
+  >(PostCommentsCache, postID, {items: [], noMoreItems: false});
 
   return (
     <View style={styles.background}>
@@ -70,7 +71,7 @@ function Post({
           </>
         }
         ListFooterComponent={
-          loading ? (
+          !comments.noMoreItems || loading ? (
             <View style={styles.loading}>
               <Loading />
             </View>
@@ -94,6 +95,15 @@ function Post({
           (Dimensions.get("screen").height * 0.75) /
             (Font.size2.lineHeight * 2),
         )}
+        // `FlatList` fetch more data
+        onEndReachedThreshold={0.3}
+        onEndReached={() => {
+          if (!PostCommentsCache.isLoading(postID)) {
+            PostCommentsCache.update(postID, comments =>
+              comments.loadMore(commentCountMore),
+            );
+          }
+        }}
       />
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
     </View>

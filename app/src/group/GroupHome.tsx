@@ -88,8 +88,10 @@ function GroupSuspense({
       selectedPostID={useMutableContainer(postID)}
       loadingMorePosts={!posts.noMoreItems || loading}
       onLoadMorePosts={useCallback(
-        count =>
-          GroupPostsCache.update(group.id, posts => posts.loadMore(count)),
+        count => {
+          if (!GroupPostsCache.isLoading(group.id))
+            GroupPostsCache.update(group.id, posts => posts.loadMore(count));
+        },
         [group.id],
       )}
     />

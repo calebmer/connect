@@ -109,6 +109,16 @@ export class Cache<Key extends string | number, Data> {
   }
 
   /**
+   * Is the entry with the provided key currently loading? If the entry does
+   * not yet exist then we will load it and then check.
+   */
+  public isLoading(key: Key): boolean {
+    return this.accessEntry(key)
+      .getAtThisMomentInTime()
+      .isLoading();
+  }
+
+  /**
    * Retrieves an entry from our cache. If the entry does not exist yet then
    * we will first load the entry into our cache.
    */

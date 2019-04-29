@@ -32,7 +32,7 @@ export class Paginator<ItemCursor extends Cursor<JSONValue>, Item> {
       false,
     );
 
-    return list.loadMore(count);
+    return list.actuallyLoadMore(count);
   }
 
   private constructor(
@@ -75,10 +75,21 @@ export class Paginator<ItemCursor extends Cursor<JSONValue>, Item> {
   /**
    * Loads more items in the list based on the direction of the list.
    */
-  public async loadMore(count: number): Promise<Paginator<ItemCursor, Item>> {
+  public loadMore(
+    count: number,
+  ): Paginator<ItemCursor, Item> | Promise<Paginator<ItemCursor, Item>> {
     // If there are no more items then don’t fetch anything else!
     if (this.noMoreItems) return this;
 
+    return this.actuallyLoadMore(count);
+  }
+
+  /**
+   * Always loads more posts even if we don’t need any more.
+   */
+  private async actuallyLoadMore(
+    count: number,
+  ): Promise<Paginator<ItemCursor, Item>> {
     // Get the range based on the direction of our list.
     let range: Range<ItemCursor>;
     if (this.direction === RangeDirection.First) {

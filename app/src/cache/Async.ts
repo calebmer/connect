@@ -58,6 +58,13 @@ export class Async<Value> {
   }
 
   /**
+   * Is our async value currently loading?
+   */
+  public isLoading(): boolean {
+    return this.status === AsyncStatus.Pending;
+  }
+
+  /**
    * Gets the asynchronous value. If the value is resolved then we synchronously
    * return it. Otherwise we return a promise that resolves when the
    * asynchronous value is ready.

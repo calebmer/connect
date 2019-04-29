@@ -89,7 +89,7 @@ export const PostCommentsCache = new Cache<
 >({
   async load(postID) {
     return await Paginator.load<CommentCursor, PostCommentsCacheEntry>({
-      direction: RangeDirection.Last,
+      direction: RangeDirection.First,
       count: commentCountInitial,
       cursor: CommentCursor.get,
 
