@@ -1,8 +1,11 @@
 import {
   AccountID,
+  Comment,
   CommentID,
   DateTime,
+  Group,
   GroupID,
+  Post,
   PostID,
   generateID,
 } from "@connect/api-client";
@@ -84,13 +87,7 @@ export async function createAccount(ctx: ContextTest): Promise<FactoryAccount> {
   };
 }
 
-type FactoryGroup = {
-  id: GroupID;
-  slug: string;
-  name: string;
-};
-
-export async function createGroup(ctx: ContextTest): Promise<FactoryGroup> {
+export async function createGroup(ctx: ContextTest): Promise<Group> {
   const n = groupSequence(ctx);
 
   const slug = `group${n}`;
@@ -149,21 +146,13 @@ type FactoryPostConfig = {
   publishedAt?: DateTime;
 };
 
-type FactoryPost = {
-  id: PostID;
-  groupID: GroupID;
-  authorID: AccountID;
-  publishedAt: DateTime;
-  content: string;
-};
-
 // https://en.wikipedia.org/wiki/The_Impossible_Astronaut
 const startPublishedAt = Date.parse("2011-04-22 16:30:00");
 
 export async function createPost(
   ctx: ContextTest,
   config: FactoryPostConfig = {},
-): Promise<FactoryPost> {
+): Promise<Post> {
   const id = generateID<PostID>();
   const n = postSequence(ctx);
 
@@ -189,6 +178,7 @@ export async function createPost(
     groupID,
     authorID,
     publishedAt,
+    commentCount: 0,
     content,
   };
 }
@@ -199,21 +189,13 @@ type FactoryCommentConfig = {
   authorID?: AccountID;
 };
 
-type FactoryComment = {
-  id: CommentID;
-  postID: PostID;
-  authorID: AccountID;
-  publishedAt: DateTime;
-  content: string;
-};
-
 // https://en.wikipedia.org/wiki/The_Impossible_Astronaut
 const startPostedAt = Date.parse("2011-04-22 16:30:00");
 
 export async function createComment(
   ctx: ContextTest,
   config: FactoryCommentConfig = {},
-): Promise<FactoryComment> {
+): Promise<Comment> {
   const id = generateID<CommentID>();
   const n = commentSequence(ctx);
 

@@ -23,7 +23,7 @@ export async function getPost(
   const {
     rows: [row],
   } = await ctx.query(sql`
-    SELECT group_id, author_id, published_at, content
+    SELECT group_id, author_id, published_at, comment_count, content
       FROM post
      WHERE id = ${postID}
   `);
@@ -35,6 +35,7 @@ export async function getPost(
       groupID: row.group_id,
       authorID: row.author_id,
       publishedAt: row.published_at,
+      commentCount: row.comment_count,
       content: row.content,
     };
     return {post};
@@ -59,7 +60,7 @@ export async function getGroupPosts(
   // Get a list of posts in reverse chronological order using the pagination
   // parameters provided by our input.
   const {rows} = await PGPaginationPost.query(ctx, {
-    selection: sql`id, author_id, published_at, content`,
+    selection: sql`id, author_id, published_at, comment_count, content`,
     extraCondition: sql`group_id = ${sql.value(input.groupID)}`,
     range: input,
   });
@@ -70,6 +71,7 @@ export async function getGroupPosts(
       groupID: input.groupID,
       authorID: row.author_id,
       publishedAt: row.published_at,
+      commentCount: row.comment_count,
       content: row.content,
     }),
   );

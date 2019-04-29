@@ -19,6 +19,8 @@ export type Post = {
   readonly authorID: AccountID;
   /** The time at which this post was published. */
   readonly publishedAt: DateTime;
+  /** The number of comments written on this post. */
+  readonly commentCount: number;
   /** The contents of this post in a Markdown-ish format. */
   readonly content: string;
 };

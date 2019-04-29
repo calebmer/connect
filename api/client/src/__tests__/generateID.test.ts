@@ -1,4 +1,4 @@
-import {generateID} from "..";
+import {generateID} from "../generateID";
 
 test("always generates IDs that are 22 characters long", () => {
   for (let i = 0; i < 256; i++) {

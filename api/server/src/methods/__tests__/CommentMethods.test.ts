@@ -13,6 +13,7 @@ import {
 } from "../../TestFactory";
 import {getComment, getPostComments, publishComment} from "../CommentMethods";
 import {ContextTest} from "../../ContextTest";
+import {getPost} from "../PostMethods";
 
 describe("getComment", () => {
   test("does not get a comment which does not exist", () => {
@@ -387,7 +388,7 @@ describe("publishComment", () => {
       await ctx.withAuthorized(membership.accountID, async ctx => {
         const commentID = generateID<CommentID>();
 
-        const {publishedAt} = await publishComment(ctx, {
+        await publishComment(ctx, {
           id: commentID,
           postID: post.id,
           content,
@@ -395,13 +396,7 @@ describe("publishComment", () => {
 
         const {comment} = await getComment(ctx, {id: commentID});
 
-        expect(comment).toEqual({
-          id: commentID,
-          postID: post.id,
-          authorID: membership.accountID,
-          publishedAt,
-          content: "test",
-        });
+        expect(comment!.content).toEqual("test");
       });
     });
   });
@@ -416,7 +411,7 @@ describe("publishComment", () => {
       await ctx.withAuthorized(membership.accountID, async ctx => {
         const commentID = generateID<CommentID>();
 
-        const {publishedAt} = await publishComment(ctx, {
+        await publishComment(ctx, {
           id: commentID,
           postID: post.id,
           content,
@@ -424,13 +419,7 @@ describe("publishComment", () => {
 
         const {comment} = await getComment(ctx, {id: commentID});
 
-        expect(comment).toEqual({
-          id: commentID,
-          postID: post.id,
-          authorID: membership.accountID,
-          publishedAt,
-          content: "test",
-        });
+        expect(comment!.content).toEqual("test");
       });
     });
   });
@@ -445,7 +434,7 @@ describe("publishComment", () => {
       await ctx.withAuthorized(membership.accountID, async ctx => {
         const commentID = generateID<CommentID>();
 
-        const {publishedAt} = await publishComment(ctx, {
+        await publishComment(ctx, {
           id: commentID,
           postID: post.id,
           content,
@@ -453,13 +442,67 @@ describe("publishComment", () => {
 
         const {comment} = await getComment(ctx, {id: commentID});
 
-        expect(comment).toEqual({
-          id: commentID,
-          postID: post.id,
-          authorID: membership.accountID,
-          publishedAt,
+        expect(comment!.content).toEqual("test");
+      });
+    });
+  });
+
+  test("increments the post comment count once", () => {
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+      const {id: postID} = await createPost(ctx, {groupID: membership.groupID});
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        {
+          const {post} = await getPost(ctx, {id: postID});
+          expect(post!.commentCount).toEqual(0);
+        }
+
+        await publishComment(ctx, {
+          id: generateID(),
+          postID,
           content: "test",
         });
+
+        {
+          const {post} = await getPost(ctx, {id: postID});
+          expect(post!.commentCount).toEqual(1);
+        }
+      });
+    });
+  });
+
+  test("increments the post comment count thrice", () => {
+    return ContextTest.with(async ctx => {
+      const membership = await createGroupMember(ctx);
+      const {id: postID} = await createPost(ctx, {groupID: membership.groupID});
+
+      await ctx.withAuthorized(membership.accountID, async ctx => {
+        {
+          const {post} = await getPost(ctx, {id: postID});
+          expect(post!.commentCount).toEqual(0);
+        }
+
+        await publishComment(ctx, {
+          id: generateID(),
+          postID,
+          content: "test",
+        });
+        await publishComment(ctx, {
+          id: generateID(),
+          postID,
+          content: "test",
+        });
+        await publishComment(ctx, {
+          id: generateID(),
+          postID,
+          content: "test",
+        });
+
+        {
+          const {post} = await getPost(ctx, {id: postID});
+          expect(post!.commentCount).toEqual(3);
+        }
       });
     });
   });

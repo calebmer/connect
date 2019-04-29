@@ -144,6 +144,7 @@ export function publishPost({
     groupID,
     authorID,
     publishedAt: DateTime.now(), // The server will assign a definitive timestamp.
+    commentCount: 0,
     content: content.trim(),
   };
 
