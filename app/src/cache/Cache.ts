@@ -1,4 +1,4 @@
-import {Async, useAsyncWithPrev, useAsyncWithToggle} from "./Async";
+import {Async, useAsyncWithPrev} from "./Async";
 import {Mutable, ReadonlyMutable, useMutable} from "./Mutable";
 
 /**
@@ -266,24 +266,17 @@ export function useCache<Key extends string | number, Data>(
  *
  * Remember that if that cache entry ever reloads we will return the previous
  * data and set loading to true!
+ *
+ * If `initialData` is provided then we will use that when the component first
+ * renders instead of suspending. Which means this hook will never suspend if
+ * `initialData` is set.
  */
 export function useCacheWithPrev<Key extends string | number, Data>(
   cache: Cache<Key, Data>,
   key: Key,
+  initialData?: Data,
 ): {loading: boolean; data: Data} {
   const entry = cache.loadEntry(key);
-  const {loading, value} = useAsyncWithPrev(useMutable(entry));
+  const {loading, value} = useAsyncWithPrev(useMutable(entry), initialData);
   return {loading, data: value};
-}
-
-/**
- * Use some data from the cache in a React component. If the data has not yet
- * been loaded we will return `null` to indicate that we are currently loading.
- */
-export function useCacheWithoutSuspense<Key extends string | number, Data>(
-  cache: Cache<Key, Data>,
-  key: Key,
-): Data | null {
-  const entry = cache.loadEntry(key);
-  return useAsyncWithToggle(useMutable(entry));
 }

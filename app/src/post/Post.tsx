@@ -1,9 +1,11 @@
-import {CacheList, useCacheListWithoutSuspense} from "../cache/CacheList";
 import {Color, Font, Shadow, Space} from "../atoms";
-import {CommentCacheList, CommentCacheListEntry} from "../comment/CommentCache";
 import {Dimensions, ScrollView, StyleSheet, View} from "react-native";
+import {
+  PostCommentsCache,
+  PostCommentsCacheEntry,
+} from "../comment/CommentCache";
 import React, {useContext, useRef} from "react";
-import {useCache, useCacheWithoutSuspense} from "../cache/Cache";
+import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
@@ -35,7 +37,7 @@ function Post({
   // render our component.
   GroupCache.preload(groupSlug);
   PostCache.preload(postID);
-  CommentCacheList.preload(postID);
+  PostCommentsCache.preload(postID);
 
   // Load our group data for our title.
   const group = useCache(GroupCache, groupSlug);
@@ -44,14 +46,14 @@ function Post({
   // often when we enter a post we will have the post content which we want to
   // display immediately but not the comments. We want the comments to
   // asynchronously load in over time.
-  const commentsCache = useCacheWithoutSuspense(CommentCacheList, postID);
-  const {loading, items: comments} = useCacheListWithoutSuspense(
-    commentsCache || CacheList.never(),
-  );
+  const {loading, data: comments} = useCacheWithPrev<
+    PostID,
+    {items: ReadonlyArray<PostCommentsCacheEntry>}
+  >(PostCommentsCache, postID, {items: []});
 
   return (
     <View style={styles.background}>
-      <NavbarFlatList<CommentCacheListEntry>
+      <NavbarFlatList<PostCommentsCacheEntry>
         ref={scrollViewRef}
         contentContainerStyle={styles.container}
         // `Navbar`
@@ -75,13 +77,13 @@ function Post({
           ) : null
         }
         // `FlatList` data
-        data={comments}
+        data={comments.items}
         keyExtractor={comment => comment.id}
         renderItem={({item: comment, index}) => (
           <Comment
             key={comment.id}
             commentID={comment.id}
-            lastCommentID={index > 0 ? comments[index - 1].id : null}
+            lastCommentID={index > 0 ? comments.items[index - 1].id : null}
             realtime={comment.realtime}
             scrollViewRef={scrollViewRef}
           />

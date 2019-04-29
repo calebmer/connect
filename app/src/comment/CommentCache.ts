@@ -5,12 +5,13 @@ import {
   CommentID,
   DateTime,
   PostID,
+  RangeDirection,
   generateID,
 } from "@connect/api-client";
 import {API} from "../api/API";
 import {AccountCache} from "../account/AccountCache";
 import {Cache} from "../cache/Cache";
-import {CacheList} from "../cache/CacheList";
+import {Paginator} from "../cache/Paginator";
 
 /**
  * Caches comments by their ID.
@@ -59,7 +60,7 @@ type CommentCacheEntry = {
  * `CommentCache`. We also include the time at which the post was published so
  * that we can create the `CommentCursor` from a cache entry.
  */
-export type CommentCacheListEntry = {
+export type PostCommentsCacheEntry = {
   /** The ID of this comment. */
   readonly id: CommentID;
   /** The time this comment was published at. */
@@ -82,17 +83,14 @@ export const commentCountMore = 16;
  * A cache which holds a list of comments for each post. When loading a list
  * from this cache, we load the first few comments before returning the list.
  */
-export const CommentCacheList = new Cache<
+export const PostCommentsCache = new Cache<
   PostID,
-  CacheList<CommentCursor, CommentCacheListEntry>
+  Paginator<CommentCursor, PostCommentsCacheEntry>
 >({
   async load(postID) {
-    // Create the comment cache list...
-    const commentCacheList = new CacheList<
-      CommentCursor,
-      CommentCacheListEntry
-    >({
-      key: ({id}) => id,
+    return await Paginator.load<CommentCursor, PostCommentsCacheEntry>({
+      direction: RangeDirection.Last,
+      count: commentCountInitial,
       cursor: CommentCursor.get,
 
       async load(range) {
@@ -107,7 +105,7 @@ export const CommentCacheList = new Cache<
 
         // Loop through all the comments and create cache entries for our
         // comment list. Also insert each post into our `CommentCache`.
-        const entries = comments.map<CommentCacheListEntry>(comment => {
+        const entries = comments.map<PostCommentsCacheEntry>(comment => {
           CommentCache.insert(comment.id, {
             status: CommentCacheEntryStatus.Commit,
             comment,
@@ -127,12 +125,6 @@ export const CommentCacheList = new Cache<
         return entries;
       },
     });
-
-    // Load the first few comments into our cache. We will suspend until we’ve
-    // loaded the first few posts.
-    await commentCacheList.loadFirst(commentCountInitial);
-
-    return commentCacheList;
   },
 });
 
@@ -177,17 +169,13 @@ export function publishComment({
 
   // Insert our post as a phantom item in our group post list immediately so
   // that it’s shown in the UI.
-  //
-  // We don’t care about async errors here. They’ll show up in the UI.
-  CommentCacheList.load(postID)
-    .then(commentCacheList => {
-      return commentCacheList.insertPhantomLast({
-        id: commentID,
-        publishedAt: pendingComment.publishedAt,
-        realtime: true,
-      });
-    })
-    .catch(() => {});
+  PostCommentsCache.update(postID, comments => {
+    return comments.insert({
+      id: commentID,
+      publishedAt: pendingComment.publishedAt,
+      realtime: true,
+    });
+  });
 
   // TODO: Error handling!
   (async () => {

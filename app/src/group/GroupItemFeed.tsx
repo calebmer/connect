@@ -3,10 +3,10 @@ import React, {useContext, useState} from "react";
 import {ReadonlyMutable, useMutableSelect} from "../cache/Mutable";
 import {AccountByline} from "../account/AccountByline";
 import {AccountCache} from "../account/AccountCache";
-import {CommentCacheList} from "../comment/CommentCache";
 import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupItem} from "./GroupItem";
 import {PostCache} from "../post/PostCache";
+import {PostCommentsCache} from "../comment/CommentCache";
 import {PostID} from "@connect/api-client";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
@@ -47,7 +47,7 @@ function GroupItemFeed({
     // Wait for comments to load before pushing the new route...
     //
     // We assume that this will eventually change `selectedPostID`.
-    stall(CommentCacheList.load(postID), () => {
+    stall(PostCommentsCache.load(postID), () => {
       route.push(PostRoute, {groupSlug, postID: String(postID)});
 
       // NOTE: It is important that this runs after `route.push()`! Since

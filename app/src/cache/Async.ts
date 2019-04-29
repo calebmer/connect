@@ -160,6 +160,8 @@ export function useAsyncWithPrev<Value>(
  * Toggles between `null` and `Value` depending on whether the async value is
  * pending or resolved respectively. If the promise rejects then we will
  * synchronously throw an error.
+ *
+ * TODO: better name
  */
 export function useAsyncWithToggle<Value>(
   asyncValue: Async<Value>,

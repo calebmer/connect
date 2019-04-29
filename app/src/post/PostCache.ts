@@ -59,7 +59,7 @@ type PostCacheEntry = {
  * We also include the time at which the post was published so that we can
  * create the `PostCursor` from a cache entry.
  */
-export type GroupPostCacheEntry = {
+export type GroupPostsCacheEntry = {
   readonly id: PostID;
   readonly publishedAt: DateTime;
 };
@@ -76,11 +76,10 @@ export const postCountMore = 8;
  */
 export const GroupPostsCache = new Cache<
   GroupID,
-  Paginator<PostCursor, GroupPostCacheEntry>
+  Paginator<PostCursor, GroupPostsCacheEntry>
 >({
   async load(groupID) {
-    // Create the group post paginator...
-    const groupPosts = await Paginator.load<PostCursor, GroupPostCacheEntry>({
+    return await Paginator.load<PostCursor, GroupPostsCacheEntry>({
       direction: RangeDirection.First,
       count: postCountInitial,
       cursor: PostCursor.get,
@@ -94,7 +93,7 @@ export const GroupPostsCache = new Cache<
 
         // Loop through all the posts and create cache entries for our post
         // list. Also insert each post into our `PostCache`.
-        const entries = posts.map<GroupPostCacheEntry>(post => {
+        const entries = posts.map<GroupPostsCacheEntry>(post => {
           PostCache.insert(post.id, {
             status: PostCacheEntryStatus.Commit,
             post,
@@ -113,8 +112,6 @@ export const GroupPostsCache = new Cache<
         return entries;
       },
     });
-
-    return groupPosts;
   },
 });
 

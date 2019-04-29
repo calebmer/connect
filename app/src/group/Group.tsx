@@ -11,8 +11,8 @@ import {
 import {Color, Font, Space} from "../atoms";
 import {CurrentAccountCache, useCurrentAccount} from "../account/AccountCache";
 import {
-  GroupPostCacheEntry,
   GroupPostsCache,
+  GroupPostsCacheEntry,
   postCountInitial,
   postCountMore,
 } from "../post/PostCache";
@@ -54,7 +54,7 @@ function Group({
 }: {
   route: Route;
   group: Group;
-  posts: ReadonlyArray<GroupPostCacheEntry>;
+  posts: ReadonlyArray<GroupPostsCacheEntry>;
   selectedPostID: ReadonlyMutable<PostID | undefined>;
   loadingMorePosts: boolean;
   onLoadMorePosts: (count: number) => void;
@@ -104,9 +104,9 @@ function Group({
 
     // The feed section of our `<SectionList>`. Contains all the posts from the
     // group in reverse chronological order.
-    const feedSection: SectionListData<GroupPostCacheEntry> = {
+    const feedSection: SectionListData<GroupPostsCacheEntry> = {
       title: "Feed",
-      data: posts as Array<GroupPostCacheEntry>,
+      data: posts as Array<GroupPostsCacheEntry>,
       keyExtractor: post => String(post.id),
       renderItem: ({item: {id: postID}}) => (
         <GroupItemFeed
