@@ -8,7 +8,6 @@ INSERT INTO account (id, name, avatar_url, email, password_hash) VALUES
   (4, 'Jared', null, 'jared@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
   (5, 'Jordan', null, 'jordan@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
   (6, 'Marcello', 'https://pbs.twimg.com/profile_images/800702652485160961/R5ZZVj--_400x400.jpg', 'marcello@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
-  (7, 'Kate', 'https://pbs.twimg.com/profile_images/1095949370564870144/kwTdCHWU_400x400.png', 'kate@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
   (8, 'Marissa', null, 'marissa@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
   (9, 'Ada', null, 'ada@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
   (10, 'Grace', null, 'grace@example.com', '$2b$10$cktmQOA38JT0RG/1IUaAVuzWjrAj9Vs4bdRgdLBInJX9qf4TFWma.'),
@@ -28,7 +27,7 @@ ALTER SEQUENCE account_id_seq RESTART WITH 21;
 
 INSERT INTO "group" (id, slug, name, owner_id) VALUES
   (1, 'nohello', 'Definitely Work', 3),
-  (2, 'dnd', 'D&D', 7),
+  (2, 'dnd', 'D&D', 2),
   (3, 'coffeekit', 'CoffeeKit', 17);
 
 ALTER SEQUENCE group_id_seq RESTART WITH 4;
@@ -40,9 +39,7 @@ INSERT INTO group_member (account_id, group_id) VALUES
   (4, 1),
   (5, 1),
   (6, 1),
-  (7, 1),
   (2, 2),
-  (7, 2),
   (12, 2),
   (13, 2),
   (14, 2),
@@ -92,12 +89,10 @@ INSERT INTO post (id, group_id, author_id, published_at, content)
             FROM unnest(ARRAY[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) AS section,
                  unnest(ARRAY[(0, 1, 6, 'Thoughts? https://brave.com'::TEXT),
                               (1, 1, 1, 'never heard of bluebottle in my life, until Caleb and I went there to meet Jeff from the podcasts, now my feed is full of blue bottle ads'::TEXT),
-                              (2, 1, 7, 'By the way, @Baruch, why do you have Sonic meme as ur avatar? 😉'::TEXT),
                               (3, 1, 3, 'I’m sad that indiehackers.com doesn’t have a mobile app. But if you don’t already read the content on the site. Start here: https://www.indiehackers.com/interviews/page/1'::TEXT),
                               (4, 1, 21, 'what happened to DOGE life'::TEXT),
                               (5, 1, 6, 'anyone ever deal with uploading files, possibly multiple files at the same time? I''ve done this a few different ways in the past, I''m looking for a super robust / scalable solution'::TEXT),
-                              (6, 1, 20, '@Caleb @Baruch If you like a lot of cool podcasts you guys should watch some of the Impact Theory episodes. The host is Tom Bilyeu who started Quest nutrition. But some of the episodes he does are insane. One with David Goggins is amazing among many other ones.'::TEXT),
-                              (7, 1, 7, 'Anyone here who bought one of the two Wes Bros'' React courses? I''m considering getting it and wanted to hear some reviews 🙂'::TEXT)])
+                              (6, 1, 20, '@Caleb @Baruch If you like a lot of cool podcasts you guys should watch some of the Impact Theory episodes. The host is Tom Bilyeu who started Quest nutrition. But some of the episodes he does are insane. One with David Goggins is amazing among many other ones.'::TEXT)])
                               AS mock_post (id INT, group_id INT, author_id INT, content TEXT)) AS mock_post;
 
 -- Insert some comments into our database. Insert the same set of comments for
