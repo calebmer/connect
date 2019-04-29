@@ -1,17 +1,23 @@
-import {Color, Font, Shadow} from "../atoms";
+import {CacheList, useCacheListWithoutSuspense} from "../cache/CacheList";
+import {Color, Font, Shadow, Space} from "../atoms";
+import {
+  CommentCacheList,
+  CommentCacheListEntry,
+  commentCountInitial,
+} from "../comment/CommentCache";
 import React, {useContext, useRef} from "react";
 import {ScrollView, StyleSheet, View} from "react-native";
+import {useCache, useCacheWithoutSuspense} from "../cache/Cache";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
-import {NavbarScrollView} from "../frame/NavbarScrollView";
-import {PostComments} from "./PostComments";
+import {NavbarFlatList} from "../frame/NavbarFlatList";
+import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
 import {Trough} from "../molecules/Trough";
-import {useCache} from "../cache/Cache";
 
 function Post({
   route,
@@ -28,24 +34,56 @@ function Post({
   const hideNavbar =
     useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
 
-  function useTitle() {
-    const group = useCache(GroupCache, groupSlug);
-    return group.name;
-  }
+  // Preload all our post data so that they load in the background while we
+  // render our component.
+  GroupCache.preload(groupSlug);
+  PostCache.preload(postID);
+  CommentCacheList.preload(postID);
+
+  // Load our group data for our title.
+  const group = useCache(GroupCache, groupSlug);
+
+  // Load the comments data for our flat list. We don’t want to suspend since
+  // often when we enter a post we will have the post content which we want to
+  // display immediately but not the comments. We want the comments to
+  // asynchronously load in over time.
+  const commentsCache = useCacheWithoutSuspense(CommentCacheList, postID);
+  const {items: comments} = useCacheListWithoutSuspense(
+    commentsCache || CacheList.never(),
+  );
 
   return (
-    <View style={styles.container}>
-      <NavbarScrollView
+    <View style={styles.background}>
+      <NavbarFlatList<CommentCacheListEntry>
         ref={scrollViewRef}
+        contentContainerStyle={styles.container}
+        // `Navbar`
         route={route}
-        useTitle={useTitle}
+        title={group.name}
         hideNavbar={hideNavbar}
+        // `ScrollView`
         keyboardDismissMode="interactive"
-      >
-        <PostContent postID={postID} />
-        <Trough title="Comments" />
-        <PostComments postID={postID} scrollViewRef={scrollViewRef} />
-      </NavbarScrollView>
+        // `FlatList` decoration
+        ListHeaderComponent={
+          <>
+            <PostContent postID={postID} />
+            <Trough title="Comments" />
+          </>
+        }
+        // `FlatList` data
+        data={comments}
+        keyExtractor={comment => comment.id}
+        initialNumToRender={commentCountInitial}
+        renderItem={({item: comment, index}) => (
+          <Comment
+            key={comment.id}
+            commentID={comment.id}
+            lastCommentID={index > 0 ? comments[index - 1].id : null}
+            realtime={comment.realtime}
+            scrollViewRef={scrollViewRef}
+          />
+        )}
+      />
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
     </View>
   );
@@ -56,7 +94,7 @@ const PostMemo = React.memo(Post);
 export {PostMemo as Post};
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
     overflow: "hidden",
     backgroundColor: Color.white,
@@ -65,5 +103,8 @@ const styles = StyleSheet.create({
     // The maximum width is designed to give a comment `Font.maxWidth` which
     // means the post text will end up being a bit wider.
     maxWidth: Comment.paddingLeft + Font.maxWidth + Comment.paddingRight,
+  },
+  container: {
+    paddingBottom: Space.space3,
   },
 });

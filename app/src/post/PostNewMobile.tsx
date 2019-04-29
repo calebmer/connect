@@ -92,7 +92,7 @@ export function PostNewMobile({
       <NavbarScrollView
         route={route}
         contentContainerStyle={styles.container}
-        useTitle={() => "New Post"}
+        title="New Post"
         rightIcon="send"
         rightIconDisabled={!sendEnabled}
         onRightIconPress={handleSend}

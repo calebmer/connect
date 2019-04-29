@@ -1,6 +1,6 @@
 import {Async, useAsyncWithPrev} from "./Async";
 import {Cursor, JSONValue, Range, RangeDirection} from "@connect/api-client";
-import {Mutable, useMutable} from "./Mutable";
+import {Mutable, ReadonlyMutable, useMutable} from "./Mutable";
 
 /**
  * A cache for some list of items which will be lazily loaded from the server.
@@ -16,6 +16,20 @@ import {Mutable, useMutable} from "./Mutable";
  * the full entity.
  */
 export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
+  /**
+   * Creates a `CacheList` that is _always_ loading and never resolves. Useful
+   * when you need some default value.
+   */
+  public static never() {
+    const cacheList = new CacheList<any, any>({
+      key: never => never,
+      cursor: never => never,
+      load: () => new Promise(() => {}),
+    });
+    cacheList.loadFirst(1);
+    return cacheList;
+  }
+
   /**
    * All of the items in our cache. We load items from the server into our
    * cache incrementally from either end of the list. That means we could load
@@ -345,6 +359,14 @@ export class CacheList<ItemCursor extends Cursor<JSONValue>, Item> {
 
     this.segments.set(new Async(segments.insertPhantomLast(item)));
   }
+
+  /**
+   * Returns the segments from the cache. The mutable container is made “read
+   * only” to disallow updates from the outside world.
+   */
+  public getSegments(): ReadonlyMutable<Async<CacheListSegments<Item>>> {
+    return this.segments;
+  }
 }
 
 /**
@@ -359,12 +381,33 @@ export function useCacheList<ItemCursor extends Cursor<JSONValue>, Item>(
   loading: boolean;
   items: ReadonlyArray<Item>;
 } {
-  const cacheSegments: Mutable<Async<CacheListSegments<Item>>> = (cache as any)
-    .segments;
-
-  const asyncSegments = useMutable(cacheSegments);
+  const asyncSegments = useMutable(cache.getSegments());
   const {loading, value: segments} = useAsyncWithPrev(asyncSegments);
+  return {
+    loading,
+    items: segments.getFirstSegment(),
+  };
+}
 
+/**
+ * Uses the data from the first items in a cache list. Does not suspend if we
+ * are loading! Instead we will return an empty array. If the list is currently
+ * loading but we previously rendered with some items then we will render again
+ * using the previous items.
+ */
+export function useCacheListWithoutSuspense<
+  ItemCursor extends Cursor<JSONValue>,
+  Item
+>(
+  cache: CacheList<ItemCursor, Item>,
+): {
+  loading: boolean;
+  items: ReadonlyArray<Item>;
+} {
+  const asyncSegments = useMutable(cache.getSegments());
+  const {loading, value: segments} = useAsyncWithPrev<{
+    getFirstSegment: () => ReadonlyArray<Item>;
+  }>(asyncSegments, {getFirstSegment: () => []});
   return {
     loading,
     items: segments.getFirstSegment(),

@@ -1,5 +1,5 @@
-import {Mutable, useMutable} from "./Mutable";
-import {Async} from "./Async";
+import {Async, useAsyncWithToggle} from "./Async";
+import {Mutable, ReadonlyMutable, useMutable} from "./Mutable";
 
 /**
  * Responsible for caching data.
@@ -29,10 +29,6 @@ export class Cache<Key extends string | number, Data> {
    * growing! We should add a way to garbage collect unused entries. Maybe
    * an [LRU cache algorithm][1]?
    *
-   * **TODO:** When mutations happen we should have a way to invalidate cache
-   * entries. We should also have a way to make optimistic changes to a
-   * cache entry.
-   *
    * **TODO:** We should be able to subscribe to changes via a WebSocket on the
    * server. So when an entry in our cache changes we can update our UI.
    *
@@ -54,10 +50,10 @@ export class Cache<Key extends string | number, Data> {
   }
 
   /**
-   * Sets an entry in our cache. If the entry already exists in our entries map
-   * then we will update that entry. Otherwise we will create a new one.
+   * Inserts an async entry in our cache. If there is already an entry with
+   * this key then that entry will be overridden.
    */
-  private setEntry(key: Key, data: Async<Data>) {
+  private insertEntry(key: Key, data: Async<Data>) {
     const entry = this.entries.get(key);
     if (entry === undefined) {
       this.entries.set(key, new Mutable(data));
@@ -67,24 +63,24 @@ export class Cache<Key extends string | number, Data> {
   }
 
   /**
+   * Inserts a resolved entry into the cache. If there is already an entry with
+   * this key then that entry will be overridden.
+   */
+  public insert(key: Key, data: Data) {
+    this.insertEntry(key, new Async(data));
+  }
+
+  /**
    * Retrieves an entry from our cache. If the entry does not exist yet then
    * we will first load the entry into our cache.
    */
-  private accessEntry(key: Key): Mutable<Async<Data>> {
+  public loadEntry(key: Key): ReadonlyMutable<Async<Data>> {
     let entry = this.entries.get(key);
     if (entry === undefined) {
       entry = new Mutable(new Async(this._load(key)));
       this.entries.set(key, entry);
     }
     return entry;
-  }
-
-  /**
-   * Inserts a resolved entry into the cache. If there is already an entry with
-   * this key then that entry will be overridden.
-   */
-  public insert(key: Key, data: Data) {
-    this.setEntry(key, new Async(data));
   }
 
   /**
@@ -95,7 +91,7 @@ export class Cache<Key extends string | number, Data> {
    * `useCacheData()` instead which will watch the cache for changes.
    */
   public load(key: Key): Promise<Data> {
-    const value = this.accessEntry(key)
+    const value = this.loadEntry(key)
       .getAtThisMomentInTime()
       .get();
     return Promise.resolve(value);
@@ -108,7 +104,7 @@ export class Cache<Key extends string | number, Data> {
    * ignore that information.
    */
   public preload(key: Key): void {
-    this.accessEntry(key);
+    this.loadEntry(key);
   }
 
   /**
@@ -130,7 +126,7 @@ export class Cache<Key extends string | number, Data> {
     const values = Array<Async<Data>>(keys.size);
     let i = 0;
     for (const key of keys) {
-      values[i++] = this.accessEntry(key).getAtThisMomentInTime();
+      values[i++] = this.loadEntry(key).getAtThisMomentInTime();
     }
 
     // Loop through all of our values. If the value is a promise then let’s
@@ -199,19 +195,15 @@ export class Cache<Key extends string | number, Data> {
     // async value that will resolve when our `loadMany()` request resolves.
     for (let i = 0; i < actualKeys.length; i++) {
       const key = actualKeys[i];
-      this.setEntry(
-        key,
-        new Async(
-          valuesPromise.then(values => {
-            const value = values[i];
-            if (value instanceof Error) {
-              throw value;
-            } else {
-              return value;
-            }
-          }),
-        ),
-      );
+      const valuePromise = valuesPromise.then(values => {
+        const value = values[i];
+        if (value instanceof Error) {
+          throw value;
+        } else {
+          return value;
+        }
+      });
+      this.insertEntry(key, new Async(valuePromise));
     }
   }
 }
@@ -229,6 +221,18 @@ export function useCache<Key extends string | number, Data>(
   cache: Cache<Key, Data>,
   key: Key,
 ): Data {
-  const entry: Mutable<Async<Data>> = (cache as any).accessEntry(key);
+  const entry = cache.loadEntry(key);
   return useMutable(entry).suspend();
+}
+
+/**
+ * Use some data from the cache in a React component. If the data has not yet
+ * been loaded we will return `null` to indicate that we are currently loading.
+ */
+export function useCacheWithoutSuspense<Key extends string | number, Data>(
+  cache: Cache<Key, Data>,
+  key: Key,
+): Data | null {
+  const entry = cache.loadEntry(key);
+  return useAsyncWithToggle(useMutable(entry));
 }

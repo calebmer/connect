@@ -62,7 +62,7 @@ export class Async<Value> {
    * return it. Otherwise we return a promise that resolves when the
    * asynchronous value is ready.
    *
-   * If the asynchronous value rejected then we synchronously throw an error.
+   * If the asynchronous value rejected then we _synchronously_ throw an error.
    */
   public get(): Value | Promise<Value> {
     switch (this.status) {
@@ -121,23 +121,70 @@ const noValue = Symbol();
  *   `loading` to true.
  *
  * - If the asynchronous value is pending and we’ve not rendered a value before
- *   then suspend by throwing the asynchronous value’s promise.
+ *   then suspend by throwing the asynchronous value’s promise. Or if the
+ *   programmer provided an “initial value” we will use that instead
+ *   of suspending.
  */
 export function useAsyncWithPrev<Value>(
   asyncValue: Async<Value>,
+  initialValue?: Value,
 ): {
   loading: boolean;
   value: Value;
 } {
+  // Re-render our component whenever the async value changes from a pending
+  // state to a resolved or rejected state.
+  const value = useAsyncForceUpdate(asyncValue);
+
+  // The previous value we rendered.
+  const prevValue = useRef<Value | typeof noValue>(
+    initialValue === undefined ? noValue : initialValue,
+  );
+
+  // If our asynchronous value is pending and we have a previous value then
+  // return the previous value. Otherwise suspend.
+  if (value instanceof Promise) {
+    if (prevValue.current === noValue) {
+      throw value;
+    } else {
+      return {loading: true, value: prevValue.current};
+    }
+  } else {
+    // Update the previous value and return the resolved value.
+    prevValue.current = value;
+    return {loading: false, value};
+  }
+}
+
+/**
+ * Toggles between `null` and `Value` depending on whether the async value is
+ * pending or resolved respectively. If the promise rejects then we will
+ * synchronously throw an error.
+ */
+export function useAsyncWithToggle<Value>(
+  asyncValue: Async<Value>,
+): Value | null {
+  // Re-render our component whenever the async value changes from a pending
+  // state to a resolved or rejected state.
+  const value = useAsyncForceUpdate(asyncValue);
+
+  return value instanceof Promise ? null : value;
+}
+
+/**
+ * Force updates the component when the async value transitions from pending to
+ * either resolved or rejected. Useful for building `Async` hooks that depend
+ * on the component re-rendering when our async state changes.
+ */
+function useAsyncForceUpdate<Value>(
+  asyncValue: Async<Value>,
+): Value | Promise<Value> {
   // Get the asynchronous value. This will give us a `Promise` if the value is
   // pending and will throw if the value is rejected.
   const value = asyncValue.get();
 
   // Force update function lets us manually refresh our component.
   const forceUpdate = useForceUpdate();
-
-  // The previous value we rendered.
-  const prevValue = useRef<Value | typeof noValue>(noValue);
 
   // When we have a pending asynchronous value then attach event handlers to
   // the promise which will force update our component when we’ve resolved.
@@ -161,17 +208,5 @@ export function useAsyncWithPrev<Value>(
     };
   }, [forceUpdate, value]);
 
-  // If our asynchronous value is pending and we have a previous value then
-  // return the previous value. Otherwise suspend.
-  if (value instanceof Promise) {
-    if (prevValue.current === noValue) {
-      throw value;
-    } else {
-      return {loading: true, value: prevValue.current};
-    }
-  } else {
-    // Update the previous value and return the resolved value.
-    prevValue.current = value;
-    return {loading: false, value};
-  }
+  return value;
 }
