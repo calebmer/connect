@@ -17,6 +17,7 @@ import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
 import {Trough} from "../molecules/Trough";
+import {debounce} from "../utils/debounce";
 
 function Post({
   route,
@@ -100,12 +101,21 @@ function Post({
           // to load. We don’t use this viewability config for analytics.
           {
             viewabilityConfig: {
-              // We don’t want to load items the user is quickly scrolling by.
-              minimumViewTime: 300,
               // We want to load items with even a single viewable pixel.
               itemVisiblePercentThreshold: 0,
             },
-            onViewableItemsChanged: () => {},
+
+            // When the user starts to finish scrolling, let’s load some
+            // new comments!
+            onViewableItemsChanged: debounce(100, ({viewableItems}) => {
+              if (viewableItems.length > 0) {
+                console.log(
+                  viewableItems.length,
+                  viewableItems[0].index,
+                  viewableItems[viewableItems.length - 1].index,
+                );
+              }
+            }),
           },
         ]}
       />
