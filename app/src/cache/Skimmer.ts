@@ -27,7 +27,7 @@ export class Skimmer<Item> {
   public static create<Item>({
     load,
   }: {
-    load: (range: {offset: number; limit: number}) => ReadonlyArray<Item>;
+    load: (range: {limit: number; offset: number}) => ReadonlyArray<Item>;
   }) {
     return new Skimmer(load, []);
   }
@@ -37,8 +37,8 @@ export class Skimmer<Item> {
    * pagination scheme.
    */
   private readonly fetchMore: (range: {
-    offset: number;
     limit: number;
+    offset: number;
   }) => ReadonlyArray<Item>;
 
   /**
@@ -47,7 +47,7 @@ export class Skimmer<Item> {
   public readonly items: ReadonlyArray<Item | typeof Skimmer.empty>;
 
   private constructor(
-    fetchMore: (range: {offset: number; limit: number}) => ReadonlyArray<Item>,
+    fetchMore: (range: {limit: number; offset: number}) => ReadonlyArray<Item>,
     items: ReadonlyArray<Item | typeof Skimmer.empty>,
   ) {
     this.fetchMore = fetchMore;
@@ -59,15 +59,15 @@ export class Skimmer<Item> {
    * those items.
    */
   public async load({
-    offset: originalOffset,
     limit: originalLimit,
+    offset: originalOffset,
   }: {
-    offset: number;
     limit: number;
+    offset: number;
   }) {
-    // Don‘t allow offset and limit to be negative numbers.
-    originalOffset = Math.max(originalOffset, 0);
+    // Don‘t allow limit and offset to be negative numbers.
     originalLimit = Math.max(originalLimit, 0);
+    originalOffset = Math.max(originalOffset, 0);
 
     // The maximum possible end position for our load.
     const maxEnd = originalOffset + originalLimit;
@@ -107,8 +107,8 @@ export class Skimmer<Item> {
     }
 
     // Compute the actual offset and limit.
-    const offset = start;
     const limit = end - start;
+    const offset = start;
 
     // If limit is zero then that means we are fetching no items. So don’t
     // bother making an API request.
@@ -117,7 +117,7 @@ export class Skimmer<Item> {
     }
 
     // Fetch more items from the API!
-    const newItems = await this.fetchMore({offset, limit});
+    const newItems = await this.fetchMore({limit, offset});
 
     // Clone our items array.
     const items = this.items.slice();
