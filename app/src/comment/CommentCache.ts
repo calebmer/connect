@@ -85,9 +85,8 @@ export const PostCommentsCache = new Cache<
   Paginator<CommentCursor, PostCommentsCacheEntry>
 >({
   async load(postID) {
-    return await Paginator.load<CommentCursor, PostCommentsCacheEntry>({
+    const comments = Paginator.create<CommentCursor, PostCommentsCacheEntry>({
       direction: RangeDirection.First,
-      count: commentCountInitial,
       cursor: CommentCursor.get,
 
       async load(range) {
@@ -122,6 +121,8 @@ export const PostCommentsCache = new Cache<
         return entries;
       },
     });
+
+    return await comments.loadMore(commentCountInitial);
   },
 });
 

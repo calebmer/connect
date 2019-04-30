@@ -4,6 +4,9 @@ import {Cursor, JSONValue, Range, RangeDirection} from "@connect/api-client";
  * A simple, immutable, utility class for controlling a progressively loaded
  * infinite list UI.
  *
+ * Uses cursor-based pagination to not lose the user’s place when there are
+ * items being added in realtime to the front of the list.
+ *
  * In a paginator, we assume that the first item we fetch is _absolutely_ the
  * first item in the list. We also assume that the last item we fetch is
  * _absolutely_ the last item in the list. Use realtime updates if the list may
@@ -13,26 +16,16 @@ export class Paginator<ItemCursor extends Cursor<JSONValue>, Item> {
   /**
    * Loads the initial items in an infinite list.
    */
-  public static load<ItemCursor extends Cursor<JSONValue>, Item>({
+  public static create<ItemCursor extends Cursor<JSONValue>, Item>({
     direction,
-    count,
     cursor,
     load,
   }: {
     direction: RangeDirection;
-    count: number;
     cursor: (item: Item) => ItemCursor;
     load: (range: Range<ItemCursor>) => Promise<ReadonlyArray<Item>>;
-  }): Promise<Paginator<ItemCursor, Item>> {
-    const list = new Paginator<ItemCursor, Item>(
-      direction,
-      cursor,
-      load,
-      [],
-      false,
-    );
-
-    return list.actuallyLoadMore(count);
+  }) {
+    return new Paginator<ItemCursor, Item>(direction, cursor, load, [], false);
   }
 
   private constructor(

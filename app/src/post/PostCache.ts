@@ -79,9 +79,8 @@ export const GroupPostsCache = new Cache<
   Paginator<PostCursor, GroupPostsCacheEntry>
 >({
   async load(groupID) {
-    return await Paginator.load<PostCursor, GroupPostsCacheEntry>({
+    const posts = Paginator.create<PostCursor, GroupPostsCacheEntry>({
       direction: RangeDirection.First,
-      count: postCountInitial,
       cursor: PostCursor.get,
 
       async load(range) {
@@ -112,6 +111,8 @@ export const GroupPostsCache = new Cache<
         return entries;
       },
     });
+
+    return await posts.loadMore(postCountInitial);
   },
 });
 
