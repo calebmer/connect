@@ -74,6 +74,9 @@ export type PostCommentsCacheEntry = {
 /** The number of comments we load for a post in our initial fetch. */
 export const commentCountInitial = 16;
 
+/** The number of comments we load when fetching more. */
+export const commentCountMore = 16;
+
 /**
  * A cache which holds a list of comments for each post. When loading a list
  * from this cache, we load the first few comments before returning the list.

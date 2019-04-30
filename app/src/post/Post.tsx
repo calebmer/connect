@@ -9,6 +9,7 @@ import {
 import {
   PostCommentsCache,
   PostCommentsCacheEntry,
+  commentCountMore,
 } from "../comment/CommentCache";
 import React, {useContext, useMemo, useRef} from "react";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
@@ -111,36 +112,9 @@ function Post({
           }
         }}
         // ## Viewability
-        viewabilityConfigCallbackPairs={useMemo(() => {
-          const configs: Array<ViewabilityConfigCallbackPair> = [
-            // We use this viewability config to determine which comments we need
-            // to load. We don’t use this viewability config for analytics.
-            {
-              viewabilityConfig: {
-                // We want to load items with even a single viewable pixel.
-                itemVisiblePercentThreshold: 0,
-              },
-
-              // When the user starts to finish scrolling, let’s load some
-              // new comments!
-              onViewableItemsChanged: debounce(100, ({viewableItems}) => {
-                // If we have some viewable items...
-                if (viewableItems.length > 0) {
-                  // Get the limit/offset of the new comments we want to load.
-                  const limit = viewableItems.length;
-                  const offset = viewableItems[0].index;
-                  if (offset === null) return;
-
-                  // Go ahead and load our new comments!
-                  PostCommentsCache.update(postID, comments => {
-                    return comments.load({limit, offset});
-                  });
-                }
-              }),
-            },
-          ];
-          return configs;
-        }, [postID])}
+        viewabilityConfigCallbackPairs={[
+          useMemo(() => createLoadMoreViewabilityConfig(postID), [postID]),
+        ]}
       />
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
     </View>
@@ -150,6 +124,53 @@ function Post({
 // Don’t re-render `<Post>` unless the props change.
 const PostMemo = React.memo(Post);
 export {PostMemo as Post};
+
+/**
+ * Creates a viewability config which will watch item viewability and load more
+ * items if one comes into view which hasn’t been loaded yet.
+ */
+function createLoadMoreViewabilityConfig(
+  postID: PostID,
+): ViewabilityConfigCallbackPair {
+  const viewabilityConfig: ViewabilityConfigCallbackPair = {
+    viewabilityConfig: {
+      // We want to load items with even a single viewable pixel.
+      itemVisiblePercentThreshold: 0,
+    },
+
+    // When the user starts to finish scrolling, let’s load some
+    // new comments!
+    onViewableItemsChanged: debounce(100, ({viewableItems}) => {
+      if (viewableItems.length < 1) return;
+      const firstViewableItem = viewableItems[0];
+
+      // NOTE: According to the types, a viewable item might not have
+      // an index. I (Caleb) don’t know when that will happen, so just
+      // ignore that case for now.
+      if (firstViewableItem.index === null) return;
+
+      // We want to make our network trips worth it. Always select
+      // enough comments to justify a request instead of select the
+      // one or two currently in view.
+      const limit = Math.max(viewableItems.length, commentCountMore);
+
+      // If we are fetching more comments than we can fit on screen,
+      // then center the new selection.
+      const offset = Math.max(
+        0,
+        firstViewableItem.index -
+          Math.floor((limit - viewableItems.length) / 2),
+      );
+
+      // Go ahead and load our new comments!
+      PostCommentsCache.update(postID, comments => {
+        return comments.load({limit, offset});
+      });
+    }),
+  };
+
+  return viewabilityConfig;
+}
 
 const styles = StyleSheet.create({
   background: {

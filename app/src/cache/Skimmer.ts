@@ -30,32 +30,33 @@ export class Skimmer<Item> {
       offset: number;
     }) => Promise<ReadonlyArray<Item>>;
   }) {
-    return new Skimmer(load, []);
+    return new Skimmer(load, [], false);
   }
 
-  /**
-   * The function used to fetch more data from our API using a limit/offset
-   * pagination scheme.
-   */
-  private readonly fetchMore: (range: {
-    limit: number;
-    offset: number;
-  }) => Promise<ReadonlyArray<Item>>;
-
-  /**
-   * The current items in our skimmer.
-   */
-  public readonly items: ReadonlyArray<Item | typeof empty>;
-
   private constructor(
-    fetchMore: (range: {
+    /**
+     * The function used to fetch more data from our API using a limit/offset
+     * pagination scheme.
+     */
+    private readonly fetchMore: (range: {
       limit: number;
       offset: number;
     }) => Promise<ReadonlyArray<Item>>,
-    items: ReadonlyArray<Item | typeof empty>,
+
+    /**
+     * The current items in our skimmer.
+     */
+    public readonly items: ReadonlyArray<Item | typeof empty>,
+
+    /**
+     * If we have fetched all the items in this list then we set this flag
+     * to true.
+     */
+    private readonly noMoreItems: boolean,
   ) {
     this.fetchMore = fetchMore;
     this.items = items;
+    this.noMoreItems = noMoreItems;
   }
 
   /**
@@ -73,8 +74,12 @@ export class Skimmer<Item> {
     originalLimit = Math.max(originalLimit, 0);
     originalOffset = Math.max(originalOffset, 0);
 
-    // The maximum possible end position for our load.
-    const maxEnd = originalOffset + originalLimit;
+    // The maximum possible end position for our load. If we’ve reached the end
+    // of our list then we won’t load beyond our items list.
+    let maxEnd = originalOffset + originalLimit;
+    if (this.noMoreItems) {
+      maxEnd = Math.min(maxEnd, this.items.length);
+    }
 
     // Find the first offset where we have not yet loaded data. The end of our
     // list is always not yet loaded.
@@ -137,7 +142,13 @@ export class Skimmer<Item> {
       items[offset + i] = newItems[i];
     }
 
+    // There are no more items if we fetched less than expected when our range
+    // exceeds the current number of items.
+    const noMoreItems =
+      this.noMoreItems ||
+      (offset + limit > this.items.length && newItems.length < limit);
+
     // Return our updated list.
-    return new Skimmer(this.fetchMore, items);
+    return new Skimmer(this.fetchMore, items, noMoreItems);
   }
 }

@@ -100,3 +100,18 @@ test("loads more to fill out an items list", async () => {
     [{offset: 3, limit: 4}],
   ]);
 });
+
+test("will recognize when the end of a list is reached", async () => {
+  let skimmer = Skimmer.create({load});
+  expect(skimmer.items).toEqual([]);
+  skimmer = await skimmer.load({offset: 7, limit: 3});
+  expect(skimmer.items).toEqual([e, e, e, e, e, e, e, 7, 8, 9]);
+  skimmer = await skimmer.load({offset: 8, limit: 3});
+  skimmer = await skimmer.load({offset: 8, limit: 3});
+  skimmer = await skimmer.load({offset: 8, limit: 6});
+  expect(skimmer.items).toEqual([e, e, e, e, e, e, e, 7, 8, 9]);
+  expect(load.mock.calls).toEqual([
+    [{offset: 7, limit: 3}],
+    [{offset: 10, limit: 1}],
+  ]);
+});
