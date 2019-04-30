@@ -1,9 +1,8 @@
-import React from "react";
-import {Border, Color, Font, Space} from "../atoms";
-import {Comment} from "./Comment";
+import {Border, Font, Space} from "../atoms";
 import {StyleSheet, View} from "react-native";
-import {AccountAvatar} from "../account/AccountAvatar";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
+import {Comment} from "./Comment";
+import React from "react";
 
 /**
  * The type for the data that makes up a comment shimmer.
