@@ -2,14 +2,11 @@ import {
   APIError,
   APIErrorCode,
   Comment,
-  CommentCursor,
   CommentID,
   DateTime,
   PostID,
-  Range,
 } from "@connect/api-client";
 import {Context} from "../Context";
-import {PGPagination} from "../PGPagination";
 import {sql} from "../PGSQL";
 
 /**
@@ -41,28 +38,34 @@ export async function getComment(
   }
 }
 
-// Create a paginator for comments.
-const PGPaginationComment = new PGPagination(sql`comment`, [
-  {column: sql`published_at`},
-  {column: sql`id`},
-]);
-
 /**
- * Get the comments for a post.
+ * Get the comments for a post. We use limit/offset based pagination instead of
+ * cursor based pagination unlike many of our other lists.
+ *
+ * NOTE: As a default, always use cursor pagination! Limit/offset pagination
+ * only makes sense here because of the UI we are using. See `getGroupPosts`
+ * as an example of cursor pagination.
  */
 export async function getPostComments(
   ctx: Context,
-  input: {readonly postID: PostID} & Range<CommentCursor>,
+  input: {
+    readonly postID: PostID;
+    readonly limit: number;
+    readonly offset: number;
+  },
 ): Promise<{
   readonly comments: ReadonlyArray<Comment>;
 }> {
   // Get a list of comments in chronological order using the pagination
   // parameters provided by our input.
-  const {rows} = await PGPaginationComment.query(ctx, {
-    selection: sql`id, author_id, published_at, content`,
-    extraCondition: sql`post_id = ${sql.value(input.postID)}`,
-    range: input,
-  });
+  const {rows} = await ctx.query(sql`
+      SELECT id, author_id, published_at, content
+        FROM comment
+       WHERE post_id = ${input.postID}
+    ORDER BY published_at, id
+       LIMIT ${input.limit}
+      OFFSET ${input.offset}
+  `);
 
   const comments = rows.map(
     (row): Comment => ({

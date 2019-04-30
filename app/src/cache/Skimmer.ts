@@ -1,4 +1,10 @@
-const empty = Symbol("Skimmer.empty");
+/**
+ * We use this symbol when we have a “gap” in our skim list. When there is an
+ * item that is not yet loaded.
+ *
+ * We use a symbol instead of `null` since it is truthy.
+ */
+export const empty = Symbol("Skimmer.empty");
 
 /**
  * An immutable utility class for creating an infinite list which can be
@@ -14,20 +20,15 @@ const empty = Symbol("Skimmer.empty");
  */
 export class Skimmer<Item> {
   /**
-   * We use this symbol when we have a “gap” in our skim list. When there is an
-   * item that is not yet loaded.
-   *
-   * We use a symbol instead of `null` since it is truthy.
-   */
-  public static empty = empty;
-
-  /**
    * Creates a new skim list.
    */
   public static create<Item>({
     load,
   }: {
-    load: (range: {limit: number; offset: number}) => ReadonlyArray<Item>;
+    load: (range: {
+      limit: number;
+      offset: number;
+    }) => Promise<ReadonlyArray<Item>>;
   }) {
     return new Skimmer(load, []);
   }
@@ -39,16 +40,19 @@ export class Skimmer<Item> {
   private readonly fetchMore: (range: {
     limit: number;
     offset: number;
-  }) => ReadonlyArray<Item>;
+  }) => Promise<ReadonlyArray<Item>>;
 
   /**
    * The current items in our skimmer.
    */
-  public readonly items: ReadonlyArray<Item | typeof Skimmer.empty>;
+  public readonly items: ReadonlyArray<Item | typeof empty>;
 
   private constructor(
-    fetchMore: (range: {limit: number; offset: number}) => ReadonlyArray<Item>,
-    items: ReadonlyArray<Item | typeof Skimmer.empty>,
+    fetchMore: (range: {
+      limit: number;
+      offset: number;
+    }) => Promise<ReadonlyArray<Item>>,
+    items: ReadonlyArray<Item | typeof empty>,
   ) {
     this.fetchMore = fetchMore;
     this.items = items;
@@ -78,7 +82,7 @@ export class Skimmer<Item> {
     while (
       start < maxEnd &&
       start < this.items.length &&
-      this.items[start] !== Skimmer.empty
+      this.items[start] !== empty
     ) {
       start++;
     }
@@ -96,7 +100,7 @@ export class Skimmer<Item> {
     while (
       end < maxEnd &&
       end < this.items.length &&
-      this.items[end] === Skimmer.empty
+      this.items[end] === empty
     ) {
       end++;
     }
@@ -125,7 +129,7 @@ export class Skimmer<Item> {
     // If the items array is missing items before our offset then fill our array
     // with nulls.
     while (items.length < offset) {
-      items.push(Skimmer.empty);
+      items.push(empty);
     }
 
     // Add our new items to the list.

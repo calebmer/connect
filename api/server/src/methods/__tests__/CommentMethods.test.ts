@@ -2,7 +2,6 @@ import {
   APIError,
   APIErrorCode,
   CommentID,
-  RangeDirection,
   generateID,
 } from "@connect/api-client";
 import {
@@ -67,10 +66,8 @@ describe("getPostComments", () => {
         expect(
           await getPostComments(ctx, {
             postID: post.id,
-            direction: RangeDirection.First,
-            count: 3,
-            after: null,
-            before: null,
+            limit: 3,
+            offset: 0,
           }),
         ).toEqual({comments: []});
       });
@@ -92,12 +89,33 @@ describe("getPostComments", () => {
         expect(
           await getPostComments(ctx, {
             postID: post.id,
-            direction: RangeDirection.First,
-            count: 3,
-            after: null,
-            before: null,
+            limit: 3,
+            offset: 0,
           }),
         ).toEqual({comments: [comment1, comment2, comment3]});
+      });
+    });
+  });
+
+  test("gets comments from a post in a group we are in with an offset", () => {
+    return ContextTest.with(async ctx => {
+      const {accountID, groupID} = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID});
+
+      await createComment(ctx, {postID: post.id});
+      await createComment(ctx, {postID: post.id});
+      const comment3 = await createComment(ctx, {postID: post.id});
+      const comment4 = await createComment(ctx, {postID: post.id});
+      await createComment(ctx, {postID: post.id});
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        expect(
+          await getPostComments(ctx, {
+            postID: post.id,
+            limit: 2,
+            offset: 2,
+          }),
+        ).toEqual({comments: [comment3, comment4]});
       });
     });
   });
@@ -110,10 +128,8 @@ describe("getPostComments", () => {
         expect(
           await getPostComments(ctx, {
             postID: generateID(),
-            direction: RangeDirection.First,
-            count: 3,
-            after: null,
-            before: null,
+            limit: 3,
+            offset: 0,
           }),
         ).toEqual({comments: []});
       });

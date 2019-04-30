@@ -1,10 +1,16 @@
 import {Color, Font, Shadow, Space} from "../atoms";
-import {Dimensions, ScrollView, StyleSheet, View} from "react-native";
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  View,
+  ViewabilityConfigCallbackPair,
+} from "react-native";
 import {
   PostCommentsCache,
   PostCommentsCacheEntry,
 } from "../comment/CommentCache";
-import React, {useContext, useRef} from "react";
+import React, {useContext, useMemo, useRef} from "react";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
@@ -18,6 +24,7 @@ import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
 import {Trough} from "../molecules/Trough";
 import {debounce} from "../utils/debounce";
+import {empty} from "../cache/Skimmer";
 
 function Post({
   route,
@@ -42,11 +49,10 @@ function Post({
 
   const {
     data: {items: comments},
-  } = useCacheWithPrev<PostID, {items: ReadonlyArray<PostCommentsCacheEntry>}>(
-    PostCommentsCache,
-    postID,
-    {items: []},
-  );
+  } = useCacheWithPrev<
+    PostID,
+    {items: ReadonlyArray<PostCommentsCacheEntry | typeof empty>}
+  >(PostCommentsCache, postID, {items: []});
 
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar =
@@ -54,7 +60,7 @@ function Post({
 
   return (
     <View style={styles.background}>
-      <NavbarVirtualizedList<{shimmer: true} | PostCommentsCacheEntry>
+      <NavbarVirtualizedList<PostCommentsCacheEntry | typeof empty>
         ref={scrollViewRef}
         // ## Styles
         contentContainerStyle={styles.container}
@@ -73,10 +79,10 @@ function Post({
         }
         // ## Post Comments
         data={true}
-        getItemCount={() => post.commentCount}
-        getItem={(_data, index) => comments[index] || {shimmer: true}}
-        keyExtractor={(item, index) =>
-          "shimmer" in item ? String(index) : item.id
+        getItemCount={() => Math.max(comments.length, post.commentCount)}
+        getItem={(_data, index) => comments[index] || empty}
+        keyExtractor={(comment, index) =>
+          comment === empty ? String(index) : comment.id
         }
         initialNumToRender={Math.ceil(
           // Estimate the maximum number of comments that can fit on screen at
@@ -84,40 +90,57 @@ function Post({
           (Dimensions.get("screen").height * 0.75) /
             (Font.size2.lineHeight * 2),
         )}
-        renderItem={({item: comment, index}) =>
-          "shimmer" in comment ? (
-            <CommentShimmer index={index} />
-          ) : (
-            <Comment
-              commentID={comment.id}
-              lastCommentID={index > 0 ? comments[index - 1].id : null}
-              realtime={comment.realtime}
-            />
-          )
-        }
+        renderItem={({item: comment, index}) => {
+          // If we have no comment then render a shimmer which represents a
+          // loading state...
+          if (comment === empty) {
+            return <CommentShimmer index={index} />;
+          } else {
+            // If we do have a comment then render it. Also if we have a comment
+            // above this one then let’s get its ID...
+            const lastComment = index > 0 ? comments[index - 1] : null;
+            const lastCommentID =
+              lastComment && lastComment !== empty ? lastComment.id : null;
+            return (
+              <Comment
+                commentID={comment.id}
+                lastCommentID={lastCommentID}
+                realtime={comment.realtime}
+              />
+            );
+          }
+        }}
         // ## Viewability
-        viewabilityConfigCallbackPairs={[
-          // We use this viewability config to determine which comments we need
-          // to load. We don’t use this viewability config for analytics.
-          {
-            viewabilityConfig: {
-              // We want to load items with even a single viewable pixel.
-              itemVisiblePercentThreshold: 0,
-            },
+        viewabilityConfigCallbackPairs={useMemo(() => {
+          const configs: Array<ViewabilityConfigCallbackPair> = [
+            // We use this viewability config to determine which comments we need
+            // to load. We don’t use this viewability config for analytics.
+            {
+              viewabilityConfig: {
+                // We want to load items with even a single viewable pixel.
+                itemVisiblePercentThreshold: 0,
+              },
 
-            // When the user starts to finish scrolling, let’s load some
-            // new comments!
-            onViewableItemsChanged: debounce(100, ({viewableItems}) => {
-              if (viewableItems.length > 0) {
-                console.log(
-                  viewableItems.length,
-                  viewableItems[0].index,
-                  viewableItems[viewableItems.length - 1].index,
-                );
-              }
-            }),
-          },
-        ]}
+              // When the user starts to finish scrolling, let’s load some
+              // new comments!
+              onViewableItemsChanged: debounce(100, ({viewableItems}) => {
+                // If we have some viewable items...
+                if (viewableItems.length > 0) {
+                  // Get the limit/offset of the new comments we want to load.
+                  const limit = viewableItems.length;
+                  const offset = viewableItems[0].index;
+                  if (offset === null) return;
+
+                  // Go ahead and load our new comments!
+                  PostCommentsCache.update(postID, comments => {
+                    return comments.load({limit, offset});
+                  });
+                }
+              }),
+            },
+          ];
+          return configs;
+        }, [postID])}
       />
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
     </View>

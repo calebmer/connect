@@ -1,17 +1,15 @@
 import {
   AccountID,
   Comment,
-  CommentCursor,
   CommentID,
   DateTime,
   PostID,
-  RangeDirection,
   generateID,
 } from "@connect/api-client";
 import {API} from "../api/API";
 import {AccountCache} from "../account/AccountCache";
 import {Cache} from "../cache/Cache";
-import {Paginator} from "../cache/Paginator";
+import {Skimmer} from "../cache/Skimmer";
 
 /**
  * Caches comments by their ID.
@@ -82,18 +80,16 @@ export const commentCountInitial = 16;
  */
 export const PostCommentsCache = new Cache<
   PostID,
-  Paginator<CommentCursor, PostCommentsCacheEntry>
+  Skimmer<PostCommentsCacheEntry>
 >({
   async load(postID) {
-    const comments = Paginator.create<CommentCursor, PostCommentsCacheEntry>({
-      direction: RangeDirection.First,
-      cursor: CommentCursor.get,
-
-      async load(range) {
+    const comments = Skimmer.create<PostCommentsCacheEntry>({
+      async load({limit, offset}) {
         // Fetch the comments for this range from our API.
         const {comments} = await API.comment.getPostComments({
           postID,
-          ...range,
+          limit,
+          offset,
         });
 
         // All the accounts we want to preload.
@@ -122,7 +118,7 @@ export const PostCommentsCache = new Cache<
       },
     });
 
-    return await comments.loadMore(commentCountInitial);
+    return await comments.load({limit: commentCountInitial, offset: 0});
   },
 });
 
@@ -165,15 +161,17 @@ export function publishComment({
     comment: pendingComment,
   });
 
-  // Insert our post as a phantom item in our group post list immediately so
-  // that it’s shown in the UI.
-  PostCommentsCache.update(postID, comments => {
-    return comments.insert({
-      id: commentID,
-      publishedAt: pendingComment.publishedAt,
-      realtime: true,
-    });
-  });
+  // TODO:
+  //
+  // // Insert our post as a phantom item in our group post list immediately so
+  // // that it’s shown in the UI.
+  // PostCommentsCache.update(postID, comments => {
+  //   return comments.insert({
+  //     id: commentID,
+  //     publishedAt: pendingComment.publishedAt,
+  //     realtime: true,
+  //   });
+  // });
 
   // TODO: Error handling!
   (async () => {

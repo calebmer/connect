@@ -1,6 +1,6 @@
 import {AccessToken, RefreshToken} from "./types/TokenTypes";
 import {AccountID, AccountProfile} from "./types/AccountTypes";
-import {Comment, CommentCursor, CommentID} from "./types/CommentTypes";
+import {Comment, CommentID} from "./types/CommentTypes";
 import {DateTime, Group, GroupID} from "./types/GroupTypes";
 import {Post, PostCursor, PostID} from "./types/PostTypes";
 import {RangeInputFields} from "./Range";
@@ -228,12 +228,21 @@ export const APISchema = Schema.namespace({
     /**
      * All of the comment replies to a post. Sorted by the time they were posted
      * with the first comments at the beginning of the list.
+     *
+     * Unlike `getGroupPosts` we use limit/offset pagination. Using offsets is
+     * safe here because published comments are always added to the _end_ of the
+     * list and never the beginning.
+     *
+     * NOTE: As a default, always use cursor pagination! Limit/offset pagination
+     * only makes sense here because of the UI we are using. See `getGroupPosts`
+     * as an example of cursor pagination.
      */
     getPostComments: Schema.method({
       safe: true,
       input: {
         postID: SchemaInput.string<PostID>(),
-        ...RangeInputFields<CommentCursor>(),
+        limit: SchemaInput.number(),
+        offset: SchemaInput.number(),
       },
       output: SchemaOutput.t<{
         readonly comments: ReadonlyArray<Comment>;

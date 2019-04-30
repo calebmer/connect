@@ -1,12 +1,12 @@
-import {Skimmer} from "../Skimmer";
+import {Skimmer, empty} from "../Skimmer";
 
 const items = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-const load = jest.fn(({offset, limit}) => {
+const load = jest.fn(async ({offset, limit}) => {
   return items.slice(offset, offset + limit);
 });
 
-const e = Skimmer.empty;
+const e = empty;
 
 test("loads from the beginning", async () => {
   let skimmer = Skimmer.create({load});
