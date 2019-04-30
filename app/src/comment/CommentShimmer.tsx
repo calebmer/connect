@@ -68,7 +68,7 @@ export function CommentShimmer({index}: {index: number}) {
       <View style={styles.body}>
         {comment.byline && <View style={styles.byline} />}
         {comment.lines.map((line, index) => (
-          <View key={index} style={[styles.line, {width: `${line * 0.9}%`}]} />
+          <View key={index} style={[styles.line, {width: `${line}%`}]} />
         ))}
       </View>
     </View>

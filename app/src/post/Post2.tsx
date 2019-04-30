@@ -10,6 +10,10 @@ import {PostCache} from "./PostCache";
 import {PostCommentsCache} from "../comment/CommentCache";
 import {useCache} from "../cache/Cache";
 import {CommentShimmer} from "../comment/CommentShimmer";
+import {Dimensions, FlatList, StyleSheet} from "react-native";
+import {NavbarFlatList} from "../frame/NavbarFlatList";
+import {NavbarVirtualizedList} from "../frame/NavbarVirtualizedList";
+import {Font, Space} from "../atoms";
 
 export function Post2({
   route,
@@ -35,38 +39,37 @@ export function Post2({
     useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
 
   return (
-    <NavbarScrollView route={route} title={group.name} hideNavbar={hideNavbar}>
-      <PostContent postID={postID} />
-      <Trough title="Comments" />
-      {repeat(post.commentCount, index => (
-        <CommentShimmer key={`shimmer:${index}`} index={index} />
-      ))}
-    </NavbarScrollView>
+    <NavbarVirtualizedList<number>
+      // ## Styles
+      contentContainerStyle={styles.container}
+      // ## Navbar
+      route={route}
+      title={group.name}
+      hideNavbar={hideNavbar}
+      // ## Post Content
+      ListHeaderComponent={
+        <>
+          <PostContent postID={postID} />
+          <Trough title="Comments" />
+        </>
+      }
+      // ## Post Comments
+      data={true}
+      getItemCount={() => post.commentCount}
+      getItem={(_data, index) => index}
+      keyExtractor={(index: number) => String(index)}
+      initialNumToRender={Math.ceil(
+        // Estimate the maximum number of comments that can fit on screen at
+        // a time.
+        (Dimensions.get("screen").height * 0.75) / (Font.size2.lineHeight * 2),
+      )}
+      renderItem={({index}) => <CommentShimmer index={index} />}
+    />
   );
 }
 
-function repeat<Value>(
-  count: number,
-  next: (index: number) => Value,
-): Iterable<Value> {
-  return {
-    [Symbol.iterator]() {
-      let currentCount = 0;
-      return {
-        next() {
-          if (currentCount < count) {
-            return {
-              done: false,
-              value: next(currentCount++),
-            };
-          } else {
-            return {
-              done: true,
-              value: undefined as any,
-            };
-          }
-        },
-      };
-    },
-  };
-}
+const styles = StyleSheet.create({
+  container: {
+    paddingBottom: Space.space3,
+  },
+});
