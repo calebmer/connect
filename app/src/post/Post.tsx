@@ -18,7 +18,7 @@ import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
 import {Trough} from "../molecules/Trough";
-import {PostVirtualized} from "./PostVirtualized";
+import {Post2} from "./Post2";
 
 function Post({
   route,
@@ -31,7 +31,7 @@ function Post({
 }) {
   return (
     <View style={styles.background}>
-      <PostVirtualized route={route} groupSlug={groupSlug} postID={postID} />
+      <Post2 route={route} groupSlug={groupSlug} postID={postID} />
     </View>
   );
 

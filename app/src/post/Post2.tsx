@@ -11,7 +11,7 @@ import {PostCommentsCache} from "../comment/CommentCache";
 import {useCache} from "../cache/Cache";
 import {CommentShimmer} from "../comment/CommentShimmer";
 
-export function PostVirtualized({
+export function Post2({
   route,
   groupSlug,
   postID,
@@ -29,8 +29,6 @@ export function PostVirtualized({
   // Load the data we will need for this component.
   const {post} = useCache(PostCache, postID);
   const group = useCache(GroupCache, groupSlug);
-
-  console.log(post);
 
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar =
