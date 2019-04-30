@@ -21,12 +21,11 @@ function Comment({
   commentID,
   lastCommentID,
   realtime,
-  scrollViewRef,
 }: {
   commentID: CommentID;
   lastCommentID: CommentID | null;
   realtime: boolean;
-  scrollViewRef: React.RefObject<ScrollView>;
+  // scrollViewRef: React.RefObject<ScrollView>;
 }) {
   // If we were provided an ID for the comment before our own then preload that
   // data since we’ll be using it.
@@ -38,8 +37,9 @@ function Comment({
   const {comment} = useCache(CommentCache, commentID);
   const author = useCache(AccountCache, comment.authorID);
 
-  // Scroll to the end of our scroll view if this is a realtime comment.
-  useScrollToEnd(scrollViewRef, author, realtime);
+  // TODO:
+  // // Scroll to the end of our scroll view if this is a realtime comment.
+  // useScrollToEnd(scrollViewRef, author, realtime);
 
   // If there was no comment before this one then we definitely want to render
   // the comment with a byline. Otherwise we want to do some conditional data
