@@ -59,10 +59,14 @@ function Comment({
 
 Comment.paddingLeft = Space.space3 + AccountAvatarSmall.size + Space.space2;
 Comment.paddingRight = Space.space4;
+Comment.paddingTopWithByline = Space.space3;
+Comment.paddingTopWithoutByline = Font.size2.lineHeight / 3;
 
 const CommentMemo = Object.assign(React.memo(Comment), {
   paddingLeft: Comment.paddingLeft,
   paddingRight: Comment.paddingRight,
+  paddingTopWithByline: Comment.paddingTopWithByline,
+  paddingTopWithoutByline: Comment.paddingTopWithoutByline,
 });
 
 export {CommentMemo as Comment};
@@ -174,7 +178,7 @@ function useScrollToEnd(
 const styles = StyleSheet.create({
   comment: {
     flexDirection: "row",
-    paddingTop: Space.space3,
+    paddingTop: Comment.paddingTopWithByline,
     paddingHorizontal: Space.space3,
   },
   commentAvatar: {
@@ -187,7 +191,7 @@ const styles = StyleSheet.create({
     paddingRight: Comment.paddingRight,
   },
   commentWithoutByline: {
-    paddingTop: Font.size2.lineHeight / 3,
+    paddingTop: Comment.paddingTopWithoutByline,
     paddingLeft: Comment.paddingLeft,
     paddingRight: Comment.paddingRight,
   },

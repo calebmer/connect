@@ -101,11 +101,11 @@ INSERT INTO comment (id, post_id, author_id, published_at, content)
   SELECT mock_generate_id(mock_comment.published_at), mock_comment.*
     FROM (SELECT post.id as post_id,
                  mock_comment.author_id,
-                 post.published_at + mock_comment.published_at + interval '1m' + (5 - post.duplicate) * interval '45m' AS published_at,
+                 post.published_at + mock_comment.published_at + interval '1m' + (6 - post.duplicate) * interval '45m' AS published_at,
                  mock_comment.content
             FROM (SELECT *
-                    FROM unnest(ARRAY[1, 2, 3, 4, 5]) AS duplicate
-                    JOIN (SELECT row_number() OVER (ORDER BY published_at, id), * FROM post ORDER BY published_at, id) AS post ON ((row_number - 1) % 5) + 1 <= duplicate) AS post,
+                    FROM unnest(ARRAY[1, 2, 3, 4, 5, 6]) AS duplicate
+                    JOIN (SELECT row_number() OVER (ORDER BY published_at, id), * FROM post ORDER BY published_at, id) AS post ON ((row_number - 1) % 6) + 1 <= duplicate) AS post,
                  unnest(ARRAY[(1, 1, interval '0m 0s', '@Dominic, @Joseph: what do you guys use to manage state across your app (react native)'::TEXT),
                               (2, 20, interval '3m 0s', 'Right now redux because the Context API only just got released and it isnt currently stable'::TEXT),
                               (3, 20, interval '3m 30s', 'Well hooks that is, I think context has been fine but Im waiting for hooks and context together first.'::TEXT),
