@@ -1,12 +1,13 @@
 import {Color, Font, Shadow, Space} from "../atoms";
-import {Dimensions, StyleSheet, View} from "react-native";
+import {Dimensions, ScrollView, StyleSheet, View} from "react-native";
 import {
   PostCommentsCache,
   PostCommentsCacheEntry,
 } from "../comment/CommentCache";
-import React, {useContext} from "react";
+import React, {useContext, useRef} from "react";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {Comment} from "../comment/Comment";
+import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {CommentShimmer} from "../comment/CommentShimmer";
 import {GroupCache} from "../group/GroupCache";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
@@ -17,7 +18,7 @@ import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
 import {Trough} from "../molecules/Trough";
 
-export function Post({
+function Post({
   route,
   groupSlug,
   postID,
@@ -26,6 +27,8 @@ export function Post({
   groupSlug: string;
   postID: PostID;
 }) {
+  const scrollViewRef = useRef<ScrollView>(null);
+
   // Preload all our post data so that they load in the background while we
   // render our component.
   GroupCache.preload(groupSlug);
@@ -51,8 +54,8 @@ export function Post({
   return (
     <View style={styles.background}>
       <NavbarVirtualizedList<number | PostCommentsCacheEntry>
+        ref={scrollViewRef}
         // ## Styles
-
         contentContainerStyle={styles.container}
         // ## Navbar
         route={route}
@@ -92,9 +95,14 @@ export function Post({
           )
         }
       />
+      <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
     </View>
   );
 }
+
+// Don’t re-render `<Post>` unless the props change.
+const PostMemo = React.memo(Post);
+export {PostMemo as Post};
 
 const styles = StyleSheet.create({
   background: {
