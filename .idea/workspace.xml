@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="58b8e2e0-ce71-4ec7-9dac-8ed5ddf46170" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api/client/__tests__/generateID.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api/client/jest.config.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api/client/src/generateID.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api/server/src/methods/CommentMethods.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api/server/src/methods/__tests__/CommentMethods.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/account/AccountByline.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/account/AccountCache.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/cache/Cache.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/cache/Emitter.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/cache/Lazy.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/cache/LazyMap.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/cache/Mutable.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/comment/Comment.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/comment/CommentCache.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/comment/CommentNew.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/comment/CommentNewToolbar.d.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/comment/CommentNewToolbar.native.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/comment/CommentNewToolbar.web.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/editor/Editor.d.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/editor/Editor.native.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/editor/Editor.web.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/editor/EditorShared.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/frame/NavbarScrollView.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/group/GroupCache.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/group/GroupHome.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/group/GroupHomeContainer.d.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/group/GroupHomeContainer.native.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/group/GroupHomeContainer.web.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/group/GroupHomeLayout.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/group/GroupItem.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/group/GroupItemFeed.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/group/GroupPostPrompt.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/group/useNewPosts.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/molecules/Button.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/molecules/IconPatch.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/molecules/IconPatchButton.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/molecules/Trough.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/post/Post.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/post/PostCache.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/post/PostComments.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/post/PostContent.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/post/PostNewHeader.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/post/PostNewMobile.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/post/PostNewPopup.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/post/PostNewPopupContext.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/utils/communicateTime.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/utils/stall.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/utils/useAnimatedValue.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/utils/useKeyboardHeight.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/types/dom.d.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/types/react-native-keyboard-tracking-view.d.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/types/react-native-web.d.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/types/react-native.d.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/types/react.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.eslintrc.js" beforeDir="false" afterPath="$PROJECT_DIR$/.eslintrc.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/client/src/APIError.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/client/src/APIError.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/client/src/APISchema.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/client/src/APISchema.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/client/src/AbortController.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/client/types/dom.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/client/src/Schema.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/client/src/Schema.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/client/src/SchemaInput.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/client/src/SchemaInput.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/client/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/client/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/client/src/types/CommentTypes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/client/src/types/CommentTypes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/client/src/types/GroupTypes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/client/src/types/GroupTypes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/client/src/types/PostTypes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/client/src/types/PostTypes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/server/src/APIServer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/server/src/APIServer.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/server/src/Context.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/server/src/Context.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/server/src/PGClient.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/server/src/PGClient.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/server/src/TestFactory.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/server/src/TestFactory.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/server/src/__tests__/APIServer.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/server/src/__tests__/APIServer.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/server/src/methods/GroupMethods.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/server/src/methods/GroupMethods.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/server/src/methods/PostMethods.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/server/src/methods/PostMethods.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/server/src/methods/__tests__/GroupMethods.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/server/src/methods/__tests__/GroupMethods.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/server/src/methods/__tests__/PostMethods.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/server/src/methods/__tests__/PostMethods.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/server/src/methods/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/api/server/src/methods/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/android/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/android/app/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/android/app/src/main/java/com/connect/MainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/android/app/src/main/java/com/connect/MainActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/android/app/src/main/java/com/connect/MainApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/android/app/src/main/java/com/connect/MainApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/android/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/android/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/android/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/ios/Connect.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/app/ios/Connect.xcodeproj/project.pbxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/ios/Connect/AppDelegate.m" beforeDir="false" afterPath="$PROJECT_DIR$/app/ios/Connect/AppDelegate.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/AccountAvatar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/account/AccountAvatar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/AccountTest.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/account/AccountTest.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/App.web.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/App.web.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/Editor.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/ErrorMessage.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/api/ErrorMessage.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/Group.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/group/Group.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/GroupBanner.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/group/GroupBanner.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/GroupHome.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/GroupItem.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/GroupItemFeed.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/GroupPostPrompt.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/Home.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/Home.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/Layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/auth/SignUpLayout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/NavbarNative.d.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/NavbarNative.native.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/frame/Navbar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/NavbarNative.web.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/Post.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/SignIn.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/auth/SignIn.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/SignUp.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/auth/SignUp.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/TextInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/molecules/TextInput.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/__tests__/communicateTime.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/utils/__tests__/communicateTime.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/assets/icons/GlyphMap.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/assets/icons/GlyphMap.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/atoms/Button.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/atoms/Font.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/atoms/Font.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/atoms/Icon.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/atoms/Icon.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/atoms/Loading.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/molecules/Loading.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/atoms/Shadow.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/atoms/Shadow.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/atoms/Text.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/atoms/Text.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/atoms/TextLink.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/molecules/TextLink.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/atoms/__tests__/Button.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/molecules/__tests__/Button.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/atoms/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/atoms/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/cache/AccountCache.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/cache/GroupCache.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/cache/PostCache.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/cache/framework/Async.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/cache/Async.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/cache/framework/Cache.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/cache/framework/CacheList.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/cache/CacheList.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/cache/framework/CacheSingleton.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/cache/CacheSingleton.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/cache/framework/Mutable.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/cache/framework/__tests__/CacheList.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/cache/__tests__/CacheList.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/communicateTime.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main.web.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main.web.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/router/AllRoutes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/router/AllRoutes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/router/Route.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/router/Route.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/router/Route.native.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/router/Route.native.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/router/Route.web.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/router/Route.web.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/router/RouteBase.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/router/RouteBase.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/useBreakpoint.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/utils/useBreakpoint.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/useConstant.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/utils/useConstant.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/useForceUpdate.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/utils/useForceUpdate.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/web/css/fonts-google.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/web/css/fonts-google.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/web/css/fonts-icon.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/web/css/fonts-icon.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/web/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/web/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/web/lib/APIProxy.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/web/lib/APIProxy.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/web/lib/__tests__/APIProxy.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/web/lib/__tests__/APIProxy.test.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/web/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/web/public/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/web/webpack.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/web/webpack.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/migrations/003-group.sql" beforeDir="false" afterPath="$PROJECT_DIR$/db/migrations/003-group.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/migrations/004-post.sql" beforeDir="false" afterPath="$PROJECT_DIR$/db/migrations/004-post.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/migrations/005-comment.sql" beforeDir="false" afterPath="$PROJECT_DIR$/db/migrations/005-comment.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/mocks/mock-data.sql" beforeDir="false" afterPath="$PROJECT_DIR$/db/mocks/mock-data.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/jest.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/jest.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
+    </list>
+    <ignored path="$PROJECT_DIR$/.tmp/" />
+    <ignored path="$PROJECT_DIR$/temp/" />
+    <ignored path="$PROJECT_DIR$/tmp/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="335" />
+    <option name="y" value="23" />
+    <option name="width" value="926" />
+    <option name="height" value="709" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="connect" type="b2602c69:ProjectViewProjectNode" />
+              <item name="connect" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="$PROJECT_DIR$/node_modules/eslint" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
+    <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="58b8e2e0-ce71-4ec7-9dac-8ed5ddf46170" name="Default Changelist" comment="" />
+      <created>1555878660834</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1555878660834</updated>
+      <workItem from="1555878664503" duration="351000" />
+      <workItem from="1556662006074" duration="88000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="439000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="335" y="23" width="926" height="709" extended-state="0" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="npm" order="2" side_tool="true" />
+      <window_info id="Favorites" order="3" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" />
+      <window_info anchor="bottom" id="TypeScript" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" weight="0.32901135" />
+      <window_info anchor="bottom" id="Terminal" order="11" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/app/src/Home.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="6" column="24" lean-forward="true" selection-start-line="6" selection-start-column="24" selection-end-line="6" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#49#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
