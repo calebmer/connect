@@ -1,5 +1,5 @@
 import {BodyText, Font} from "../atoms";
-import React, {useContext, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableSelect} from "../cache/Mutable";
 import {AccountByline} from "../account/AccountByline";
 import {AccountCache} from "../account/AccountCache";
@@ -24,6 +24,15 @@ function GroupItemFeed({
   postID: PostID;
   selectedPostID: ReadonlyMutable<PostID | undefined>;
 }) {
+  // Keep track of whether our component is mounted or not.
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   // TODO: Suspense handler for _just_ this component.
   const {post} = useCache(PostCache, postID);
   const account = useCache(AccountCache, post.authorID);
@@ -52,7 +61,13 @@ function GroupItemFeed({
 
       // NOTE: It is important that this runs after `route.push()`! Since
       // `route.push()` will synchronously re-render and select this item.
-      setSelecting(false);
+      //
+      // NOTE: On mobile calling `route.push()` will immediately unmount the
+      // component. React will warn us that we tried to update state after
+      // unmounting so only update state if we are mounted.
+      if (isMounted.current) {
+        setSelecting(false);
+      }
     });
   }
 
