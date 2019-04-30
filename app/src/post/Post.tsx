@@ -53,7 +53,7 @@ function Post({
 
   return (
     <View style={styles.background}>
-      <NavbarVirtualizedList<number | PostCommentsCacheEntry>
+      <NavbarVirtualizedList<{shimmer: true} | PostCommentsCacheEntry>
         ref={scrollViewRef}
         // ## Styles
         contentContainerStyle={styles.container}
@@ -73,9 +73,9 @@ function Post({
         // ## Post Comments
         data={true}
         getItemCount={() => post.commentCount}
-        getItem={(_data, index) => comments[index] || index}
-        keyExtractor={item =>
-          typeof item === "number" ? String(item) : item.id
+        getItem={(_data, index) => comments[index] || {shimmer: true}}
+        keyExtractor={(item, index) =>
+          "shimmer" in item ? String(index) : item.id
         }
         initialNumToRender={Math.ceil(
           // Estimate the maximum number of comments that can fit on screen at
@@ -84,8 +84,8 @@ function Post({
             (Font.size2.lineHeight * 2),
         )}
         renderItem={({item: comment, index}) =>
-          typeof comment === "number" ? (
-            <CommentShimmer index={comment} />
+          "shimmer" in comment ? (
+            <CommentShimmer index={index} />
           ) : (
             <Comment
               commentID={comment.id}
@@ -94,6 +94,20 @@ function Post({
             />
           )
         }
+        // ## Viewability
+        viewabilityConfigCallbackPairs={[
+          // We use this viewability config to determine which comments we need
+          // to load. We don’t use this viewability config for analytics.
+          {
+            viewabilityConfig: {
+              // We don’t want to load items the user is quickly scrolling by.
+              minimumViewTime: 300,
+              // We want to load items with even a single viewable pixel.
+              itemVisiblePercentThreshold: 0,
+            },
+            onViewableItemsChanged: () => {},
+          },
+        ]}
       />
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
     </View>
