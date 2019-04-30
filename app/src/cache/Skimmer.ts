@@ -61,56 +61,60 @@ export class Skimmer<Item> {
   /**
    * Load some new items into our list using the offset and limit of
    * those items.
+   *
+   * If we already have items in the requested offset and limit then we will
+   * modify our range to select items we don’t have yet.
+   *
+   * We keep the limit the same while we move around the offset to fetch items
+   * we don’t have yet. That way we don’t have wasteful fetches for only one new
+   * item at a time.
    */
   public async load({
-    limit: originalLimit,
-    offset: originalOffset,
+    limit: requestedLimit,
+    offset: requestedOffset,
   }: {
     limit: number;
     offset: number;
   }) {
     // Don‘t allow limit and offset to be negative numbers.
-    originalLimit = Math.max(originalLimit, 0);
-    originalOffset = Math.max(originalOffset, 0);
+    requestedLimit = Math.max(requestedLimit, 0);
+    requestedOffset = Math.max(requestedOffset, 0);
 
-    // The maximum possible end position for our load.
-    const maxEnd = originalOffset + originalLimit;
-
-    // Find the first offset where we have not yet loaded data. The end of our
-    // list is always not yet loaded.
-    let start = originalOffset;
-    while (
-      start < maxEnd &&
-      start < this.items.length &&
-      this.items[start] !== empty
-    ) {
-      start++;
-    }
-
-    // We only want to fetch items that are not yet loaded. Stop when we see the
-    // first loaded item.
-    //
-    // TODO: If we have a list that looks like
-    // `[null, null, C, D, E, null, null]` and try to load with offset 0 and
-    // limit 7 (the entire list) we will only load `[A, B, C, D, E, null, null]`
-    // leaving the end of the list unloaded. Shouldn’t matter in practice since
-    // we don’t use the list in this way. Still a bug, though. We should run
-    // two fetches in parallel.
+    let start = requestedOffset;
     let end = start;
-    while (
-      end < maxEnd &&
-      end < this.items.length &&
-      this.items[end] === empty
-    ) {
-      end++;
+
+    let remainingLimit = requestedLimit;
+
+    while (remainingLimit > 0) {
+      if (end >= this.items.length) {
+        end += remainingLimit;
+        remainingLimit = 0;
+        break;
+      } else if (this.items[end] === empty) {
+        end++;
+        remainingLimit--;
+      } else {
+        break;
+      }
     }
 
-    // If we reached the end of the list then always use our max ending.
-    if (end >= this.items.length) {
-      end = maxEnd;
+    while (remainingLimit > 0) {
+      // NOTE: If `start` is outside of `this.items` then `end` **MUST** also be
+      // outside of `this.items`. When `end` is outside of `this.items` it is
+      // handled above and we exhaust `remainingLimit` by setting it to zero so
+      // we don’t need to handle `start` being outside `this.items` here.
+
+      if (start <= 0) {
+        remainingLimit = 0;
+        break;
+      } else if (this.items[start - 1] === empty) {
+        start--;
+        remainingLimit--;
+      } else {
+        break;
+      }
     }
 
-    // Compute the actual offset and limit.
     const limit = end - start;
     const offset = start;
 
