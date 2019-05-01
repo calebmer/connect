@@ -44,6 +44,11 @@ export type EditorProps = {
   onChange?: (info: EditorChangeInfo) => void;
 
   /**
+   * Event that‘s fired when the user focuses the editor.
+   */
+  onFocus?: () => void;
+
+  /**
    * When a key is pressed on _web_ we fire this event. This event is not
    * available on iOS or Android editors.
    */

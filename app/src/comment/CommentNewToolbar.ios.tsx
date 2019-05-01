@@ -1,11 +1,17 @@
 import {Color, Shadow} from "../atoms";
-import {Platform, StyleSheet, View} from "react-native";
+import {Platform, ScrollView, StyleSheet, View} from "react-native";
 import {CommentNew} from "./CommentNew";
 import {KeyboardTrackingView} from "react-native-keyboard-tracking-view";
 import {PostID} from "@connect/api-client";
 import React from "react";
 
-export function CommentNewToolbar({postID}: {postID: PostID}) {
+export function CommentNewToolbar({
+  postID,
+  scrollViewRef,
+}: {
+  postID: PostID;
+  scrollViewRef: React.RefObject<ScrollView>;
+}) {
   return (
     <KeyboardTrackingView
       style={styles.toolbar}
@@ -13,7 +19,7 @@ export function CommentNewToolbar({postID}: {postID: PostID}) {
       scrollBehavior="KeyboardTrackingScrollBehaviorFixedOffset"
     >
       <View style={styles.background} />
-      <CommentNew postID={postID} />
+      <CommentNew postID={postID} scrollViewRef={scrollViewRef} />
     </KeyboardTrackingView>
   );
 }

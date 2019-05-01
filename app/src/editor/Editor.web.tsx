@@ -53,6 +53,7 @@ function Editor(
     maxLines,
     paddingRight,
     onChange,
+    onFocus,
     onKeyDownWeb,
   }: EditorProps,
   ref: React.Ref<EditorInstance>,
@@ -187,6 +188,7 @@ function Editor(
         contentEditable: !disabled,
         onInput: handleChange,
         onPaste: handlePaste,
+        onFocus: onFocus,
         onKeyDown: onKeyDownWeb,
       })}
     </View>

@@ -67,7 +67,7 @@ export function CommentNewToolbar({
 
   return (
     <View style={styles.toolbar} onLayout={handleLayout}>
-      <CommentNew postID={postID} />
+      <CommentNew postID={postID} scrollViewRef={scrollViewRef} />
     </View>
   );
 }

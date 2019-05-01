@@ -12,6 +12,7 @@ function Editor(
     maxLines,
     paddingRight,
     onChange,
+    onFocus,
   }: EditorProps,
   ref: React.Ref<EditorInstance>,
 ) {
@@ -90,6 +91,7 @@ function Editor(
       placeholderTextColor={Color.grey3}
       editable={!disabled}
       scrollEnabled={maxLines !== undefined}
+      onFocus={onFocus}
       // NOTE: We don’t support `autoFocus` in `Editor` because the React Native
       // implementation only triggers focus in `componentDidMount` since it is
       // a class component. Instead we provide a `focus()` method and expect

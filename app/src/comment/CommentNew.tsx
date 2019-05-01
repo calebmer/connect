@@ -1,7 +1,7 @@
 import {Editor, EditorInstance} from "../editor/Editor";
 import {Font, Space} from "../atoms";
 import React, {useContext, useRef, useState} from "react";
-import {StyleSheet, View} from "react-native";
+import {ScrollView, StyleSheet, View} from "react-native";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {IconPatch} from "../molecules/IconPatch";
 import {IconPatchButton} from "../molecules/IconPatchButton";
@@ -9,7 +9,12 @@ import {PostID} from "@connect/api-client";
 import {publishComment} from "./CommentCache";
 import {useCurrentAccount} from "../account/AccountCache";
 
-function CommentNew({postID}: {postID: PostID}) {
+function CommentNew({
+  postID,
+}: {
+  postID: PostID;
+  scrollViewRef: React.RefObject<ScrollView>;
+}) {
   const currentAccount = useCurrentAccount();
 
   const isLaptop =
@@ -40,6 +45,10 @@ function CommentNew({postID}: {postID: PostID}) {
     }
   }
 
+  /**
+   * If the user presses “enter” and not “shift+enter” on web then send
+   * the message!
+   */
   function handleKeyDownWeb(event: React.KeyboardEvent) {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
