@@ -62,38 +62,45 @@ export class Skimmer<Item> {
   /**
    * Load some new items into our list using the offset and limit of
    * those items.
+   *
+   * Tries to always load the requested “limit” number of items. Even if that
+   * means loading some items outside of the declared range. If the entire range
+   * has already been loaded then this method will not make an API request. We
+   * will only expand the range if there are some overlapping unloaded items.
    */
   public async load({
-    limit: originalLimit,
-    offset: originalOffset,
+    limit: requestedLimit,
+    offset: requestedOffset,
   }: {
     limit: number;
     offset: number;
   }) {
     // Don‘t allow limit and offset to be negative numbers.
-    originalLimit = Math.max(originalLimit, 0);
-    originalOffset = Math.max(originalOffset, 0);
+    requestedLimit = Math.max(requestedLimit, 0);
+    requestedOffset = Math.max(requestedOffset, 0);
 
-    // The maximum possible end position for our load. If we’ve reached the end
-    // of our list then we won’t load beyond our items list.
-    let maxEnd = originalOffset + originalLimit;
+    // The maximum possible start position for our load. If we’ve reached the
+    // end of our list then we won’t load beyond our items list.
+    let maxStart = requestedOffset + requestedLimit;
     if (this.noMoreItems) {
-      maxEnd = Math.min(maxEnd, this.items.length);
+      maxStart = Math.min(maxStart, this.items.length);
     }
 
     // Find the first offset where we have not yet loaded data. The end of our
-    // list is always not yet loaded.
-    let start = originalOffset;
+    // list is always not yet loaded so stop incrementing our start
+    // cursor there.
+    let start = requestedOffset;
     while (
-      start < maxEnd &&
+      start < maxStart - 1 &&
       start < this.items.length &&
       this.items[start] !== empty
     ) {
       start++;
     }
 
-    // We only want to fetch items that are not yet loaded. Stop when we see the
-    // first loaded item.
+    // Move our end cursor so that we are covering the same number of items as
+    // requested by our limit. Unless we find a non-empty item then we’ll stop
+    // incrementing our end cursor to avoid re-fetching.
     //
     // TODO: If we have a list that looks like
     // `[null, null, C, D, E, null, null]` and try to load with offset 0 and
@@ -103,16 +110,23 @@ export class Skimmer<Item> {
     // two fetches in parallel.
     let end = start;
     while (
-      end < maxEnd &&
-      end < this.items.length &&
-      this.items[end] === empty
+      end - start < requestedLimit &&
+      (end >= this.items.length || this.items[end] === empty)
     ) {
       end++;
     }
 
-    // If we reached the end of the list then always use our max ending.
-    if (end >= this.items.length) {
-      end = maxEnd;
+    // If the start cursor is currently pointing at an empty item and our range
+    // covers fewer items then the requested limit, try moving our cursor back
+    // to the previous empty item to try and fill our limit.
+    if (this.items[start] === empty) {
+      while (
+        end - start < requestedLimit &&
+        start > 0 &&
+        this.items[start - 1] === empty
+      ) {
+        start--;
+      }
     }
 
     // Compute the actual offset and limit.
