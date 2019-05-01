@@ -150,7 +150,7 @@ function createLoadMoreViewabilityConfig(
       if (firstViewableItem.index === null) return;
 
       // We want to make our network trips worth it. Always select
-      // enough comments to justify a request instead of select the
+      // enough comments to justify a request instead of selecting the
       // one or two currently in view.
       const limit = Math.max(viewableItems.length, commentCountMore);
 
