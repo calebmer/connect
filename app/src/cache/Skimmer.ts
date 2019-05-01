@@ -62,68 +62,115 @@ export class Skimmer<Item> {
   /**
    * Load some new items into our list using the offset and limit of
    * those items.
+   *
+   * If we already have items in the requested offset and limit then we will
+   * modify our range to select items we don’t have yet.
+   *
+   * We keep the limit the same while we move around the offset to fetch items
+   * we don’t have yet. That way we don’t have wasteful fetches for only one new
+   * item at a time.
    */
   public async load({
-    limit: originalLimit,
-    offset: originalOffset,
+    limit: requestedLimit,
+    offset: requestedOffset,
   }: {
     limit: number;
     offset: number;
   }) {
     // Don‘t allow limit and offset to be negative numbers.
-    originalLimit = Math.max(originalLimit, 0);
-    originalOffset = Math.max(originalOffset, 0);
+    requestedLimit = Math.max(requestedLimit, 0);
+    requestedOffset = Math.max(requestedOffset, 0);
 
-    // The maximum possible end position for our load. If we’ve reached the end
-    // of our list then we won’t load beyond our items list.
-    let maxEnd = originalOffset + originalLimit;
-    if (this.noMoreItems) {
-      maxEnd = Math.min(maxEnd, this.items.length);
-    }
-
-    // Find the first offset where we have not yet loaded data. The end of our
-    // list is always not yet loaded.
-    let start = originalOffset;
-    while (
-      start < maxEnd &&
-      start < this.items.length &&
-      this.items[start] !== empty
-    ) {
-      start++;
-    }
-
-    // We only want to fetch items that are not yet loaded. Stop when we see the
-    // first loaded item.
-    //
-    // TODO: If we have a list that looks like
-    // `[null, null, C, D, E, null, null]` and try to load with offset 0 and
-    // limit 7 (the entire list) we will only load `[A, B, C, D, E, null, null]`
-    // leaving the end of the list unloaded. Shouldn’t matter in practice since
-    // we don’t use the list in this way. Still a bug, though. We should run
-    // two fetches in parallel.
+    // We will compute the start and end of our load by “growing” a range of
+    // unselected items that intersects with our current range. So initialize
+    // both start and end to the same position.
+    let start = requestedOffset;
     let end = start;
-    while (
-      end < maxEnd &&
-      end < this.items.length &&
-      this.items[end] === empty
-    ) {
-      end++;
+
+    // We will count this variable down to zero as we decide on the best range
+    // to select.
+    let remainingLimit = requestedLimit;
+
+    // Increment our end pointer while there are empty items and we have some
+    // limit to “spend”.
+    const incrementEnd = () => {
+      while (remainingLimit > 0) {
+        if (end >= this.items.length) {
+          // If there are no more items, we never select past the end of our
+          // items list since there won’t be any items.
+          if (!this.noMoreItems) {
+            end += remainingLimit;
+            remainingLimit = 0;
+          }
+          break;
+        } else if (this.items[end] === empty) {
+          end++;
+          remainingLimit--;
+        } else {
+          break;
+        }
+      }
+    };
+
+    // Decrement our start pointer while there are empty items and we have some
+    // limit to “spend”.
+    const decrementStart = () => {
+      while (remainingLimit > 0) {
+        // NOTE: If `start` is outside of `this.items` then `end` **MUST** also
+        // be outside of `this.items`. When `end` is outside of `this.items` it
+        // is handled above and we exhaust `remainingLimit` by setting it to
+        // zero so we don’t need to handle `start` being outside
+        // `this.items` here.
+
+        if (start <= 0) {
+          break;
+        } else if (!this.noMoreItems && start >= this.items.length) {
+          start--;
+          remainingLimit--;
+        } else if (this.items[start] === empty) {
+          start--;
+          remainingLimit--;
+        } else {
+          break;
+        }
+      }
+    };
+
+    // Try growing our range by first trying to increment end by the requested
+    // limit. With our remaining limit try decrementing start to capture more
+    // items with the same limit.
+    incrementEnd();
+    decrementStart();
+
+    // If we weren’t able to select any items then let’s try selecting new items
+    // from the end of the range.
+    if (start === end) {
+      // Reset start and end to the end of the range.
+      start = requestedOffset + requestedLimit;
+      end = start;
+
+      // Reset our remaining limit.
+      remainingLimit = requestedLimit;
+
+      // Start by trying to decrement start so that we reach back to our
+      // original offset. With any remaining limit try incrementing end to
+      // capture more items with the same limit.
+      console.log({start, end});
+      decrementStart();
+      console.log({start, end});
+      incrementEnd();
+      console.log({start, end});
     }
 
-    // If we reached the end of the list then always use our max ending.
-    if (end >= this.items.length) {
-      end = maxEnd;
-    }
-
-    // Compute the actual offset and limit.
-    const limit = end - start;
-    const offset = start;
-
-    // If limit is zero then that means we are fetching no items. So don’t
-    // bother making an API request.
-    if (limit === 0) {
+    // If we still weren’t able to select any items then don’t load
+    // anything. Yay!
+    if (start === end) {
       return this;
     }
+
+    // Compute the limit and offset we will use.
+    const limit = end - start;
+    const offset = start;
 
     // Fetch more items from the API!
     const newItems = await this.fetchMore({limit, offset});
