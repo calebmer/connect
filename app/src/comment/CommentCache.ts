@@ -61,14 +61,6 @@ type CommentCacheEntry = {
 export type PostCommentsCacheEntry = {
   /** The ID of this comment. */
   readonly id: CommentID;
-  /** The time this comment was published at. */
-  readonly publishedAt: DateTime;
-
-  /**
-   * Was this comment added to our list as a part of a realtime event? Either
-   * a subscription or the user entering a new post.
-   */
-  readonly realtime: boolean;
 };
 
 /** The number of comments we load for a post in our initial fetch. */
@@ -100,17 +92,16 @@ export const PostCommentsCache = new Cache<
 
         // Loop through all the comments and create cache entries for our
         // comment list. Also insert each post into our `CommentCache`.
-        const entries = comments.map<PostCommentsCacheEntry>(comment => {
+        const entries = comments.map(comment => {
           CommentCache.insert(comment.id, {
             status: CommentCacheEntryStatus.Commit,
             comment,
           });
           accountIDs.add(comment.authorID);
-          return {
+          const entry: PostCommentsCacheEntry = {
             id: comment.id,
-            publishedAt: comment.publishedAt,
-            realtime: false,
           };
+          return entry;
         });
 
         // Load comment authors since we’ll probably want those when
@@ -171,8 +162,6 @@ export function publishComment({
   // PostCommentsCache.update(postID, comments => {
   //   return comments.insert({
   //     id: commentID,
-  //     publishedAt: pendingComment.publishedAt,
-  //     realtime: true,
   //   });
   // });
 

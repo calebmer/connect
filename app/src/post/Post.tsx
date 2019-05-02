@@ -98,11 +98,7 @@ function Post({
             const lastCommentID =
               lastComment && lastComment !== empty ? lastComment.id : null;
             return (
-              <Comment
-                commentID={comment.id}
-                lastCommentID={lastCommentID}
-                realtime={comment.realtime}
-              />
+              <Comment commentID={comment.id} lastCommentID={lastCommentID} />
             );
           }
         }}

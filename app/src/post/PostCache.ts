@@ -92,16 +92,17 @@ export const GroupPostsCache = new Cache<
 
         // Loop through all the posts and create cache entries for our post
         // list. Also insert each post into our `PostCache`.
-        const entries = posts.map<GroupPostsCacheEntry>(post => {
+        const entries = posts.map(post => {
           PostCache.insert(post.id, {
             status: PostCacheEntryStatus.Commit,
             post,
           });
           accountIDs.add(post.authorID);
-          return {
+          const entry: GroupPostsCacheEntry = {
             id: post.id,
             publishedAt: post.publishedAt,
           };
+          return entry;
         });
 
         // Load post authors since we’ll probably want those when
