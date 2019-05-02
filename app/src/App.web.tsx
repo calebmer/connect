@@ -6,6 +6,14 @@ import {TitleText} from "./atoms";
  * Manages routing based on the location for our web-app.
  */
 export function App() {
+  return (
+    <React.unstable_ConcurrentMode>
+      <AppConcurrent />
+    </React.unstable_ConcurrentMode>
+  );
+}
+
+function AppConcurrent() {
   const [location, setLocation] = useState(history.location);
 
   useEffect(() => {
