@@ -68,13 +68,13 @@ export class Skimmer<Item> {
    * has already been loaded then this method will not make an API request. We
    * will only expand the range if there are some overlapping unloaded items.
    */
-  public async load({
+  public load({
     limit: requestedLimit,
     offset: requestedOffset,
   }: {
     limit: number;
     offset: number;
-  }) {
+  }): Skimmer<Item> | Promise<Skimmer<Item>> {
     // Don‘t allow limit and offset to be negative numbers.
     requestedLimit = Math.max(requestedLimit, 0);
     requestedOffset = Math.max(requestedOffset, 0);
@@ -139,6 +139,13 @@ export class Skimmer<Item> {
       return this;
     }
 
+    return this.actuallyLoad({limit, offset});
+  }
+
+  /**
+   * Actually load more posts using the provided range.
+   */
+  private async actuallyLoad({limit, offset}: {limit: number; offset: number}) {
     // Fetch more items from the API!
     const newItems = await this.fetchMore({limit, offset});
 
