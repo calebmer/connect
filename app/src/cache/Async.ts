@@ -1,4 +1,5 @@
 import {useEffect, useRef} from "react";
+import {FastEquals} from "../utils/fastEquals";
 import {useForceUpdate} from "../utils/useForceUpdate";
 
 /** The status of an async value. Can be any of the promise statuses. */
@@ -21,7 +22,7 @@ enum AsyncStatus {
  * May also be rejected. That means whenever we try to access the value we will
  * throw instead.
  */
-export class Async<Value> {
+export class Async<Value> implements FastEquals {
   /** The status of our async value. */
   private status: AsyncStatus;
 
@@ -110,6 +111,17 @@ export class Async<Value> {
         throw new Error(`Unexpected status: ${never}`);
       }
     }
+  }
+
+  /**
+   * Quickly checks if this value is equal to another value of an unknown type.
+   */
+  public fastEquals(other: unknown): boolean {
+    return (
+      other instanceof Async &&
+      this.status === other.status &&
+      this.value === other.value
+    );
   }
 }
 

@@ -1,4 +1,5 @@
 import {useEffect, useRef, useState} from "react";
+import {fastEquals} from "../utils/fastEquals";
 
 /**
  * A mutable container of a value which you can watch for changes. This is an
@@ -36,7 +37,7 @@ export class Mutable<Value> implements ReadonlyMutable<Value> {
    * don’t do anything.
    */
   public set(newValue: Value): void {
-    if (this.value !== newValue) {
+    if (!fastEquals(this.value, newValue)) {
       this.value = newValue;
       this.scheduleNotify();
     }
@@ -53,7 +54,7 @@ export class Mutable<Value> implements ReadonlyMutable<Value> {
    * don’t do anything.
    */
   public setSync(newValue: Value): void {
-    if (this.value !== newValue) {
+    if (!fastEquals(this.value, newValue)) {
       this.value = newValue;
       this.notifyScheduled = false; // Cancel any pending notifications.
       this.subscribers.forEach(subscriber => subscriber());
