@@ -5,10 +5,11 @@ import {AccountCache} from "../account/AccountCache";
 import {PostCache} from "./PostCache";
 import {PostID} from "@connect/api-client";
 import React from "react";
+import {Trough} from "../molecules/Trough";
 import {communicateTime} from "../utils/communicateTime";
 import {useCache} from "../cache/Cache";
 
-export function PostContent({postID}: {postID: PostID}) {
+function PostContent({postID}: {postID: PostID}) {
   const {post} = useCache(PostCache, postID);
   const author = useCache(AccountCache, post.authorID);
 
@@ -29,9 +30,13 @@ export function PostContent({postID}: {postID: PostID}) {
       <View style={styles.content}>
         <BodyText selectable>{post.content}</BodyText>
       </View>
+      <Trough title="Comments" />
     </>
   );
 }
+
+const _PostContent = React.memo(PostContent);
+export {_PostContent as PostContent};
 
 const styles = StyleSheet.create({
   header: {

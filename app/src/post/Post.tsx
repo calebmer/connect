@@ -24,7 +24,6 @@ import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
-import {Trough} from "../molecules/Trough";
 import {debounce} from "../utils/debounce";
 import {empty} from "../cache/Skimmer";
 
@@ -73,12 +72,7 @@ function Post({
         // ## Scroll View
         keyboardDismissMode="interactive"
         // ## Post Content
-        ListHeaderComponent={
-          <>
-            <PostContent postID={postID} />
-            <Trough title="Comments" />
-          </>
-        }
+        ListHeaderComponent={<PostContent postID={postID} />}
         // ## Post Comments
         data={true}
         getItemCount={() => Math.max(comments.length, post.commentCount)}
