@@ -2,6 +2,7 @@ import {History, Location} from "history";
 import {PathBase, PathPattern, PathVariableProps} from "./Path";
 import React, {ReactElement} from "react";
 import {RouteBase, RouteConfigBase} from "./RouteBase";
+import {unstable_NormalPriority, unstable_scheduleCallback} from "scheduler";
 import {createBrowserHistory} from "history";
 
 // Utility type for removing keys from an object.
@@ -124,11 +125,17 @@ export class Route extends RouteBase {
     nextRoute: RouteConfig<NextPath, NextProps>,
     props: Omit<NextProps, "route">,
   ) {
-    // TODO: Implement passing `partialProps` to the new component. Right now
-    // we only use the required props to print the next path.
-    //
-    // Also do this for `_replace()`.
-    history.push(nextRoute.path.print(props as NextProps));
+    // The `history` module changes the route and re-renders synchronously. We
+    // don’t want that behavior since if we change the route on a high-priority
+    // click event React will render the new route as a high priority
+    // action synchronously.
+    unstable_scheduleCallback(unstable_NormalPriority, () => {
+      // TODO: Implement passing `partialProps` to the new component. Right now
+      // we only use the required props to print the next path.
+      //
+      // Also do this for `_replace()`.
+      history.push(nextRoute.path.print(props as NextProps));
+    });
   }
 
   /**
@@ -176,11 +183,17 @@ export class Route extends RouteBase {
     nextRoute: RouteConfig<NextPath, NextProps>,
     props: Omit<NextProps, "route">,
   ): void {
-    // TODO: Implement passing `partialProps` to the new component. Right now
-    // we only use the required props to print the next path.
-    //
-    // Also do this for `_push()`.
-    history.replace(nextRoute.path.print(props as NextProps));
+    // The `history` module changes the route and re-renders synchronously. We
+    // don’t want that behavior since if we change the route on a high-priority
+    // click event React will render the new route as a high priority
+    // action synchronously.
+    unstable_scheduleCallback(unstable_NormalPriority, () => {
+      // TODO: Implement passing `partialProps` to the new component. Right now
+      // we only use the required props to print the next path.
+      //
+      // Also do this for `_push()`.
+      history.replace(nextRoute.path.print(props as NextProps));
+    });
   }
 
   /**

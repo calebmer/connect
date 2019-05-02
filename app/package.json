@@ -28,7 +28,8 @@
     "react-native": "0.59.1",
     "react-native-keyboard-tracking-view": "^5.5.0",
     "react-native-navigation": "^2.15.0",
-    "react-native-web": "^0.11.1"
+    "react-native-web": "^0.11.1",
+    "scheduler": "^0.14.0"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
@@ -38,6 +39,7 @@
     "@types/react": "^16.8.6",
     "@types/react-native": "^0.57.43",
     "@types/react-test-renderer": "^16.8.1",
+    "@types/scheduler": "^0.12.1",
     "babel-loader": "^8.0.5",
     "babel-plugin-react-native-web": "^0.10.0",
     "circular-dependency-plugin": "^5.0.2",
