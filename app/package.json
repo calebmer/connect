@@ -22,7 +22,7 @@
     "history": "^4.7.2",
     "jsonwebtoken": "^8.5.0",
     "jwt-decode": "^2.2.0",
-    "react": "16.8.3",
+    "react": "^16.8.6",
     "react-art": "^16.8.4",
     "react-dom": "16.8.3",
     "react-native": "0.59.1",
