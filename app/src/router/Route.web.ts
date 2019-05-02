@@ -125,16 +125,20 @@ export class Route extends RouteBase {
     nextRoute: RouteConfig<NextPath, NextProps>,
     props: Omit<NextProps, "route">,
   ) {
-    // The `history` module changes the route and re-renders synchronously. We
-    // don’t want that behavior since if we change the route on a high-priority
-    // click event React will render the new route as a high priority
-    // action synchronously.
-    unstable_scheduleCallback(unstable_NormalPriority, () => {
-      // TODO: Implement passing `partialProps` to the new component. Right now
-      // we only use the required props to print the next path.
-      //
-      // Also do this for `_replace()`.
-      history.push(nextRoute.path.print(props as NextProps));
+    return new Promise<void>(resolve => {
+      // The `history` module changes the route and re-renders synchronously. We
+      // don’t want that behavior since if we change the route on a
+      // high-priority click event React will render the new route as a high
+      // priority action synchronously.
+      unstable_scheduleCallback(unstable_NormalPriority, () => {
+        // TODO: Implement passing `partialProps` to the new component. Right
+        // now we only use the required props to print the next path.
+        //
+        // Also do this for `_replace()`.
+        history.push(nextRoute.path.print(props as NextProps));
+
+        resolve();
+      });
     });
   }
 
@@ -146,7 +150,13 @@ export class Route extends RouteBase {
    * the back button in their browser.
    */
   protected _pop() {
-    history.goBack();
+    // The `history` module changes the route and re-renders synchronously. We
+    // don’t want that behavior since if we change the route on a high-priority
+    // click event React will render the new route as a high priority
+    // action synchronously.
+    unstable_scheduleCallback(unstable_NormalPriority, () => {
+      history.goBack();
+    });
   }
 
   /**

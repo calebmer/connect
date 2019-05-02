@@ -226,9 +226,11 @@ export abstract class RouteBase {
   >(
     nextRoute: RouteConfigBase<NextPath, NextProps>,
     props: Omit<NextProps, "route">,
-  ) {
-    nextRoute.waitForComponent(() => {
-      this._push(nextRoute, props);
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      nextRoute.waitForComponent(() => {
+        this._push(nextRoute, props).then(resolve, reject);
+      });
     });
   }
 
@@ -243,7 +245,7 @@ export abstract class RouteBase {
   >(
     nextRoute: RouteConfigBase<NextPath, NextProps>,
     props: Omit<NextProps, "route">,
-  ): void;
+  ): Promise<void>;
 
   /**
    * Returns us to the route before the current one in the stack by removing

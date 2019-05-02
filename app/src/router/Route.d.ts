@@ -35,7 +35,7 @@ export class Route extends RouteBase {
   >(
     nextRoute: RouteConfigBase<NextPath, NextProps>,
     props: Omit<NextProps, "route">,
-  ): void;
+  ): Promise<void>;
 
   protected _pop(): void;
 

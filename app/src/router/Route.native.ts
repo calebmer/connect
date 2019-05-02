@@ -86,7 +86,7 @@ export class Route extends RouteBase {
     nextRoute: RouteConfig<NextPath, NextProps>,
     props: Omit<NextProps, "route">,
   ) {
-    Navigation.push(this.componentID, nextRoute.getLayout(props));
+    return Navigation.push(this.componentID, nextRoute.getLayout(props));
   }
 
   /**

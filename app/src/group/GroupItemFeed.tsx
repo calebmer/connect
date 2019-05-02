@@ -57,16 +57,17 @@ function GroupItemFeed({
     //
     // We assume that this will eventually change `selectedPostID`.
     stall(PostCommentsCache.load(postID), () => {
-      route.push(PostRoute, {groupSlug, postID: String(postID)});
+      route
+        .push(PostRoute, {groupSlug, postID: String(postID)})
+        .then(done, done);
 
-      // NOTE: It is important that this runs after `route.push()`! Since
-      // `route.push()` will synchronously re-render and select this item.
-      //
-      // NOTE: On mobile calling `route.push()` will immediately unmount the
-      // component. React will warn us that we tried to update state after
-      // unmounting so only update state if we are mounted.
-      if (isMounted.current) {
-        setSelecting(false);
+      function done() {
+        // NOTE: On mobile calling `route.push()` will immediately unmount the
+        // component. React will warn us that we tried to update state after
+        // unmounting so only update state if we are mounted.
+        if (isMounted.current) {
+          setSelecting(false);
+        }
       }
     });
   }
