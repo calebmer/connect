@@ -10,4 +10,9 @@ declare module "react" {
    * named `ReactNode`, but I’d like to access this type as `React.Node`.
    */
   export type Node = ReactNode;
+
+  /**
+   * Enables the unstable React Concurrent Mode.
+   */
+  export const unstable_ConcurrentMode: ComponentType<{}>;
 }
