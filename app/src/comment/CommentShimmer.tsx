@@ -1,8 +1,8 @@
 import {Border, Font, Space} from "../atoms";
+import React, {ReactElement} from "react";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 import {Comment} from "./Comment";
-import React from "react";
 
 /**
  * The type for the data that makes up a comment shimmer.
@@ -29,50 +29,47 @@ const conversation: ReadonlyArray<CommentShimmer> = [
   {byline: true, lines: [63, 56]},
 ];
 
+let _conversationNodes: ReadonlyArray<ReactElement>;
+
 /**
- * Get the total height for an individual comment shimmer.
+ * Lazily create all the JSX nodes for our comment shimmer conversation. Turns
+ * out otherwise that the comment shimmer is one of our more expensive
+ * components to render.
  */
-function getHeight(comment: CommentShimmer): number {
-  let height = 0;
-
-  // Add the height for the comment’s top padding.
-  height += comment.byline
-    ? Comment.paddingTopWithByline
-    : Comment.paddingTopWithoutByline;
-
-  // Add the height for the comment’s byline.
-  if (comment.byline) {
-    height += Font.size2.lineHeight;
+function getConversationNodes() {
+  if (_conversationNodes === undefined) {
+    _conversationNodes = conversation.map(comment => (
+      // eslint-disable-next-line react/jsx-key
+      <View
+        style={[
+          styles.comment,
+          comment.byline
+            ? styles.commentWithByline
+            : styles.commentWithoutByline,
+        ]}
+      >
+        <View style={styles.spaceLeft}>
+          {comment.byline && <View style={styles.avatar} />}
+        </View>
+        <View style={styles.body}>
+          {comment.byline && <View style={styles.byline} />}
+          {comment.lines.map((line, index) => (
+            <View key={index} style={[styles.line, {width: `${line}%`}]} />
+          ))}
+        </View>
+      </View>
+    ));
   }
-
-  // Add the height for the comment’s content.
-  height += comment.lines.length * Font.size2.lineHeight;
-
-  return height;
+  return _conversationNodes;
 }
 
-export function CommentShimmer({index}: {index: number}) {
-  const comment = conversation[index % conversation.length];
-  return (
-    <View
-      style={[
-        styles.comment,
-        comment.byline ? styles.commentWithByline : styles.commentWithoutByline,
-        {height: getHeight(comment)},
-      ]}
-    >
-      <View style={styles.spaceLeft}>
-        {comment.byline && <View style={styles.avatar} />}
-      </View>
-      <View style={styles.body}>
-        {comment.byline && <View style={styles.byline} />}
-        {comment.lines.map((line, index) => (
-          <View key={index} style={[styles.line, {width: `${line}%`}]} />
-        ))}
-      </View>
-    </View>
-  );
+function CommentShimmer({index}: {index: number}) {
+  const conversationNodes = getConversationNodes();
+  return conversationNodes[index % conversationNodes.length];
 }
+
+const _CommentShimmer = React.memo(CommentShimmer);
+export {_CommentShimmer as CommentShimmer};
 
 const shimmerColor = "hsl(0, 0%, 94%)"; // `Color.grey0` is too light and `Color.grey1` is too dark
 const lineBarHeight = Font.size2.fontSize * 0.6;
