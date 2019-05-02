@@ -60,6 +60,7 @@ function CommentNew({
 
   return (
     <>
+      {/* <CommentNewJumpButton /> */}
       <View style={styles.background} />
       <View style={styles.container}>
         <Editor
