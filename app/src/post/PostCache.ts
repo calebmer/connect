@@ -158,7 +158,7 @@ export function publishPost({
 
   // Insert our post as a phantom item in our group post list immediately so
   // that it’s shown in the UI.
-  GroupPostsCache.update(groupID, posts => {
+  GroupPostsCache.updateWhenReady(groupID, posts => {
     return posts.insert({
       id: postID,
       publishedAt: pendingPost.publishedAt,

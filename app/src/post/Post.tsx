@@ -4,6 +4,7 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  ViewToken,
   ViewabilityConfigCallbackPair,
 } from "react-native";
 import {
@@ -112,9 +113,7 @@ function Post({
           }
         }}
         // ## Viewability
-        viewabilityConfigCallbackPairs={[
-          useMemo(() => createLoadMoreViewabilityConfig(postID), [postID]),
-        ]}
+        viewabilityConfigCallbackPairs={[useLoadMoreViewabilityConfig(postID)]}
       />
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
     </View>
@@ -129,47 +128,78 @@ export {PostMemo as Post};
  * Creates a viewability config which will watch item viewability and load more
  * items if one comes into view which hasn’t been loaded yet.
  */
-function createLoadMoreViewabilityConfig(
+function useLoadMoreViewabilityConfig(
   postID: PostID,
 ): ViewabilityConfigCallbackPair {
-  const viewabilityConfig: ViewabilityConfigCallbackPair = {
-    viewabilityConfig: {
-      // We want to load items with even a single viewable pixel.
-      itemVisiblePercentThreshold: 0,
-    },
+  // The currently viewable items.
+  const viewableItems = useRef<ReadonlyArray<ViewToken>>([]);
 
-    // When the user starts to finish scrolling, let’s load some
-    // new comments!
-    onViewableItemsChanged: debounce(100, ({viewableItems}) => {
-      if (viewableItems.length < 1) return;
-      const firstViewableItem = viewableItems[0];
+  return useMemo(() => {
+    /**
+     * We only want to call `loadMoreComments` once after the user finishes
+     * scrolling. We use debouncing to accomplish that effect.
+     */
+    const loadMoreCommentsDebounced = debounce(200, loadMoreComments);
 
-      // NOTE: According to the types, a viewable item might not have
-      // an index. I (Caleb) don’t know when that will happen, so just
-      // ignore that case for now.
-      if (firstViewableItem.index === null) return;
+    /**
+     * Load more comments based on the items in view when our current comment
+     * list has finished loading.
+     */
+    function loadMoreComments() {
+      // Schedule a load for our new comments. We don’t want to schedule a
+      // load for some items while the user is scrolling. When they finish
+      // scrolling we want to load based on the items that are
+      // currently visible.
+      PostCommentsCache.updateWhenReady(postID, comments => {
+        // If there are no viewable items then don’t bother...
+        if (viewableItems.current.length < 1) return comments;
+        const firstViewableItem = viewableItems.current[0];
 
-      // We want to make our network trips worth it. Always select
-      // enough comments to justify a request instead of selecting the
-      // one or two currently in view.
-      const limit = Math.max(viewableItems.length, commentCountMore);
+        // NOTE: According to the types, a viewable item might not have
+        // an index. I (Caleb) don’t know when that will happen, so just
+        // ignore that case for now.
+        if (firstViewableItem.index === null) return comments;
 
-      // If we are fetching more comments than we can fit on screen,
-      // then center the new selection.
-      const offset = Math.max(
-        0,
-        firstViewableItem.index -
-          Math.floor((limit - viewableItems.length) / 2),
-      );
+        // We want to make our network trips worth it. Always select
+        // enough comments to justify a request instead of selecting the
+        // one or two currently in view.
+        const limit = Math.max(viewableItems.current.length, commentCountMore);
 
-      // Go ahead and load our new comments!
-      PostCommentsCache.update(postID, comments => {
+        // If we are fetching more comments than we can fit on screen,
+        // then center the new selection.
+        const offset = Math.max(
+          0,
+          firstViewableItem.index -
+            Math.floor((limit - viewableItems.current.length) / 2),
+        );
+
+        // Go ahead and load our new comments!
         return comments.load({limit, offset});
       });
-    }),
-  };
+    }
 
-  return viewabilityConfig;
+    const viewabilityConfig: ViewabilityConfigCallbackPair = {
+      viewabilityConfig: {
+        // We want to load items with even a single viewable pixel.
+        itemVisiblePercentThreshold: 0,
+      },
+
+      // When the user starts to finish scrolling, let’s schedule a load for
+      // some new comments!
+      onViewableItemsChanged: info => {
+        // Update the current viewable items...
+        viewableItems.current = info.viewableItems;
+
+        // Schedule a load for our new comments. We don’t want to schedule a
+        // load for some items while the user is scrolling. When they finish
+        // scrolling we want to load based on the items that are
+        // currently visible.
+        loadMoreCommentsDebounced();
+      },
+    };
+
+    return viewabilityConfig;
+  }, [postID]);
 }
 
 const styles = StyleSheet.create({

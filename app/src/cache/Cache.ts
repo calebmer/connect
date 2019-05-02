@@ -89,7 +89,10 @@ export class Cache<Key extends string | number, Data> {
    * with the provided key is currently pending then we will wait for it to
    * resolve before executing our updater.
    */
-  public update(key: Key, updater: (data: Data) => Data | Promise<Data>): void {
+  public updateWhenReady(
+    key: Key,
+    updater: (data: Data) => Data | Promise<Data>,
+  ): void {
     const entry = this.accessEntry(key);
 
     actuallyUpdate();

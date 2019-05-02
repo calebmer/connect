@@ -260,7 +260,9 @@ export function GroupRoute({
       loadingMorePosts={!posts.noMoreItems || loading}
       onLoadMorePosts={count => {
         if (!GroupPostsCache.isLoading(group.id))
-          GroupPostsCache.update(group.id, posts => posts.loadMore(count));
+          GroupPostsCache.updateWhenReady(group.id, posts => {
+            return posts.loadMore(count);
+          });
       }}
     />
   );

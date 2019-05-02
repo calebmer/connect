@@ -89,8 +89,11 @@ function GroupSuspense({
       loadingMorePosts={!posts.noMoreItems || loading}
       onLoadMorePosts={useCallback(
         count => {
-          if (!GroupPostsCache.isLoading(group.id))
-            GroupPostsCache.update(group.id, posts => posts.loadMore(count));
+          if (!GroupPostsCache.isLoading(group.id)) {
+            GroupPostsCache.updateWhenReady(group.id, posts => {
+              return posts.loadMore(count);
+            });
+          }
         },
         [group.id],
       )}
