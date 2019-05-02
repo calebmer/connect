@@ -1,7 +1,7 @@
+import {Color, Font, Shadow, Space} from "../atoms";
 import {Editor, EditorInstance} from "../editor/Editor";
-import {Font, Space} from "../atoms";
+import {Platform, ScrollView, StyleSheet, View} from "react-native";
 import React, {useContext, useRef, useState} from "react";
-import {ScrollView, StyleSheet, View} from "react-native";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {IconPatch} from "../molecules/IconPatch";
 import {IconPatchButton} from "../molecules/IconPatchButton";
@@ -59,29 +59,35 @@ function CommentNew({
   }
 
   return (
-    <View style={styles.container}>
-      <Editor
-        ref={editor}
-        placeholder="Send a message…"
-        minLines={1}
-        maxLines={isLaptop ? 22 : 5}
-        paddingRight={IconPatch.size + Space.space3 * 2}
-        onChange={info => setDisableSend(info.isWhitespaceOnly)}
-        onKeyDownWeb={handleKeyDownWeb}
-      />
-      <View style={styles.send}>
-        <IconPatchButton
-          icon="send"
-          disabled={disableSend}
-          onPress={handlePublish}
+    <>
+      <View style={styles.background} />
+      <View style={styles.container}>
+        <Editor
+          ref={editor}
+          placeholder="Send a message…"
+          minLines={1}
+          maxLines={isLaptop ? 22 : 5}
+          paddingRight={IconPatch.size + Space.space3 * 2}
+          onChange={info => setDisableSend(info.isWhitespaceOnly)}
+          onKeyDownWeb={handleKeyDownWeb}
         />
+        <View style={styles.send}>
+          <IconPatchButton
+            icon="send"
+            disabled={disableSend}
+            onPress={handlePublish}
+          />
+        </View>
       </View>
-    </View>
+    </>
   );
 }
 
 const _CommentNew = React.memo(CommentNew);
 export {_CommentNew as CommentNew};
+
+// For the iPhone X bottom area.
+const backgroundPaddingBottom = Platform.OS === "ios" ? 50 : 0;
 
 const styles = StyleSheet.create({
   container: {
@@ -93,5 +99,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: Space.space3 + Font.size2.lineHeight / 2 - IconPatch.size / 2,
     right: Space.space3,
+  },
+  background: {
+    position: "absolute",
+    top: 0,
+    bottom: -backgroundPaddingBottom,
+    left: 0,
+    right: 0,
+    backgroundColor: Color.white,
+    ...Shadow.elevation2,
+    ...(Platform.OS === "web" && {shadowOffset: {width: 0, height: 2}}),
   },
 });

@@ -1,5 +1,4 @@
-import {Color, Shadow} from "../atoms";
-import {Platform, ScrollView, StyleSheet, View} from "react-native";
+import {ScrollView, StyleSheet} from "react-native";
 import {CommentNew} from "./CommentNew";
 import {KeyboardTrackingView} from "react-native-keyboard-tracking-view";
 import {PostID} from "@connect/api-client";
@@ -18,14 +17,10 @@ export function CommentNewToolbar({
       requiresSameParentToManageScrollView
       scrollBehavior="KeyboardTrackingScrollBehaviorFixedOffset"
     >
-      <View style={styles.background} />
       <CommentNew postID={postID} scrollViewRef={scrollViewRef} />
     </KeyboardTrackingView>
   );
 }
-
-// For the iPhone X bottom area.
-const paddingBottom = Platform.OS === "ios" ? 50 : 0;
 
 const styles = StyleSheet.create({
   toolbar: {
@@ -33,14 +28,5 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-  },
-  background: {
-    position: "absolute",
-    top: 0,
-    bottom: -paddingBottom,
-    left: 0,
-    right: 0,
-    backgroundColor: Color.white,
-    ...Shadow.elevation2,
   },
 });

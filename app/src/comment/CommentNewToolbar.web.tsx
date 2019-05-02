@@ -1,5 +1,4 @@
-import {Color, Shadow} from "../atoms";
-import {LayoutChangeEvent, ScrollView, StyleSheet, View} from "react-native";
+import {LayoutChangeEvent, ScrollView, View} from "react-native";
 import React, {useRef} from "react";
 import {CommentNew} from "./CommentNew";
 import {PostID} from "@connect/api-client";
@@ -66,16 +65,8 @@ export function CommentNewToolbar({
   }
 
   return (
-    <View style={styles.toolbar} onLayout={handleLayout}>
+    <View onLayout={handleLayout}>
       <CommentNew postID={postID} scrollViewRef={scrollViewRef} />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  toolbar: {
-    backgroundColor: Color.white,
-    ...Shadow.elevation2,
-    shadowOffset: {width: 0, height: 2},
-  },
-});
