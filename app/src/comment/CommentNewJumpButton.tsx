@@ -1,19 +1,37 @@
 import {Border, Color, Font, Icon, Space} from "../atoms";
-import {StyleSheet, Text, View} from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import React from "react";
 
-export function CommentNewJumpButton() {
+export function CommentNewJumpButton({
+  scrollViewRef,
+}: {
+  scrollViewRef: React.RefObject<ScrollView>;
+}) {
   return (
-    <View style={styles.container}>
-      <View style={styles.button}>
-        <Icon
-          name="arrow-down"
-          color={Color.yellow8}
-          size={Font.size1.fontSize}
-        />
-        <Text style={styles.label}>latest</Text>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        if (scrollViewRef.current) {
+          scrollViewRef.current.scrollToEnd({animated: true});
+        }
+      }}
+    >
+      <View style={styles.container}>
+        <View style={styles.button}>
+          <Icon
+            name="arrow-down"
+            color={Color.yellow8}
+            size={Font.size1.fontSize}
+          />
+          <Text style={styles.label}>latest</Text>
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
