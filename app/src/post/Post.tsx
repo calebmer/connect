@@ -19,7 +19,7 @@ import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {CommentShimmer} from "../comment/CommentShimmer";
 import {GroupCache} from "../group/GroupCache";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
-import {NavbarVirtualizedList} from "../frame/NavbarVirtualizedList";
+import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
@@ -61,7 +61,21 @@ function Post({
 
   return (
     <View style={styles.background}>
-      <NavbarVirtualizedList<PostCommentsCacheEntry | typeof empty>
+      <NavbarScrollView
+        ref={scrollViewRef}
+        // ## Navbar
+        route={route}
+        title={group.name}
+        hideNavbar={hideNavbar}
+        // ## Scroll View
+        keyboardDismissMode="interactive"
+      >
+        <PostContent postID={postID} />
+        <View
+          style={{height: CommentShimmer.getChunkHeight(post.commentCount)}}
+        />
+      </NavbarScrollView>
+      {/* <NavbarVirtualizedList<PostCommentsCacheEntry | typeof empty>
         ref={scrollViewRef}
         // ## Styles
         contentContainerStyle={styles.container}
@@ -104,7 +118,7 @@ function Post({
         }}
         // ## Viewability
         viewabilityConfigCallbackPairs={[useLoadMoreViewabilityConfig(postID)]}
-      />
+      /> */}
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
     </View>
   );

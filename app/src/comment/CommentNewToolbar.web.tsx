@@ -1,7 +1,9 @@
-import {LayoutChangeEvent, ScrollView, View} from "react-native";
+import {LayoutChangeEvent, ScrollView, StyleSheet, View} from "react-native";
 import React, {useRef} from "react";
 import {CommentNew} from "./CommentNew";
+import {CommentNewJumpButton} from "./CommentNewJumpButton";
 import {PostID} from "@connect/api-client";
+import {Space} from "../atoms";
 
 export function CommentNewToolbar({
   postID,
@@ -66,7 +68,21 @@ export function CommentNewToolbar({
 
   return (
     <View onLayout={handleLayout}>
-      <CommentNew postID={postID} scrollViewRef={scrollViewRef} />
+      <View style={styles.jump}>
+        <CommentNewJumpButton scrollViewRef={scrollViewRef} />
+      </View>
+      <CommentNew postID={postID} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  jump: {
+    position: "absolute",
+    top: -(CommentNewJumpButton.height + Space.space2),
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+});

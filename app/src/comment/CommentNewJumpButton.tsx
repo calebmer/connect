@@ -3,7 +3,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableWithoutFeedback,
+  TouchableOpacity,
   View,
 } from "react-native";
 import React from "react";
@@ -14,38 +14,28 @@ export function CommentNewJumpButton({
   scrollViewRef: React.RefObject<ScrollView>;
 }) {
   return (
-    <TouchableWithoutFeedback
+    <TouchableOpacity
       onPress={() => {
         if (scrollViewRef.current) {
           scrollViewRef.current.scrollToEnd({animated: true});
         }
       }}
     >
-      <View style={styles.container}>
-        <View style={styles.button}>
-          <Icon
-            name="arrow-down"
-            color={Color.yellow8}
-            size={Font.size1.fontSize}
-          />
-          <Text style={styles.label}>latest</Text>
-        </View>
+      <View style={styles.button}>
+        <Icon
+          name="arrow-down"
+          color={Color.yellow8}
+          size={Font.size1.fontSize}
+        />
+        <Text style={styles.label}>latest</Text>
       </View>
-    </TouchableWithoutFeedback>
+    </TouchableOpacity>
   );
 }
 
-const height = Font.size1.lineHeight + Space.space0;
+CommentNewJumpButton.height = Font.size1.lineHeight + Space.space0;
 
 const styles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    top: -(height + Space.space2),
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "center",
-  },
   button: {
     flexDirection: "row",
     alignItems: "center",

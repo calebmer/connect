@@ -1,8 +1,7 @@
 import {Color, Font, Shadow, Space} from "../atoms";
 import {Editor, EditorInstance} from "../editor/Editor";
-import {Platform, ScrollView, StyleSheet, View} from "react-native";
+import {Platform, StyleSheet, View} from "react-native";
 import React, {useContext, useRef, useState} from "react";
-import {CommentNewJumpButton} from "./CommentNewJumpButton";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {IconPatch} from "../molecules/IconPatch";
 import {IconPatchButton} from "../molecules/IconPatchButton";
@@ -10,13 +9,7 @@ import {PostID} from "@connect/api-client";
 import {publishComment} from "./CommentCache";
 import {useCurrentAccount} from "../account/AccountCache";
 
-function CommentNew({
-  postID,
-  scrollViewRef,
-}: {
-  postID: PostID;
-  scrollViewRef: React.RefObject<ScrollView>;
-}) {
+function CommentNew({postID}: {postID: PostID}) {
   const currentAccount = useCurrentAccount();
 
   const isLaptop =
@@ -62,7 +55,6 @@ function CommentNew({
 
   return (
     <>
-      <CommentNewJumpButton scrollViewRef={scrollViewRef} />
       <View style={styles.background} />
       <View style={styles.container}>
         <Editor

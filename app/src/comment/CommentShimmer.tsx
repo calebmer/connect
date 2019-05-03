@@ -46,6 +46,7 @@ function getConversationNodes() {
           comment.byline
             ? styles.commentWithByline
             : styles.commentWithoutByline,
+          {height: getHeight(comment)},
         ]}
       >
         <View style={styles.spaceLeft}>
@@ -68,8 +69,66 @@ function CommentShimmer({index}: {index: number}) {
   return conversationNodes[index % conversationNodes.length];
 }
 
-const _CommentShimmer = React.memo(CommentShimmer);
+const _CommentShimmer = Object.assign(React.memo(CommentShimmer), {
+  getChunkHeight,
+});
+
 export {_CommentShimmer as CommentShimmer};
+
+/**
+ * Gets the height of a single comment shimmer.
+ */
+function getHeight(comment: CommentShimmer): number {
+  let height = 0;
+
+  // Add the height for the comment’s top padding.
+  height += comment.byline
+    ? Comment.paddingTopWithByline
+    : Comment.paddingTopWithoutByline;
+
+  // Add the height for the comment’s byline.
+  if (comment.byline) {
+    height += Font.size2.lineHeight;
+  }
+
+  // Add the height for the comment’s content.
+  height += comment.lines.length * Font.size2.lineHeight;
+
+  return height;
+}
+
+let _conversationHeight: number;
+
+/**
+ * Gets the height of a chunk of content shimmers. The chunk has a size of
+ * `count`. If the chunk starts on a shimmer other than the shimmer at index 0
+ * then we use that.
+ */
+function getChunkHeight(count: number, startIndex: number = 0): number {
+  // Compute the height of a full conversation if we haven’t already.
+  if (_conversationHeight === undefined) {
+    _conversationHeight = conversation.reduce(
+      (height, comment) => height + getHeight(comment),
+      0,
+    );
+  }
+
+  // Start with a height based on the number of shimmer conversations in
+  // our chunk
+  let chunkHeight =
+    _conversationHeight * Math.floor(count / conversation.length);
+
+  // The remainder of items not in a full conversation in the chunk should
+  // be added.
+  const extra = count % conversation.length;
+  for (let i = 0; i < extra; i++) {
+    chunkHeight += getHeight(
+      conversation[(startIndex + i) % conversation.length],
+    );
+  }
+
+  return chunkHeight;
+}
 
 const shimmerColor = "hsl(0, 0%, 94%)"; // `Color.grey0` is too light and `Color.grey1` is too dark
 const lineBarHeight = Font.size2.fontSize * 0.6;
