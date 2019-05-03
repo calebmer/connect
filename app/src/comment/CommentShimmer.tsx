@@ -46,7 +46,7 @@ function getConversationNodes() {
           comment.byline
             ? styles.commentWithByline
             : styles.commentWithoutByline,
-          {height: getHeight(comment)},
+          {height: getCommentHeight(comment)},
         ]}
       >
         <View style={styles.spaceLeft}>
@@ -70,7 +70,8 @@ function CommentShimmer({index}: {index: number}) {
 }
 
 const _CommentShimmer = Object.assign(React.memo(CommentShimmer), {
-  getChunkHeight,
+  getHeight,
+  getIndex,
 });
 
 export {_CommentShimmer as CommentShimmer};
@@ -78,7 +79,7 @@ export {_CommentShimmer as CommentShimmer};
 /**
  * Gets the height of a single comment shimmer.
  */
-function getHeight(comment: CommentShimmer): number {
+function getCommentHeight(comment: CommentShimmer): number {
   let height = 0;
 
   // Add the height for the comment’s top padding.
@@ -100,34 +101,62 @@ function getHeight(comment: CommentShimmer): number {
 let _conversationHeight: number;
 
 /**
+ * Gets the height of a full content shimmer conversation.
+ */
+function getConversationHeight(): number {
+  // Compute the height of a full conversation if we haven’t already.
+  if (_conversationHeight === undefined) {
+    _conversationHeight = conversation.reduce(
+      (height, comment) => height + getCommentHeight(comment),
+      0,
+    );
+  }
+  return _conversationHeight;
+}
+
+/**
  * Gets the height of a chunk of content shimmers. The chunk has a size of
  * `count`. If the chunk starts on a shimmer other than the shimmer at index 0
  * then we use that.
  */
-function getChunkHeight(count: number, startIndex: number = 0): number {
-  // Compute the height of a full conversation if we haven’t already.
-  if (_conversationHeight === undefined) {
-    _conversationHeight = conversation.reduce(
-      (height, comment) => height + getHeight(comment),
-      0,
-    );
-  }
-
+function getHeight(count: number, startIndex: number = 0): number {
   // Start with a height based on the number of shimmer conversations in
   // our chunk
-  let chunkHeight =
-    _conversationHeight * Math.floor(count / conversation.length);
+  let height =
+    getConversationHeight() * Math.floor(count / conversation.length);
 
   // The remainder of items not in a full conversation in the chunk should
   // be added.
   const extra = count % conversation.length;
   for (let i = 0; i < extra; i++) {
-    chunkHeight += getHeight(
+    height += getCommentHeight(
       conversation[(startIndex + i) % conversation.length],
     );
   }
 
-  return chunkHeight;
+  return height;
+}
+
+/**
+ * Gets the index of a comment based on an offset in height measurement units.
+ * By default we assume the index the offset is from is 0 but it is configurable
+ * with the second parameter.
+ */
+function getIndex(offset: number, startIndex: number = 0): number {
+  // Get the starting index based on how many conversations are in the offset.
+  let index =
+    Math.floor(offset / getConversationHeight()) * conversation.length;
+
+  // Find out the number of remaining items outside of a full chunk.
+  let extra = offset % getConversationHeight();
+  for (let i = 0; extra > 0; i++) {
+    extra -= getCommentHeight(
+      conversation[(startIndex + i) % conversation.length],
+    );
+    index += 1;
+  }
+
+  return index;
 }
 
 const shimmerColor = "hsl(0, 0%, 94%)"; // `Color.grey0` is too light and `Color.grey1` is too dark
