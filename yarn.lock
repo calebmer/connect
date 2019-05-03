@@ -8886,10 +8886,10 @@ react-native-navigation@^2.15.0:
     react-lifecycles-compat "2.0.0"
     tslib "1.9.3"
 
-react-native-web@^0.11.1:
-  version "0.11.2"
-  resolved "https://registry.yarnpkg.com/react-native-web/-/react-native-web-0.11.2.tgz#f3550589347be1f402f0641fefca687ca64a1750"
-  integrity sha512-EVUrBftCZBfUCOrwKJPh+hiGmDieBPL+5m+57BFg0UIH6uSmgvXK9r/xy6rQXLRMTgk3krDd94nRo3/31p69+A==
+"react-native-web@npm:@calebmer/react-native-web@0.11.2-patch.8":
+  version "0.11.2-patch.8"
+  resolved "https://registry.yarnpkg.com/@calebmer/react-native-web/-/react-native-web-0.11.2-patch.8.tgz#3f22d434c6ff5feff8765870cbeafb2506111783"
+  integrity sha512-ZJl990IMPBfA+3Cy/B5t93e1LAYC66wQal+lIpx5mif+7c2MhYXIS+W0okuyMaEkHZci59sWugb9h7ItCP4KYA==
   dependencies:
     array-find-index "^1.0.2"
     create-react-class "^15.6.2"

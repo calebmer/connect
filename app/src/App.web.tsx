@@ -35,3 +35,32 @@ function AppConcurrent() {
     return element;
   }
 }
+
+// Decision: The React team has deprecated `findDOMNode` in strict mode.
+// However, `findDOMNode` (or `findHostInstance` as it is called in the
+// cross-platform reconciler) is used extensively in the React Native codebase
+// so therefore is also used extensively in the React Native Web codebase.
+//
+// The reason given for [deprecating `findDOMNode`][1] is that `findDOMNode`
+// “breaks abstraction levels” and that refs should be used instead.
+//
+// Since the deprecation of `findDOMNode` is unrelated to the particular
+// behaviors of React Concurrent Mode and is instead a deprecation based on
+// principles, we decide to ignore the React deprecation until it is handled
+// in React Native itself.
+//
+// [1]: https://reactjs.org/docs/strict-mode.html#warning-about-deprecated-finddomnode-usage
+if (process.env.NODE_ENV === "development") {
+  /* eslint-disable no-console */
+  const consoleError = console.error;
+  console.error = function() {
+    if (
+      /%s is deprecated in StrictMode/.test(arguments[0]) &&
+      arguments[1] === "findDOMNode"
+    ) {
+      return;
+    }
+    return (consoleError as any).apply(this, arguments);
+  };
+  /* eslint-enable no-console */
+}

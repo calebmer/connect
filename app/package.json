@@ -28,7 +28,7 @@
     "react-native": "0.59.1",
     "react-native-keyboard-tracking-view": "^5.5.0",
     "react-native-navigation": "^2.15.0",
-    "react-native-web": "^0.11.1",
+    "react-native-web": "npm:@calebmer/react-native-web@0.11.2-patch.8",
     "scheduler": "^0.14.0"
   },
   "devDependencies": {
