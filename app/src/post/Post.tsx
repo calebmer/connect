@@ -1,30 +1,26 @@
 import {Color, Font, Shadow, Space} from "../atoms";
 import {
-  Dimensions,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   ScrollView,
   StyleSheet,
   View,
   ViewToken,
   ViewabilityConfigCallbackPair,
 } from "react-native";
-import {
-  PostCommentsCache,
-  PostCommentsCacheEntry,
-  commentCountMore,
-} from "../comment/CommentCache";
-import React, {useContext, useMemo, useRef, useState} from "react";
-import {useCache, useCacheWithPrev} from "../cache/Cache";
+import {PostCommentsCache, commentCountMore} from "../comment/CommentCache";
+import React, {useContext, useMemo, useRef} from "react";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
-import {CommentShimmer} from "../comment/CommentShimmer";
 import {GroupCache} from "../group/GroupCache";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
-import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
+import {PostVirtualizedComments} from "./PostVirtualizedComments";
 import {Route} from "../router/Route";
 import {debounce} from "../utils/debounce";
+import {useCache} from "../cache/Cache";
 
 function Post({
   route,
@@ -58,23 +54,9 @@ function Post({
   const hideNavbar =
     useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
 
-  const [visibleRange, setVisibleRange] = useState(() => {
-    // Estimate the maximum number of comments that can fit on screen at
-    // a time.
-    const end = Math.ceil(
-      (Dimensions.get("screen").height * 0.75) / (Font.size2.lineHeight * 2),
-    );
-    return {start: 0, end};
-  });
-
-  const visibleItems = useMemo(() => {
-    const visibleItemsCount = visibleRange.end - visibleRange.start;
-    const visibleItems = Array<number>(visibleItemsCount);
-    for (let i = 0; i < visibleItemsCount; i++) {
-      visibleItems[i] = visibleRange.start + i;
-    }
-    return visibleItems;
-  }, [visibleRange.end, visibleRange.start]);
+  const onScroll = useRef<
+    null | ((event: NativeSyntheticEvent<NativeScrollEvent>) => void)
+  >(null);
 
   return (
     <View style={styles.background}>
@@ -89,49 +71,12 @@ function Post({
         // ## Scroll Events
         scrollEventThrottle={50}
         onScroll={event => {
-          const offset = event.nativeEvent.contentOffset.y;
-          const viewport = event.nativeEvent.layoutMeasurement.height;
-
-          const overscan = 1;
-
-          const start = Math.max(
-            0,
-            CommentShimmer.getIndex(offset) - 1 - overscan,
-          );
-          const end = Math.min(
-            CommentShimmer.getIndex(offset + viewport) + overscan,
-            post.commentCount,
-          );
-
-          setVisibleRange(lastRange => {
-            if (lastRange.start !== start || lastRange.end !== end) {
-              return {start, end};
-            } else {
-              return lastRange;
-            }
-          });
+          if (onScroll.current !== null) {
+            onScroll.current(event);
+          }
         }}
       >
-        {/* <PostContent postID={postID} /> */}
-        <View
-          style={{
-            position: "relative",
-            height: CommentShimmer.getHeight(post.commentCount) + Space.space3,
-          }}
-        />
-        {visibleItems.map(commentIndex => (
-          <View
-            key={commentIndex}
-            style={{
-              position: "absolute",
-              top: CommentShimmer.getHeight(commentIndex),
-              left: 0,
-              right: 0,
-            }}
-          >
-            <CommentShimmer index={commentIndex} />
-          </View>
-        ))}
+        <PostVirtualizedComments post={post} onScroll={onScroll} />
       </NavbarScrollView>
       {/* <NavbarVirtualizedList<PostCommentsCacheEntry | typeof empty>
         ref={scrollViewRef}
