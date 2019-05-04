@@ -69,7 +69,7 @@ function Post({
         // ## Scroll View
         keyboardDismissMode="interactive"
         // ## Scroll Events
-        scrollEventThrottle={50}
+        scrollEventThrottle={PostVirtualizedComments.scrollEventThrottle}
         onScroll={event => {
           if (onScroll.current !== null) {
             onScroll.current(event);

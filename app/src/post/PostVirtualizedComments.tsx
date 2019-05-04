@@ -2,6 +2,7 @@ import {
   Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   View,
 } from "react-native";
 import {Font, Space} from "../atoms";
@@ -39,6 +40,13 @@ type State = {
 };
 
 export class PostVirtualizedComments extends React.Component<Props, State> {
+  /**
+   * The expected scroll event throttle for our component.
+   */
+  static scrollEventThrottle = 50;
+
+  private lastScroll: null | {timestamp: number; offset: number} = null;
+
   constructor(props: Props) {
     super(props);
 
@@ -69,19 +77,58 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     this.props.onScroll.current = null;
   }
 
+  /**
+   * Handles a scroll event by measuring the items we should be rendering and
+   * updating state if it changed.
+   */
   private handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const commentCount = this.props.post.commentCount;
 
     // Get the range of visible content in the scroll view from the event.
+    const timestamp = event.timeStamp;
     const offset = event.nativeEvent.contentOffset.y;
     const viewport = event.nativeEvent.layoutMeasurement.height;
 
+    // Get the begin and end offset for the visible content.
+    let firstOffset = offset;
+    let lastOffset = offset + viewport;
+
+    // If we’ve scrolled recently then measure the velocity of our scrolling and
+    // extend the bounds of the items we want to render to cover the distance
+    // the user will scroll before our scroll event handler will run again.
+    if (
+      this.lastScroll !== null &&
+      timestamp - this.lastScroll.timestamp <
+        PostVirtualizedComments.scrollEventThrottle
+    ) {
+      // Get the average velocity between this scroll and the last scroll.
+      const velocity =
+        (offset - this.lastScroll.offset) /
+        (timestamp - this.lastScroll.timestamp);
+
+      // Estimate how many items we’ll scroll before the next scroll event.
+      const estimatedOffset =
+        velocity * PostVirtualizedComments.scrollEventThrottle;
+
+      // Add the estimated offset so that we render enough items while the user
+      // is scrolling before the next scroll event which will recalculate again.
+      if (estimatedOffset > 0) {
+        lastOffset += estimatedOffset;
+      } else {
+        firstOffset += estimatedOffset;
+      }
+    }
+
+    // Record the timestamp and offset of the last scroll event for future
+    // velocity calculations.
+    this.lastScroll = {timestamp, offset};
+
     // Get the beginning index of visible items.
-    let first = CommentShimmer.getIndex(offset) - 1 - overscanCount;
+    let first = CommentShimmer.getIndex(firstOffset) - 1 - overscanCount;
     if (first < 0) first = 0;
 
     // Get the ending index of visible items.
-    let last = CommentShimmer.getIndex(offset + viewport) + overscanCount;
+    let last = CommentShimmer.getIndex(lastOffset) + overscanCount;
     if (last > commentCount) last = commentCount;
 
     // Get the new array of items. We will set that in state too so we don’t
@@ -107,8 +154,9 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
 
   private renderItem = memoize(
     (index: number): ReactElement => {
+      const ViewComponent = Platform.OS === "web" ? "div" : View;
       return (
-        <View
+        <ViewComponent
           key={index}
           style={{
             position: "absolute",
@@ -118,7 +166,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
           }}
         >
           <CommentShimmer index={index} />
-        </View>
+        </ViewComponent>
       );
     },
   );
