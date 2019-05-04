@@ -1,10 +1,4 @@
-/**
- * We use this symbol when we have a “gap” in our skim list. When there is an
- * item that is not yet loaded.
- *
- * We use a symbol instead of `null` since it is truthy.
- */
-export const empty = Symbol("Skimmer.empty");
+const empty = Symbol("Skimmer.empty");
 
 /**
  * An immutable utility class for creating an infinite list which can be
@@ -19,6 +13,14 @@ export const empty = Symbol("Skimmer.empty");
  * add items to the end of the list.
  */
 export class Skimmer<Item> {
+  /**
+   * We use this symbol when we have a “gap” in our skim list. When there is an
+   * item that is not yet loaded.
+   *
+   * We use a symbol instead of `null` since it is truthy.
+   */
+  static empty: typeof empty = empty;
+
   /**
    * Creates a new skim list.
    */

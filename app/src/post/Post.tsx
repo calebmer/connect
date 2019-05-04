@@ -25,7 +25,6 @@ import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {Route} from "../router/Route";
 import {debounce} from "../utils/debounce";
-import {empty} from "../cache/Skimmer";
 
 function Post({
   route,
@@ -93,9 +92,14 @@ function Post({
           const offset = event.nativeEvent.contentOffset.y;
           const viewport = event.nativeEvent.layoutMeasurement.height;
 
-          const start = Math.max(0, CommentShimmer.getIndex(offset) - 1);
+          const overscan = 1;
+
+          const start = Math.max(
+            0,
+            CommentShimmer.getIndex(offset) - 1 - overscan,
+          );
           const end = Math.min(
-            CommentShimmer.getIndex(offset + viewport),
+            CommentShimmer.getIndex(offset + viewport) + overscan,
             post.commentCount,
           );
 
