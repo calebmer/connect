@@ -1,20 +1,33 @@
 import {
   Dimensions,
+  LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
   View,
 } from "react-native";
-import {Font, Space} from "../atoms";
 import React, {ReactElement} from "react";
+import {Comment} from "../comment/Comment";
 import {CommentShimmer} from "../comment/CommentShimmer";
+import {Font, Space} from "../atoms";
 import {Post} from "@connect/api-client";
+import {PostCommentsCacheEntry} from "../comment/CommentCache";
+import {Skimmer} from "../cache/Skimmer";
 
 // The number of items to render outside of the viewport range.
 const overscanCount = 1;
 
 type Props = {
+  /**
+   * The post we are rendering comments on.
+   */
   post: Post;
+
+  /**
+   * The comments for our post. If an entry is `Skimmer.empty` that means the
+   * comment has not yet loaded.
+   */
+  comments: ReadonlyArray<PostCommentsCacheEntry | typeof Skimmer.empty>;
 
   /**
    * HACK: We want this component to have access to the `onScroll` event but we
@@ -29,14 +42,36 @@ type Props = {
 
 type State = {
   /**
-   * The currently visible range of items. When we update the visible range we
-   * also re-render the items list.
+   * The currently visible range of items.
    */
   visibleRange: {
     first: number;
     last: number;
-    items: ReadonlyArray<ReactElement>;
   };
+
+  /**
+   * The heights of all the comments we’ve rendered. Gaps in the comment list
+   * (`Skimmer.empty`) are represented with `undefined`.
+   */
+  commentHeights: ReadonlyArray<number | undefined>;
+
+  /**
+   * An alternative view of `commentHeights` where a sequence of contiguous
+   * comments forms a chunk.
+   */
+  commentChunks: ReadonlyArray<CommentChunk>;
+};
+
+/**
+ * A sequence of contiguous comments whose layouts have been measured.
+ */
+type CommentChunk = {
+  /** The index at the start of the chunk. */
+  start: number;
+  /** The number of comments in the chunk. */
+  length: number;
+  /** The total height of the chunk. */
+  height: number;
 };
 
 export class PostVirtualizedComments extends React.Component<Props, State> {
@@ -44,8 +79,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
    * The expected scroll event throttle for our component.
    */
   static scrollEventThrottle = 50;
-
-  private lastScroll: null | {timestamp: number; offset: number} = null;
 
   constructor(props: Props) {
     super(props);
@@ -62,8 +95,9 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
       visibleRange: {
         first,
         last,
-        items: this.renderItems(first, last),
       },
+      commentHeights: [],
+      commentChunks: [],
     };
   }
 
@@ -75,7 +109,22 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
 
   componentWillUnmount() {
     this.props.onScroll.current = null;
+
+    // If we are unmounting but there are some layouts we were waiting to update
+    // then clear the timeout.
+    if (this.pendingCommentHeights !== null) {
+      clearTimeout(this.pendingCommentHeights.timeoutID);
+    }
   }
+
+  /**
+   * Information from the last scroll event that we use to compute the average
+   * velocity of a scroll sequence over time.
+   */
+  private lastScroll: {
+    timestamp: number;
+    offset: number;
+  } | null = null;
 
   /**
    * Handles a scroll event by measuring the items we should be rendering and
@@ -131,45 +180,227 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     let last = CommentShimmer.getIndex(lastOffset) + overscanCount;
     if (last > commentCount) last = commentCount;
 
-    // Get the new array of items. We will set that in state too so we don’t
-    // have to do it in render.
-    const items = this.renderItems(first, last);
-
     // Update the visible range if it changed.
     this.setState(prevState => {
       if (
         prevState.visibleRange.first === first &&
         prevState.visibleRange.last === last
       ) {
-        return;
+        return null;
       }
-      return {visibleRange: {first, last, items}};
+      return {
+        visibleRange: {first, last},
+      };
     });
   };
 
-  private renderFiller = memoizeLast((post: Post) => {
-    const height = CommentShimmer.getHeight(post.commentCount) + Space.space3;
-    return <View style={{height}} />;
-  });
+  /**
+   * When we detect a layout change in a comment, we wait to see if other
+   * comments have layout changes as well.
+   */
+  private pendingCommentHeights: {
+    timeoutID: number;
+    heights: Array<{index: number; height: number}>;
+  } | null = null;
 
-  private renderItem = memoize(
-    (index: number): ReactElement => {
-      const ViewComponent = Platform.OS === "web" ? "div" : View;
-      return (
-        <ViewComponent
-          key={index}
-          style={{
-            position: "absolute",
-            top: CommentShimmer.getHeight(index),
-            left: 0,
-            right: 0,
-          }}
-        >
-          <CommentShimmer index={index} />
-        </ViewComponent>
-      );
-    },
-  );
+  /**
+   * When a comment’s layout changes we fire this event...
+   */
+  private handleCommentLayout(index: number, event: LayoutChangeEvent) {
+    // We will actually update our state after `setTimeout(f, 0)` finishes. That
+    // way if we have, say, five comments which fire their layout events
+    // together we’ll only update our state once.
+    if (this.pendingCommentHeights === null) {
+      const timeoutID = setTimeout(() => this.flushCommentHeights(), 0);
+      this.pendingCommentHeights = {timeoutID, heights: []};
+    }
+
+    // Add the pending comment height.
+    this.pendingCommentHeights.heights.push({
+      index,
+      height: event.nativeEvent.layout.height,
+    });
+  }
+
+  /**
+   * We wait until we‘ve collected as many comment heights as we can before
+   * flushing them to our state.
+   */
+  private flushCommentHeights() {
+    // If we have no pending comment heights do nothing.
+    if (this.pendingCommentHeights === null) return;
+
+    // Reset our pending comment heights.
+    const pendingCommentHeights = this.pendingCommentHeights.heights;
+    this.pendingCommentHeights = null;
+
+    this.setState(prevState => {
+      let newCommentHeights: Array<number | undefined> | undefined;
+
+      // Process our pending comment heights...
+      for (let i = 0; i < pendingCommentHeights.length; i++) {
+        const {index, height} = pendingCommentHeights[i];
+
+        // If the height did not change then do nothing.
+        if (prevState.commentHeights[index] === height) continue;
+
+        // If this is the first height that changed then clone our previous
+        // comment heights state.
+        if (newCommentHeights === undefined) {
+          newCommentHeights = prevState.commentHeights.slice();
+        }
+
+        // If our comment heights array is to small for this index then make
+        // sure to fill it up with `push()`.
+        if (newCommentHeights.length < index) {
+          for (let k = newCommentHeights.length; k <= index; k++) {
+            newCommentHeights.push(k === index ? height : undefined);
+          }
+        } else {
+          newCommentHeights[index] = height;
+        }
+      }
+
+      // If none of our comment heights changed then don’t update our state!
+      if (newCommentHeights === undefined) {
+        return null;
+      } else {
+        // Otherwise, let’s compute our new comment chunks!
+        const newCommentChunks: Array<CommentChunk> = [];
+
+        // Loop through all of our comment heights...
+        let currentChunk: CommentChunk | undefined;
+        for (let i = 0; i < newCommentHeights.length; i++) {
+          const height = newCommentHeights[i];
+
+          if (height !== undefined) {
+            if (currentChunk === undefined) {
+              // If we have a comment height but no chunk then let’s create a
+              // new chunk.
+              currentChunk = {start: i, length: 1, height};
+              newCommentChunks.push(currentChunk);
+            } else {
+              // If we have a height and a chunk then let’s add to the chunk.
+              currentChunk.length += 1;
+              currentChunk.height += height;
+            }
+          } else {
+            // If we do not have a height but we do have a chunk then unset the
+            // chunk. Next time we see a height we’ll want to create a
+            // new chunk.
+            if (currentChunk !== undefined) {
+              currentChunk = undefined;
+            }
+          }
+        }
+
+        return {
+          commentHeights: newCommentHeights,
+          commentChunks: newCommentChunks,
+        };
+      }
+    });
+  }
+
+  /**
+   * Gets the offset above the item at a given index.
+   */
+  private getOffset(maxIndex: number) {
+    // Set the initial offset and index. The offset is a distance in measurement
+    // units. The index is a position in our comments list.
+    let offset = 0;
+    let index = 0;
+
+    // Loop through our comment chunks...
+    for (let i = 0; i < this.state.commentChunks.length; i++) {
+      const commentChunk = this.state.commentChunks[i];
+
+      // We expect `commentChunks` to be sorted by `commentChunk.index` and we
+      // expect that `index` will never exceed the next comment chunk’s starting
+      // position based on our implementation below. If these expectations are
+      // violated then throw.
+      if (index > commentChunk.start) {
+        throw new Error(
+          `Expected ${index} to be less than or equal to ${
+            commentChunk.start
+          }.`,
+        );
+      }
+
+      // If our index is less than the next chunk’s starting position then let’s
+      // catch up our index to the chunk start.
+      if (index < commentChunk.start) {
+        // If moving our index to the chunk’s starting index would take us over
+        // the maximum index then move our index to the maximum index and break
+        // out of the loop. We done.
+        if (maxIndex < commentChunk.start) {
+          offset += CommentShimmer.getHeight(maxIndex - index, index);
+          index = maxIndex;
+          break;
+        }
+
+        // The area between comment chunks are occupied by `CommentShimmer`
+        // components which have a known height. Add that to our offset.
+        offset += CommentShimmer.getHeight(commentChunk.start - index, index);
+        index = commentChunk.start;
+      }
+
+      // At this point, we expect our index to match the start of our
+      // comment chunk. We handle both the less than and greater than cases
+      // above which will either break out of the loop or set the index equal
+      // to our comment chunk start.
+      if (index !== commentChunk.start)
+        throw new Error(`Expected ${index} to equal ${commentChunk.start}.`);
+
+      // Add this comment chunk’s height to our offset as long as that wouldn’t
+      // put us over our `maxIndex`.
+      if (index + commentChunk.length <= maxIndex) {
+        offset += commentChunk.height;
+        index += commentChunk.length;
+
+        // If `index === maxIndex` now then break out of the loop. We’re
+        // done here.
+        if (index < maxIndex) {
+          continue;
+        } else {
+          break;
+        }
+      }
+
+      // If adding the entire chunk height would put us over our `maxIndex` then
+      // add each comment height to the offset individually. We expect there
+      // to be a height for each comment since the comment’s are inside our
+      // current chunk.
+      while (index < maxIndex) {
+        const height = this.state.commentHeights[index];
+        if (height === undefined) throw new Error("Expected height.");
+        offset += height;
+        index += 1;
+      }
+
+      break;
+    }
+
+    // If we our index is still less than our `maxIndex` then let’s add the
+    // remaining shimmer height. This could happen when there are fewer chunks
+    // then items in the list.
+    if (index < maxIndex) {
+      offset += CommentShimmer.getHeight(maxIndex - index, index);
+      index = maxIndex;
+    }
+
+    // Finally, we expect throughout all of this code that in the end our index
+    // will end up equaling our `maxIndex`.
+    if (index !== maxIndex)
+      throw new Error(`Expected ${index} to equal ${maxIndex}.`);
+
+    return offset;
+  }
+
+  private renderFiller() {
+    const height = this.getOffset(this.props.post.commentCount) + Space.space3;
+    return <View style={{height}} />;
+  }
 
   private renderItems(
     first: number,
@@ -185,17 +416,63 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     return items;
   }
 
+  private renderItem(index: number): ReactElement {
+    const comment = this.props.comments[index];
+    const lastComment = this.props.comments[index - 1];
+    const commentHeight = this.state.commentHeights[index];
+
+    const style = {
+      position: "absolute" as "absolute",
+      top: this.getOffset(index),
+      left: 0,
+      right: 0,
+    };
+
+    // On web, use a `div` directly which is more efficient since we don’t
+    // need the extra component.
+    const ViewComponent = Platform.OS === "web" ? "div" : View;
+
+    return (
+      <React.Fragment key={index}>
+        {isComment(comment) && (
+          <View
+            style={[style, commentHeight === undefined && {opacity: 0}]}
+            onLayout={event => this.handleCommentLayout(index, event)}
+          >
+            <Comment
+              commentID={comment.id}
+              lastCommentID={isComment(lastComment) ? lastComment.id : null}
+            />
+          </View>
+        )}
+        {(!isComment(comment) || commentHeight === undefined) && (
+          <ViewComponent style={style}>
+            <CommentShimmer index={index} />
+          </ViewComponent>
+        )}
+      </React.Fragment>
+    );
+  }
+
   render() {
-    const {post} = this.props;
     const {visibleRange} = this.state;
 
     return (
       <>
-        {this.renderFiller(post)}
-        {visibleRange.items}
+        {this.renderFiller()}
+        {this.renderItems(visibleRange.first, visibleRange.last)}
       </>
     );
   }
+}
+
+/**
+ * Checks if an item from a `Skimmer` comments array is a comment.
+ */
+function isComment(
+  comment: PostCommentsCacheEntry | typeof Skimmer.empty | undefined,
+): comment is PostCommentsCacheEntry {
+  return comment !== undefined && comment !== Skimmer.empty;
 }
 
 /**

@@ -8,8 +8,13 @@ import {
   ViewToken,
   ViewabilityConfigCallbackPair,
 } from "react-native";
-import {PostCommentsCache, commentCountMore} from "../comment/CommentCache";
+import {
+  PostCommentsCache,
+  PostCommentsCacheEntry,
+  commentCountMore,
+} from "../comment/CommentCache";
 import React, {useContext, useMemo, useRef} from "react";
+import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
@@ -19,8 +24,8 @@ import {PostCache} from "./PostCache";
 import {PostID} from "@connect/api-client";
 import {PostVirtualizedComments} from "./PostVirtualizedComments";
 import {Route} from "../router/Route";
+import {Skimmer} from "../cache/Skimmer";
 import {debounce} from "../utils/debounce";
-import {useCache} from "../cache/Cache";
 
 function Post({
   route,
@@ -43,12 +48,14 @@ function Post({
   const {post} = useCache(PostCache, postID);
   const group = useCache(GroupCache, groupSlug);
 
-  // const {
-  //   data: {items: comments},
-  // } = useCacheWithPrev<
-  //   PostID,
-  //   {items: ReadonlyArray<PostCommentsCacheEntry | typeof empty>}
-  // >(PostCommentsCache, postID, {items: []});
+  // Load the comments from our post comments cache. Never suspend, though. We
+  // want the post content to be visible while we load comments.
+  const {
+    data: {items: comments},
+  } = useCacheWithPrev<
+    PostID,
+    {items: ReadonlyArray<PostCommentsCacheEntry | typeof Skimmer.empty>}
+  >(PostCommentsCache, postID, {items: []});
 
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar =
@@ -76,7 +83,11 @@ function Post({
           }
         }}
       >
-        <PostVirtualizedComments post={post} onScroll={onScroll} />
+        <PostVirtualizedComments
+          post={post}
+          comments={comments}
+          onScroll={onScroll}
+        />
       </NavbarScrollView>
       {/* <NavbarVirtualizedList<PostCommentsCacheEntry | typeof empty>
         ref={scrollViewRef}
@@ -219,8 +230,5 @@ const styles = StyleSheet.create({
     // The maximum width is designed to give a comment `Font.maxWidth` which
     // means the post text will end up being a bit wider.
     maxWidth: Comment.paddingLeft + Font.maxWidth + Comment.paddingRight,
-  },
-  container: {
-    paddingBottom: Space.space3,
   },
 });
