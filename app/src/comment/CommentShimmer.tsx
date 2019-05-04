@@ -1,8 +1,9 @@
 import {Border, Font, Space} from "../atoms";
 import React, {ReactElement} from "react";
-import {StyleSheet, View} from "react-native";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 import {Comment} from "./Comment";
+import {StyleSheet} from "react-native";
+import {createDivElement} from "../utils/createDivElement";
 
 /**
  * The type for the data that makes up a comment shimmer.
@@ -38,28 +39,30 @@ let _conversationNodes: ReadonlyArray<ReactElement>;
  */
 function getConversationNodes() {
   if (_conversationNodes === undefined) {
-    _conversationNodes = conversation.map(comment => (
-      // eslint-disable-next-line react/jsx-key
-      <View
-        style={[
-          styles.comment,
-          comment.byline
-            ? styles.commentWithByline
-            : styles.commentWithoutByline,
-          {height: getCommentHeight(comment)},
-        ]}
-      >
-        <View style={styles.spaceLeft}>
-          {comment.byline && <View style={styles.avatar} />}
-        </View>
-        <View style={styles.body}>
-          {comment.byline && <View style={styles.byline} />}
-          {comment.lines.map((line, index) => (
-            <View key={index} style={[styles.line, {width: `${line}%`}]} />
-          ))}
-        </View>
-      </View>
-    ));
+    _conversationNodes = conversation.map(comment =>
+      createDivElement(
+        {
+          style: [
+            styles.comment,
+            comment.byline
+              ? styles.commentWithByline
+              : styles.commentWithoutByline,
+            {height: getCommentHeight(comment)},
+          ],
+        },
+        comment.byline && createDivElement({style: styles.avatar}),
+        createDivElement(
+          {style: styles.body},
+          comment.byline && createDivElement({style: styles.byline}),
+          comment.lines.map((line, index) =>
+            createDivElement({
+              key: String(index),
+              style: [styles.line, {width: `${line}%`}],
+            }),
+          ),
+        ),
+      ),
+    );
   }
   return _conversationNodes;
 }
@@ -164,7 +167,7 @@ const lineBarHeight = Font.size2.fontSize * 0.6;
 
 const styles = StyleSheet.create({
   comment: {
-    flexDirection: "row",
+    position: "relative",
     paddingLeft: Space.space3,
     paddingRight: Comment.paddingRight,
   },
@@ -174,20 +177,19 @@ const styles = StyleSheet.create({
   commentWithoutByline: {
     paddingTop: Comment.paddingTopWithoutByline,
   },
-  spaceLeft: {
-    width: AccountAvatarSmall.size,
-  },
   avatar: {
-    position: "relative",
-    top: Font.size2.lineHeight - AccountAvatarSmall.size / 2 - 4,
+    position: "absolute",
+    top:
+      Comment.paddingTopWithByline +
+      (Font.size2.lineHeight - AccountAvatarSmall.size / 2 - 4),
+    left: Space.space3,
     width: AccountAvatarSmall.size,
     height: AccountAvatarSmall.size,
     borderRadius: AccountAvatarSmall.size / 2,
     backgroundColor: shimmerColor,
   },
   body: {
-    flex: 1,
-    paddingLeft: Space.space2,
+    marginLeft: AccountAvatarSmall.size + Space.space2,
   },
   byline: {
     width: "20%",
