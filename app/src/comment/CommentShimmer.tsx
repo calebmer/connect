@@ -123,6 +123,8 @@ function getConversationHeight(): number {
  * then we use that.
  */
 function getHeight(count: number, startIndex: number = 0): number {
+  if (count === 0) return 0;
+
   // Start with a height based on the number of shimmer conversations in
   // our chunk
   let height =

@@ -6,10 +6,10 @@ import {
   Platform,
   View,
 } from "react-native";
+import {Font, Space} from "../atoms";
 import React, {ReactElement} from "react";
 import {Comment} from "../comment/Comment";
 import {CommentShimmer} from "../comment/CommentShimmer";
-import {Font, Space} from "../atoms";
 import {Post} from "@connect/api-client";
 import {PostCommentsCacheEntry} from "../comment/CommentCache";
 import {Skimmer} from "../cache/Skimmer";
@@ -173,11 +173,11 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     this.lastScroll = {timestamp, offset};
 
     // Get the beginning index of visible items.
-    let first = CommentShimmer.getIndex(firstOffset) - 1 - overscanCount;
+    let first = this.getIndex(firstOffset) - 1 - overscanCount;
     if (first < 0) first = 0;
 
     // Get the ending index of visible items.
-    let last = CommentShimmer.getIndex(lastOffset) + overscanCount;
+    let last = this.getIndex(lastOffset) + overscanCount;
     if (last > commentCount) last = commentCount;
 
     // Update the visible range if it changed.
@@ -304,8 +304,11 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
 
   /**
    * Gets the offset above the item at a given index.
+   *
+   * The dual of this function is `getIndex()` where we can get an index from
+   * an offset.
    */
-  private getOffset(maxIndex: number) {
+  private getOffset(maxIndex: number): number {
     // Set the initial offset and index. The offset is a distance in measurement
     // units. The index is a position in our comments list.
     let offset = 0;
@@ -395,6 +398,79 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
       throw new Error(`Expected ${index} to equal ${maxIndex}.`);
 
     return offset;
+  }
+
+  /**
+   * Gets the index of a comment based on its offset in the list.
+   *
+   * The dual of this operation is `getOffset()` which gets the offset of an
+   * item in the list.
+   */
+  private getIndex(maxOffset: number): number {
+    // Set the initial offset and index. The offset is a distance in measurement
+    // units. The index is a position in our comments list.
+    let offset = 0;
+    let index = 0;
+
+    // Loop through our comment chunks...
+    for (let i = 0; i < this.state.commentChunks.length; i++) {
+      const commentChunk = this.state.commentChunks[i];
+
+      // We expect `commentChunks` to be sorted by `commentChunk.index` and we
+      // expect that `index` will never exceed the next comment chunk’s starting
+      // position based on our implementation below. If these expectations are
+      // violated then throw.
+      if (index > commentChunk.start) {
+        throw new Error(
+          `Expected ${index} to be less than or equal to ${
+            commentChunk.start
+          }.`,
+        );
+      }
+
+      // Increase our offset by the height of comment shimmers between our
+      // current index and the start of the next chunk.
+      offset += CommentShimmer.getHeight(commentChunk.start - index, index);
+
+      // If adding the shimmers surpassed the max offset, then let’s get
+      // our specific index inside the shimmers and break out of the comment
+      // chunk loop.
+      if (offset >= maxOffset) {
+        index += CommentShimmer.getIndex(maxOffset - offset, index);
+        offset = maxOffset;
+        break;
+      }
+
+      // Otherwise, our index is now moved to the comment chunk’s start.
+      index = commentChunk.start;
+
+      // If increasing the offset by the comment chunk length puts us above our
+      // desired offset then we move backwards through the comment list to
+      // arrive at the correct index.
+      if (offset + commentChunk.height >= maxOffset) {
+        while (offset < maxOffset) {
+          // We expect a comment height to exist since we are inside a
+          // comment chunk.
+          offset += this.state.commentHeights[index]!;
+          index += 1;
+        }
+        offset = maxOffset;
+        break;
+      }
+
+      // Otherwise, increase our index by the comment chunk length.
+      offset += commentChunk.height;
+      index += commentChunk.length;
+    }
+
+    // If we run out of comment chunks but we are still below our desired offset
+    // then use comment shimmers to get to our final offset.
+    if (offset < maxOffset) {
+      index += CommentShimmer.getIndex(maxOffset - offset, index);
+      offset = maxOffset;
+    }
+
+    return index;
   }
 
   private renderFiller() {
