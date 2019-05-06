@@ -489,10 +489,10 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     last: number,
   ): ReadonlyArray<ReactElement> {
     const itemsCount = last - first;
-    const items = Array<ReactElement>(itemsCount);
+    const items = [];
 
     for (let i = 0; i < itemsCount; i++) {
-      items[i] = this.renderItem(first + i);
+      items.push(this.renderItem(first + i));
     }
 
     return items;
