@@ -78,7 +78,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   /**
    * The expected scroll event throttle for our component.
    */
-  static scrollEventThrottle = 50;
+  static scrollEventThrottle = 25;
 
   constructor(props: Props) {
     super(props);
