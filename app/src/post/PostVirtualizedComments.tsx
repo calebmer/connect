@@ -138,6 +138,9 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     const offset = event.nativeEvent.contentOffset.y;
     const viewport = event.nativeEvent.layoutMeasurement.height;
 
+    // The viewport height hasn’t been measured yet.
+    if (viewport === 0) return;
+
     // Get the begin and end offset for the visible content.
     let firstOffset = offset;
     let lastOffset = offset + viewport;
