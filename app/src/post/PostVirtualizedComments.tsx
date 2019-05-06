@@ -124,6 +124,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   private lastScroll: {
     timestamp: number;
     offset: number;
+    velocity: number;
   } | null = null;
 
   /**
@@ -155,8 +156,19 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     ) {
       // Get the average velocity between this scroll and the last scroll.
       const velocity =
-        (offset - this.lastScroll.offset) /
-        (timestamp - this.lastScroll.timestamp);
+        timestamp > this.lastScroll.timestamp
+          ? // Velocity calculation: dx / dt
+            (offset - this.lastScroll.offset) /
+            (timestamp - this.lastScroll.timestamp)
+          : // If, for some reason (usually an overloaded main thread in React
+            // Native), the last scroll event and this scroll event have the
+            // _same_ timestamp then let’s reuse the velocity from the last
+            // scroll event.
+            this.lastScroll.velocity;
+
+      // Record the timestamp and offset of the last scroll event for future
+      // velocity calculations.
+      this.lastScroll = {timestamp, offset, velocity};
 
       // Estimate how many items we’ll scroll before the next scroll event.
       const estimatedOffset =
@@ -169,11 +181,11 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
       } else {
         firstOffset += estimatedOffset;
       }
+    } else {
+      // Record the timestamp and offset of the last scroll event for future
+      // velocity calculations.
+      this.lastScroll = {timestamp, offset, velocity: 0};
     }
-
-    // Record the timestamp and offset of the last scroll event for future
-    // velocity calculations.
-    this.lastScroll = {timestamp, offset};
 
     // Get the beginning index of visible items.
     let first = this.getIndex(firstOffset) - 1 - overscanCount;
