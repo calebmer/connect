@@ -207,6 +207,12 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
    * When a comment’s layout changes we fire this event...
    */
   private handleCommentLayout(index: number, event: LayoutChangeEvent) {
+    const height = event.nativeEvent.layout.height;
+
+    // If we already have the correct height for this comment in our state
+    // then don’t bother scheduling an update.
+    if (height === this.state.commentHeights[index]) return;
+
     // We will actually update our state after `setTimeout(f, 0)` finishes. That
     // way if we have, say, five comments which fire their layout events
     // together we’ll only update our state once.
@@ -218,7 +224,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // Add the pending comment height.
     this.pendingCommentHeights.heights.push({
       index,
-      height: event.nativeEvent.layout.height,
+      height,
     });
   }
 
