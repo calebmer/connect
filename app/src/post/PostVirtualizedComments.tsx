@@ -119,8 +119,11 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
 
     // Estimate the maximum number of comments that can fit on screen at
     // a time.
-    const last = Math.ceil(
-      (Dimensions.get("screen").height * 0.75) / (Font.size2.lineHeight * 2),
+    const last = Math.min(
+      Math.ceil(
+        (Dimensions.get("screen").height * 0.75) / (Font.size2.lineHeight * 2),
+      ),
+      this.props.post.commentCount,
     );
 
     this.state = {
