@@ -5,8 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  ViewToken,
-  ViewabilityConfigCallbackPair,
 } from "react-native";
 import {
   PostCommentsCache,
@@ -91,52 +89,9 @@ function Post({
           post={post}
           comments={comments}
           onScroll={onScroll}
+          onVisibleRangeChange={useVisibleRangeChange(postID)}
         />
       </NavbarScrollView>
-      {/* <NavbarVirtualizedList<PostCommentsCacheEntry | typeof empty>
-        ref={scrollViewRef}
-        // ## Styles
-        contentContainerStyle={styles.container}
-        // ## Navbar
-        route={route}
-        title={group.name}
-        hideNavbar={hideNavbar}
-        // ## Scroll View
-        keyboardDismissMode="interactive"
-        // ## Post Content
-        ListHeaderComponent={<PostContent postID={postID} />}
-        // ## Post Comments
-        data={true}
-        getItemCount={() => Math.max(comments.length, post.commentCount)}
-        getItem={(_data, index) => comments[index] || empty}
-        keyExtractor={(comment, index) =>
-          comment === empty ? String(index) : comment.id
-        }
-        initialNumToRender={Math.ceil(
-          // Estimate the maximum number of comments that can fit on screen at
-          // a time.
-          (Dimensions.get("screen").height * 0.75) /
-            (Font.size2.lineHeight * 2),
-        )}
-        renderItem={({item: comment, index}) => {
-          // If we have no comment then render a shimmer which represents a
-          // loading state...
-          if (comment === empty) {
-            return <CommentShimmer index={index} />;
-          } else {
-            // If we do have a comment then render it. Also if we have a comment
-            // above this one then let’s get its ID...
-            const lastComment = index > 0 ? comments[index - 1] : null;
-            const lastCommentID =
-              lastComment && lastComment !== empty ? lastComment.id : null;
-            return (
-              <Comment commentID={comment.id} lastCommentID={lastCommentID} />
-            );
-          }
-        }}
-        // ## Viewability
-        viewabilityConfigCallbackPairs={[useLoadMoreViewabilityConfig(postID)]}
-      /> */}
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
     </View>
   );
@@ -146,81 +101,78 @@ function Post({
 const PostMemo = React.memo(Post);
 export {PostMemo as Post};
 
+type RenderRange = {first: number; last: number};
+
+type MaybePromise<T> = T | Promise<T>;
+
 /**
- * Creates a viewability config which will watch item viewability and load more
- * items if one comes into view which hasn’t been loaded yet.
+ * Creates an event handler for `onVisibleRangeChange` which will load comments
+ * in that range that have not been loaded yet. Will keep making network
+ * requests until the entire range has been loaded.
  */
-function useLoadMoreViewabilityConfig(
-  postID: PostID,
-): ViewabilityConfigCallbackPair {
-  // The currently viewable items.
-  const viewableItems = useRef<ReadonlyArray<ViewToken>>([]);
+function useVisibleRangeChange(postID: PostID) {
+  const visibleRange = useRef<RenderRange>({first: 0, last: 0});
 
   return useMemo(() => {
     /**
      * We only want to call `loadMoreComments` once after the user finishes
      * scrolling. We use debouncing to accomplish that effect.
      */
-    const loadMoreCommentsDebounced = debounce(200, loadMoreComments);
+    const loadMoreCommentsDebounced = debounce(200, () => {
+      // Schedule a load for our new comments. We don’t want to schedule a
+      // load for some items while the user is scrolling. When they finish
+      // scrolling we want to load based on the items that are
+      // currently visible.
+      PostCommentsCache.updateWhenReady(postID, loadMoreComments);
+    });
 
     /**
      * Load more comments based on the items in view when our current comment
      * list has finished loading.
      */
-    function loadMoreComments() {
+    function loadMoreComments(
+      comments: Skimmer<PostCommentsCacheEntry>,
+    ): MaybePromise<Skimmer<PostCommentsCacheEntry>> {
+      // The number of items in the visible range.
+      const visibleRangeLength =
+        visibleRange.current.last - visibleRange.current.first;
+
+      // We want to make our network trips worth it. Always select
+      // enough comments to justify a request instead of selecting the
+      // one or two currently in view.
+      const limit = Math.max(visibleRangeLength, commentCountMore);
+
+      // If we are fetching more comments than we can fit on screen,
+      // then center the new selection.
+      const offset = Math.max(
+        0,
+        visibleRange.current.first -
+          Math.floor((limit - visibleRangeLength) / 2),
+      );
+
+      // Go ahead and load our new comments!
+      const newComments = comments.load({limit, offset});
+
+      // If we ended up loading some comments from our API then try loading some
+      // more. We keep trying to load more until we’ve loaded all the comments
+      // in this visible range.
+      if (newComments instanceof Promise) {
+        return newComments.then(loadMoreComments);
+      } else {
+        return newComments;
+      }
+    }
+
+    return (range: RenderRange) => {
+      // Update the current visible range items...
+      visibleRange.current = range;
+
       // Schedule a load for our new comments. We don’t want to schedule a
       // load for some items while the user is scrolling. When they finish
       // scrolling we want to load based on the items that are
       // currently visible.
-      PostCommentsCache.updateWhenReady(postID, comments => {
-        // If there are no viewable items then don’t bother...
-        if (viewableItems.current.length < 1) return comments;
-        const firstViewableItem = viewableItems.current[0];
-
-        // NOTE: According to the types, a viewable item might not have
-        // an index. I (Caleb) don’t know when that will happen, so just
-        // ignore that case for now.
-        if (firstViewableItem.index === null) return comments;
-
-        // We want to make our network trips worth it. Always select
-        // enough comments to justify a request instead of selecting the
-        // one or two currently in view.
-        const limit = Math.max(viewableItems.current.length, commentCountMore);
-
-        // If we are fetching more comments than we can fit on screen,
-        // then center the new selection.
-        const offset = Math.max(
-          0,
-          firstViewableItem.index -
-            Math.floor((limit - viewableItems.current.length) / 2),
-        );
-
-        // Go ahead and load our new comments!
-        return comments.load({limit, offset});
-      });
-    }
-
-    const viewabilityConfig: ViewabilityConfigCallbackPair = {
-      viewabilityConfig: {
-        // We want to load items with even a single viewable pixel.
-        itemVisiblePercentThreshold: 0,
-      },
-
-      // When the user starts to finish scrolling, let’s schedule a load for
-      // some new comments!
-      onViewableItemsChanged: info => {
-        // Update the current viewable items...
-        viewableItems.current = info.viewableItems;
-
-        // Schedule a load for our new comments. We don’t want to schedule a
-        // load for some items while the user is scrolling. When they finish
-        // scrolling we want to load based on the items that are
-        // currently visible.
-        loadMoreCommentsDebounced();
-      },
+      loadMoreCommentsDebounced();
     };
-
-    return viewabilityConfig;
   }, [postID]);
 }
 

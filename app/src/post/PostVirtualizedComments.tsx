@@ -46,6 +46,12 @@ type Props = {
   onScroll: React.MutableRefObject<
     null | ((event: NativeSyntheticEvent<NativeScrollEvent>) => void)
   >;
+
+  /**
+   * When the visible items change, we call this callback. The parent component
+   * will use this to load more items.
+   */
+  onVisibleRangeChange: (range: RenderRange) => void;
 };
 
 type State = {
@@ -131,6 +137,15 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // then clear the timeout.
     if (this.pendingCommentHeights !== null) {
       clearTimeout(this.pendingCommentHeights.timeoutID);
+    }
+  }
+
+  componentDidUpdate(_prevProps: Props, prevState: State) {
+    if (
+      prevState.visibleRange.first !== this.state.visibleRange.first ||
+      prevState.visibleRange.last !== this.state.visibleRange.last
+    ) {
+      this.props.onVisibleRangeChange(this.state.visibleRange);
     }
   }
 
@@ -595,20 +610,25 @@ function getIndex(
       );
     }
 
-    // Increase our offset by the height of comment shimmers between our
-    // current index and the start of the next chunk.
-    offset += CommentShimmer.getHeight(commentChunk.start - index, index);
+    // Measure the height of comment shimmers between our current index and the
+    // start of the next chunk.
+    const shimmerHeight = CommentShimmer.getHeight(
+      commentChunk.start - index,
+      index,
+    );
 
-    // If adding the shimmers surpassed the max offset, then let’s get
-    // our specific index inside the shimmers and break out of the comment
+    // If adding the shimmers will surpass the max offset, then let’s get our
+    // specific index inside the shimmers and break out of the comment
     // chunk loop.
-    if (offset >= maxOffset) {
+    if (offset + shimmerHeight >= maxOffset) {
       index += CommentShimmer.getIndex(maxOffset - offset, index);
       offset = maxOffset;
       break;
     }
 
-    // Otherwise, our index is now moved to the comment chunk’s start.
+    // Add our shimmer height and update our index to the chunk’s
+    // starting position.
+    offset += shimmerHeight;
     index = commentChunk.start;
 
     // If increasing the offset by the comment chunk length puts us above our
@@ -782,3 +802,6 @@ function memoize<Arg, Ret>(fn: (arg: Arg) => Ret): (arg: Arg) => Ret {
     return ret;
   };
 }
+
+// Export some of our utility functions for testing.
+export {getIndex as test_getIndex};
