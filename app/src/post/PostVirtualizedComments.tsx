@@ -571,39 +571,3 @@ function isComment(
 ): comment is PostCommentsCacheEntry {
   return comment !== undefined && comment !== Skimmer.empty;
 }
-
-/**
- * Memoize all the results of a function. If we’ve seen an argument before at
- * any point in time then we will return the same value without recomputing
- * anything. If we haven’t seen the argument then we will compute the
- * return value.
- */
-function memoize<Arg, Ret>(fn: (arg: Arg) => Ret): (arg: Arg) => Ret {
-  const cache = new Map<Arg, Ret>();
-  return arg => {
-    let ret = cache.get(arg);
-    if (ret === undefined) {
-      ret = fn(arg);
-      cache.set(arg, ret);
-    }
-    return ret;
-  };
-}
-
-/**
- * Memoize the last result of the function. If the argument is the same then
- * we will return the same value without recomputing anything. If the argument
- * is different then we will recompute the return value.
- */
-function memoizeLast<Arg, Ret>(fn: (arg: Arg) => Ret): (arg: Arg) => Ret {
-  let last: {arg: Arg; ret: Ret} | undefined;
-  return arg => {
-    if (last !== undefined && last.arg === arg) {
-      return last.ret;
-    } else {
-      const ret = fn(arg);
-      last = {arg, ret};
-      return ret;
-    }
-  };
-}
