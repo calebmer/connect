@@ -4,7 +4,7 @@ import {
   PostCommentsCacheEntry,
   commentCountMore,
 } from "../comment/CommentCache";
-import React, {useContext, useMemo, useRef} from "react";
+import React, {useCallback, useContext, useMemo, useRef} from "react";
 import {ScrollEvent, ScrollView, StyleSheet, View} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {Comment} from "../comment/Comment";
@@ -165,7 +165,9 @@ function Post({
           post={post}
           comments={comments}
           onScroll={virtualizeScroll}
-          onVisibleRangeChange={range => (visibleRange.current = range)}
+          onVisibleRangeChange={useCallback((range: RenderRange) => {
+            visibleRange.current = range;
+          }, [])}
         />
       </NavbarScrollView>
       <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
