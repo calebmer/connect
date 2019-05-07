@@ -68,7 +68,7 @@ export function CommentNewToolbar({
 
   return (
     <View onLayout={handleLayout}>
-      <View style={styles.jump}>
+      <View style={styles.jump} pointerEvents="box-none">
         <CommentNewJumpButton scrollViewRef={scrollViewRef} />
       </View>
       <CommentNew postID={postID} />
