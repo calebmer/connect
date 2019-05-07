@@ -50,4 +50,6 @@ declare module "react-native" {
      */
     onBlur?: () => void;
   }
+
+  export type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 }

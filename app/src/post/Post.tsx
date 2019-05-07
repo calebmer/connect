@@ -1,17 +1,11 @@
 import {Color, Font, Shadow} from "../atoms";
 import {
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import {
   PostCommentsCache,
   PostCommentsCacheEntry,
   commentCountMore,
 } from "../comment/CommentCache";
 import React, {useContext, useMemo, useRef} from "react";
+import {ScrollEvent, ScrollView, StyleSheet, View} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
@@ -25,7 +19,6 @@ import {PostVirtualizedComments} from "./PostVirtualizedComments";
 import {Route} from "../router/Route";
 import {Skimmer} from "../cache/Skimmer";
 import {Trough} from "../molecules/Trough";
-import {debounce} from "../utils/debounce";
 
 function Post({
   route,
@@ -61,71 +54,19 @@ function Post({
   const hideNavbar =
     useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
 
-  const onScroll = useRef<
-    null | ((event: NativeSyntheticEvent<NativeScrollEvent>) => void)
-  >(null);
+  // HACK: A ref for an `onScroll` event handler that is set by our child
+  // `<PostVirtualizedComments>` component. In this way that component passes
+  // an event handler “up”.
+  const virtualizeScroll = useRef<null | ((event: ScrollEvent) => void)>(null);
 
-  return (
-    <View style={styles.background}>
-      <NavbarScrollView
-        ref={scrollViewRef}
-        // ## Navbar
-        route={route}
-        title={group.name}
-        hideNavbar={hideNavbar}
-        // ## Scroll View
-        keyboardDismissMode="interactive"
-        // ## Scroll Events
-        scrollEventThrottle={PostVirtualizedComments.scrollEventThrottle}
-        onScroll={event => {
-          if (onScroll.current !== null) {
-            onScroll.current(event);
-          }
-        }}
-      >
-        <PostContent postID={post.id} />
-        <Trough title="Comments" />
-        <PostVirtualizedComments
-          post={post}
-          comments={comments}
-          onScroll={onScroll}
-          onVisibleRangeChange={useVisibleRangeChange(postID)}
-        />
-      </NavbarScrollView>
-      <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
-    </View>
-  );
-}
+  // The current visible range of comments in our virtualized comment list.
+  const visibleRange = useRef<RenderRange | null>(null);
 
-// Don’t re-render `<Post>` unless the props change.
-const PostMemo = React.memo(Post);
-export {PostMemo as Post};
-
-type RenderRange = {first: number; last: number};
-
-type MaybePromise<T> = T | Promise<T>;
-
-/**
- * Creates an event handler for `onVisibleRangeChange` which will load comments
- * in that range that have not been loaded yet. Will keep making network
- * requests until the entire range has been loaded.
- */
-function useVisibleRangeChange(postID: PostID) {
-  const visibleRange = useRef<RenderRange>({first: 0, last: 0});
-
-  return useMemo(() => {
-    /**
-     * We only want to call `loadMoreComments` once after the user finishes
-     * scrolling. We use debouncing to accomplish that effect.
-     */
-    const loadMoreCommentsDebounced = debounce(200, () => {
-      // Schedule a load for our new comments. We don’t want to schedule a
-      // load for some items while the user is scrolling. When they finish
-      // scrolling we want to load based on the items that are
-      // currently visible.
-      PostCommentsCache.updateWhenReady(postID, loadMoreComments);
-    });
-
+  /**
+   * Handles a scroll event on our navbar scroll view. Will both update the
+   * virtualized list visible items and will load more items if applicable.
+   */
+  const handleScroll = useMemo(() => {
     /**
      * Load more comments based on the items in view when our current comment
      * list has finished loading.
@@ -133,6 +74,8 @@ function useVisibleRangeChange(postID: PostID) {
     function loadMoreComments(
       comments: Skimmer<PostCommentsCacheEntry>,
     ): MaybePromise<Skimmer<PostCommentsCacheEntry>> {
+      if (visibleRange.current === null) return comments;
+
       // The number of items in the visible range.
       const visibleRangeLength =
         visibleRange.current.last - visibleRange.current.first;
@@ -163,18 +106,80 @@ function useVisibleRangeChange(postID: PostID) {
       }
     }
 
-    return (range: RenderRange) => {
-      // Update the current visible range items...
-      visibleRange.current = range;
+    // Used to calculate the velocity at which we will cancel loading more
+    // comments. Velocity is calculated by “dy / dt” where dy is the difference
+    // in position and dt is the difference in time. So in our case,
+    // 800px / 200ms = 4 px/ms. This means if we scroll faster than 4px per 1ms
+    // we will consider the scroll to be “fast” and won’t load any comments.
+    const differencePosition = 400;
+    const differenceTime = 200;
 
-      // Schedule a load for our new comments. We don’t want to schedule a
-      // load for some items while the user is scrolling. When they finish
-      // scrolling we want to load based on the items that are
-      // currently visible.
-      loadMoreCommentsDebounced();
+    // The pending load which might be cancelled if we detect a fast scroll.
+    let pendingLoad: {timeoutID: number; offset: number} | null = null;
+
+    return (event: ScrollEvent) => {
+      // Call the virtualized scroll event. This will update which comments are
+      // visible in our virtualized list.
+      if (virtualizeScroll.current !== null) {
+        virtualizeScroll.current(event);
+      }
+
+      // Retrieve the vertical offset of this scroll event.
+      const offset = event.nativeEvent.contentOffset.y;
+
+      // If we do not have a pending load then schedule one...
+      if (pendingLoad === null) {
+        // If our timeout runs then update our comment cache and load
+        // more comments.
+        const timeoutID = setTimeout(() => {
+          pendingLoad = null;
+          PostCommentsCache.updateWhenReady(postID, loadMoreComments);
+        }, differenceTime);
+
+        pendingLoad = {timeoutID, offset};
+      } else {
+        // If we traveled too many pixels than cancel our load to fetch
+        // more comments.
+        if (Math.abs(offset - pendingLoad.offset) > differencePosition) {
+          clearTimeout(pendingLoad.timeoutID);
+          pendingLoad = null;
+        }
+      }
     };
   }, [postID]);
+
+  return (
+    <View style={styles.background}>
+      <NavbarScrollView
+        ref={scrollViewRef}
+        route={route}
+        title={group.name}
+        hideNavbar={hideNavbar}
+        keyboardDismissMode="interactive"
+        scrollEventThrottle={PostVirtualizedComments.scrollEventThrottle}
+        onScroll={handleScroll}
+      >
+        <PostContent postID={post.id} />
+        <Trough title="Comments" />
+        <PostVirtualizedComments
+          post={post}
+          comments={comments}
+          onScroll={virtualizeScroll}
+          onVisibleRangeChange={range => (visibleRange.current = range)}
+        />
+      </NavbarScrollView>
+      <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
+    </View>
+  );
 }
+
+// Don’t re-render `<Post>` unless the props change.
+const PostMemo = React.memo(Post);
+export {PostMemo as Post};
+
+type RenderRange = {first: number; last: number};
+
+type MaybePromise<T> = T | Promise<T>;
 
 const styles = StyleSheet.create({
   background: {

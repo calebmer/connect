@@ -21,10 +21,10 @@ export function Trough({
 }) {
   return (
     <View style={styles.trough}>
-      {!hideTopShadow && <View style={styles.troughShadowTop} />}
-      {!hideBottomShadow && <View style={styles.troughShadowBottom} />}
+      {hideTopShadow !== true && <View style={styles.troughShadowTop} />}
+      {hideBottomShadow !== true && <View style={styles.troughShadowBottom} />}
       {children}
-      {title && <Text style={styles.troughTitle}>{title}</Text>}
+      {title !== undefined && <Text style={styles.troughTitle}>{title}</Text>}
     </View>
   );
 }

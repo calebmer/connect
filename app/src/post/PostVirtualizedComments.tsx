@@ -1,21 +1,30 @@
 import {
   Dimensions,
   LayoutChangeEvent,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   Platform,
+  ScrollEvent,
   View,
 } from "react-native";
 import {Font, Space} from "../atoms";
+import {
+  PostCommentsCacheEntry,
+  commentCountMore,
+} from "../comment/CommentCache";
 import React, {ReactElement} from "react";
 import {Comment} from "../comment/Comment";
 import {CommentShimmer} from "../comment/CommentShimmer";
 import {Post} from "@connect/api-client";
-import {PostCommentsCacheEntry} from "../comment/CommentCache";
 import {Skimmer} from "../cache/Skimmer";
 
 // The number of items to render outside of the viewport range.
-const overscanCount = 1;
+//
+// We always overscan by the number of comments we’ll incrementally fetch. That
+// way when we load more comments, we’ll immediately render them and get
+// their heights.
+//
+// This is a bit of a hack to fix the jankiness of loading each comment as it
+// scrolls into view.
+const overscanCount = commentCountMore;
 
 // The number of items we will always render at the beginning of our list to
 // improve perceived performance.
@@ -43,9 +52,7 @@ type Props = {
    * scroll view. So we use a ref to pass “up” an event handler to our
    * parent component.
    */
-  onScroll: React.MutableRefObject<
-    null | ((event: NativeSyntheticEvent<NativeScrollEvent>) => void)
-  >;
+  onScroll: React.MutableRefObject<null | ((event: ScrollEvent) => void)>;
 
   /**
    * When the visible items change, we call this callback. The parent component
@@ -128,6 +135,9 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // HACK: Set our scroll handler to the mutable ref. This is how we “pass up”
     // our event handler.
     this.props.onScroll.current = this.handleScroll;
+
+    // Report the initial visible range before scrolling.
+    this.props.onVisibleRangeChange(this.state.visibleRange);
   }
 
   componentWillUnmount() {
@@ -141,6 +151,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   }
 
   componentDidUpdate(_prevProps: Props, prevState: State) {
+    // Report a change in the visible if there is one.
     if (
       prevState.visibleRange.first !== this.state.visibleRange.first ||
       prevState.visibleRange.last !== this.state.visibleRange.last
@@ -163,7 +174,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
    * Handles a scroll event by measuring the items we should be rendering and
    * updating state if it changed.
    */
-  private handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  private handleScroll = (event: ScrollEvent) => {
     // Skip scroll events if we haven’t gotten a layout event yet. This shouldn’t
     // happen? If it does the next scroll after a layout event will fix it.
     const postOffset = this.state.postOffset;
