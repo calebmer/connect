@@ -3,13 +3,14 @@ import React, {useRef} from "react";
 import {CommentNew} from "./CommentNew";
 import {CommentNewJumpButton} from "./CommentNewJumpButton";
 import {PostID} from "@connect/api-client";
-import {Space} from "../atoms";
 
 export function CommentNewToolbar({
   postID,
+  showJumpButton,
   scrollViewRef,
 }: {
   postID: PostID;
+  showJumpButton: boolean;
   scrollViewRef: React.RefObject<ScrollView>;
 }) {
   // The current height of the editor. `null` if the editor has not mounted yet.
@@ -69,7 +70,10 @@ export function CommentNewToolbar({
   return (
     <View onLayout={handleLayout}>
       <View style={styles.jump} pointerEvents="box-none">
-        <CommentNewJumpButton scrollViewRef={scrollViewRef} />
+        <CommentNewJumpButton
+          show={showJumpButton}
+          scrollViewRef={scrollViewRef}
+        />
       </View>
       <CommentNew postID={postID} />
     </View>
@@ -79,7 +83,7 @@ export function CommentNewToolbar({
 const styles = StyleSheet.create({
   jump: {
     position: "absolute",
-    top: -(CommentNewJumpButton.height + Space.space2),
+    top: -CommentNewJumpButton.fullHeight,
     left: 0,
     right: 0,
     flexDirection: "row",

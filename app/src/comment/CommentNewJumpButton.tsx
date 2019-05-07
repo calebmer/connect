@@ -1,39 +1,51 @@
-import {Border, Color, Font, Icon, Space} from "../atoms";
 import {
+  Animated,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  View,
+  TouchableWithoutFeedback,
 } from "react-native";
+import {Border, Color, Font, Icon, Space} from "../atoms";
 import React from "react";
+import {useAnimatedSpring} from "../utils/useAnimatedValue";
 
 export function CommentNewJumpButton({
+  show,
   scrollViewRef,
 }: {
+  show: boolean;
   scrollViewRef: React.RefObject<ScrollView>;
 }) {
+  const translateY = useAnimatedSpring(
+    show ? 0 : CommentNewJumpButton.fullHeight,
+    {tension: 100, friction: 10},
+  );
+
   return (
-    <TouchableOpacity
+    <TouchableWithoutFeedback
       onPress={() => {
         if (scrollViewRef.current) {
           scrollViewRef.current.scrollToEnd({animated: true});
         }
       }}
     >
-      <View style={styles.button}>
+      <Animated.View style={[styles.button, {transform: [{translateY}]}]}>
         <Icon
           name="arrow-down"
           color={Color.yellow8}
           size={Font.size1.fontSize}
         />
         <Text style={styles.label}>latest</Text>
-      </View>
-    </TouchableOpacity>
+      </Animated.View>
+    </TouchableWithoutFeedback>
   );
 }
 
 CommentNewJumpButton.height = Font.size1.lineHeight + Space.space0;
+CommentNewJumpButton.marginBottom = Space.space2;
+
+CommentNewJumpButton.fullHeight =
+  CommentNewJumpButton.height + CommentNewJumpButton.marginBottom;
 
 const styles = StyleSheet.create({
   button: {

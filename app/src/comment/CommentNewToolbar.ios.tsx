@@ -8,15 +8,20 @@ import React from "react";
 
 export function CommentNewToolbar({
   postID,
+  showJumpButton,
   scrollViewRef,
 }: {
   postID: PostID;
+  showJumpButton: boolean;
   scrollViewRef: React.RefObject<ScrollView>;
 }) {
   return (
     <>
-      <View style={styles.jump}>
-        <CommentNewJumpButton scrollViewRef={scrollViewRef} />
+      <View style={styles.jump} pointerEvents="box-none">
+        <CommentNewJumpButton
+          show={showJumpButton}
+          scrollViewRef={scrollViewRef}
+        />
       </View>
       <KeyboardTrackingView
         style={styles.toolbar}
@@ -38,7 +43,10 @@ const styles = StyleSheet.create({
   },
   jump: {
     position: "absolute",
-    bottom: Space.space2 + Font.size2.lineHeight + Space.space3 * 2,
+    bottom:
+      CommentNewJumpButton.marginBottom +
+      Font.size2.lineHeight +
+      Space.space3 * 2,
     left: 0,
     right: 0,
     flexDirection: "row",

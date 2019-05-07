@@ -1,11 +1,17 @@
-import {Color, Font, Shadow} from "../atoms";
+import {Color, Font, Shadow, Space} from "../atoms";
+import {
+  LayoutChangeEvent,
+  ScrollEvent,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import {
   PostCommentsCache,
   PostCommentsCacheEntry,
   commentCountMore,
 } from "../comment/CommentCache";
-import React, {useCallback, useContext, useMemo, useRef} from "react";
-import {ScrollEvent, ScrollView, StyleSheet, View} from "react-native";
+import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
@@ -19,6 +25,10 @@ import {PostVirtualizedComments} from "./PostVirtualizedComments";
 import {Route} from "../router/Route";
 import {Skimmer} from "../cache/Skimmer";
 import {Trough} from "../molecules/Trough";
+
+// The threshold at which we will show the jump button. When the threshold is
+// passed we will hide the jump button.
+const showJumpButtonThreshold = Space.space6;
 
 function Post({
   route,
@@ -127,6 +137,10 @@ function Post({
       // Retrieve the vertical offset of this scroll event.
       const offset = event.nativeEvent.contentOffset.y;
 
+      // Only show the jump button if our scroll offset is below the jump
+      // button threshold.
+      setShowJumpButton(offset <= showJumpButtonThreshold);
+
       // If we do not have a pending load then schedule one...
       if (pendingLoad === null) {
         // If our timeout runs then update our comment cache and load
@@ -148,6 +162,48 @@ function Post({
     };
   }, [postID]);
 
+  // State variables which determine if the jump button should be shown or not.
+  // We show the button if the user hasn’t scrolled a view which is scrollable.
+  //
+  // The first state variable answers the question “is the scroll view
+  // scrollable?” The second state variable answers the question “has the
+  // user scrolled?”
+  const [jumpButtonAvailable, setJumpButtonAvailable] = useState(false);
+  const [showJumpButton, setShowJumpButton] = useState(true);
+
+  // Heights we track for our event handlers.
+  const viewHeights = useRef<{scroll: number | null; content: number | null}>({
+    scroll: null,
+    content: null,
+  });
+
+  // Overloaded to support both the `onLayout` event and the
+  // `onContentSizeChange` event.
+  const handleLayout = useCallback(
+    (event: LayoutChangeEvent | number, contentHeight?: number) => {
+      // A bit ugly, granted, but check to see if this is an `onLayout` event
+      // or an `onContentSizeChange` event.
+      if (typeof event === "number") {
+        viewHeights.current.content = contentHeight!;
+      } else {
+        viewHeights.current.scroll = event.nativeEvent.layout.height;
+      }
+
+      // If we have heights for both our content view and our scroll view then
+      // determine if the jump button is available...
+      if (
+        viewHeights.current.scroll !== null &&
+        viewHeights.current.content !== null
+      ) {
+        setJumpButtonAvailable(
+          viewHeights.current.content - viewHeights.current.scroll >
+            showJumpButtonThreshold,
+        );
+      }
+    },
+    [],
+  );
+
   return (
     <View style={styles.background}>
       <NavbarScrollView
@@ -158,6 +214,8 @@ function Post({
         keyboardDismissMode="interactive"
         scrollEventThrottle={PostVirtualizedComments.scrollEventThrottle}
         onScroll={handleScroll}
+        onLayout={handleLayout}
+        onContentSizeChange={handleLayout}
       >
         <PostContent postID={post.id} />
         <Trough title="Comments" />
@@ -170,7 +228,11 @@ function Post({
           }, [])}
         />
       </NavbarScrollView>
-      <CommentNewToolbar postID={postID} scrollViewRef={scrollViewRef} />
+      <CommentNewToolbar
+        postID={postID}
+        showJumpButton={showJumpButton && jumpButtonAvailable}
+        scrollViewRef={scrollViewRef}
+      />
     </View>
   );
 }
