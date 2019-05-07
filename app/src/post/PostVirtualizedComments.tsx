@@ -17,6 +17,14 @@ import {Skimmer} from "../cache/Skimmer";
 // The number of items to render outside of the viewport range.
 const overscanCount = 1;
 
+// The number of items we will always render at the beginning of our list to
+// improve perceived performance.
+const leadingCount = 20;
+
+// The number of items we will always render at the end of our list to
+// improve perceived performance.
+const trailingCount = 20;
+
 type Props = {
   /**
    * The post we are rendering comments on.
@@ -44,10 +52,7 @@ type State = {
   /**
    * The currently visible range of items.
    */
-  visibleRange: {
-    first: number;
-    last: number;
-  };
+  visibleRange: RenderRange;
 
   /**
    * The heights of all the comments we’ve rendered. Gaps in the comment list
@@ -60,6 +65,14 @@ type State = {
    * comments forms a chunk.
    */
   commentChunks: ReadonlyArray<CommentChunk>;
+};
+
+/**
+ * A range of items to render.
+ */
+type RenderRange = {
+  first: number;
+  last: number;
 };
 
 /**
@@ -78,7 +91,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   /**
    * The expected scroll event throttle for our component.
    */
-  static scrollEventThrottle = 25;
+  static scrollEventThrottle = 50;
 
   constructor(props: Props) {
     super(props);
@@ -92,10 +105,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     );
 
     this.state = {
-      visibleRange: {
-        first,
-        last,
-      },
+      visibleRange: {first, last},
       commentHeights: [],
       commentChunks: [],
     };
@@ -188,11 +198,21 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     }
 
     // Get the beginning index of visible items.
-    let first = this.getIndex(firstOffset) - 1 - overscanCount;
+    let first = getIndex(
+      this.state.commentChunks,
+      this.state.commentHeights,
+      firstOffset,
+    );
+    first -= 1 + overscanCount;
     if (first < 0) first = 0;
 
     // Get the ending index of visible items.
-    let last = this.getIndex(lastOffset) + overscanCount;
+    let last = getIndex(
+      this.state.commentChunks,
+      this.state.commentHeights,
+      lastOffset,
+    );
+    last += overscanCount;
     if (last > commentCount) last = commentCount;
 
     // Update the visible range if it changed.
@@ -221,7 +241,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   /**
    * When a comment’s layout changes we fire this event...
    */
-  private handleCommentLayout(index: number, event: LayoutChangeEvent) {
+  private handleCommentLayout = (index: number, event: LayoutChangeEvent) => {
     const height = event.nativeEvent.layout.height;
 
     // If we already have the correct height for this comment in our state
@@ -237,11 +257,8 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     }
 
     // Add the pending comment height.
-    this.pendingCommentHeights.heights.push({
-      index,
-      height,
-    });
-  }
+    this.pendingCommentHeights.heights.push({index, height});
+  };
 
   /**
    * We wait until we‘ve collected as many comment heights as we can before
@@ -323,244 +340,348 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     });
   }
 
-  /**
-   * Gets the offset above the item at a given index.
-   *
-   * The dual of this function is `getIndex()` where we can get an index from
-   * an offset.
-   */
-  private getOffset(maxIndex: number): number {
-    // Set the initial offset and index. The offset is a distance in measurement
-    // units. The index is a position in our comments list.
-    let offset = 0;
-    let index = 0;
+  // Memoize the filler view.
+  private renderFiller = memoizeLast(renderFiller);
 
-    // Loop through our comment chunks...
-    for (let i = 0; i < this.state.commentChunks.length; i++) {
-      const commentChunk = this.state.commentChunks[i];
+  // Memoize each individual item in a cache so we don’t have to recompute it
+  // every time. By wrapping a `memoize()` function in a `memoizeLast()` it has
+  // the effect of clearing the `memoize()` cache whenever the `memoizeLast()`
+  // parameters change.
+  private renderItem = memoizeLast(
+    (
+      comments: ReadonlyArray<PostCommentsCacheEntry | typeof Skimmer.empty>,
+      commentChunks: ReadonlyArray<CommentChunk>,
+      commentHeights: ReadonlyArray<number | undefined>,
+    ) =>
+      memoize((index: number) =>
+        renderItem(
+          this.handleCommentLayout, // We know this event handler is constant in our class.
+          comments,
+          commentChunks,
+          commentHeights,
+          index,
+        ),
+      ),
+  );
 
-      // We expect `commentChunks` to be sorted by `commentChunk.index` and we
-      // expect that `index` will never exceed the next comment chunk’s starting
-      // position based on our implementation below. If these expectations are
-      // violated then throw.
-      if (index > commentChunk.start) {
-        throw new Error(
-          `Expected ${index} to be less than or equal to ${
-            commentChunk.start
-          }.`,
-        );
+  render() {
+    let visibleRange: RenderRange = this.state.visibleRange;
+
+    // We always render some items at the very beginning of the list so that
+    // “jump to start” are perceived to render quickly.
+    let leadingRange: RenderRange | null = {
+      first: 0,
+      last: Math.min(leadingCount, this.props.post.commentCount),
+    };
+
+    // We always render some items at the very end of the list so that
+    // “jump to start” are perceived to render quickly.
+    let trailingRange: RenderRange | null = {
+      first: Math.max(0, this.props.post.commentCount - trailingCount),
+      last: this.props.post.commentCount,
+    };
+
+    // Merge the leading range with the visible range if needed.
+    if (intersects(visibleRange, leadingRange)) {
+      visibleRange = {
+        first: Math.min(visibleRange.first, leadingRange.first),
+        last: Math.max(visibleRange.last, leadingRange.last),
+      };
+      leadingRange = null;
+    }
+
+    // Merge the trailing range with the visible range if needed.
+    if (intersects(visibleRange, trailingRange)) {
+      visibleRange = {
+        first: Math.min(visibleRange.first, trailingRange.first),
+        last: Math.max(visibleRange.last, trailingRange.last),
+      };
+      trailingRange = null;
+    }
+
+    const items: Array<ReactElement> = [];
+
+    // Get the render item function based on our state. The render item function
+    // is memoized so it comes with a cache.
+    const renderItem = this.renderItem(
+      this.props.comments,
+      this.state.commentChunks,
+      this.state.commentHeights,
+    );
+
+    // If we have a leading range then render the items in our leading range.
+    if (leadingRange) {
+      for (let i = 0; i < leadingRange.last - leadingRange.first; i++) {
+        items.push(renderItem(leadingRange.first + i));
+      }
+    }
+
+    // Render the items in our visible range.
+    for (let i = 0; i < visibleRange.last - visibleRange.first; i++) {
+      items.push(renderItem(visibleRange.first + i));
+    }
+
+    // If we have a trailing range then render the items in our trailing range.
+    if (trailingRange) {
+      for (let i = 0; i < trailingRange.last - trailingRange.first; i++) {
+        items.push(renderItem(trailingRange.first + i));
+      }
+    }
+
+    return (
+      <>
+        {this.renderFiller(
+          this.state.commentChunks,
+          this.state.commentHeights,
+          this.props.post,
+        )}
+        {items}
+      </>
+    );
+  }
+}
+
+/**
+ * Gets the offset above the item at a given index.
+ *
+ * The dual of this function is `getIndex()` where we can get an index from
+ * an offset.
+ */
+function getOffset(
+  commentChunks: ReadonlyArray<CommentChunk>,
+  commentHeights: ReadonlyArray<number | undefined>,
+  maxIndex: number,
+): number {
+  // Set the initial offset and index. The offset is a distance in measurement
+  // units. The index is a position in our comments list.
+  let offset = 0;
+  let index = 0;
+
+  // Loop through our comment chunks...
+  for (let i = 0; i < commentChunks.length; i++) {
+    const commentChunk = commentChunks[i];
+
+    // We expect `commentChunks` to be sorted by `commentChunk.index` and we
+    // expect that `index` will never exceed the next comment chunk’s starting
+    // position based on our implementation below. If these expectations are
+    // violated then throw.
+    if (index > commentChunk.start) {
+      throw new Error(
+        `Expected ${index} to be less than or equal to ${commentChunk.start}.`,
+      );
+    }
+
+    // If our index is less than the next chunk’s starting position then let’s
+    // catch up our index to the chunk start.
+    if (index < commentChunk.start) {
+      // If moving our index to the chunk’s starting index would take us over
+      // the maximum index then move our index to the maximum index and break
+      // out of the loop. We done.
+      if (maxIndex < commentChunk.start) {
+        offset += CommentShimmer.getHeight(maxIndex - index, index);
+        index = maxIndex;
+        break;
       }
 
-      // If our index is less than the next chunk’s starting position then let’s
-      // catch up our index to the chunk start.
-      if (index < commentChunk.start) {
-        // If moving our index to the chunk’s starting index would take us over
-        // the maximum index then move our index to the maximum index and break
-        // out of the loop. We done.
-        if (maxIndex < commentChunk.start) {
-          offset += CommentShimmer.getHeight(maxIndex - index, index);
-          index = maxIndex;
-          break;
-        }
+      // The area between comment chunks are occupied by `CommentShimmer`
+      // components which have a known height. Add that to our offset.
+      offset += CommentShimmer.getHeight(commentChunk.start - index, index);
+      index = commentChunk.start;
+    }
 
-        // The area between comment chunks are occupied by `CommentShimmer`
-        // components which have a known height. Add that to our offset.
-        offset += CommentShimmer.getHeight(commentChunk.start - index, index);
-        index = commentChunk.start;
+    // At this point, we expect our index to match the start of our
+    // comment chunk. We handle both the less than and greater than cases
+    // above which will either break out of the loop or set the index equal
+    // to our comment chunk start.
+    if (index !== commentChunk.start)
+      throw new Error(`Expected ${index} to equal ${commentChunk.start}.`);
+
+    // Add this comment chunk’s height to our offset as long as that wouldn’t
+    // put us over our `maxIndex`.
+    if (index + commentChunk.length <= maxIndex) {
+      offset += commentChunk.height;
+      index += commentChunk.length;
+
+      // If `index === maxIndex` now then break out of the loop. We’re
+      // done here.
+      if (index < maxIndex) {
+        continue;
+      } else {
+        break;
       }
+    }
 
-      // At this point, we expect our index to match the start of our
-      // comment chunk. We handle both the less than and greater than cases
-      // above which will either break out of the loop or set the index equal
-      // to our comment chunk start.
-      if (index !== commentChunk.start)
-        throw new Error(`Expected ${index} to equal ${commentChunk.start}.`);
+    // If adding the entire chunk height would put us over our `maxIndex` then
+    // add each comment height to the offset individually. We expect there
+    // to be a height for each comment since the comment’s are inside our
+    // current chunk.
+    while (index < maxIndex) {
+      const height = commentHeights[index];
+      if (height === undefined) throw new Error("Expected height.");
+      offset += height;
+      index += 1;
+    }
 
-      // Add this comment chunk’s height to our offset as long as that wouldn’t
-      // put us over our `maxIndex`.
-      if (index + commentChunk.length <= maxIndex) {
-        offset += commentChunk.height;
-        index += commentChunk.length;
+    break;
+  }
 
-        // If `index === maxIndex` now then break out of the loop. We’re
-        // done here.
-        if (index < maxIndex) {
-          continue;
-        } else {
-          break;
-        }
-      }
+  // If we our index is still less than our `maxIndex` then let’s add the
+  // remaining shimmer height. This could happen when there are fewer chunks
+  // then items in the list.
+  if (index < maxIndex) {
+    offset += CommentShimmer.getHeight(maxIndex - index, index);
+    index = maxIndex;
+  }
 
-      // If adding the entire chunk height would put us over our `maxIndex` then
-      // add each comment height to the offset individually. We expect there
-      // to be a height for each comment since the comment’s are inside our
-      // current chunk.
-      while (index < maxIndex) {
-        const height = this.state.commentHeights[index];
+  // Finally, we expect throughout all of this code that in the end our index
+  // will end up equaling our `maxIndex`.
+  if (index !== maxIndex)
+    throw new Error(`Expected ${index} to equal ${maxIndex}.`);
+
+  return offset;
+}
+
+/**
+ * Gets the index of a comment based on its offset in the list.
+ *
+ * The dual of this operation is `getOffset()` which gets the offset of an
+ * item in the list.
+ */
+function getIndex(
+  commentChunks: ReadonlyArray<CommentChunk>,
+  commentHeights: ReadonlyArray<number | undefined>,
+  maxOffset: number,
+): number {
+  // Set the initial offset and index. The offset is a distance in measurement
+  // units. The index is a position in our comments list.
+  let offset = 0;
+  let index = 0;
+
+  // Loop through our comment chunks...
+  for (let i = 0; i < commentChunks.length; i++) {
+    const commentChunk = commentChunks[i];
+
+    // We expect `commentChunks` to be sorted by `commentChunk.index` and we
+    // expect that `index` will never exceed the next comment chunk’s starting
+    // position based on our implementation below. If these expectations are
+    // violated then throw.
+    if (index > commentChunk.start) {
+      throw new Error(
+        `Expected ${index} to be less than or equal to ${commentChunk.start}.`,
+      );
+    }
+
+    // Increase our offset by the height of comment shimmers between our
+    // current index and the start of the next chunk.
+    offset += CommentShimmer.getHeight(commentChunk.start - index, index);
+
+    // If adding the shimmers surpassed the max offset, then let’s get
+    // our specific index inside the shimmers and break out of the comment
+    // chunk loop.
+    if (offset >= maxOffset) {
+      index += CommentShimmer.getIndex(maxOffset - offset, index);
+      offset = maxOffset;
+      break;
+    }
+
+    // Otherwise, our index is now moved to the comment chunk’s start.
+    index = commentChunk.start;
+
+    // If increasing the offset by the comment chunk length puts us above our
+    // desired offset then we move backwards through the comment list to
+    // arrive at the correct index.
+    if (offset + commentChunk.height >= maxOffset) {
+      while (offset < maxOffset) {
+        const height = commentHeights[index];
         if (height === undefined) throw new Error("Expected height.");
         offset += height;
         index += 1;
       }
-
+      offset = maxOffset;
       break;
     }
 
-    // If we our index is still less than our `maxIndex` then let’s add the
-    // remaining shimmer height. This could happen when there are fewer chunks
-    // then items in the list.
-    if (index < maxIndex) {
-      offset += CommentShimmer.getHeight(maxIndex - index, index);
-      index = maxIndex;
-    }
-
-    // Finally, we expect throughout all of this code that in the end our index
-    // will end up equaling our `maxIndex`.
-    if (index !== maxIndex)
-      throw new Error(`Expected ${index} to equal ${maxIndex}.`);
-
-    return offset;
+    // Otherwise, increase our index by the comment chunk length.
+    offset += commentChunk.height;
+    index += commentChunk.length;
   }
 
-  /**
-   * Gets the index of a comment based on its offset in the list.
-   *
-   * The dual of this operation is `getOffset()` which gets the offset of an
-   * item in the list.
-   */
-  private getIndex(maxOffset: number): number {
-    // Set the initial offset and index. The offset is a distance in measurement
-    // units. The index is a position in our comments list.
-    let offset = 0;
-    let index = 0;
-
-    // Loop through our comment chunks...
-    for (let i = 0; i < this.state.commentChunks.length; i++) {
-      const commentChunk = this.state.commentChunks[i];
-
-      // We expect `commentChunks` to be sorted by `commentChunk.index` and we
-      // expect that `index` will never exceed the next comment chunk’s starting
-      // position based on our implementation below. If these expectations are
-      // violated then throw.
-      if (index > commentChunk.start) {
-        throw new Error(
-          `Expected ${index} to be less than or equal to ${
-            commentChunk.start
-          }.`,
-        );
-      }
-
-      // Increase our offset by the height of comment shimmers between our
-      // current index and the start of the next chunk.
-      offset += CommentShimmer.getHeight(commentChunk.start - index, index);
-
-      // If adding the shimmers surpassed the max offset, then let’s get
-      // our specific index inside the shimmers and break out of the comment
-      // chunk loop.
-      if (offset >= maxOffset) {
-        index += CommentShimmer.getIndex(maxOffset - offset, index);
-        offset = maxOffset;
-        break;
-      }
-
-      // Otherwise, our index is now moved to the comment chunk’s start.
-      index = commentChunk.start;
-
-      // If increasing the offset by the comment chunk length puts us above our
-      // desired offset then we move backwards through the comment list to
-      // arrive at the correct index.
-      if (offset + commentChunk.height >= maxOffset) {
-        while (offset < maxOffset) {
-          // We expect a comment height to exist since we are inside a
-          // comment chunk.
-          offset += this.state.commentHeights[index]!;
-          index += 1;
-        }
-        offset = maxOffset;
-        break;
-      }
-
-      // Otherwise, increase our index by the comment chunk length.
-      offset += commentChunk.height;
-      index += commentChunk.length;
-    }
-
-    // If we run out of comment chunks but we are still below our desired offset
-    // then use comment shimmers to get to our final offset.
-    if (offset < maxOffset) {
-      index += CommentShimmer.getIndex(maxOffset - offset, index);
-      offset = maxOffset;
-    }
-
-    return index;
+  // If we run out of comment chunks but we are still below our desired offset
+  // then use comment shimmers to get to our final offset.
+  if (offset < maxOffset) {
+    index += CommentShimmer.getIndex(maxOffset - offset, index);
+    offset = maxOffset;
   }
 
-  private renderFiller() {
-    const height = this.getOffset(this.props.post.commentCount) + Space.space3;
-    return <View style={{height}} />;
-  }
+  return index;
+}
 
-  private renderItems(
-    first: number,
-    last: number,
-  ): ReadonlyArray<ReactElement> {
-    const itemsCount = last - first;
-    const items = [];
+/**
+ * Renders the filler space for the entire list.
+ *
+ * We implement this outside of the component class so that we’re forced to
+ * explicitly declare all of our dependencies. That way a memoization function
+ * can correctly determine when the result should change.
+ */
+function renderFiller(
+  commentChunks: ReadonlyArray<CommentChunk>,
+  commentHeights: ReadonlyArray<number | undefined>,
+  post: Post,
+) {
+  const height =
+    getOffset(commentChunks, commentHeights, post.commentCount) + Space.space3;
+  return <View style={{height}} />;
+}
 
-    for (let i = 0; i < itemsCount; i++) {
-      items.push(this.renderItem(first + i));
-    }
+/**
+ * Renders an individual comment in the entire comment list.
+ *
+ * We implement this outside of the component class so that we’re forced to
+ * explicitly declare all of our dependencies. That way a memoization function
+ * can correctly determine when the result should change.
+ */
+function renderItem(
+  handleCommentLayout: (index: number, event: LayoutChangeEvent) => void,
+  comments: ReadonlyArray<PostCommentsCacheEntry | typeof Skimmer.empty>,
+  commentChunks: ReadonlyArray<CommentChunk>,
+  commentHeights: ReadonlyArray<number | undefined>,
+  index: number,
+): ReactElement {
+  const comment = comments[index];
+  const lastComment = comments[index - 1];
+  const commentHeight = commentHeights[index];
 
-    return items;
-  }
+  const style = {
+    position: "absolute" as "absolute",
+    top: getOffset(commentChunks, commentHeights, index),
+    left: 0,
+    right: 0,
+  };
 
-  private renderItem(index: number): ReactElement {
-    const comment = this.props.comments[index];
-    const lastComment = this.props.comments[index - 1];
-    const commentHeight = this.state.commentHeights[index];
+  // On web, use a `div` directly which is more efficient since we don’t
+  // need the extra component.
+  const ViewComponent = Platform.OS === "web" ? "div" : View;
 
-    const style = {
-      position: "absolute" as "absolute",
-      top: this.getOffset(index),
-      left: 0,
-      right: 0,
-    };
-
-    // On web, use a `div` directly which is more efficient since we don’t
-    // need the extra component.
-    const ViewComponent = Platform.OS === "web" ? "div" : View;
-
-    return (
-      <React.Fragment key={index}>
-        {isComment(comment) && (
-          <View
-            style={[style, commentHeight === undefined && {opacity: 0}]}
-            onLayout={event => this.handleCommentLayout(index, event)}
-          >
-            <Comment
-              commentID={comment.id}
-              lastCommentID={isComment(lastComment) ? lastComment.id : null}
-            />
-          </View>
-        )}
-        {(!isComment(comment) || commentHeight === undefined) && (
-          <ViewComponent style={style}>
-            <CommentShimmer index={index} />
-          </ViewComponent>
-        )}
-      </React.Fragment>
-    );
-  }
-
-  render() {
-    const {visibleRange} = this.state;
-
-    return (
-      <>
-        {this.renderFiller()}
-        {this.renderItems(visibleRange.first, visibleRange.last)}
-      </>
-    );
-  }
+  return (
+    <React.Fragment key={index}>
+      {isComment(comment) && (
+        <View
+          style={[style, commentHeight === undefined && {opacity: 0}]}
+          onLayout={event => handleCommentLayout(index, event)}
+        >
+          <Comment
+            commentID={comment.id}
+            lastCommentID={isComment(lastComment) ? lastComment.id : null}
+          />
+        </View>
+      )}
+      {(!isComment(comment) || commentHeight === undefined) && (
+        <ViewComponent style={style}>
+          <CommentShimmer index={index} />
+        </ViewComponent>
+      )}
+    </React.Fragment>
+  );
 }
 
 /**
@@ -570,4 +691,70 @@ function isComment(
   comment: PostCommentsCacheEntry | typeof Skimmer.empty | undefined,
 ): comment is PostCommentsCacheEntry {
   return comment !== undefined && comment !== Skimmer.empty;
+}
+
+/**
+ * Do the two ranges intersect with one another? Returns true if they intersect.
+ */
+function intersects(a: RenderRange, b: RenderRange): boolean {
+  return !(a.last < b.first || b.last < a.first);
+}
+
+/**
+ * Caches the last result of a function. If the function is immediately called
+ * again with the same arguments then we will re-use the last result without
+ * calling the function again.
+ */
+function memoizeLast<Args extends Array<any>, Ret>(
+  fn: (...args: Args) => Ret,
+): (...args: Args) => Ret {
+  // The internal cache of our memoization function.
+  let cache: {args: Args; ret: Ret} | null = null;
+
+  return (...args: Args): Ret => {
+    // If we have a previous cached value...
+    if (cache !== null) {
+      let equal = true;
+
+      // Determine if the argument arrays are equal...
+      if (args.length !== cache.args.length) {
+        equal = false;
+      } else {
+        for (let i = 0; i < args.length; i++) {
+          if (args[i] !== cache.args[i]) {
+            equal = false;
+            break;
+          }
+        }
+      }
+
+      // If the argument arrays are equal then return our cached value.
+      if (equal === true) {
+        return cache.ret;
+      }
+    }
+
+    // Otherwise compute the return value and cache the result.
+    const ret = fn(...args);
+    cache = {args, ret};
+    return ret;
+  };
+}
+
+/**
+ * Memoize all the results of a function. If we’ve seen an argument before at
+ * any point in time then we will return the same value without recomputing
+ * anything. If we haven’t seen the argument then we will compute the
+ * return value.
+ */
+function memoize<Arg, Ret>(fn: (arg: Arg) => Ret): (arg: Arg) => Ret {
+  const cache = new Map<Arg, Ret>();
+  return arg => {
+    let ret = cache.get(arg);
+    if (ret === undefined) {
+      ret = fn(arg);
+      cache.set(arg, ret);
+    }
+    return ret;
+  };
 }
