@@ -19,11 +19,11 @@ const overscanCount = 1;
 
 // The number of items we will always render at the beginning of our list to
 // improve perceived performance.
-const leadingCount = 20;
+const leadingCount = 16;
 
 // The number of items we will always render at the end of our list to
 // improve perceived performance.
-const trailingCount = 20;
+const trailingCount = 32;
 
 type Props = {
   /**
@@ -53,6 +53,12 @@ type State = {
    * The currently visible range of items.
    */
   visibleRange: RenderRange;
+
+  /**
+   * The offset in measurement units of the post content rendered above our list
+   * of comments.
+   */
+  postOffset: number | null;
 
   /**
    * The heights of all the comments we’ve rendered. Gaps in the comment list
@@ -106,6 +112,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
 
     this.state = {
       visibleRange: {first, last},
+      postOffset: null,
       commentHeights: [],
       commentChunks: [],
     };
@@ -142,11 +149,16 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
    * updating state if it changed.
    */
   private handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // Skip scroll events if we haven’t gotten a layout event yet. This shouldn’t
+    // happen? If it does the next scroll after a layout event will fix it.
+    const postOffset = this.state.postOffset;
+    if (postOffset === null) return;
+
     const commentCount = this.props.post.commentCount;
 
     // Get the range of visible content in the scroll view from the event.
     const timestamp = event.timeStamp;
-    const offset = event.nativeEvent.contentOffset.y;
+    const offset = event.nativeEvent.contentOffset.y - postOffset;
     const viewport = event.nativeEvent.layoutMeasurement.height;
 
     // The viewport height hasn’t been measured yet.
@@ -226,6 +238,18 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
       return {
         visibleRange: {first, last},
       };
+    });
+  };
+
+  /**
+   * When the container’s layout changes we fire this event...
+   */
+  private handleContainerLayout = (event: LayoutChangeEvent) => {
+    const postOffset = event.nativeEvent.layout.y;
+
+    this.setState(prevState => {
+      if (prevState.postOffset === postOffset) return null;
+      return {postOffset};
     });
   };
 
@@ -429,14 +453,14 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     }
 
     return (
-      <>
+      <View onLayout={this.handleContainerLayout}>
         {this.renderFiller(
           this.state.commentChunks,
           this.state.commentHeights,
           this.props.post,
         )}
         {items}
-      </>
+      </View>
     );
   }
 }

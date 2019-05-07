@@ -1,4 +1,4 @@
-import {Color, Font, Shadow, Space} from "../atoms";
+import {Color, Font, Shadow} from "../atoms";
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -21,10 +21,12 @@ import {GroupCache} from "../group/GroupCache";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
+import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
 import {PostVirtualizedComments} from "./PostVirtualizedComments";
 import {Route} from "../router/Route";
 import {Skimmer} from "../cache/Skimmer";
+import {Trough} from "../molecules/Trough";
 import {debounce} from "../utils/debounce";
 
 function Post({
@@ -83,6 +85,8 @@ function Post({
           }
         }}
       >
+        <PostContent postID={post.id} />
+        <Trough title="Comments" />
         <PostVirtualizedComments
           post={post}
           comments={comments}

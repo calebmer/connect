@@ -5,7 +5,6 @@ import {AccountCache} from "../account/AccountCache";
 import {PostCache} from "./PostCache";
 import {PostID} from "@connect/api-client";
 import React from "react";
-import {Trough} from "../molecules/Trough";
 import {communicateTime} from "../utils/communicateTime";
 import {useCache} from "../cache/Cache";
 
@@ -30,7 +29,6 @@ function PostContent({postID}: {postID: PostID}) {
       <View style={styles.content}>
         <BodyText selectable>{post.content}</BodyText>
       </View>
-      <Trough title="Comments" />
     </>
   );
 }
