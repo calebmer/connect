@@ -2,10 +2,14 @@
 // `SecureStorage` instead! https://docs.expo.io/versions/v32.0.0/sdk/securestore/
 
 import {APIClient, AccessToken, RefreshToken} from "@connect/api-client";
-import AsyncStorage from "@react-native-community/async-storage";
 import {NativeModules} from "react-native";
 import jwtDecode from "jwt-decode";
 import url from "url";
+
+// NOTE: Yeah, this is weird. Jest freaks out if we try to import `AsyncStorage`
+// so we require it which seems to work.
+const AsyncStorage: (typeof import("@react-native-community/async-storage"))["default"] = require("@react-native-community/async-storage")
+  .default;
 
 /** The URL our API is hosted at. */
 let apiURL = "http://localhost:4000";
@@ -13,9 +17,12 @@ let apiURL = "http://localhost:4000";
 // In development, use the same host as our script for our API. This enables
 // local API development.
 if (__DEV__) {
-  const {protocol, hostname} = url.parse(NativeModules.SourceCode.scriptURL);
-  if (protocol && hostname) {
-    apiURL = `${protocol}//${hostname}:4000`;
+  const scriptURL = NativeModules.SourceCode.scriptURL;
+  if (typeof scriptURL === "string") {
+    const {protocol, hostname} = url.parse(scriptURL);
+    if (protocol && hostname) {
+      apiURL = `${protocol}//${hostname}:4000`;
+    }
   }
 }
 
