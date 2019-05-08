@@ -12,6 +12,7 @@ import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {stall} from "../utils/stall";
 import {useCache} from "../cache/Cache";
+import {unstable_scheduleCallback} from "scheduler";
 
 function GroupItemFeed({
   route,
@@ -62,12 +63,18 @@ function GroupItemFeed({
         .then(done, done);
 
       function done() {
-        // NOTE: On mobile calling `route.push()` will immediately unmount the
-        // component. React will warn us that we tried to update state after
-        // unmounting so only update state if we are mounted.
-        if (isMounted.current) {
-          setSelecting(false);
-        }
+        // Schedule a callback to unselect the item (which starts an animation).
+        // This way we let the post finish rendering before starting the
+        // animation. If we animated while the post was rendering then we’d
+        // probably drop animation frames.
+        unstable_scheduleCallback(() => {
+          // NOTE: On mobile calling `route.push()` will immediately unmount the
+          // component. React will warn us that we tried to update state after
+          // unmounting so only update state if we are mounted.
+          if (isMounted.current) {
+            setSelecting(false);
+          }
+        });
       }
     });
   }
