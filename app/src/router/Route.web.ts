@@ -2,7 +2,11 @@ import {History, Location} from "history";
 import {PathBase, PathPattern, PathVariableProps} from "./Path";
 import React, {ReactElement} from "react";
 import {RouteBase, RouteConfigBase} from "./RouteBase";
-import {unstable_NormalPriority, unstable_scheduleCallback} from "scheduler";
+import {
+  unstable_NormalPriority,
+  unstable_runWithPriority,
+  unstable_scheduleCallback,
+} from "scheduler";
 import {createBrowserHistory} from "history";
 
 // Utility type for removing keys from an object.
@@ -130,14 +134,16 @@ export class Route extends RouteBase {
       // don’t want that behavior since if we change the route on a
       // high-priority click event React will render the new route as a high
       // priority action synchronously.
-      unstable_scheduleCallback(unstable_NormalPriority, () => {
-        // TODO: Implement passing `partialProps` to the new component. Right
-        // now we only use the required props to print the next path.
-        //
-        // Also do this for `_replace()`.
-        history.push(nextRoute.path.print(props as NextProps));
+      unstable_runWithPriority(unstable_NormalPriority, () => {
+        unstable_scheduleCallback(() => {
+          // TODO: Implement passing `partialProps` to the new component. Right
+          // now we only use the required props to print the next path.
+          //
+          // Also do this for `_replace()`.
+          history.push(nextRoute.path.print(props as NextProps));
 
-        resolve();
+          resolve();
+        });
       });
     });
   }
@@ -154,8 +160,10 @@ export class Route extends RouteBase {
     // don’t want that behavior since if we change the route on a high-priority
     // click event React will render the new route as a high priority
     // action synchronously.
-    unstable_scheduleCallback(unstable_NormalPriority, () => {
-      history.goBack();
+    unstable_runWithPriority(unstable_NormalPriority, () => {
+      unstable_scheduleCallback(() => {
+        history.goBack();
+      });
     });
   }
 
@@ -197,12 +205,14 @@ export class Route extends RouteBase {
     // don’t want that behavior since if we change the route on a high-priority
     // click event React will render the new route as a high priority
     // action synchronously.
-    unstable_scheduleCallback(unstable_NormalPriority, () => {
-      // TODO: Implement passing `partialProps` to the new component. Right now
-      // we only use the required props to print the next path.
-      //
-      // Also do this for `_push()`.
-      history.replace(nextRoute.path.print(props as NextProps));
+    unstable_runWithPriority(unstable_NormalPriority, () => {
+      unstable_scheduleCallback(() => {
+        // TODO: Implement passing `partialProps` to the new component. Right now
+        // we only use the required props to print the next path.
+        //
+        // Also do this for `_push()`.
+        history.replace(nextRoute.path.print(props as NextProps));
+      });
     });
   }
 

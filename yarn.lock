@@ -8886,10 +8886,10 @@ react-native-navigation@^2.15.0:
     react-lifecycles-compat "2.0.0"
     tslib "1.9.3"
 
-"react-native-web@npm:@calebmer/react-native-web@0.11.2-patch.8":
-  version "0.11.2-patch.8"
-  resolved "https://registry.yarnpkg.com/@calebmer/react-native-web/-/react-native-web-0.11.2-patch.8.tgz#3f22d434c6ff5feff8765870cbeafb2506111783"
-  integrity sha512-ZJl990IMPBfA+3Cy/B5t93e1LAYC66wQal+lIpx5mif+7c2MhYXIS+W0okuyMaEkHZci59sWugb9h7ItCP4KYA==
+"react-native-web@npm:@calebmer/react-native-web@0.11.2-patch.9":
+  version "0.11.2-patch.9"
+  resolved "https://registry.yarnpkg.com/@calebmer/react-native-web/-/react-native-web-0.11.2-patch.9.tgz#692294432372918c763970e40fa1e4bf4cd828a1"
+  integrity sha512-pNQqYE4diUcQbL5A/ywI1K56hzXvkuFkGzY29AmAWP/qmiPoDCsCLd7UHYoXz/7KkVAt8DMaCG7cCLz202zu5w==
   dependencies:
     array-find-index "^1.0.2"
     create-react-class "^15.6.2"
@@ -9481,14 +9481,6 @@ scheduler@^0.13.3, scheduler@^0.13.6:
   version "0.13.6"
   resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.13.6.tgz#466a4ec332467b31a91b9bf74e5347072e4cd889"
   integrity sha512-IWnObHt413ucAYKsD9J1QShUKkbKLQQHdxRyw73sw4FN26iWr3DY/H34xGPe4nmL1DwXyWmSWmMrA9TfQbE/XQ==
-  dependencies:
-    loose-envify "^1.1.0"
-    object-assign "^4.1.1"
-
-scheduler@^0.14.0:
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.14.0.tgz#b392c23c9c14bfa2933d4740ad5603cc0d59ea5b"
-  integrity sha512-9CgbS06Kki2f4R9FjLSITjZo5BZxPsryiRNyL3LpvrM9WxcVmhlqAOc9E+KQbeI2nqej4JIIbOsfdL51cNb4Iw==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
