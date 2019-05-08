@@ -1,17 +1,11 @@
 import {Color, Font, Shadow, Space} from "../atoms";
 import {
-  LayoutChangeEvent,
-  ScrollEvent,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import {
   PostCommentsCache,
   PostCommentsCacheEntry,
   commentCountMore,
 } from "../comment/CommentCache";
 import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
+import {ScrollEvent, ScrollView, StyleSheet, View} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
@@ -168,41 +162,8 @@ function Post({
   // The first state variable answers the question “is the scroll view
   // scrollable?” The second state variable answers the question “has the
   // user scrolled?”
-  const [jumpButtonAvailable, setJumpButtonAvailable] = useState(false);
+  const jumpButtonAvailable = post.commentCount > commentCountMore;
   const [showJumpButton, setShowJumpButton] = useState(true);
-
-  // Heights we track for our event handlers.
-  const viewHeights = useRef<{scroll: number | null; content: number | null}>({
-    scroll: null,
-    content: null,
-  });
-
-  // Overloaded to support both the `onLayout` event and the
-  // `onContentSizeChange` event.
-  const handleLayout = useCallback(
-    (event: LayoutChangeEvent | number, contentHeight?: number) => {
-      // A bit ugly, granted, but check to see if this is an `onLayout` event
-      // or an `onContentSizeChange` event.
-      if (typeof event === "number") {
-        viewHeights.current.content = contentHeight!;
-      } else {
-        viewHeights.current.scroll = event.nativeEvent.layout.height;
-      }
-
-      // If we have heights for both our content view and our scroll view then
-      // determine if the jump button is available...
-      if (
-        viewHeights.current.scroll !== null &&
-        viewHeights.current.content !== null
-      ) {
-        setJumpButtonAvailable(
-          viewHeights.current.content - viewHeights.current.scroll >
-            showJumpButtonThreshold,
-        );
-      }
-    },
-    [],
-  );
 
   return (
     <View style={styles.background}>
@@ -214,8 +175,6 @@ function Post({
         keyboardDismissMode="interactive"
         scrollEventThrottle={PostVirtualizedComments.scrollEventThrottle}
         onScroll={handleScroll}
-        onLayout={handleLayout}
-        onContentSizeChange={handleLayout}
       >
         <PostContent postID={post.id} />
         <Trough title="Comments" />
