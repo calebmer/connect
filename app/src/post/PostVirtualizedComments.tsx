@@ -15,6 +15,7 @@ import {Comment} from "../comment/Comment";
 import {CommentShimmer} from "../comment/CommentShimmer";
 import {Post} from "@connect/api-client";
 import {Skimmer} from "../cache/Skimmer";
+import {reactSchedulerFlushSync} from "../utils/reactSchedulerFlushSync";
 
 // The number of items to render outside of the viewport range.
 //
@@ -303,6 +304,11 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   };
 
   /**
+   * Is this the first time we are flushing comment heights?
+   */
+  private firstFlushCommentHeights = true;
+
+  /**
    * We wait until we‘ve collected as many comment heights as we can before
    * flushing them to our state.
    */
@@ -314,7 +320,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     const pendingCommentHeights = this.pendingCommentHeights.heights;
     this.pendingCommentHeights = null;
 
-    this.setState(prevState => {
+    function updateState(prevState: State) {
       let newCommentHeights: Array<number | undefined> | undefined;
 
       // Process our pending comment heights...
@@ -365,8 +371,8 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
               currentChunk.height += height;
             }
           } else {
-            // If we do not have a height but we do have a chunk then unset the
-            // chunk. Next time we see a height we’ll want to create a
+            // If we do not have a height but we do have a chunk then unset
+            // the chunk. Next time we see a height we’ll want to create a
             // new chunk.
             if (currentChunk !== undefined) {
               currentChunk = undefined;
@@ -379,7 +385,20 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
           commentChunks: newCommentChunks,
         };
       }
-    });
+    }
+
+    // The first time we flush comment heights from layout we do it
+    // synchronously. Otherwise React will yield to the browser which will
+    // show the comment shimmers to the user which will immediately flash out of
+    // existence when we re-render with the actual comments.
+    //
+    // To avoid the flash of comment shimmers we schedule a synchronous flush.
+    if (this.firstFlushCommentHeights === true) {
+      this.firstFlushCommentHeights = false;
+      reactSchedulerFlushSync(() => this.setState(updateState));
+    } else {
+      this.setState(updateState);
+    }
   }
 
   // Memoize the filler view.
