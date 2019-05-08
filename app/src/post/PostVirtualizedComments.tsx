@@ -68,12 +68,6 @@ type State = {
   visibleRange: RenderRange;
 
   /**
-   * The offset in measurement units of the post content rendered above our list
-   * of comments.
-   */
-  postOffset: number | null;
-
-  /**
    * The heights of all the comments we’ve rendered. Gaps in the comment list
    * (`Skimmer.empty`) are represented with `undefined`.
    */
@@ -128,7 +122,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
 
     this.state = {
       visibleRange: {first, last},
-      postOffset: null,
       commentHeights: [],
       commentChunks: [],
     };
@@ -145,12 +138,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
 
   componentWillUnmount() {
     this.props.onScroll.current = null;
-
-    // If we are unmounting but there are some layouts we were waiting to update
-    // then clear the timeout.
-    if (this.pendingCommentHeights !== null) {
-      clearTimeout(this.pendingCommentHeights.timeoutID);
-    }
   }
 
   componentDidUpdate(_prevProps: Props, prevState: State) {
@@ -180,7 +167,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   private handleScroll = (event: ScrollEvent) => {
     // Skip scroll events if we haven’t gotten a layout event yet. This shouldn’t
     // happen? If it does the next scroll after a layout event will fix it.
-    const postOffset = this.state.postOffset;
+    const postOffset = this.postOffset;
     if (postOffset === null) return;
 
     const commentCount = this.props.post.commentCount;
@@ -271,15 +258,16 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   };
 
   /**
+   * The offset in measurement units of the post content rendered above our list
+   * of comments.
+   */
+  private postOffset: number | null = null;
+
+  /**
    * When the container’s layout changes we fire this event...
    */
   private handleContainerLayout = (event: LayoutChangeEvent) => {
-    const postOffset = event.nativeEvent.layout.y;
-
-    this.setState(prevState => {
-      if (prevState.postOffset === postOffset) return null;
-      return {postOffset};
-    });
+    this.postOffset = event.nativeEvent.layout.y;
   };
 
   /**
@@ -287,7 +275,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
    * comments have layout changes as well.
    */
   private pendingCommentHeights: {
-    timeoutID: number;
     heights: Array<{index: number; height: number}>;
   } | null = null;
 
@@ -305,8 +292,10 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // way if we have, say, five comments which fire their layout events
     // together we’ll only update our state once.
     if (this.pendingCommentHeights === null) {
-      const timeoutID = setTimeout(() => this.flushCommentHeights(), 0);
-      this.pendingCommentHeights = {timeoutID, heights: []};
+      this.pendingCommentHeights = {heights: []};
+      Promise.resolve().then(() => {
+        this.flushCommentHeights();
+      });
     }
 
     // Add the pending comment height.
