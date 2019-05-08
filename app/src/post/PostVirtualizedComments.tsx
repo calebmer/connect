@@ -393,6 +393,8 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // existence when we re-render with the actual comments.
     //
     // To avoid the flash of comment shimmers we schedule a synchronous flush.
+    // This may cause us to drop animation frames, but the tradeoff is worth it.
+    // We’d much rather avoid the flash if we can.
     if (this.firstFlushCommentHeights === true) {
       this.firstFlushCommentHeights = false;
       reactSchedulerFlushSync(() => this.setState(updateState));
@@ -716,13 +718,7 @@ function renderItem(
   const comment = comments[index];
   const lastComment = comments[index - 1];
   const commentHeight = commentHeights[index];
-
-  const style = {
-    position: "absolute" as "absolute",
-    top: getOffset(commentChunks, commentHeights, index),
-    left: 0,
-    right: 0,
-  };
+  const offset = getOffset(commentChunks, commentHeights, index);
 
   // On web, use a `div` directly which is more efficient since we don’t
   // need the extra component.
@@ -732,8 +728,18 @@ function renderItem(
     <React.Fragment key={index}>
       {isComment(comment) && (
         <View
-          style={[style, commentHeight === undefined && {opacity: 0}]}
-          onLayout={event => handleCommentLayout(index, event)}
+          style={{
+            position: "absolute",
+            top: offset,
+            left: 0,
+            right: 0,
+            opacity: commentHeight === undefined ? 0 : 1,
+          }}
+          onLayout={
+            commentHeight === undefined
+              ? event => handleCommentLayout(index, event)
+              : undefined
+          }
         >
           <Comment
             commentID={comment.id}
@@ -742,7 +748,14 @@ function renderItem(
         </View>
       )}
       {(!isComment(comment) || commentHeight === undefined) && (
-        <ViewComponent style={style}>
+        <ViewComponent
+          style={{
+            position: "absolute",
+            top: offset,
+            left: 0,
+            right: 0,
+          }}
+        >
           <CommentShimmer index={index} />
         </ViewComponent>
       )}
