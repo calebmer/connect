@@ -28,11 +28,11 @@ const overscanCount = commentCountMore;
 
 // The number of items we will always render at the beginning of our list to
 // improve perceived performance.
-const leadingCount = 16;
+const leadingCount = 12;
 
 // The number of items we will always render at the end of our list to
 // improve perceived performance.
-const trailingCount = 32;
+const trailingCount = 24;
 
 type Props = {
   /**
