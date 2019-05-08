@@ -15,7 +15,7 @@ import {Comment} from "../comment/Comment";
 import {CommentShimmer} from "../comment/CommentShimmer";
 import {Post} from "@connect/api-client";
 import {Skimmer} from "../cache/Skimmer";
-import {reactSchedulerFlushSync} from "../utils/reactSchedulerFlushSync";
+import {reactSchedulerFlushSync} from "../utils/forks/reactSchedulerFlushSync";
 
 // The number of items to render outside of the viewport range.
 //

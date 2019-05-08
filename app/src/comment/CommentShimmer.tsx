@@ -3,7 +3,7 @@ import React, {ReactElement} from "react";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 import {Comment} from "./Comment";
 import {StyleSheet} from "react-native";
-import {createDivElement} from "../utils/createDivElement";
+import {createDivElement} from "../utils/forks/createDivElement";
 
 /**
  * The type for the data that makes up a comment shimmer.
