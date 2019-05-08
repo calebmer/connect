@@ -17,8 +17,8 @@ export function CommentNewJumpButton({
   scrollViewRef: React.RefObject<ScrollView>;
 }) {
   const translateY = useAnimatedSpring(
-    show ? 0 : CommentNewJumpButton.fullHeight,
-    {tension: 100, friction: 10},
+    show ? 0 : CommentNewJumpButton.fullHeight + 10,
+    {tension: 100, friction: 7},
   );
 
   return (
