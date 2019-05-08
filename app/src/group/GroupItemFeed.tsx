@@ -11,8 +11,8 @@ import {PostID} from "@connect/api-client";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {stall} from "../utils/stall";
-import {useCache} from "../cache/Cache";
 import {unstable_scheduleCallback} from "scheduler";
+import {useCache} from "../cache/Cache";
 
 function GroupItemFeed({
   route,
