@@ -1,4 +1,4 @@
-import {ClientBase, Pool, types as pgTypes} from "pg";
+import {ClientBase, ConnectionConfig, Pool, types as pgTypes} from "pg";
 import {TEST} from "./RunConfig";
 import parseDate from "postgres-date";
 
@@ -10,6 +10,22 @@ if (TEST && !(process.env.PGHOST || "").includes("connect-test-postgres")) {
 }
 
 /**
+ * Gets the Postgres connection configuration for the `pg` module.
+ */
+function getConnectionConfig(): ConnectionConfig {
+  return {
+    // Always connect to Postgres with the `connect_api` role! No matter what
+    // configuration we are given.
+    user: "connect_api",
+
+    // If the port and database are available in environment variables then use
+    // them. Otherwise use our default values.
+    port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : 5000,
+    database: process.env.PGDATABASE || "connect",
+  };
+}
+
+/**
  * A database connection pool. Connecting a new client on every request would be
  * to expensive, but only having one client for our entire server would mean all
  * requests need to be serialized. With a pool we can have a set of connections
@@ -18,16 +34,7 @@ if (TEST && !(process.env.PGHOST || "").includes("connect-test-postgres")) {
  * Don’t use `pool` directly! Instead use the `PGClient.with()` function which
  * automatically handles acquiring and releasing a client.
  */
-const pool = new Pool({
-  // Always connect to Postgres with the `connect_api` role! No matter what
-  // configuration we are given.
-  user: "connect_api",
-
-  // If the port and database are available in environment variables then use
-  // them. Otherwise use our default values.
-  port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : 5000,
-  database: process.env.PGDATABASE || "connect",
-});
+const pool = new Pool(getConnectionConfig());
 
 // Whenever the pool newly connects a client this event is called and we can run
 // some setup commands.
@@ -63,6 +70,8 @@ function parseTimestamp(isoString: string | null): string | null {
 export interface PGClient extends ClientBase {}
 
 export const PGClient = {
+  getConnectionConfig,
+
   /**
    * Executes an action with a Postgres client from our connection pool. Once
    * the action finishes we release the client back to our pool.

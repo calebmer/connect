@@ -4,7 +4,10 @@
 // - A more efficient implementation.
 // - Symbol stamps to avoid SQL injection attacks using JSON.
 //
+// Also takes inspiration from Benjie’s fork, [`pg-sql2`][2].
+//
 // [1]: https://github.com/calebmer/pg-sql
+// [2]: https://github.com/graphile/pg-sql2
 
 import {QueryConfig} from "pg";
 
@@ -213,6 +216,38 @@ sql.join = function join(
  * Empty SQL query.
  */
 sql.empty = sql``;
+
+const trueNode = sql.dangerouslyInjectRawString(`TRUE`);
+const falseNode = sql.dangerouslyInjectRawString(`FALSE`);
+const nullNode = sql.dangerouslyInjectRawString(`NULL`);
+
+/**
+ * If the value is simple will inline it into the query, otherwise will defer
+ * to `sql.value`.
+ *
+ * Ported from [Benjie’s `pg-sql2`][1].
+ *
+ * [1]: https://github.com/graphile/pg-sql2/blob/97e5c17bcb716f70e2021b420dbd5873346074e6/src/index.ts#L232
+ */
+sql.literal = function literal(
+  value: string | number | boolean | null,
+): SQLQuery {
+  if (typeof value === "string" && /^[-a-zA-Z0-9_@!. ]*$/.test(value)) {
+    return sql.dangerouslyInjectRawString(`'${value}'`);
+  } else if (typeof value === "number" && Number.isFinite(value)) {
+    if (Number.isInteger(value)) {
+      return sql.dangerouslyInjectRawString(String(value));
+    } else {
+      return sql.dangerouslyInjectRawString(`'${0 + value}'::float`);
+    }
+  } else if (typeof value === "boolean") {
+    return value ? trueNode : falseNode;
+  } else if (value == null) {
+    return nullNode;
+  } else {
+    return sql.value(value);
+  }
+};
 
 /**
  * Compiles a `SQLQuery` into a query object we can provide to the `pg` module.
