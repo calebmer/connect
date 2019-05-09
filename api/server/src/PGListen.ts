@@ -4,6 +4,7 @@ import {PGClient} from "./PGClient";
 import chalk from "chalk";
 import createDebugger from "debug";
 import {sql} from "./PGSQL";
+import {JSONValue} from "@connect/api-client";
 
 const debug = createDebugger("connect:api:pg:listen");
 
@@ -30,13 +31,18 @@ async function connectClient() {
     if (!notification.channel.startsWith("connect.")) return;
     const channelListeners = listeners.get(notification.channel.slice(8));
     if (channelListeners === undefined) return;
+    if (channelListeners.size === 0) return;
+
+    // Parse the notification payload! We assume it is in the correct format
+    // since we control the database.
+    const payload = JSON.parse(notification.payload!);
 
     channelListeners.forEach(async listener => {
       try {
         // Call the listener with our payload! It is not safe to assume that
         // the listener will never throw. So we need to have some form of
         // asynchronous error handling at the ready.
-        await listener(notification.payload);
+        await listener(payload);
       } catch (error) {
         // TODO: Better error handling. At least record that an error happened
         // in our monitoring software.
@@ -61,10 +67,7 @@ type MaybePromise<T> = T | Promise<T>;
 /**
  * Notification listeners keyed by the channel they listen to.
  */
-const listeners = new Map<
-  string,
-  Set<(payload: string | undefined) => MaybePromise<void>>
->();
+const listeners = new Map<string, Set<(payload: any) => MaybePromise<void>>>();
 
 export const PGListen = {
   /**
@@ -73,19 +76,19 @@ export const PGListen = {
    * If the listener throws an error we have a basic handler to at least report
    * the error.
    */
-  async listen(
-    channel: string,
-    listener: (payload: string | undefined) => MaybePromise<void>,
+  async listen<Payload extends JSONValue>(
+    channel: PGListenChannel<Payload>,
+    listener: (payload: Payload) => MaybePromise<void>,
   ): Promise<() => Promise<void>> {
     // Connect our client that we use for listening to events...
     const client = await connectClient();
 
     // Get all the listeners for this channel. If there are no listeners for
     // this channel then we need to create a new set.
-    let _channelListeners = listeners.get(channel);
+    let _channelListeners = listeners.get(channel.name);
     if (_channelListeners === undefined) {
       _channelListeners = new Set();
-      listeners.set(channel, _channelListeners);
+      listeners.set(channel.name, _channelListeners);
     }
 
     // Hack so that TypeScript remembers that we never set this variable back
@@ -99,7 +102,7 @@ export const PGListen = {
     // We run this first so that if it fails we don’t get into a bad state.
     if (channelListeners.size === 0) {
       const query = sql.compile(
-        sql`LISTEN ${sql.identifier(`connect.${channel}`)}`,
+        sql`LISTEN ${sql.identifier(`connect.${channel.name}`)}`,
       );
       debug(query);
       await client.query(query);
@@ -115,7 +118,7 @@ export const PGListen = {
       // We run this first so that if it fails we don’t get into a bad state.
       if (channelListeners.size === 1) {
         const query = sql.compile(
-          sql`UNLISTEN ${sql.identifier(`connect.${channel}`)}`,
+          sql`UNLISTEN ${sql.identifier(`connect.${channel.name}`)}`,
         );
         debug(query);
         await client.query(query);
@@ -132,16 +135,55 @@ export const PGListen = {
    * This function should be easy to refactor if we ever want to change our
    * realtime backend to something other than Postgres.
    */
-  async notify(
+  async notify<Payload extends JSONValue>(
     ctx: ContextUnauthorized,
-    channel: string,
-    payload?: string,
+    channel: PGListenChannel<Payload>,
+    payload?: Payload,
   ): Promise<void> {
-    const channelQuery = sql.literal(`connect.${channel}`);
+    const channelQuery = sql.literal(`connect.${channel.name}`);
     if (payload === undefined) {
       await ctx.query(sql`SELECT pg_notify(${channelQuery})`);
     } else {
-      await ctx.query(sql`SELECT pg_notify(${channelQuery}, ${payload})`);
+      await ctx.query(
+        sql`SELECT pg_notify(${channelQuery}, ${channel.serialize(payload)})`,
+      );
     }
+  },
+};
+
+/**
+ * A Postgres channel that we can use for distributing realtime events.
+ */
+export type PGListenChannel<Payload extends JSONValue> = {
+  /** The name of our channel. */
+  readonly name: string;
+
+  /**
+   * Serializes a payload for our channel into a string.
+   */
+  serialize(payload: Payload): string;
+
+  /**
+   * Deserializes a serialized payload for our channel. Throws if the string is
+   * in an incorrect format.
+   *
+   * NOTE: Since we completely control the database, we assume that string
+   * payload is always in the correct format. We don’t validate string payloads
+   * since they are trusted.
+   */
+  deserialize(string: string): Payload;
+};
+
+export const PGListenChannel = {
+  /**
+   * Creates a new, typed, channel that we can use for distributing
+   * realtime events.
+   */
+  create<Payload extends JSONValue>(name: string): PGListenChannel<Payload> {
+    return {
+      name,
+      serialize: JSON.stringify,
+      deserialize: JSON.parse,
+    };
   },
 };

@@ -1,14 +1,16 @@
+import {PGListen, PGListenChannel} from "../PGListen";
 import {ContextTest} from "../ContextTest";
-import {PGListen} from "../PGListen";
 
 function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-test("will listen to no notifications", async () => {
-  const logs: Array<string | undefined> = [];
+const testChannel = PGListenChannel.create<string>("test");
 
-  const unlisten = await PGListen.listen("test", payload => {
+test("will listen to no notifications", async () => {
+  const logs: Array<string> = [];
+
+  const unlisten = await PGListen.listen(testChannel, payload => {
     logs.push(payload);
   });
 
@@ -18,15 +20,15 @@ test("will listen to no notifications", async () => {
 });
 
 test("will listen to one notification", async () => {
-  const logs: Array<string | undefined> = [];
+  const logs: Array<string> = [];
 
-  const unlisten = await PGListen.listen("test", payload => {
+  const unlisten = await PGListen.listen(testChannel, payload => {
     logs.push(payload);
   });
 
   await ContextTest.with(async ctx => {
     ctx.withUnauthorized(async ctx => {
-      PGListen.notify(ctx, "test", "foo");
+      PGListen.notify(ctx, testChannel, "foo");
     });
   });
 
@@ -37,16 +39,16 @@ test("will listen to one notification", async () => {
 });
 
 test("will listen to two notifications", async () => {
-  const logs: Array<string | undefined> = [];
+  const logs: Array<string> = [];
 
-  const unlisten = await PGListen.listen("test", payload => {
+  const unlisten = await PGListen.listen(testChannel, payload => {
     logs.push(payload);
   });
 
   await ContextTest.with(async ctx => {
     ctx.withUnauthorized(async ctx => {
-      PGListen.notify(ctx, "test", "foo");
-      PGListen.notify(ctx, "test", "bar");
+      PGListen.notify(ctx, testChannel, "foo");
+      PGListen.notify(ctx, testChannel, "bar");
     });
   });
 
@@ -57,21 +59,21 @@ test("will listen to two notifications", async () => {
 });
 
 test("will listen to two notifications from different contexts", async () => {
-  const logs: Array<string | undefined> = [];
+  const logs: Array<string> = [];
 
-  const unlisten = await PGListen.listen("test", payload => {
+  const unlisten = await PGListen.listen(testChannel, payload => {
     logs.push(payload);
   });
 
   await ContextTest.with(async ctx => {
     ctx.withUnauthorized(async ctx => {
-      PGListen.notify(ctx, "test", "foo");
+      PGListen.notify(ctx, testChannel, "foo");
     });
   });
 
   await ContextTest.with(async ctx => {
     ctx.withUnauthorized(async ctx => {
-      PGListen.notify(ctx, "test", "bar");
+      PGListen.notify(ctx, testChannel, "bar");
     });
   });
 
@@ -82,15 +84,15 @@ test("will listen to two notifications from different contexts", async () => {
 });
 
 test("will not listen to notifications after un-listening", async () => {
-  const logs: Array<string | undefined> = [];
+  const logs: Array<string> = [];
 
-  const unlisten = await PGListen.listen("test", payload => {
+  const unlisten = await PGListen.listen(testChannel, payload => {
     logs.push(payload);
   });
 
   await ContextTest.with(async ctx => {
     ctx.withUnauthorized(async ctx => {
-      PGListen.notify(ctx, "test", "foo");
+      PGListen.notify(ctx, testChannel, "foo");
     });
   });
 
@@ -99,7 +101,7 @@ test("will not listen to notifications after un-listening", async () => {
 
   await ContextTest.with(async ctx => {
     ctx.withUnauthorized(async ctx => {
-      PGListen.notify(ctx, "test", "bar");
+      PGListen.notify(ctx, testChannel, "bar");
     });
   });
 
