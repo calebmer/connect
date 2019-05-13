@@ -10,9 +10,15 @@ import {
   createGroupMember,
   createPost,
 } from "../../TestFactory";
-import {getComment, getPostComments, publishComment} from "../CommentMethods";
+import {
+  getComment,
+  getPostComments,
+  publishComment,
+  watchPostComments,
+} from "../CommentMethods";
 import {ContextTest} from "../../ContextTest";
 import {getPost} from "../PostMethods";
+import {sql} from "../../PGSQL";
 
 describe("getComment", () => {
   test("does not get a comment which does not exist", () => {
@@ -520,6 +526,387 @@ describe("publishComment", () => {
           expect(post!.commentCount).toEqual(3);
         }
       });
+    });
+  });
+});
+
+describe("watchPostComments", () => {
+  function wait(ms: number) {
+    return new Promise<void>(resolve => setTimeout(resolve, ms));
+  }
+
+  test("will throw an error if the account is not authorized to see the post", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      let error: any;
+      try {
+        const unwatch = await watchPostComments(
+          ctx.withSubscription(account.id, () => {
+            throw new Error("Unexpected");
+          }),
+          {postID: post.id},
+        );
+        await unwatch();
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toBeInstanceOf(APIError);
+      expect(error.code).toEqual(APIErrorCode.UNAUTHORIZED);
+    });
+  });
+
+  test("will not throw if the account is authorized to see the post", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account.id,
+        groupID: post.groupID,
+      });
+
+      const unwatch = await watchPostComments(
+        ctx.withSubscription(account.id, () => {
+          throw new Error("Unexpected");
+        }),
+        {postID: post.id},
+      );
+
+      await unwatch();
+    });
+  });
+
+  test("will see a comment published by ourself", () => {
+    return ContextTest.with(async ctx => {
+      const commentID = generateID<CommentID>();
+
+      const account = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account.id,
+        groupID: post.groupID,
+      });
+
+      const logs: Array<CommentID> = [];
+
+      const unwatch = await watchPostComments(
+        ctx.withSubscription(account.id, ({comment}) => {
+          logs.push(comment.id);
+        }),
+        {postID: post.id},
+      );
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test",
+        });
+      });
+
+      await wait(20);
+      await unwatch();
+
+      expect(logs).toEqual([commentID]);
+    });
+  });
+
+  test("will see a comment published by someone else", () => {
+    return ContextTest.with(async ctx => {
+      const commentID = generateID<CommentID>();
+
+      const account1 = await createAccount(ctx);
+      const account2 = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account1.id,
+        groupID: post.groupID,
+      });
+      await createGroupMember(ctx, {
+        accountID: account2.id,
+        groupID: post.groupID,
+      });
+
+      const logs: Array<CommentID> = [];
+
+      const unwatch = await watchPostComments(
+        ctx.withSubscription(account1.id, ({comment}) => {
+          logs.push(comment.id);
+        }),
+        {postID: post.id},
+      );
+
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test",
+        });
+      });
+
+      await wait(20);
+      await unwatch();
+
+      expect(logs).toEqual([commentID]);
+    });
+  });
+
+  test("will see three comments published by someone else", () => {
+    return ContextTest.with(async ctx => {
+      const commentID1 = generateID<CommentID>();
+      const commentID2 = generateID<CommentID>();
+      const commentID3 = generateID<CommentID>();
+
+      const account1 = await createAccount(ctx);
+      const account2 = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account1.id,
+        groupID: post.groupID,
+      });
+      await createGroupMember(ctx, {
+        accountID: account2.id,
+        groupID: post.groupID,
+      });
+
+      const logs: Array<CommentID> = [];
+
+      const unwatch = await watchPostComments(
+        ctx.withSubscription(account1.id, ({comment}) => {
+          logs.push(comment.id);
+        }),
+        {postID: post.id},
+      );
+
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID1,
+          postID: post.id,
+          content: "test 1",
+        });
+      });
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID2,
+          postID: post.id,
+          content: "test 2",
+        });
+      });
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID3,
+          postID: post.id,
+          content: "test 3",
+        });
+      });
+
+      await wait(20);
+      await unwatch();
+
+      expect(logs).toEqual([commentID1, commentID2, commentID3]);
+    });
+  });
+
+  test("will not see a comment after unwatching", () => {
+    return ContextTest.with(async ctx => {
+      const commentID = generateID<CommentID>();
+
+      const account1 = await createAccount(ctx);
+      const account2 = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account1.id,
+        groupID: post.groupID,
+      });
+      await createGroupMember(ctx, {
+        accountID: account2.id,
+        groupID: post.groupID,
+      });
+
+      const logs: Array<CommentID> = [];
+
+      const unwatch = await watchPostComments(
+        ctx.withSubscription(account1.id, ({comment}) => {
+          logs.push(comment.id);
+        }),
+        {postID: post.id},
+      );
+
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test 1",
+        });
+      });
+
+      await wait(20);
+      await unwatch();
+
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: generateID(),
+          postID: post.id,
+          content: "test 2",
+        });
+      });
+
+      await wait(20);
+
+      expect(logs).toEqual([commentID]);
+    });
+  });
+
+  test("will listen twice in parallel and then unlisten", () => {
+    return ContextTest.with(async ctx => {
+      const commentID = generateID<CommentID>();
+
+      const account1 = await createAccount(ctx);
+      const account2 = await createAccount(ctx);
+      const account3 = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account1.id,
+        groupID: post.groupID,
+      });
+      await createGroupMember(ctx, {
+        accountID: account2.id,
+        groupID: post.groupID,
+      });
+      await createGroupMember(ctx, {
+        accountID: account3.id,
+        groupID: post.groupID,
+      });
+
+      const logs1: Array<CommentID> = [];
+      const logs2: Array<CommentID> = [];
+
+      const [unwatch1, unwatch2] = await Promise.all([
+        watchPostComments(
+          ctx.withSubscription(account1.id, ({comment}) => {
+            logs1.push(comment.id);
+          }),
+          {postID: post.id},
+        ),
+        watchPostComments(
+          ctx.withSubscription(account2.id, ({comment}) => {
+            logs2.push(comment.id);
+          }),
+          {postID: post.id},
+        ),
+      ]);
+
+      await ctx.withAuthorized(account3.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test 1",
+        });
+      });
+
+      await wait(20);
+      await unwatch1();
+      await unwatch2();
+
+      await ctx.withAuthorized(account3.id, async ctx => {
+        await publishComment(ctx, {
+          id: generateID(),
+          postID: post.id,
+          content: "test 2",
+        });
+      });
+
+      await wait(20);
+
+      expect(logs1).toEqual([commentID]);
+      expect(logs2).toEqual([commentID]);
+    });
+  });
+
+  test("will not send a comment if an account’s group membership was revoked", () => {
+    return ContextTest.with(async ctx => {
+      const commentID1 = generateID<CommentID>();
+      const commentID2 = generateID<CommentID>();
+
+      const account1 = await createAccount(ctx);
+      const account2 = await createAccount(ctx);
+      const account3 = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account1.id,
+        groupID: post.groupID,
+      });
+      await createGroupMember(ctx, {
+        accountID: account2.id,
+        groupID: post.groupID,
+      });
+      await createGroupMember(ctx, {
+        accountID: account3.id,
+        groupID: post.groupID,
+      });
+
+      const logs1: Array<CommentID> = [];
+      const logs2: Array<CommentID> = [];
+
+      const unwatch1 = await watchPostComments(
+        ctx.withSubscription(account1.id, ({comment}) => {
+          logs1.push(comment.id);
+        }),
+        {postID: post.id},
+      );
+
+      const unwatch2 = await watchPostComments(
+        ctx.withSubscription(account2.id, ({comment}) => {
+          logs2.push(comment.id);
+        }),
+        {postID: post.id},
+      );
+
+      await ctx.withAuthorized(account3.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID1,
+          postID: post.id,
+          content: "test 1",
+        });
+      });
+
+      const {rowCount} = await ctx.query(sql`
+        DELETE FROM group_member
+        WHERE account_id = ${account1.id} AND group_id = ${post.groupID}
+      `);
+      expect(rowCount).toEqual(1);
+
+      await ctx.withAuthorized(account3.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID2,
+          postID: post.id,
+          content: "test 2",
+        });
+      });
+
+      await ctx.withAuthorized(account1.id, async ctx => {
+        const {post: fetchedPost} = await getPost(ctx, {id: post.id});
+        expect(fetchedPost).toEqual(null);
+
+        const {comment} = await getComment(ctx, {id: commentID2});
+        expect(comment).toEqual(null);
+      });
+
+      await wait(20);
+      await unwatch1();
+      await unwatch2();
+
+      expect(logs1).toEqual([commentID1]);
+      expect(logs2).toEqual([commentID1, commentID2]);
     });
   });
 });

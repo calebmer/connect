@@ -1,5 +1,6 @@
 import {ClientBase, ConnectionConfig, Pool, types as pgTypes} from "pg";
 import {TEST} from "./RunConfig";
+import {logError} from "./logError";
 import parseDate from "postgres-date";
 
 // We expect `jest-global-setup.js` to start a temporary test database we can
@@ -46,10 +47,16 @@ pool.on("connect", client => {
 // The pool with emit an error on behalf of any idle clients it contains if a
 // backend error or network partition happens
 pool.on("error", (error, _client) => {
-  console.error("Unexpected error on idle client"); // eslint-disable-line no-console
-  console.error(error); // eslint-disable-line no-console
-  process.exit(1);
+  logError(error);
 });
+
+// In a testing environment, disconnect all the clients in our Pool after
+// all tests have completed.
+if (TEST) {
+  afterAll(async () => {
+    await pool.end();
+  });
+}
 
 // Parse timestamps as an ISO string instead of a JavaScript `Date` object.
 const TIMESTAMPTZ_OID = 1184;

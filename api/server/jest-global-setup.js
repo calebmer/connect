@@ -26,6 +26,7 @@ const migrate = require("@connect/db/scripts/migrate");
 
 const osTempDir = os.tmpdir();
 const tempDirPrefix = "connect-test-postgres-";
+const pipeLogsToConsole = false;
 
 async function initializeFreshDatabase() {
   // Create a new temporary directory.
@@ -60,7 +61,10 @@ async function initializeFreshDatabase() {
       "full_page_writes = off",
       "log_connections = on",
       "log_disconnections = on",
-    ].join("\n") + "\n",
+      pipeLogsToConsole && "log_statement = 'all'",
+    ]
+      .filter(Boolean)
+      .join("\n") + "\n",
   );
 
   // Add a file which marks this directory as freshly created.
@@ -123,7 +127,9 @@ module.exports = async () => {
 
   // Pipe the Postgres process log to a file for later inspection.
   subprocess.stderr.pipe(
-    fs.createWriteStream(path.join(tempDir, "postgres.log")),
+    pipeLogsToConsole
+      ? process.stderr
+      : fs.createWriteStream(path.join(tempDir, "postgres.log")),
   );
 
   // Wait for the database to start up. Retry 5 times waiting 100ms between

@@ -109,9 +109,11 @@ export class Context extends ContextUnauthorized {
         throw new Error("Expected accountID to be a number.");
       }
 
-      // Create our context. We will invalidate it after the action returns.
+      // Create our context. We will invalidate it after the action completes.
       const ctx = new Context(client, accountID);
       try {
+        // The await here is important so that we wait before invalidating
+        // the context!
         return await action(ctx);
       } finally {
         ctx.invalidate();
@@ -128,6 +130,35 @@ export class Context extends ContextUnauthorized {
     super(client);
     this.accountID = accountID;
   }
+}
+
+/**
+ * The context for a subscription. A subscription context does not carry around
+ * a Postgres client unlike `Context` but it allows us to temporarily upgrade
+ * to a `Context`.
+ */
+export class ContextSubscription<Message> {
+  /**
+   * The ID of the authenticated account.
+   */
+  public readonly accountID: AccountID;
+
+  protected constructor(accountID: AccountID) {
+    this.accountID = accountID;
+  }
+
+  /**
+   * Upgrades our subscription context to an authorized `Context` that we can
+   * run database queries against.
+   */
+  withAuthorized<T>(action: (ctx: Context) => Promise<T>): Promise<T> {
+    return Context.withAuthorized(this.accountID, action);
+  }
+
+  /**
+   * Publishes a message to this subscription.
+   */
+  publish(_message: Message): void {}
 }
 
 /**
