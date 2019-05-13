@@ -35,314 +35,316 @@ const getManyProfiles: jest.Mock<
   return {works: true};
 });
 
-test("GET /", async () => {
-  await request(APIServer)
-    .get("/")
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(404, {
-      ok: false,
-      error: {code: APIErrorCode.UNRECOGNIZED_METHOD},
-    });
-});
-
-test("GET /account", async () => {
-  await request(APIServer)
-    .get("/account")
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(404, {
-      ok: false,
-      error: {code: APIErrorCode.UNRECOGNIZED_METHOD},
-    });
-});
-
-test("GET /account/signIn", async () => {
-  await request(APIServer)
-    .get("/account/signIn")
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(405, {
-      ok: false,
-      error: {code: APIErrorCode.BAD_INPUT},
-    });
-  expect(signIn).not.toHaveBeenCalled();
-});
-
-test("POST /account/signIn - without input", async () => {
-  await request(APIServer)
-    .post("/account/signIn")
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(400, {
-      ok: false,
-      error: {code: APIErrorCode.BAD_INPUT},
-    });
-  expect(signIn).not.toHaveBeenCalled();
-});
-
-test("POST /account/signIn - with non-JSON input", async () => {
-  await request(APIServer)
-    .post("/account/signIn")
-    .set("Content-Type", "text/plain")
-    .send("(nope)")
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(400, {
-      ok: false,
-      error: {code: APIErrorCode.BAD_INPUT},
-    });
-  expect(signIn).not.toHaveBeenCalled();
-});
-
-test("POST /account/signIn - with invalid JSON input", async () => {
-  await request(APIServer)
-    .post("/account/signIn")
-    .type("json")
-    .send("(nope)")
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(400, {
-      ok: false,
-      error: {code: APIErrorCode.BAD_INPUT},
-    });
-  expect(signIn).not.toHaveBeenCalled();
-});
-
-test("POST /account/signIn - with string input", async () => {
-  await request(APIServer)
-    .post("/account/signIn")
-    .type("json")
-    .send('"nope"')
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(400, {
-      ok: false,
-      error: {code: APIErrorCode.BAD_INPUT},
-    });
-  expect(signIn).not.toHaveBeenCalled();
-});
-
-test("POST /account/signIn - with incorrect input", async () => {
-  await request(APIServer)
-    .post("/account/signIn")
-    .send({a: 1, b: 2})
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(400, {
-      ok: false,
-      error: {code: APIErrorCode.BAD_INPUT},
-    });
-  expect(signIn).not.toHaveBeenCalled();
-});
-
-test("POST /account/signIn - with semi-incorrect input, missing key", async () => {
-  await request(APIServer)
-    .post("/account/signIn")
-    .send({email: "hello@example.com"})
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(400, {
-      ok: false,
-      error: {code: APIErrorCode.BAD_INPUT},
-    });
-  expect(signIn).not.toHaveBeenCalled();
-});
-
-test("POST /account/signIn - with semi-incorrect input, wrong type", async () => {
-  await request(APIServer)
-    .post("/account/signIn")
-    .send({email: "hello@example.com", password: 42})
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(400, {
-      ok: false,
-      error: {code: APIErrorCode.BAD_INPUT},
-    });
-  expect(signIn).not.toHaveBeenCalled();
-});
-
-test("POST /account/signIn", async () => {
-  await request(APIServer)
-    .post("/account/signIn")
-    .send({email: "hello@example.com", password: "qwerty"})
-    .expect("Content-Type", /json/)
-    .expect(200, {
-      ok: true,
-      data: {works: true},
-    });
-  expect(signIn.mock.calls.length).toBe(1);
-  expect(signIn.mock.calls[0][1]).toEqual({
-    email: "hello@example.com",
-    password: "qwerty",
+describe("HTTP", () => {
+  test("GET /", async () => {
+    await request(APIServer)
+      .get("/")
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(404, {
+        ok: false,
+        error: {code: APIErrorCode.UNRECOGNIZED_METHOD},
+      });
   });
-});
 
-test("POST /account/signIn - with extra input", async () => {
-  await request(APIServer)
-    .post("/account/signIn")
-    .send({email: "hello@example.com", password: "qwerty", extra: 42})
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(400, {
-      ok: false,
-      error: {code: APIErrorCode.BAD_INPUT},
-    });
-  expect(signIn).not.toHaveBeenCalled();
-});
-
-test("POST /account/getCurrentProfile", async () => {
-  await request(APIServer)
-    .post("/account/getCurrentProfile")
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(405, {
-      ok: false,
-      error: {code: APIErrorCode.BAD_INPUT},
-    });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
-});
-
-test("GET /account/getCurrentProfile - without authorization", async () => {
-  await request(APIServer)
-    .get("/account/getCurrentProfile")
-    .send({})
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(401, {
-      ok: false,
-      error: {code: APIErrorCode.UNAUTHORIZED},
-    });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
-});
-
-test("GET /account/getCurrentProfile - incorrect authorization header", async () => {
-  await request(APIServer)
-    .get("/account/getCurrentProfile")
-    .set("Authorization", "Bear foobar")
-    .send({})
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(401, {
-      ok: false,
-      error: {code: APIErrorCode.UNAUTHORIZED},
-    });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
-});
-
-test("GET /account/getCurrentProfile - malformed JWT", async () => {
-  await request(APIServer)
-    .get("/account/getCurrentProfile")
-    .set("Authorization", "Bearer foobar")
-    .send({})
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(401, {
-      ok: false,
-      error: {code: APIErrorCode.UNAUTHORIZED},
-    });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
-});
-
-test("GET /account/getCurrentProfile - bad signature JWT", async () => {
-  const accessToken = jwt.sign({id: 42}, "secret-secret-cats");
-  await request(APIServer)
-    .get("/account/getCurrentProfile")
-    .set("Authorization", `Bearer ${accessToken}`)
-    .send({})
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(401, {
-      ok: false,
-      error: {code: APIErrorCode.UNAUTHORIZED},
-    });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
-});
-
-test("GET /account/getCurrentProfile - expired JWT", async () => {
-  const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "-1d"});
-  await request(APIServer)
-    .get("/account/getCurrentProfile")
-    .set("Authorization", `Bearer ${accessToken}`)
-    .send({})
-    .ok(() => true)
-    .expect("Content-Type", /json/)
-    .expect(401, {
-      ok: false,
-      error: {code: APIErrorCode.ACCESS_TOKEN_EXPIRED},
-    });
-  expect(getCurrentProfile).not.toHaveBeenCalled();
-});
-
-test("GET /account/getCurrentProfile", async () => {
-  const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
-  await request(APIServer)
-    .get("/account/getCurrentProfile")
-    .set("Authorization", `Bearer ${accessToken}`)
-    .send({})
-    .expect("Content-Type", /json/)
-    .expect(200, {
-      ok: true,
-      data: {works: true, accountID: 42},
-    });
-  expect(getCurrentProfile).toHaveBeenCalledTimes(1);
-});
-
-test("GET /account/getCurrentProfile - without input", async () => {
-  const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
-  await request(APIServer)
-    .get("/account/getCurrentProfile")
-    .set("Authorization", `Bearer ${accessToken}`)
-    .expect("Content-Type", /json/)
-    .expect(200, {
-      ok: true,
-      data: {works: true, accountID: 42},
-    });
-  expect(getCurrentProfile).toHaveBeenCalledTimes(1);
-});
-
-test("GET /account/getManyProfiles - with many ids", async () => {
-  const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
-  await request(APIServer)
-    .get("/account/getManyProfiles")
-    .query("ids=1&ids=2&ids=3")
-    .set("Authorization", `Bearer ${accessToken}`)
-    .expect("Content-Type", /json/)
-    .expect(200, {
-      ok: true,
-      data: {works: true},
-    });
-  expect(getManyProfiles).toHaveBeenCalledTimes(1);
-  expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {
-    ids: [1, 2, 3],
+  test("GET /account", async () => {
+    await request(APIServer)
+      .get("/account")
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(404, {
+        ok: false,
+        error: {code: APIErrorCode.UNRECOGNIZED_METHOD},
+      });
   });
-});
 
-test("GET /account/getManyProfiles - with one id", async () => {
-  const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
-  await request(APIServer)
-    .get("/account/getManyProfiles")
-    .query("ids=1")
-    .set("Authorization", `Bearer ${accessToken}`)
-    .expect("Content-Type", /json/)
-    .expect(200, {
-      ok: true,
-      data: {works: true},
-    });
-  expect(getManyProfiles).toHaveBeenCalledTimes(1);
-  expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {ids: [1]});
-});
+  test("GET /account/signIn", async () => {
+    await request(APIServer)
+      .get("/account/signIn")
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(405, {
+        ok: false,
+        error: {code: APIErrorCode.BAD_INPUT},
+      });
+    expect(signIn).not.toHaveBeenCalled();
+  });
 
-test("GET /account/getManyProfiles - with no ids", async () => {
-  const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
-  await request(APIServer)
-    .get("/account/getManyProfiles")
-    .set("Authorization", `Bearer ${accessToken}`)
-    .expect("Content-Type", /json/)
-    .expect(200, {
-      ok: true,
-      data: {works: true},
+  test("POST /account/signIn - without input", async () => {
+    await request(APIServer)
+      .post("/account/signIn")
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(400, {
+        ok: false,
+        error: {code: APIErrorCode.BAD_INPUT},
+      });
+    expect(signIn).not.toHaveBeenCalled();
+  });
+
+  test("POST /account/signIn - with non-JSON input", async () => {
+    await request(APIServer)
+      .post("/account/signIn")
+      .set("Content-Type", "text/plain")
+      .send("(nope)")
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(400, {
+        ok: false,
+        error: {code: APIErrorCode.BAD_INPUT},
+      });
+    expect(signIn).not.toHaveBeenCalled();
+  });
+
+  test("POST /account/signIn - with invalid JSON input", async () => {
+    await request(APIServer)
+      .post("/account/signIn")
+      .type("json")
+      .send("(nope)")
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(400, {
+        ok: false,
+        error: {code: APIErrorCode.BAD_INPUT},
+      });
+    expect(signIn).not.toHaveBeenCalled();
+  });
+
+  test("POST /account/signIn - with string input", async () => {
+    await request(APIServer)
+      .post("/account/signIn")
+      .type("json")
+      .send('"nope"')
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(400, {
+        ok: false,
+        error: {code: APIErrorCode.BAD_INPUT},
+      });
+    expect(signIn).not.toHaveBeenCalled();
+  });
+
+  test("POST /account/signIn - with incorrect input", async () => {
+    await request(APIServer)
+      .post("/account/signIn")
+      .send({a: 1, b: 2})
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(400, {
+        ok: false,
+        error: {code: APIErrorCode.BAD_INPUT},
+      });
+    expect(signIn).not.toHaveBeenCalled();
+  });
+
+  test("POST /account/signIn - with semi-incorrect input, missing key", async () => {
+    await request(APIServer)
+      .post("/account/signIn")
+      .send({email: "hello@example.com"})
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(400, {
+        ok: false,
+        error: {code: APIErrorCode.BAD_INPUT},
+      });
+    expect(signIn).not.toHaveBeenCalled();
+  });
+
+  test("POST /account/signIn - with semi-incorrect input, wrong type", async () => {
+    await request(APIServer)
+      .post("/account/signIn")
+      .send({email: "hello@example.com", password: 42})
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(400, {
+        ok: false,
+        error: {code: APIErrorCode.BAD_INPUT},
+      });
+    expect(signIn).not.toHaveBeenCalled();
+  });
+
+  test("POST /account/signIn", async () => {
+    await request(APIServer)
+      .post("/account/signIn")
+      .send({email: "hello@example.com", password: "qwerty"})
+      .expect("Content-Type", /json/)
+      .expect(200, {
+        ok: true,
+        data: {works: true},
+      });
+    expect(signIn.mock.calls.length).toBe(1);
+    expect(signIn.mock.calls[0][1]).toEqual({
+      email: "hello@example.com",
+      password: "qwerty",
     });
-  expect(getManyProfiles).toHaveBeenCalledTimes(1);
-  expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {ids: []});
+  });
+
+  test("POST /account/signIn - with extra input", async () => {
+    await request(APIServer)
+      .post("/account/signIn")
+      .send({email: "hello@example.com", password: "qwerty", extra: 42})
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(400, {
+        ok: false,
+        error: {code: APIErrorCode.BAD_INPUT},
+      });
+    expect(signIn).not.toHaveBeenCalled();
+  });
+
+  test("POST /account/getCurrentProfile", async () => {
+    await request(APIServer)
+      .post("/account/getCurrentProfile")
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(405, {
+        ok: false,
+        error: {code: APIErrorCode.BAD_INPUT},
+      });
+    expect(getCurrentProfile).not.toHaveBeenCalled();
+  });
+
+  test("GET /account/getCurrentProfile - without authorization", async () => {
+    await request(APIServer)
+      .get("/account/getCurrentProfile")
+      .send({})
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(401, {
+        ok: false,
+        error: {code: APIErrorCode.UNAUTHORIZED},
+      });
+    expect(getCurrentProfile).not.toHaveBeenCalled();
+  });
+
+  test("GET /account/getCurrentProfile - incorrect authorization header", async () => {
+    await request(APIServer)
+      .get("/account/getCurrentProfile")
+      .set("Authorization", "Bear foobar")
+      .send({})
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(401, {
+        ok: false,
+        error: {code: APIErrorCode.UNAUTHORIZED},
+      });
+    expect(getCurrentProfile).not.toHaveBeenCalled();
+  });
+
+  test("GET /account/getCurrentProfile - malformed JWT", async () => {
+    await request(APIServer)
+      .get("/account/getCurrentProfile")
+      .set("Authorization", "Bearer foobar")
+      .send({})
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(401, {
+        ok: false,
+        error: {code: APIErrorCode.UNAUTHORIZED},
+      });
+    expect(getCurrentProfile).not.toHaveBeenCalled();
+  });
+
+  test("GET /account/getCurrentProfile - bad signature JWT", async () => {
+    const accessToken = jwt.sign({id: 42}, "secret-secret-cats");
+    await request(APIServer)
+      .get("/account/getCurrentProfile")
+      .set("Authorization", `Bearer ${accessToken}`)
+      .send({})
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(401, {
+        ok: false,
+        error: {code: APIErrorCode.UNAUTHORIZED},
+      });
+    expect(getCurrentProfile).not.toHaveBeenCalled();
+  });
+
+  test("GET /account/getCurrentProfile - expired JWT", async () => {
+    const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "-1d"});
+    await request(APIServer)
+      .get("/account/getCurrentProfile")
+      .set("Authorization", `Bearer ${accessToken}`)
+      .send({})
+      .ok(() => true)
+      .expect("Content-Type", /json/)
+      .expect(401, {
+        ok: false,
+        error: {code: APIErrorCode.ACCESS_TOKEN_EXPIRED},
+      });
+    expect(getCurrentProfile).not.toHaveBeenCalled();
+  });
+
+  test("GET /account/getCurrentProfile", async () => {
+    const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
+    await request(APIServer)
+      .get("/account/getCurrentProfile")
+      .set("Authorization", `Bearer ${accessToken}`)
+      .send({})
+      .expect("Content-Type", /json/)
+      .expect(200, {
+        ok: true,
+        data: {works: true, accountID: 42},
+      });
+    expect(getCurrentProfile).toHaveBeenCalledTimes(1);
+  });
+
+  test("GET /account/getCurrentProfile - without input", async () => {
+    const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
+    await request(APIServer)
+      .get("/account/getCurrentProfile")
+      .set("Authorization", `Bearer ${accessToken}`)
+      .expect("Content-Type", /json/)
+      .expect(200, {
+        ok: true,
+        data: {works: true, accountID: 42},
+      });
+    expect(getCurrentProfile).toHaveBeenCalledTimes(1);
+  });
+
+  test("GET /account/getManyProfiles - with many ids", async () => {
+    const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
+    await request(APIServer)
+      .get("/account/getManyProfiles")
+      .query("ids=1&ids=2&ids=3")
+      .set("Authorization", `Bearer ${accessToken}`)
+      .expect("Content-Type", /json/)
+      .expect(200, {
+        ok: true,
+        data: {works: true},
+      });
+    expect(getManyProfiles).toHaveBeenCalledTimes(1);
+    expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {
+      ids: [1, 2, 3],
+    });
+  });
+
+  test("GET /account/getManyProfiles - with one id", async () => {
+    const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
+    await request(APIServer)
+      .get("/account/getManyProfiles")
+      .query("ids=1")
+      .set("Authorization", `Bearer ${accessToken}`)
+      .expect("Content-Type", /json/)
+      .expect(200, {
+        ok: true,
+        data: {works: true},
+      });
+    expect(getManyProfiles).toHaveBeenCalledTimes(1);
+    expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {ids: [1]});
+  });
+
+  test("GET /account/getManyProfiles - with no ids", async () => {
+    const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
+    await request(APIServer)
+      .get("/account/getManyProfiles")
+      .set("Authorization", `Bearer ${accessToken}`)
+      .expect("Content-Type", /json/)
+      .expect(200, {
+        ok: true,
+        data: {works: true},
+      });
+    expect(getManyProfiles).toHaveBeenCalledTimes(1);
+    expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {ids: []});
+  });
 });
