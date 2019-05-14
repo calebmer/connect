@@ -1,9 +1,9 @@
+import {APIErrorCode, APISchema, generateID} from "@connect/api-client";
 import {
   detectBrokenConnections,
   initializeServerEventHandlers,
   initializeServerSubscription,
 } from "../ServerWS";
-import {APIErrorCode, APISchema, generateID} from "@connect/api-client";
 import WebSocket from "ws";
 import getPort from "get-port";
 import http from "http";
