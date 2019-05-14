@@ -45,14 +45,14 @@ declare const SubscriptionID: unique symbol;
  * This type is generated from a `SchemaInput` since it is client input sent to
  * the server which means we need to validate it.
  */
-export type APISubscriptionMessageClient = SchemaInputValue<
-  typeof APISubscriptionMessageClient
+export type SubscriptionMessageClient = SchemaInputValue<
+  typeof SubscriptionMessageClient
 >;
 
 /**
  * The input validator for an API client message from the client to the server.
  */
-export const APISubscriptionMessageClient = SchemaInput.union(
+export const SubscriptionMessageClient = SchemaInput.union(
   SchemaInput.object({
     type: SchemaInput.constant("subscribe"),
     id: SchemaInput.string<SubscriptionID>(),
@@ -68,7 +68,7 @@ export const APISubscriptionMessageClient = SchemaInput.union(
 /**
  * A message sent from the server to the client in our subscription protocol.
  */
-export type APISubscriptionMessageServer =
+export type SubscriptionMessageServer =
   | {
       type: "message";
       id: SubscriptionID;
