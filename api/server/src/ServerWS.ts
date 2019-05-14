@@ -22,13 +22,33 @@ import {
 import {ContextSubscription} from "./Context";
 import {ServerSubscription} from "./Server";
 import WebSocket from "ws";
+import http from "http";
 import {logError} from "./logError";
 
 /**
- * Initializes a WebSocket server.
+ * The type of our WebSocket server which comes with some extra properties.
  */
-function initializeEventHandlers(server: WebSocket.Server) {
-  server.on("connection", socket => handleConnection(server, socket));
+export type ServerWS = WebSocket.Server & {
+  router: Map<
+    string,
+    {
+      definition: ServerSubscription<JSONObjectValue, JSONObjectValue>;
+      schema: SchemaSubscription<JSONObjectValue, JSONObjectValue>;
+    }
+  >;
+};
+
+/**
+ * Create a new WebSocket server that is capable of handling new connections,
+ * routing, and authentication.
+ */
+function create(server: http.Server): ServerWS {
+  const _serverWS = new WebSocket.Server({server});
+  const serverWS = Object.assign(_serverWS, {router: new Map()});
+
+  serverWS.on("connection", socket => handleConnection(serverWS, socket));
+
+  return serverWS;
 }
 
 /**
@@ -58,7 +78,7 @@ function initializeSubscription<
 /**
  * Handles a brand new connection with a client of our web socket server.
  */
-function handleConnection(server: WebSocket.Server, socket: WebSocket): void {
+function handleConnection(server: ServerWS, socket: WebSocket): void {
   /**
    * All of the subscriptions that are currently active for our socket. We will
    * clean these up when the socket closes.
@@ -137,7 +157,7 @@ function handleConnection(server: WebSocket.Server, socket: WebSocket): void {
   async function handleMessage(message: SubscriptionMessageClient) {
     switch (message.type) {
       case "subscribe": {
-        const subscriptionRoute = (server as any).router.get(message.path);
+        const subscriptionRoute = server.router.get(message.path);
         if (subscriptionRoute === undefined) {
           throw new APIError(APIErrorCode.NOT_FOUND);
         }
@@ -249,7 +269,7 @@ function detectBrokenConnections(server: WebSocket.Server) {
 }
 
 export const ServerWS = {
-  initializeEventHandlers,
+  create,
   initializeSubscription,
   detectBrokenConnections,
 };

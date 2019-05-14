@@ -15,9 +15,7 @@ const server = http.createServer((_req, res) => {
   res.end();
 });
 
-const serverWS = new WebSocket.Server({server});
-
-ServerWS.initializeEventHandlers(serverWS);
+const serverWS = ServerWS.create(server);
 
 ServerWS.initializeSubscription(
   serverWS,

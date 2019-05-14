@@ -29,13 +29,12 @@ function startServer(port: number, callback: () => void) {
   // Create our server objects...
   const serverHTTP = express();
   const server = http.createServer(serverHTTP);
-  const serverWS = new WebSocket.Server({server});
+  const serverWS = ServerWS.create(server);
 
   /// Initialize our server objects...
   ServerHTTP.initializeMiddlewareBefore(serverHTTP);
   initializeServer(serverHTTP, serverWS, [], APIServerDefinition, APISchema);
   ServerHTTP.initializeMiddlewareAfter(serverHTTP);
-  ServerWS.initializeEventHandlers(serverWS);
 
   // Every 30 seconds, ping all of our web socket clients. If a client doesn’t
   // send a “pong” back then the next time we try to ping that client we will
