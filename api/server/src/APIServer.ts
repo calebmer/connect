@@ -1,4 +1,4 @@
-import * as _APIServerDefinition from "./methods";
+import * as _APIServerDefinition from "./def";
 import {
   APISchema,
   SchemaBase,

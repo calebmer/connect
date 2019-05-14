@@ -12,7 +12,7 @@ import {
   signIn,
   signOut,
   signUp,
-} from "../AccountMethods";
+} from "../Account";
 import {AccessTokenGenerator} from "../../AccessToken";
 import {Context} from "../../Context";
 import {ContextTest} from "../../ContextTest";

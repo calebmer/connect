@@ -15,9 +15,9 @@ import {
   getPostComments,
   publishComment,
   watchPostComments,
-} from "../CommentMethods";
+} from "../Comment";
 import {ContextTest} from "../../ContextTest";
-import {getPost} from "../PostMethods";
+import {getPost} from "../Post";
 import {sql} from "../../pg/SQL";
 
 describe("getComment", () => {

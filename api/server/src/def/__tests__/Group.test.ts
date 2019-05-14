@@ -1,6 +1,6 @@
 import {createAccount, createGroup, createGroupMember} from "../../TestFactory";
 import {ContextTest} from "../../ContextTest";
-import {getGroupBySlug} from "../GroupMethods";
+import {getGroupBySlug} from "../Group";
 
 describe("getGroupBySlug", () => {
   test("does not return a group that does not exist", () => {

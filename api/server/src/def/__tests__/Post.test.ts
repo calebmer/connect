@@ -14,7 +14,7 @@ import {
   createGroupMember,
   createPost,
 } from "../../TestFactory";
-import {getGroupPosts, getPost, publishPost} from "../PostMethods";
+import {getGroupPosts, getPost, publishPost} from "../Post";
 import {ContextTest} from "../../ContextTest";
 
 describe("getPost", () => {
