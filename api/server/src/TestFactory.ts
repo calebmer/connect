@@ -11,7 +11,7 @@ import {
 } from "@connect/api-client";
 import {ContextTest} from "./ContextTest";
 import {TEST} from "./RunConfig";
-import {sql} from "./PGSQL";
+import {sql} from "./pg/SQL";
 
 // Don’t allow this module to be used outside of a testing environment.
 if (!TEST) {

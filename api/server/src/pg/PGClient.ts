@@ -1,6 +1,6 @@
 import {ClientBase, ConnectionConfig, Pool, types as pgTypes} from "pg";
-import {TEST} from "./RunConfig";
-import {logError} from "./logError";
+import {TEST} from "../RunConfig";
+import {logError} from "../logError";
 import parseDate from "postgres-date";
 
 // We expect `jest-global-setup.js` to start a temporary test database we can

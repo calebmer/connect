@@ -5,7 +5,7 @@ import {
   ContextUnauthorized,
 } from "./Context";
 import {Pool, PoolClient, QueryResult} from "pg";
-import {SQLQuery, sql} from "./PGSQL";
+import {SQLQuery, sql} from "./pg/SQL";
 import {AccountID} from "@connect/api-client";
 import {TEST} from "./RunConfig";
 import createDebugger from "debug";

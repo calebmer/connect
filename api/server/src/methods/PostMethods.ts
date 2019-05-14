@@ -9,8 +9,8 @@ import {
   Range,
 } from "@connect/api-client";
 import {Context} from "../Context";
-import {PGPagination} from "../PGPagination";
-import {sql} from "../PGSQL";
+import {PGPagination} from "../pg/PGPagination";
+import {sql} from "../pg/SQL";
 
 /**
  * Get a single post from our database.

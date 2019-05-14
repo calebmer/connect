@@ -1,6 +1,6 @@
 /* eslint-disable import/first */
 
-jest.mock("../PGClient", () => ({
+jest.mock("../pg/PGClient", () => ({
   PGClient: {with: (action: any) => action({query: () => {}})},
 }));
 jest.mock("../methods");

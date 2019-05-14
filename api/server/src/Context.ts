@@ -1,6 +1,6 @@
 import {APIError, APIErrorCode, AccountID} from "@connect/api-client";
-import {SQLQuery, sql} from "./PGSQL";
-import {PGClient} from "./PGClient";
+import {SQLQuery, sql} from "./pg/SQL";
+import {PGClient} from "./pg/PGClient";
 import {QueryResult} from "pg";
 import createDebugger from "debug";
 

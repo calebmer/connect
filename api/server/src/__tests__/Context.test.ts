@@ -1,6 +1,6 @@
 import {Context, ContextQueryable} from "../Context";
 import {AccountID} from "@connect/api-client";
-import {sql} from "../PGSQL";
+import {sql} from "../pg/SQL";
 
 async function getCurrentAccountID(
   ctx: ContextQueryable,

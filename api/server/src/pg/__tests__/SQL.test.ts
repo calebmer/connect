@@ -1,4 +1,4 @@
-import {sql} from "../PGSQL";
+import {sql} from "../SQL";
 
 test("compiles a template string with only new lines to an empty string", () => {
   expect(

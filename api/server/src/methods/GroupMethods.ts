@@ -1,6 +1,6 @@
 import {Context} from "../Context";
 import {Group} from "@connect/api-client";
-import {sql} from "../PGSQL";
+import {sql} from "../pg/SQL";
 
 /**
  * Gets a group by its slug, but only if the authenticated account is a member

@@ -1,7 +1,7 @@
 import {AccountID} from "@connect/api-client";
 import {ContextQueryable} from "../Context";
 import {ContextTest} from "../ContextTest";
-import {sql} from "../PGSQL";
+import {sql} from "../pg/SQL";
 
 async function getRole(ctx: ContextQueryable): Promise<string> {
   const {

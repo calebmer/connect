@@ -7,8 +7,8 @@ import {
   PostID,
 } from "@connect/api-client";
 import {Context, ContextSubscription} from "../Context";
-import {PGListen, PGListenChannel} from "../PGListen";
-import {sql} from "../PGSQL";
+import {PGListen, PGListenChannel} from "../pg/PGListen";
+import {sql} from "../pg/SQL";
 
 /**
  * Get a single comment from our database.

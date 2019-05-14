@@ -1,10 +1,10 @@
 import {Client} from "pg";
 import {JSONValue} from "@connect/api-client";
 import {PGClient} from "./PGClient";
-import {TEST} from "./RunConfig";
+import {TEST} from "../RunConfig";
 import createDebugger from "debug";
-import {logError} from "./logError";
-import {sql} from "./PGSQL";
+import {logError} from "../logError";
+import {sql} from "./SQL";
 
 const debug = createDebugger("connect:api:pg:listen");
 

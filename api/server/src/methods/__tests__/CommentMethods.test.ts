@@ -18,7 +18,7 @@ import {
 } from "../CommentMethods";
 import {ContextTest} from "../../ContextTest";
 import {getPost} from "../PostMethods";
-import {sql} from "../../PGSQL";
+import {sql} from "../../pg/SQL";
 
 describe("getComment", () => {
   test("does not get a comment which does not exist", () => {

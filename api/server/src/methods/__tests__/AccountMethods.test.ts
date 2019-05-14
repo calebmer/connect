@@ -16,7 +16,7 @@ import {
 import {AccessTokenGenerator} from "../../AccessToken";
 import {Context} from "../../Context";
 import {ContextTest} from "../../ContextTest";
-import {sql} from "../../PGSQL";
+import {sql} from "../../pg/SQL";
 import uuidV4 from "uuid/v4";
 
 // NOTE: Run our tests concurrently for a nice speed boost.
