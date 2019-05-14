@@ -295,18 +295,7 @@ async function getRequestAuthorization(req: Request): Promise<AccessTokenData> {
   if (!match) throw new APIError(APIErrorCode.UNAUTHORIZED);
 
   // Next verify the JWT token using our shared JWT secret.
-  let accessToken: AccessTokenData;
-  try {
-    accessToken = await AccessTokenGenerator.verify(match[1]);
-  } catch (error) {
-    // If we failed to verify the token then return an unauthorized API
-    // error. If the token was expired then return a token expired
-    // error code.
-    let code = APIErrorCode.UNAUTHORIZED;
-    if (error instanceof jwt.TokenExpiredError)
-      code = APIErrorCode.ACCESS_TOKEN_EXPIRED;
-    throw new APIError(code);
-  }
+  const accessToken = await AccessTokenGenerator.verify(match[1]);
 
   return accessToken;
 }
@@ -350,27 +339,7 @@ function initializeMiddlewareAfter(server: Express) {
       // set one. If the error is an instance of `APIError` then the error is the
       // client’s fault (400) otherwise it’s our fault (500).
       if (!(res.statusCode >= 400 && res.statusCode < 600)) {
-        if (error instanceof APIError) {
-          switch (error.code) {
-            case APIErrorCode.UNAUTHORIZED:
-            case APIErrorCode.ACCESS_TOKEN_EXPIRED:
-              res.statusCode = 401;
-              break;
-            case APIErrorCode.NOT_FOUND:
-              res.statusCode = 404;
-              break;
-            case APIErrorCode.CHAOS_MONKEY:
-              res.statusCode = 500;
-              break;
-            default:
-              res.statusCode = 400;
-              break;
-          }
-        } else {
-          res.statusCode = (error as any).statusCode
-            ? (error as any).statusCode
-            : 500;
-        }
+        res.statusCode = APIError.statusCode(error);
       }
 
       // Setup the API result we will send to our client.

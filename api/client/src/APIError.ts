@@ -86,6 +86,17 @@ export enum APIErrorCode {
  */
 export class APIError extends Error {
   /**
+   * Get the HTTP status code of any error.
+   */
+  public static statusCode(error: unknown): number {
+    if (error instanceof APIError) {
+      return error.statusCode();
+    } else {
+      return (error as any).statusCode ? (error as any).statusCode : 500;
+    }
+  }
+
+  /**
    * Converts any error object to a JSON object that we can send over
    * the network.
    */
@@ -120,6 +131,23 @@ export class APIError extends Error {
     }
 
     this.code = code;
+  }
+
+  /**
+   * The HTTP status code of this error.
+   */
+  public statusCode(): number {
+    switch (this.code) {
+      case APIErrorCode.UNAUTHORIZED:
+      case APIErrorCode.ACCESS_TOKEN_EXPIRED:
+        return 401;
+      case APIErrorCode.NOT_FOUND:
+        return 404;
+      case APIErrorCode.CHAOS_MONKEY:
+        return 500;
+      default:
+        return 400;
+    }
   }
 }
 

@@ -1,8 +1,17 @@
-import {APIErrorCode, APISchema, generateID} from "@connect/api-client";
+import {
+  APIErrorCode,
+  APISchema,
+  AccessToken,
+  AccountID,
+  generateID,
+} from "@connect/api-client";
+import {AccessTokenData, AccessTokenGenerator} from "../AccessToken";
+import {JWT_SECRET} from "../RunConfig";
 import {ServerWS} from "../ServerWS";
 import WebSocket from "ws";
 import getPort from "get-port";
 import http from "http";
+import jwt from "jsonwebtoken";
 
 const watchPostCommentsUnsubscribe = jest.fn(async () => {});
 
@@ -45,9 +54,20 @@ afterAll(async () => {
   });
 });
 
+const accountID = 42 as AccountID;
+const accessTokenData: AccessTokenData = {id: accountID};
+let accessToken: AccessToken;
+
+// Generate a default access token that we can use in our tests.
+beforeAll(async () => {
+  accessToken = await AccessTokenGenerator.generate(accessTokenData);
+});
+
 function createWebSocketClient(done: jest.DoneCallback): WebSocket {
   const port = (server.address() as any).port;
-  const socket = new WebSocket(`ws://localhost:${port}`);
+  const socket = new WebSocket(
+    `ws://localhost:${port}?access_token=${accessToken}`,
+  );
 
   // When an error occurs, implicitly call our “done” callback with an error.
   socket.on("error", error => {
@@ -66,7 +86,13 @@ const openSockets: Array<WebSocket> = [];
 // a bit after closing to make sure all the asynchronous work that happens
 // after closing truly runs.
 afterEach(async () => {
-  openSockets.forEach(socket => socket.close());
+  openSockets.forEach(socket => {
+    try {
+      socket.close();
+    } catch (error) {
+      // ignore errors
+    }
+  });
   openSockets.length = 0;
   await new Promise(resolve => setTimeout(() => resolve(), 10));
 });
@@ -236,6 +262,29 @@ test("will subscribe to a subscription defined in our schema", done => {
       expect(watchPostComments).toHaveBeenCalledWith(expect.anything(), {
         postID,
       });
+      done();
+    }, 10);
+  });
+});
+
+test("will subscribe to a subscription with the correct authorization", done => {
+  const postID = generateID();
+
+  const socket = createWebSocketClient(done);
+
+  socket.on("open", () => {
+    expect(watchPostComments).toHaveBeenCalledTimes(0);
+    socket.send(
+      JSON.stringify({
+        type: "subscribe",
+        id: generateID(),
+        path: "/comment/watchPostComments",
+        input: {postID},
+      }),
+    );
+    setTimeout(() => {
+      expect(watchPostComments).toHaveBeenCalledTimes(1);
+      expect(watchPostComments.mock.calls[0][0].accountID).toEqual(accountID);
       done();
     }, 10);
   });
@@ -607,4 +656,85 @@ test("will unsubscribe with an unsubscribe message and unsubscribes from the res
       }, 10);
     }, 10);
   });
+});
+
+test("will error if no access token was provided", done => {
+  const port = (server.address() as any).port;
+  const socket = new WebSocket(`ws://localhost:${port}`);
+  openSockets.push(socket);
+
+  socket.on("error", error => {
+    expect(error.message).toMatch("401");
+    done();
+  });
+});
+
+test("will error if a poorly formatted access token was provided", done => {
+  const port = (server.address() as any).port;
+  const socket = new WebSocket(`ws://localhost:${port}?access_token=test`);
+  openSockets.push(socket);
+
+  socket.on("error", error => {
+    expect(error.message).toMatch("401");
+    done();
+  });
+});
+
+test("will error if an access token with the wrong signature was provided", done => {
+  jwt.sign(accessTokenData, "kittens", (error, accessToken) => {
+    if (error) return done(error);
+
+    const port = (server.address() as any).port;
+    const socket = new WebSocket(
+      `ws://localhost:${port}?access_token=${accessToken}`,
+    );
+    openSockets.push(socket);
+
+    socket.on("error", error => {
+      expect(error.message).toMatch("401");
+      done();
+    });
+  });
+});
+
+test("will succeed if a good access token was provided", done => {
+  jwt.sign(accessTokenData, JWT_SECRET, (error, accessToken) => {
+    if (error) return done(error);
+
+    const port = (server.address() as any).port;
+    const socket = new WebSocket(
+      `ws://localhost:${port}?access_token=${accessToken}`,
+    );
+    openSockets.push(socket);
+
+    socket.on("error", error => {
+      done(error);
+    });
+
+    socket.on("open", () => {
+      done();
+    });
+  });
+});
+
+test("will fail if the access token expired", done => {
+  jwt.sign(
+    accessTokenData,
+    JWT_SECRET,
+    {expiresIn: "-1h"},
+    (error, accessToken) => {
+      if (error) return done(error);
+
+      const port = (server.address() as any).port;
+      const socket = new WebSocket(
+        `ws://localhost:${port}?access_token=${accessToken}`,
+      );
+      openSockets.push(socket);
+
+      socket.on("error", error => {
+        expect(error.message).toMatch("401");
+        done();
+      });
+    },
+  );
 });
