@@ -7,8 +7,6 @@
 -- `connect_api` to opt-into a different set of permissions. That way we don’t
 -- accidentally give our API access to private data in _every_ API method. Only
 -- the methods which opt-into another role.
---
--- TODO: Test this
 CREATE ROLE connect_api LOGIN NOINHERIT;
 
 -- Our API will use this role when authenticating users. This role has very

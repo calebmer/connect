@@ -29,9 +29,6 @@ export class Cache<Key extends string | number, Data> {
    * growing! We should add a way to garbage collect unused entries. Maybe
    * an [LRU cache algorithm][1]?
    *
-   * **TODO:** We should be able to subscribe to changes via a WebSocket on the
-   * server. So when an entry in our cache changes we can update our UI.
-   *
    * [1]: https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)
    */
   private readonly entries = new Map<Key, Mutable<Async<Data>>>();

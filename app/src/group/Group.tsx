@@ -94,14 +94,6 @@ function Group({
   // All the section data that our list will render. Memoized to avoid
   // unnecessary calculations in the virtualized list.
   const sections = useMemo(() => {
-    // TODO:
-    // const inboxSection: SectionListData<InboxItem> = {
-    //   title: "Inbox",
-    //   data: MockData.inbox,
-    //   keyExtractor: item => String(item.id),
-    //   renderItem: ({item}) => <GroupInboxItem item={item} />,
-    // };
-
     // The feed section of our `<SectionList>`. Contains all the posts from the
     // group in reverse chronological order.
     const feedSection: SectionListData<GroupPostsCacheEntry> = {
@@ -127,6 +119,9 @@ function Group({
       <Animated.View
         // TODO: Scale background only instead of background and text? Only do
         // this when we have a background image to test against.
+        //
+        // TODO: Scale and translate. We can translate the banner down while
+        // scaling so it needs to grow less.
         style={[styles.banner, {transform: [{scale: bannerScale}]}]}
       >
         <GroupBanner group={group} />

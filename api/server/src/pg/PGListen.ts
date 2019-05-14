@@ -58,8 +58,6 @@ async function actuallyConnectClient(): Promise<Client> {
         // asynchronous error handling at the ready.
         await listener(payload);
       } catch (error) {
-        // TODO: Better error handling. At least record that an error happened
-        // in our monitoring software.
         logError(error);
       }
     });

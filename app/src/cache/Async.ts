@@ -176,23 +176,6 @@ export function useAsyncWithPrev<Value>(
 }
 
 /**
- * Toggles between `null` and `Value` depending on whether the async value is
- * pending or resolved respectively. If the promise rejects then we will
- * synchronously throw an error.
- *
- * TODO: better name
- */
-export function useAsyncWithToggle<Value>(
-  asyncValue: Async<Value>,
-): Value | null {
-  // Re-render our component whenever the async value changes from a pending
-  // state to a resolved or rejected state.
-  const value = useAsyncForceUpdate(asyncValue);
-
-  return value instanceof Promise ? null : value;
-}
-
-/**
  * Force updates the component when the async value transitions from pending to
  * either resolved or rejected. Useful for building `Async` hooks that depend
  * on the component re-rendering when our async state changes.

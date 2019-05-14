@@ -12,9 +12,6 @@ import {useCache} from "../cache/Cache";
 import {useCurrentAccount} from "../account/AccountCache";
 import {useKeyboardHeight} from "../utils/useKeyboardHeight";
 
-// TODO: Make this actually usable on mobile web. I’ll probably have to use
-// content editable since the default React Native Web `<TextInput>` does
-// not grow...
 export function PostNewMobile({
   route,
   groupSlug,
