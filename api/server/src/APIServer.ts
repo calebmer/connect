@@ -6,18 +6,9 @@ import {
   SchemaNamespace,
 } from "@connect/api-client";
 import {Server, ServerNamespace} from "./Server";
-import {
-  detectBrokenConnections,
-  initializeServerEventHandlers,
-  initializeServerSubscription,
-} from "./ServerWS";
 import express, {Express} from "express";
-import {
-  initializeServerMethod,
-  initializeServerMethodUnauthorized,
-  initializeServerMiddlewareAfter,
-  initializeServerMiddlewareBefore,
-} from "./ServerHTTP";
+import {ServerHTTP} from "./ServerHTTP";
+import {ServerWS} from "./ServerWS";
 import WebSocket from "ws";
 import http from "http";
 
@@ -41,16 +32,16 @@ function startServer(port: number, callback: () => void) {
   const serverWS = new WebSocket.Server({server});
 
   /// Initialize our server objects...
-  initializeServerMiddlewareBefore(serverHTTP);
+  ServerHTTP.initializeMiddlewareBefore(serverHTTP);
   initializeServer(serverHTTP, serverWS, [], APIServerDefinition, APISchema);
-  initializeServerMiddlewareAfter(serverHTTP);
-  initializeServerEventHandlers(serverWS);
+  ServerHTTP.initializeMiddlewareAfter(serverHTTP);
+  ServerWS.initializeEventHandlers(serverWS);
 
   // Every 30 seconds, ping all of our web socket clients. If a client doesn’t
   // send a “pong” back then the next time we try to ping that client we will
   // instead terminate the client.
   setInterval(() => {
-    detectBrokenConnections(serverWS);
+    ServerWS.detectBrokenConnections(serverWS);
   }, 30 * 1000);
 
   // Start listening to our API server on the right port!
@@ -81,21 +72,21 @@ function initializeServer(
         schema,
       );
     case SchemaKind.METHOD:
-      return initializeServerMethod(
+      return ServerHTTP.initializeMethod(
         serverHTTP,
         path,
         definition as any,
         schema,
       );
     case SchemaKind.METHOD_UNAUTHORIZED:
-      return initializeServerMethodUnauthorized(
+      return ServerHTTP.initializeMethodUnauthorized(
         serverHTTP,
         path,
         definition as any,
         schema,
       );
     case SchemaKind.SUBSCRIPTION:
-      return initializeServerSubscription(
+      return ServerWS.initializeSubscription(
         serverWS,
         path,
         definition as any,

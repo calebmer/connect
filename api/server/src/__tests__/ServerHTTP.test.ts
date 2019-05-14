@@ -1,11 +1,6 @@
 import {APIErrorCode, APISchema} from "@connect/api-client";
-import {
-  initializeServerMethod,
-  initializeServerMethodUnauthorized,
-  initializeServerMiddlewareAfter,
-  initializeServerMiddlewareBefore,
-} from "../ServerHTTP";
 import {JWT_SECRET} from "../RunConfig";
+import {ServerHTTP} from "../ServerHTTP";
 import express from "express";
 import getPort from "get-port";
 import http from "http";
@@ -36,30 +31,30 @@ const getManyProfiles = jest.fn(
 const serverHTTP = express();
 const server = http.createServer(serverHTTP);
 
-initializeServerMiddlewareBefore(serverHTTP);
+ServerHTTP.initializeMiddlewareBefore(serverHTTP);
 
-initializeServerMethodUnauthorized(
+ServerHTTP.initializeMethodUnauthorized(
   serverHTTP,
   ["account", "signIn"],
   signIn,
   APISchema.schemas.account.schemas.signIn,
 );
 
-initializeServerMethod(
+ServerHTTP.initializeMethod(
   serverHTTP,
   ["account", "getCurrentProfile"],
   getCurrentProfile,
   APISchema.schemas.account.schemas.getCurrentProfile,
 );
 
-initializeServerMethod(
+ServerHTTP.initializeMethod(
   serverHTTP,
   ["account", "getManyProfiles"],
   getManyProfiles,
   APISchema.schemas.account.schemas.getManyProfiles,
 );
 
-initializeServerMiddlewareAfter(serverHTTP);
+ServerHTTP.initializeMiddlewareAfter(serverHTTP);
 
 const request = supertest(server);
 

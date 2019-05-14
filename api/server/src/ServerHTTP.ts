@@ -32,10 +32,10 @@ import morgan from "morgan";
 
 /**
  * Adds some middleware to an Express HTTP server at the very beginning. There’s
- * also `initializeServerMiddlewareAfter` which will add middleware that runs
+ * also `initializeMiddlewareAfter` which will add middleware that runs
  * after any other middleware.
  */
-export function initializeServerMiddlewareBefore(server: Express) {
+function initializeMiddlewareBefore(server: Express) {
   server.set("x-powered-by", false);
   server.set("etag", false);
 
@@ -64,7 +64,7 @@ const authorizationHeaderRegex = /^\s*bearer\s+([a-z0-9\-._~+/]+=*)\s*$/i;
 /**
  * Initializes the server with a method that does not need authorization.
  */
-export function initializeServerMethod<
+function initializeMethod<
   Input extends JSONObjectValue,
   Output extends JSONObjectValue
 >(
@@ -93,7 +93,7 @@ export function initializeServerMethod<
 /**
  * Initializes the server with a method that does not need authorization.
  */
-export function initializeServerMethodUnauthorized<
+function initializeMethodUnauthorized<
   Input extends JSONObjectValue,
   Output extends JSONObjectValue
 >(
@@ -313,10 +313,10 @@ async function getRequestAuthorization(req: Request): Promise<AccessTokenData> {
 
 /**
  * Adds some middleware to an Express HTTP server at the very end. There’s also
- * `initializeServerMiddlewareBefore` which will add middleware that runs before
+ * `initializeMiddlewareBefore` which will add middleware that runs before
  * any other middleware.
  */
-export function initializeServerMiddlewareAfter(server: Express) {
+function initializeMiddlewareAfter(server: Express) {
   // Add a fallback handler for any unrecognized method.
   server.use((_req: Request, res: Response) => {
     res.statusCode = 404;
@@ -384,3 +384,10 @@ export function initializeServerMiddlewareAfter(server: Express) {
     },
   );
 }
+
+export const ServerHTTP = {
+  initializeMiddlewareBefore,
+  initializeMethod,
+  initializeMethodUnauthorized,
+  initializeMiddlewareAfter,
+};
