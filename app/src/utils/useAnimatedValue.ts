@@ -1,6 +1,5 @@
 import {Animated, Platform} from "react-native";
 import {useEffect, useRef} from "react";
-import {unstable_scheduleCallback} from "scheduler";
 
 /**
  * Creates a new `Animated.Value` to be used in React Native animations. The
