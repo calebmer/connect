@@ -193,8 +193,7 @@ function buildClientMethod<
       init.signal = options.signal;
     }
 
-    // All methods are executed with a `POST` request. HTTP semantics don’t
-    // matter a whole lot to our API.
+    // Actually execute our request!
     const response = await fetch(url, init);
 
     // Parse the response body as JSON. We trust our server to return the
@@ -203,6 +202,11 @@ function buildClientMethod<
 
     // If the response is ok then return our response data. If the response is
     // not ok then throw a new `APIError` with the error code.
+    //
+    // Note how we don’t look at the HTTP status code. Although we expect that
+    // our API will always use a 200 status code when responding with `ok: true`
+    // and a status code greater than or equal to 400 when responding
+    // with `ok: false`.
     if (result.ok) {
       return result.data;
     } else {
