@@ -27,14 +27,14 @@ import {logError} from "./logError";
 /**
  * Initializes a WebSocket server.
  */
-export function initializeServerEventHandlers(server: WebSocket.Server) {
+function initializeEventHandlers(server: WebSocket.Server) {
   server.on("connection", socket => handleConnection(server, socket));
 }
 
 /**
  * Initializes the websocket server with a subscription.
  */
-export function initializeServerSubscription<
+function initializeSubscription<
   Input extends JSONObjectValue,
   Message extends JSONObjectValue
 >(
@@ -232,7 +232,7 @@ function handleConnection(server: WebSocket.Server, socket: WebSocket): void {
  * we haven’t received a pong back by the time this runs again then we assume
  * the socket is broken and terminate it.
  */
-export function detectBrokenConnections(server: WebSocket.Server) {
+function detectBrokenConnections(server: WebSocket.Server) {
   server.clients.forEach(socket => {
     // If the socket is not alive then terminate it. We should get a pong
     // request back which will mark our socket as alive.
@@ -247,3 +247,9 @@ export function detectBrokenConnections(server: WebSocket.Server) {
     socket.ping();
   });
 }
+
+export const ServerWs = {
+  initializeEventHandlers,
+  initializeSubscription,
+  detectBrokenConnections,
+};
