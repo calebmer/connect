@@ -248,7 +248,7 @@ function detectBrokenConnections(server: WebSocket.Server) {
   });
 }
 
-export const ServerWs = {
+export const ServerWS = {
   initializeEventHandlers,
   initializeSubscription,
   detectBrokenConnections,

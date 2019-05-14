@@ -1,5 +1,5 @@
 import {APIErrorCode, APISchema, generateID} from "@connect/api-client";
-import {ServerWs} from "../ServerWS";
+import {ServerWS} from "../ServerWS";
 import WebSocket from "ws";
 import getPort from "get-port";
 import http from "http";
@@ -17,9 +17,9 @@ const server = http.createServer((_req, res) => {
 
 const serverWS = new WebSocket.Server({server});
 
-ServerWs.initializeEventHandlers(serverWS);
+ServerWS.initializeEventHandlers(serverWS);
 
-ServerWs.initializeSubscription(
+ServerWS.initializeSubscription(
   serverWS,
   ["comment", "watchPostComments"],
   watchPostComments,
@@ -85,7 +85,7 @@ test("will ping the client at some interval", done => {
   const socket = createWebSocketClient(done);
 
   socket.on("open", () => {
-    ServerWs.detectBrokenConnections(serverWS);
+    ServerWS.detectBrokenConnections(serverWS);
   });
 
   let first = true;
@@ -95,7 +95,7 @@ test("will ping the client at some interval", done => {
       first = false;
       // Wait for the pong to send...
       setTimeout(() => {
-        ServerWs.detectBrokenConnections(serverWS);
+        ServerWS.detectBrokenConnections(serverWS);
       }, 10);
     } else {
       done();
@@ -111,11 +111,11 @@ test("will clean up broken connections that don’t respond to pings", done => {
 
   socket.on("open", () => {
     expect(serverWS.clients.size).toEqual(1);
-    ServerWs.detectBrokenConnections(serverWS);
+    ServerWS.detectBrokenConnections(serverWS);
     expect(serverWS.clients.size).toEqual(1);
     setTimeout(() => {
       expect(serverWS.clients.size).toEqual(1);
-      ServerWs.detectBrokenConnections(serverWS);
+      ServerWS.detectBrokenConnections(serverWS);
       setTimeout(() => {
         expect(serverWS.clients.size).toEqual(0);
         done();
