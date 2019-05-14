@@ -249,9 +249,8 @@ class ContextTestSubscription<Message> extends ContextSubscription<Message> {
     accountID: AccountID,
     publish: (message: Message) => void,
   ) {
-    super(accountID);
+    super(accountID, publish);
     this.ctx = ctx;
-    this.publish = publish;
   }
 
   withAuthorized<T>(action: (ctx: Context) => Promise<T>): Promise<T> {

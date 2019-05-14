@@ -7,12 +7,12 @@ export class SchemaInput<Value extends JSONValue> {
   /**
    * Returns true if the value is indeed a value expected by this `SchemaInput`.
    */
-  readonly validate: (value: unknown) => value is Value;
+  readonly validate: (value: JSONValue) => value is Value;
 
   /** An optional variant of this `SchemaInput`. */
   private _optional: SchemaInput<Value | null> | undefined = undefined;
 
-  constructor(validate: (value: unknown) => value is Value) {
+  constructor(validate: (value: JSONValue) => value is Value) {
     this.validate = validate;
   }
 
@@ -31,6 +31,10 @@ export class SchemaInput<Value extends JSONValue> {
 
   private static _string = new SchemaInput<string>(
     (value): value is string => typeof value === "string",
+  );
+
+  private static _unknown = new SchemaInput<JSONValue>(
+    (_value): _value is JSONValue => true,
   );
 
   /**
@@ -71,6 +75,13 @@ export class SchemaInput<Value extends JSONValue> {
   }
 
   /**
+   * Any JSON value.
+   */
+  static unknown(): SchemaInput<JSONValue> {
+    return this._unknown;
+  }
+
+  /**
    * Accepts only one of the specified values.
    */
   static enum<Value extends JSONValue>(
@@ -79,6 +90,15 @@ export class SchemaInput<Value extends JSONValue> {
     const valueSet = new Set(values);
     return new SchemaInput<Value>(
       (value): value is Value => valueSet.has(value as any),
+    );
+  }
+
+  /**
+   * Accepts only a literal value exactly equal to the provided value.
+   */
+  static constant<Value extends JSONValue>(value: Value): SchemaInput<Value> {
+    return new SchemaInput<Value>(
+      (otherValue): otherValue is Value => otherValue === value,
     );
   }
 
@@ -130,6 +150,30 @@ export class SchemaInput<Value extends JSONValue> {
       this._optional = schema;
     }
     return this._optional;
+  }
+
+  /**
+   * If any of the provided schemas match then we validate the value. In the
+   * worst case we will do a linear search through all the possible schemas.
+   *
+   * **NOTE:** We might be able to use a “sentinel” property like `type: "foo"`
+   * to optimize this from O(n) to O(1). This would improve the performance of
+   * large tagged unions.
+   *
+   * **NOTE:** The type signature is written a little awkwardly to infer the
+   * correct type which is a union of all the array elements.
+   */
+  static union<Schemas extends Array<SchemaInput<JSONValue>>>(
+    ...schemas: Schemas
+  ): SchemaInput<SchemaInputValue<Schemas[number]>> {
+    return new SchemaInput(
+      (value): value is any => {
+        for (let i = 0; i < schemas.length; i++) {
+          if (schemas[i].validate(value)) return true;
+        }
+        return false;
+      },
+    );
   }
 }
 

@@ -95,7 +95,10 @@ module.exports = {
         // since it can understand reads/writes.
         "no-undef": "off",
         "no-unused-vars": "off",
+
         "consistent-return": "off",
+
+        "no-dupe-class-members": "off", // TypeScript allows overloaded class methods.
       },
     },
   ],

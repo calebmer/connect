@@ -81,6 +81,30 @@ export const Schema = {
       output,
     };
   },
+
+  /**
+   * Creates a new schema subscription. A subscription provides the ability for
+   * the client to receive messages in realtime.
+   */
+  subscription<
+    Inputs extends {readonly [key: string]: SchemaInput<JSONValue>},
+    Message extends JSONObjectValue
+  >({
+    input,
+    message,
+  }: {
+    input: Inputs;
+    message: SchemaOutput<Message>;
+  }): SchemaSubscription<
+    {readonly [Key in keyof Inputs]: SchemaInputValue<Inputs[Key]>},
+    Message
+  > {
+    return {
+      kind: SchemaKind.SUBSCRIPTION,
+      input: SchemaInput.object(input),
+      message,
+    };
+  },
 };
 
 /**
@@ -93,7 +117,8 @@ export const Schema = {
 export type SchemaBase =
   | SchemaNamespace<{readonly [key: string]: SchemaBase}>
   | SchemaMethod<JSONObjectValue, JSONObjectValue>
-  | SchemaMethodUnauthorized<JSONObjectValue, JSONObjectValue>;
+  | SchemaMethodUnauthorized<JSONObjectValue, JSONObjectValue>
+  | SchemaSubscription<JSONObjectValue, JSONObjectValue>;
 
 /**
  * The kind of a schema.
@@ -102,6 +127,7 @@ export enum SchemaKind {
   NAMESPACE,
   METHOD,
   METHOD_UNAUTHORIZED,
+  SUBSCRIPTION,
 }
 
 /**
@@ -144,4 +170,21 @@ export type SchemaMethodUnauthorized<
   readonly safe: Safe;
   readonly input: SchemaInputObject<Input>;
   readonly output: SchemaOutput<Output>;
+};
+
+/**
+ * A schema subscription provides the ability to send real time events between
+ * the client and server. The input is used when establishing a connection to
+ * determine which, specific, events will be sent to our client.
+ *
+ * Can be implemented as either WebSockets or Server-sent events since a
+ * subscription is intentionally not bi-directional.
+ */
+export type SchemaSubscription<
+  Input extends JSONObjectValue,
+  Message extends JSONObjectValue = never
+> = {
+  readonly kind: SchemaKind.SUBSCRIPTION;
+  readonly input: SchemaInputObject<Input>;
+  readonly message: SchemaOutput<Message>;
 };

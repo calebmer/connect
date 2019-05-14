@@ -135,7 +135,8 @@ export class Context extends ContextUnauthorized {
 /**
  * The context for a subscription. A subscription context does not carry around
  * a Postgres client unlike `Context` but it allows us to temporarily upgrade
- * to a `Context`.
+ * to a `Context`. For this reason, a subscription context can live as long as
+ * we’d like and isn’t scoped to a particular function call.
  */
 export class ContextSubscription<Message> {
   /**
@@ -143,8 +144,14 @@ export class ContextSubscription<Message> {
    */
   public readonly accountID: AccountID;
 
-  protected constructor(accountID: AccountID) {
+  /**
+   * Publishes a message to this subscription.
+   */
+  public readonly publish: (message: Message) => void;
+
+  constructor(accountID: AccountID, publish: (message: Message) => void) {
     this.accountID = accountID;
+    this.publish = publish;
   }
 
   /**
@@ -154,11 +161,6 @@ export class ContextSubscription<Message> {
   withAuthorized<T>(action: (ctx: Context) => Promise<T>): Promise<T> {
     return Context.withAuthorized(this.accountID, action);
   }
-
-  /**
-   * Publishes a message to this subscription.
-   */
-  publish(_message: Message): void {}
 }
 
 /**

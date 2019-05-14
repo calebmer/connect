@@ -86,6 +86,26 @@ export enum APIErrorCode {
  */
 export class APIError extends Error {
   /**
+   * Converts any error object to a JSON object that we can send over
+   * the network.
+   */
+  public static toJSON(
+    error: unknown,
+  ): {code: APIErrorCode; serverStack?: string} {
+    return {
+      // If this is not an API error then we don’t know its code.
+      code: error instanceof APIError ? error.code : APIErrorCode.UNKNOWN,
+
+      // If we are in development mode then include the stack of our error
+      // from the server. This should help in debugging why an error ocurred.
+      serverStack:
+        process.env.NODE_ENV === "development" && error instanceof Error
+          ? error.stack
+          : undefined,
+    };
+  }
+
+  /**
    * The code for this error.
    */
   public readonly code: APIErrorCode;

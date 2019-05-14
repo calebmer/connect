@@ -1,6 +1,7 @@
 export * from "./APIClient";
 export * from "./APIError";
 export * from "./APISchema";
+export * from "./APISubscription";
 export * from "./JSONValue";
 export * from "./generateID";
 export * from "./Schema";

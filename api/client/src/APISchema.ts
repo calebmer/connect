@@ -275,5 +275,24 @@ export const APISchema = Schema.namespace({
         readonly publishedAt: DateTime;
       }>(),
     }),
+
+    /**
+     * Watches the comments being posted in realtime on an individual post. As
+     * input you must specify the particular post ID. As new comments are posted
+     * the subscription will notify any listeners.
+     *
+     * Whenever a client first subscribes we will check to make sure it has
+     * access to the post the client is subscribing to. We currently _won‘t_
+     * close the connection if a client loses their access to a post
+     * while subscribed.
+     */
+    watchPostComments: Schema.subscription({
+      input: {
+        postID: SchemaInput.string<PostID>(),
+      },
+      message: SchemaOutput.t<{
+        readonly comment: Comment;
+      }>(),
+    }),
   }),
 });
