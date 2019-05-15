@@ -1,3 +1,23 @@
+/**
+ * Our web API proxy is mounted on the `/api` route of our website and proxies
+ * traffic to our API server. The API proxy is responsible for converting the
+ * cookies stored by the browser into `Authorization` headers that the
+ * API understands.
+ *
+ * For security, the browser JavaScript code _never_ has access to the access
+ * token for our API. This way an XSS attack will not be able to take over a
+ * user’s account.
+ *
+ * However, we don’t necessarily want our API to speak in cookies since the
+ * native app on iOS and Android does directly store the access token in a
+ * secure place on the mobile device’s disk.
+ *
+ * We take a lot of inspiration for the code of this API proxy
+ * from [`http-proxy`][1].
+ *
+ * [1]: https://github.com/nodejitsu/node-http-proxy
+ */
+
 const url = require("url");
 const http = require("http");
 const cookie = require("cookie");
