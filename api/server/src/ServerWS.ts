@@ -8,6 +8,12 @@
  * subscription endpoint.
  */
 
+// NOTE: These two modules are installed to make the `ws` module faster. By
+// importing them here we can be totally certain that they exist and will be
+// used by the `ws` module.
+import "bufferutil";
+import "utf-8-validate";
+
 import {
   APIError,
   APIErrorCode,

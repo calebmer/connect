@@ -1,7 +1,3 @@
-// NOTE: These two modules are installed to make the `ws` module faster.
-import "bufferutil";
-import "utf-8-validate";
-
 import {APIServer} from "./APIServer";
 import {PORT} from "./RunConfig";
 import chalk from "chalk";

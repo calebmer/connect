@@ -6,6 +6,7 @@
  */
 
 const path = require("path");
+const url = require("url");
 const webpack = require("webpack");
 const errorOverlayMiddleware = require("react-dev-utils/errorOverlayMiddleware");
 const evalSourceMapMiddleware = require("react-dev-utils/evalSourceMapMiddleware");
@@ -56,9 +57,10 @@ module.exports = {
     app.use(errorOverlayMiddleware());
 
     // Add our API proxy to the Webpack Dev Server.
-    const {APIProxy} = require("./lib/APIProxy");
+    const {proxyRequest} = require("./lib/APIProxy");
+    const apiUrl = url.parse("http://localhost:4000");
     app.use("/api", (req, res) => {
-      APIProxy(req, res, req.url);
+      proxyRequest(apiUrl, req, res, req.url);
     });
   },
 };

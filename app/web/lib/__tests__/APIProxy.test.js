@@ -1,19 +1,21 @@
 const url = require("url");
 const http = require("http");
 const jwt = require("jsonwebtoken");
+const WebSocket = require("ws");
 const nock = require("nock");
 const request = require("supertest");
-const {proxyRequest} = require("../APIProxy");
-const {API_URL} = require("../RunConfig");
+const {proxyRequest, proxyUpgrade} = require("../APIProxy");
 
 describe("HTTP", () => {
+  const API_URL = "http://localhost:4000";
+  const apiUrl = url.parse(API_URL);
+
   const APIProxy = http.createServer((req, res) => {
-    proxyRequest(req, res, url.parse(req.url).pathname);
+    proxyRequest(apiUrl, req, res, url.parse(req.url).pathname);
   });
 
-  APIProxy.listen(0);
-
   beforeAll(() => {
+    APIProxy.listen(0);
     nock.disableNetConnect();
     nock.enableNetConnect(`127.0.0.1:${APIProxy.address().port}`);
   });
@@ -753,6 +755,123 @@ describe("HTTP", () => {
         .expect(200);
 
       expect(forwarded).toMatch(/^for=[^;,]+;proto=http$/);
+    });
+  });
+});
+
+describe("WS", () => {
+  const upgradeServer = http.createServer((_req, res) => {
+    res.statusCode = 404;
+    res.end();
+  });
+
+  const targetServer = new WebSocket.Server({
+    server: upgradeServer,
+    verifyClient: ({req}) => !!req.headers.forwarded,
+  });
+
+  const handleConnection = jest.fn(() => {});
+
+  targetServer.on("connection", handleConnection);
+
+  afterEach(async () => {
+    const hasClients = targetServer.clients.size !== 0;
+    if (hasClients) {
+      targetServer.clients.forEach(client => client.close());
+      await new Promise(resolve => setTimeout(() => resolve(), 10));
+    }
+  });
+
+  const proxyServer = http.createServer((_req, res) => {
+    res.statusCode = 404;
+    res.end();
+  });
+
+  let apiUrl;
+  let proxyUrl;
+
+  proxyServer.on("upgrade", (req, res, head) => {
+    proxyUpgrade(apiUrl, req, res, head);
+  });
+
+  beforeAll(() => {
+    upgradeServer.listen(0);
+    proxyServer.listen(0);
+    apiUrl = url.parse(`http://localhost:${upgradeServer.address().port}`);
+    proxyUrl = `ws://localhost:${proxyServer.address().port}`;
+  });
+
+  test("will fail when using a POST request", async () => {
+    await request(proxyServer)
+      .post("/")
+      .set("Connection", "Upgrade")
+      .set("Upgrade", "websocket")
+      .expect(400, "Bad Request");
+  });
+
+  test("will fail when using the wrong `Upgrade` header", async () => {
+    await request(proxyServer)
+      .get("/")
+      .set("Connection", "Upgrade")
+      .set("Upgrade", "yolo")
+      .expect(400, "Bad Request");
+  });
+
+  test("will open a WebSocket connection", done => {
+    const socket = new WebSocket(proxyUrl);
+
+    socket.on("open", () => {
+      expect(handleConnection).toBeCalledTimes(1);
+      done();
+    });
+  });
+
+  test("will open multiple WebSocket connections", done => {
+    const socket1 = new WebSocket(proxyUrl);
+    const socket2 = new WebSocket(proxyUrl);
+    const socket3 = new WebSocket(proxyUrl);
+
+    socket1.on("open", handleOpen);
+    socket2.on("open", handleOpen);
+    socket3.on("open", handleOpen);
+
+    let opens = 0;
+
+    function handleOpen() {
+      opens++;
+      expect(opens).toBeLessThanOrEqual(3);
+      if (opens === 3) {
+        expect(handleConnection).toBeCalledTimes(3);
+        done();
+      }
+    }
+  });
+
+  test("will send WebSocket messages", done => {
+    const socket = new WebSocket(proxyUrl);
+
+    handleConnection.mockImplementation(socket => {
+      socket.on("message", message => {
+        expect(message).toEqual("yolo");
+        done();
+      });
+    });
+
+    socket.on("open", () => {
+      socket.send("yolo");
+    });
+  });
+
+  test("will receive WebSocket messages", done => {
+    const socket = new WebSocket(proxyUrl);
+
+    handleConnection.mockImplementation(socket => {
+      socket.send("yolo");
+    });
+
+    socket.on("message", message => {
+      expect(message).toEqual("yolo");
+      done();
     });
   });
 });
