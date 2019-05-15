@@ -507,6 +507,28 @@ test("fails gracefully if the request fails", async () => {
     .expect(500, {ok: false, error: {code: "UNKNOWN"}});
 });
 
+test("adds a `Forwarded` header to proxied requests", async () => {
+  nock(API_URL)
+    .get("/")
+    .reply(
+      200,
+      function() {
+        return {forwarded: this.req.headers.forwarded};
+      },
+      {"Content-Type": "application/json"},
+    );
+
+  await request(APIProxy)
+    .get("/")
+    .expect("Content-Type", "application/json")
+    .expect(200)
+    .then(response => {
+      expect(response.body).toEqual({
+        forwarded: expect.stringMatching(/^for=[^;,]+$/),
+      });
+    });
+});
+
 describe("/account/signIn", () => {
   test("if successful moves tokens to cookies from body", async () => {
     nock(API_URL)
@@ -546,6 +568,28 @@ describe("/account/signIn", () => {
       .ok(() => true)
       .expect("Content-Type", "application/json")
       .expect(400, {ok: false, error: {code: "SIGN_IN_INCORRECT_PASSWORD"}});
+  });
+
+  test("adds a `Forwarded` header to proxied requests", async () => {
+    nock(API_URL)
+      .post("/account/signIn")
+      .reply(
+        200,
+        function() {
+          return {forwarded: this.req.headers.forwarded};
+        },
+        {"Content-Type": "application/json"},
+      );
+
+    await request(APIProxy)
+      .post("/account/signIn")
+      .expect("Content-Type", "application/json")
+      .expect(200)
+      .then(response => {
+        expect(response.body).toEqual({
+          forwarded: expect.stringMatching(/^for=[^;,]+$/),
+        });
+      });
   });
 });
 
@@ -588,6 +632,28 @@ describe("/account/signUp", () => {
       .ok(() => true)
       .expect("Content-Type", "application/json")
       .expect(400, {ok: false, error: {code: "SIGN_UP_EMAIL_ALREADY_USED"}});
+  });
+
+  test("adds a `Forwarded` header to proxied requests", async () => {
+    nock(API_URL)
+      .post("/account/signUp")
+      .reply(
+        200,
+        function() {
+          return {forwarded: this.req.headers.forwarded};
+        },
+        {"Content-Type": "application/json"},
+      );
+
+    await request(APIProxy)
+      .post("/account/signUp")
+      .expect("Content-Type", "application/json")
+      .expect(200)
+      .then(response => {
+        expect(response.body).toEqual({
+          forwarded: expect.stringMatching(/^for=[^;,]+$/),
+        });
+      });
   });
 });
 
@@ -641,5 +707,27 @@ describe("/account/signOut", () => {
         "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict,refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
       )
       .expect(500, {ok: false, error: {code: "UNKNOWN"}});
+  });
+
+  test("adds a `Forwarded` header to proxied requests", async () => {
+    let forwarded;
+
+    nock(API_URL)
+      .post("/account/signOut")
+      .reply(
+        200,
+        function() {
+          forwarded = this.req.headers.forwarded;
+          return {};
+        },
+        {"Content-Type": "application/json"},
+      );
+
+    await request(APIProxy)
+      .post("/account/signOut")
+      .set("Cookie", "refresh_token=yolo; access_token=swag")
+      .expect(200);
+
+    expect(forwarded).toMatch(/^for=[^;,]+$/);
   });
 });

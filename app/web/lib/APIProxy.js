@@ -142,6 +142,10 @@ function proxyRequest(req, res, pathname) {
       apiRequest.setHeader("Authorization", `Bearer ${accessToken}`);
     }
 
+    // Add the `Forwarded` header to our request so the API server knows who
+    // the request was originally from.
+    apiRequest.setHeader("Forwarded", getForwardedHeader(req));
+
     // Pipe the body we received into the proxy request body.
     req.pipe(apiRequest);
   }
@@ -247,7 +251,10 @@ async function proxySignInRequest(req, res, pathname) {
     // it through.
     const apiResponse = await apiClient.post(pathname, {
       json: false,
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        Forwarded: getForwardedHeader(req),
+      },
       body: req,
     });
 
@@ -329,6 +336,7 @@ async function proxySignOutRequest(req, res) {
     // refresh token may be destroyed.
     if (refreshToken !== undefined) {
       const apiResponse = await apiClient.post("/account/signOut", {
+        headers: {Forwarded: getForwardedHeader(req)},
         body: {refreshToken},
       });
 
@@ -379,4 +387,29 @@ function handleError(res, error) {
     }),
   );
   res.end();
+}
+
+/**
+ * Get the [`Forwarded` header][1] for this request. If one already exists then
+ * we add to it.
+ *
+ * [1]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Forwarded
+ */
+function getForwardedHeader(req) {
+  // Get the new part of the `Forwarded` header.
+  const forwardedFor = req.connection.remoteAddress || req.socket.remoteAddress;
+  const forwardedHead = `for=${forwardedFor}`;
+
+  // Get the old part of the `Forwarded` header.
+  let forwardedTail = req.headers.forwarded;
+  if (Array.isArray(forwardedTail)) {
+    forwardedTail = forwardedTail.join(", ");
+  }
+
+  // Combine the previous forwarded header with the new one.
+  if (forwardedTail != null) {
+    return `${forwardedHead}, ${forwardedTail}`;
+  } else {
+    return forwardedHead;
+  }
 }
