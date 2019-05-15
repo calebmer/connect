@@ -128,6 +128,13 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     };
   }
 
+  /**
+   * Has the browser painted this component yet? True if the browser has. This
+   * is different from whether or not the component has rendered. The component
+   * may render multiple times without a browser paint.
+   */
+  private hasPainted = false;
+
   componentDidMount() {
     // HACK: Set our scroll handler to the mutable ref. This is how we “pass up”
     // our event handler.
@@ -135,6 +142,20 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
 
     // Report the initial visible range before scrolling.
     this.props.onVisibleRangeChange(this.state.visibleRange);
+
+    // We determine whether or not the browser has painted with `setTimeout`.
+    // It’s not perfect but it gets the job done. `setTimeout` schedules a
+    // macro-task which will run after the browser paints. Unlike
+    // `Promise.resolve()` which schedules a micro-task and will run before the
+    // browser paints. `postMessage()` is perhaps a more reliable way to
+    // determine if the browser has painted?
+    //
+    // `componentDidMount()` runs before the browser paints. However,
+    // `useEffect()` will run after the browser paints. (I think? I might
+    // be wrong.)
+    setTimeout(() => {
+      this.hasPainted = true;
+    }, 0);
   }
 
   componentWillUnmount() {
@@ -276,6 +297,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
    * comments have layout changes as well.
    */
   private pendingCommentHeights: {
+    important: boolean;
     heights: Array<{index: number; height: number}>;
   } | null = null;
 
@@ -293,20 +315,31 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // way if we have, say, five comments which fire their layout events
     // together we’ll only update our state once.
     if (this.pendingCommentHeights === null) {
-      this.pendingCommentHeights = {heights: []};
+      this.pendingCommentHeights = {important: false, heights: []};
       Promise.resolve().then(() => {
         this.flushCommentHeights();
       });
     }
 
+    // Should we make this batch of pending comment heights important? The
+    // answer is yes if:
+    //
+    // 1. If the browser has not painted then we don’t want to show a flash of
+    //    unmeasured comments so we will synchronously re-render to avoid
+    //    the flash.
+    //
+    // 2. If the comment is already measured. If a comment changes size then we
+    //    need to immediately re-layout everything. If we let the browser paint
+    //    the new comment then the list will look weird since the comment will
+    //    fill up more or less of its height.
+    this.pendingCommentHeights.important =
+      this.pendingCommentHeights.important ||
+      this.hasPainted === false ||
+      this.state.commentHeights[index] !== undefined;
+
     // Add the pending comment height.
     this.pendingCommentHeights.heights.push({index, height});
   };
-
-  /**
-   * Is this the first time we are flushing comment heights?
-   */
-  private firstFlushCommentHeights = true;
 
   /**
    * We wait until we‘ve collected as many comment heights as we can before
@@ -317,15 +350,15 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     if (this.pendingCommentHeights === null) return;
 
     // Reset our pending comment heights.
-    const pendingCommentHeights = this.pendingCommentHeights.heights;
+    const pendingCommentHeights = this.pendingCommentHeights;
     this.pendingCommentHeights = null;
 
     function updateState(prevState: State) {
       let newCommentHeights: Array<number | undefined> | undefined;
 
       // Process our pending comment heights...
-      for (let i = 0; i < pendingCommentHeights.length; i++) {
-        const {index, height} = pendingCommentHeights[i];
+      for (let i = 0; i < pendingCommentHeights.heights.length; i++) {
+        const {index, height} = pendingCommentHeights.heights[i];
 
         // If the height did not change then do nothing.
         if (prevState.commentHeights[index] === height) continue;
@@ -395,8 +428,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // To avoid the flash of comment shimmers we schedule a synchronous flush.
     // This may cause us to drop animation frames, but the tradeoff is worth it.
     // We’d much rather avoid the flash if we can.
-    if (this.firstFlushCommentHeights === true) {
-      this.firstFlushCommentHeights = false;
+    if (pendingCommentHeights.important === true) {
       reactSchedulerFlushSync(() => this.setState(updateState));
     } else {
       this.setState(updateState);
@@ -735,11 +767,7 @@ function renderItem(
             right: 0,
             opacity: commentHeight === undefined ? 0 : 1,
           }}
-          onLayout={
-            commentHeight === undefined
-              ? event => handleCommentLayout(index, event)
-              : undefined
-          }
+          onLayout={event => handleCommentLayout(index, event)}
         >
           <Comment
             commentID={comment.id}
