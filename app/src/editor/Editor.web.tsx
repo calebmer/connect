@@ -4,8 +4,6 @@ import React, {useCallback, useImperativeHandle, useRef, useState} from "react";
 import {StyleSheet, Text, View} from "react-native";
 import {createElement} from "react-native-web";
 
-declare const document: any;
-
 /**
  * Alright folks, let’s get crazy with our web editor component! Our web editor
  * uses [`contentEditable`][1] which is known to be quite wild in everything
@@ -96,7 +94,7 @@ function Editor(
           // `innerText` property. Getting the inner text from our editor can
           // be expensive. It is O(n) and will trigger a browser reflow if all
           // the content hasn’t been laid out.
-          return (editor.current as any).innerText;
+          return editor.current.innerText;
         } else {
           return "";
         }
@@ -104,7 +102,7 @@ function Editor(
       clearContent() {
         // Remove all the children from our HTML editor element.
         if (editor.current) {
-          const element: any = editor.current;
+          const element = editor.current;
           while (element.firstChild) {
             element.removeChild(element.firstChild);
           }
@@ -116,7 +114,7 @@ function Editor(
       },
       focus() {
         if (editor.current) {
-          (editor.current as any).focus();
+          editor.current.focus();
         }
       },
     }),
@@ -199,6 +197,12 @@ const _Editor = React.forwardRef(Editor);
 export {_Editor as Editor};
 
 /**
+ * Since we override the global `Text` type in this scope, give our DOM text
+ * type a unique name.
+ */
+type DOMText = ReturnType<Document["createTextNode"]>;
+
+/**
  * Is our editor element empty? We use this to determine whether or not we
  * should show the placeholder.
  *
@@ -207,19 +211,23 @@ export {_Editor as Editor};
  * - There are no text nodes with content.
  * - There are no `<br>` elements.
  */
-function isEditorEmpty(node: any): boolean {
+function isEditorEmpty(node: Node): boolean {
   // If there is a `<br>` element then that means we have an empty line in our
   // editor so it is not empty.
   //
   // We want to consider a single `<br>` element in the editor to be an
   // empty editor.
-  if (node.nodeType === 1 && node.tagName === "BR" && !isFirstNode(node)) {
+  if (
+    node.nodeType === 1 &&
+    (node as HTMLElement).tagName === "BR" &&
+    !isFirstNode(node)
+  ) {
     return false;
   }
 
   // Is this a text node with some text content? If so then our editor is
   // not empty.
-  if (node.nodeType === 3 && node.wholeText.length > 0) {
+  if (node.nodeType === 3 && (node as DOMText).wholeText.length > 0) {
     return false;
   }
 
@@ -236,8 +244,11 @@ function isEditorEmpty(node: any): boolean {
 /**
  * Is this the very first node in our content editable?
  */
-function isFirstNode(node: any): boolean {
-  if (node.contentEditable === "true") {
+function isFirstNode(node: Node): boolean {
+  if ((node as HTMLElement).contentEditable === "true") {
+    return true;
+  }
+  if (node.parentNode === null) {
     return true;
   }
   if (node.parentNode.firstChild !== node) {
@@ -255,10 +266,10 @@ function isFirstNode(node: any): boolean {
  * - All the text nodes match `/^\s*$/`.
  * - `<br>` nodes are whitespace so their existence does not change our result.
  */
-function isEditorWhitespaceOnly(node: any): boolean {
+function isEditorWhitespaceOnly(node: Node): boolean {
   // Is this a text node with some text content? If so then our editor is
   // not empty.
-  if (node.nodeType === 3 && !/^\s*$/.test(node.wholeText)) {
+  if (node.nodeType === 3 && !/^\s*$/.test((node as DOMText).wholeText)) {
     return false;
   }
 

@@ -4,8 +4,6 @@ import "./router/AllRoutes";
 import {App} from "./App.web";
 import {AppRegistry} from "react-native";
 
-declare const document: any;
-
 AppRegistry.registerComponent("Connect", () => App);
 AppRegistry.runApplication("Connect", {
   rootTag: document.getElementById("root"),
