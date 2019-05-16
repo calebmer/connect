@@ -25,12 +25,12 @@ export type Comment = {
 /**
  * An event we see while watching new post comments.
  */
-export type PostCommentsEvent =
+export type CommentEvent =
   /**
    * A new comment was added to a post.
    */
   | {
-      readonly type: PostCommentsEventType.New;
+      readonly type: CommentEventType.New;
       readonly comment: Comment;
     }
 
@@ -41,9 +41,9 @@ export type PostCommentsEvent =
   | {readonly type: never}; // NOTE: Ideally this would be: `string & not PostCommentsEventType`.
 
 /**
- * The type of `PostCommentsEvent`.
+ * The type of `CommentEvent`.
  */
-export enum PostCommentsEventType {
+export enum CommentEventType {
   New = "New",
 }
 

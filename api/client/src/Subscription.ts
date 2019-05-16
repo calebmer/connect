@@ -50,14 +50,6 @@ export type SubscriptionMessageClient = SchemaInputValue<
 >;
 
 /**
- * The type of `SubscriptionMessageClient`.
- */
-export enum SubscriptionMessageClientType {
-  Subscribe = "Subscribe",
-  Unsubscribe = "Unsubscribe",
-}
-
-/**
  * The input validator for an API client message from the client to the server.
  */
 export const SubscriptionMessageClient = SchemaInput.union(
@@ -66,7 +58,7 @@ export const SubscriptionMessageClient = SchemaInput.union(
    * to the same path multiple times as long as we use a different ID.
    */
   SchemaInput.object({
-    type: SchemaInput.constant(SubscriptionMessageClientType.Subscribe),
+    type: SchemaInput.constant("Subscribe"),
     id: SchemaInput.string<SubscriptionID>(),
     path: SchemaInput.string(),
     input: SchemaInput.unknown(),
@@ -76,7 +68,7 @@ export const SubscriptionMessageClient = SchemaInput.union(
    * Unsubscribe from a subscription that we previously setup.
    */
   SchemaInput.object({
-    type: SchemaInput.constant(SubscriptionMessageClientType.Unsubscribe),
+    type: SchemaInput.constant("Unsubscribe"),
     id: SchemaInput.string<SubscriptionID>(),
   }),
 );
@@ -90,7 +82,7 @@ export type SubscriptionMessageServer =
    * the events from the stream we subscribed to.
    */
   | {
-      readonly type: SubscriptionMessageServerType.Subscribed;
+      readonly type: "Subscribed";
       readonly id: SubscriptionID;
     }
 
@@ -99,7 +91,7 @@ export type SubscriptionMessageServer =
    * since we’re provided with the ID.
    */
   | {
-      readonly type: SubscriptionMessageServerType.Message;
+      readonly type: "Message";
       readonly id: SubscriptionID;
       readonly message: unknown;
     }
@@ -108,7 +100,7 @@ export type SubscriptionMessageServer =
    * Some error ocurred.
    */
   | {
-      readonly type: SubscriptionMessageServerType.Error;
+      readonly type: "Error";
       readonly error: {
         readonly code: APIErrorCode;
         readonly serverStack?: string;
@@ -120,12 +112,3 @@ export type SubscriptionMessageServer =
    * with that eventuality in the types.
    */
   | {readonly type: never}; // NOTE: Ideally this would be: `string & not SubscriptionMessageServerType`.
-
-/**
- * The type of `SubscriptionMessageServer`.
- */
-export enum SubscriptionMessageServerType {
-  Subscribed = "Subscribed",
-  Message = "Message",
-  Error = "Error",
-}

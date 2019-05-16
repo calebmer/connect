@@ -26,7 +26,6 @@ import {ServerMethod, ServerMethodUnauthorized} from "./Server";
 import express, {Express, NextFunction, Request, Response} from "express";
 import {Context} from "./Context";
 import {ParsedUrlQuery} from "querystring";
-import jwt from "jsonwebtoken";
 import {logError} from "./logError";
 import morgan from "morgan";
 

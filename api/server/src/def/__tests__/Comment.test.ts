@@ -1,9 +1,9 @@
 import {
   APIError,
   APIErrorCode,
+  CommentEvent,
+  CommentEventType,
   CommentID,
-  PostCommentsEvent,
-  PostCommentsEventType,
   generateID,
 } from "@connect/api-client";
 import {
@@ -593,7 +593,7 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs: Array<PostCommentsEvent> = [];
+      const logs: Array<CommentEvent> = [];
 
       const unwatch = await watchPostComments(
         ctx.withSubscription(account.id, event => {
@@ -615,7 +615,7 @@ describe("watchPostComments", () => {
 
       expect(logs).toEqual([
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID}),
         },
       ]);
@@ -639,7 +639,7 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs: Array<PostCommentsEvent> = [];
+      const logs: Array<CommentEvent> = [];
 
       const unwatch = await watchPostComments(
         ctx.withSubscription(account1.id, event => {
@@ -661,7 +661,7 @@ describe("watchPostComments", () => {
 
       expect(logs).toEqual([
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID}),
         },
       ]);
@@ -687,7 +687,7 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs: Array<PostCommentsEvent> = [];
+      const logs: Array<CommentEvent> = [];
 
       const unwatch = await watchPostComments(
         ctx.withSubscription(account1.id, event => {
@@ -723,15 +723,15 @@ describe("watchPostComments", () => {
 
       expect(logs).toEqual([
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID1}),
         },
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID2}),
         },
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID3}),
         },
       ]);
@@ -755,7 +755,7 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs: Array<PostCommentsEvent> = [];
+      const logs: Array<CommentEvent> = [];
 
       const unwatch = await watchPostComments(
         ctx.withSubscription(account1.id, event => {
@@ -787,7 +787,7 @@ describe("watchPostComments", () => {
 
       expect(logs).toEqual([
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID}),
         },
       ]);
@@ -816,8 +816,8 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs1: Array<PostCommentsEvent> = [];
-      const logs2: Array<PostCommentsEvent> = [];
+      const logs1: Array<CommentEvent> = [];
+      const logs2: Array<CommentEvent> = [];
 
       const [unwatch1, unwatch2] = await Promise.all([
         watchPostComments(
@@ -858,14 +858,14 @@ describe("watchPostComments", () => {
 
       expect(logs1).toEqual([
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID}),
         },
       ]);
 
       expect(logs2).toEqual([
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID}),
         },
       ]);
@@ -895,8 +895,8 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs1: Array<PostCommentsEvent> = [];
-      const logs2: Array<PostCommentsEvent> = [];
+      const logs1: Array<CommentEvent> = [];
+      const logs2: Array<CommentEvent> = [];
 
       const unwatch1 = await watchPostComments(
         ctx.withSubscription(account1.id, event => {
@@ -948,18 +948,18 @@ describe("watchPostComments", () => {
 
       expect(logs1).toEqual([
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID1}),
         },
       ]);
 
       expect(logs2).toEqual([
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID1}),
         },
         {
-          type: PostCommentsEventType.New,
+          type: CommentEventType.New,
           comment: expect.objectContaining({id: commentID2}),
         },
       ]);
