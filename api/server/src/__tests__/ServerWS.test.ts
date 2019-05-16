@@ -290,6 +290,44 @@ test("will subscribe to a subscription with the correct authorization", done => 
   });
 });
 
+test("will subscribe and receive a subscribed notification", done => {
+  const subscriptionID = generateID();
+  const postID = generateID();
+
+  const socket = createWebSocketClient(done);
+
+  socket.on("open", () => {
+    expect(watchPostComments).toHaveBeenCalledTimes(0);
+    socket.send(
+      JSON.stringify({
+        type: "Subscribe",
+        id: subscriptionID,
+        path: "/comment/watchPostComments",
+        input: {postID},
+      }),
+    );
+  });
+
+  let messageCount = 0;
+
+  socket.on("message", message => {
+    switch (messageCount++) {
+      case 0: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "Subscribed",
+          id: subscriptionID,
+        });
+        done();
+        break;
+      }
+      default: {
+        done(new Error("unexpected"));
+        break;
+      }
+    }
+  });
+});
+
 test("will subscribe and receive a message from a subscription", done => {
   const subscriptionID = generateID();
   const postID = generateID();
@@ -312,13 +350,31 @@ test("will subscribe and receive a message from a subscription", done => {
     }, 10);
   });
 
+  let messageCount = 0;
+
   socket.on("message", message => {
-    expect(JSON.parse(message as string)).toEqual({
-      type: "Message",
-      id: subscriptionID,
-      message: {works: true},
-    });
-    done();
+    switch (messageCount++) {
+      case 0: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "Subscribed",
+          id: subscriptionID,
+        });
+        break;
+      }
+      case 1: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "Message",
+          id: subscriptionID,
+          message: {works: true},
+        });
+        done();
+        break;
+      }
+      default: {
+        done(new Error("unexpected"));
+        break;
+      }
+    }
   });
 });
 
@@ -350,15 +406,34 @@ test("will subscribe and receive multiple messages from a subscription", done =>
     }, 10);
   });
 
+  let messageCount = 0;
+
   socket.on("message", message => {
-    expect(JSON.parse(message as string)).toEqual({
-      type: "Message",
-      id: subscriptionID,
-      message: {value: expected++},
-    });
-    expect(expected).toBeLessThanOrEqual(3);
-    if (expected === 3) {
-      done();
+    switch (messageCount++) {
+      case 0: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "Subscribed",
+          id: subscriptionID,
+        });
+        break;
+      }
+      case 1:
+      case 2:
+      case 3: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "Message",
+          id: subscriptionID,
+          message: {value: expected++},
+        });
+        if (expected === 3) {
+          done();
+        }
+        break;
+      }
+      default: {
+        done(new Error("unexpected"));
+        break;
+      }
     }
   });
 });
@@ -387,12 +462,30 @@ test("will error when trying to subscribe while using the same ID", done => {
     );
   });
 
+  let messageCount = 0;
+
   socket.on("message", message => {
-    expect(JSON.parse(message as string)).toEqual({
-      type: "Error",
-      error: {code: APIErrorCode.ALREADY_EXISTS},
-    });
-    done();
+    switch (messageCount++) {
+      case 0: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "Subscribed",
+          id: subscriptionID,
+        });
+        break;
+      }
+      case 1: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "Error",
+          error: {code: APIErrorCode.ALREADY_EXISTS},
+        });
+        done();
+        break;
+      }
+      default: {
+        done(new Error("unexpected"));
+        break;
+      }
+    }
   });
 }, 2000);
 
@@ -520,12 +613,32 @@ test("will error if trying to unsubscribe from a subscription when some exist", 
     );
   });
 
+  let messageCount = 0;
+
   socket.on("message", message => {
-    expect(JSON.parse(message as string)).toEqual({
-      type: "Error",
-      error: {code: APIErrorCode.NOT_FOUND},
-    });
-    done();
+    switch (messageCount++) {
+      case 0:
+      case 1:
+      case 2: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "Subscribed",
+          id: expect.anything(),
+        });
+        break;
+      }
+      case 3: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "Error",
+          error: {code: APIErrorCode.NOT_FOUND},
+        });
+        done();
+        break;
+      }
+      default: {
+        done(new Error("unexpected"));
+        break;
+      }
+    }
   });
 });
 

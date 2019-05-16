@@ -259,11 +259,7 @@ function handleConnection(
     // gave us so the client knows the exact subscription the new message
     // is for.
     const ctx = new ContextSubscription<Message>(accessToken.id, message => {
-      publish({
-        type: "Message",
-        id,
-        message,
-      });
+      publish({type: "Message", id, message});
     });
 
     // Setup our subscription! Store the unsubscribe function for later usage.
@@ -274,6 +270,11 @@ function handleConnection(
     const unsubscribe = definition(ctx, input);
     subscriptions.set(id, unsubscribe.catch(() => async () => {}));
     await unsubscribe;
+
+    // Once we’ve successfully subscribed, let the client know by publishing
+    // a message. It may take us some time to subscribe to the service so we
+    // need to let the client know when they are actually online.
+    publish({type: "Subscribed", id});
   }
 
   /**
