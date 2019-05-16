@@ -6,6 +6,7 @@ import {
   SchemaMethod,
   SchemaMethodUnauthorized,
   SchemaNamespace,
+  SchemaSubscription,
 } from "./Schema";
 import {APISchema} from "./APISchema";
 import {AccessToken} from "./types/TokenTypes";
@@ -54,6 +55,8 @@ type Client<
   ? ClientMethod<Input, Output>
   : Schema extends SchemaMethodUnauthorized<infer Input, infer Output>
   ? ClientMethod<Input, Output>
+  : Schema extends SchemaSubscription<infer Input, infer Message>
+  ? ClientSubscription<Input, Message>
   : never;
 
 /**
@@ -78,6 +81,8 @@ type ClientMethod<Input, Output> = {} extends Input
   ? ((input?: undefined, options?: ClientMethodOptions) => Promise<Output>)
   : ((input: Input, options?: ClientMethodOptions) => Promise<Output>);
 
+type ClientSubscription<Input, Message> = null;
+
 /**
  * Creates an API client based on the schema we were provided.
  */
@@ -92,6 +97,8 @@ function buildClient(
     case SchemaKind.METHOD:
     case SchemaKind.METHOD_UNAUTHORIZED:
       return buildClientMethod(config, path, schema);
+    case SchemaKind.SUBSCRIPTION:
+      return buildSubscription();
     default: {
       const never: never = schema;
       throw new Error(`Unrecognized schema kind: ${never["kind"]}`);
@@ -296,4 +303,8 @@ export function isSyntaxJSON(value: string): boolean {
     // adapted from https://stackoverflow.com/a/13340826/1568890
     /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$/.test(value)
   );
+}
+
+function buildSubscription() {
+  return null;
 }
