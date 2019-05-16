@@ -1,8 +1,6 @@
 import {
   APIError,
   APIErrorCode,
-  CommentEvent,
-  CommentEventType,
   CommentID,
   generateID,
 } from "@connect/api-client";
@@ -16,7 +14,7 @@ import {
   getComment,
   getPostComments,
   publishComment,
-  watchPostComments,
+  watchNewPostComments,
 } from "../Comment";
 import {ContextTest} from "../../ContextTest";
 import {getPost} from "../Post";
@@ -532,7 +530,7 @@ describe("publishComment", () => {
   });
 });
 
-describe("watchPostComments", () => {
+describe("watchNewPostComments", () => {
   function wait(ms: number) {
     return new Promise<void>(resolve => setTimeout(resolve, ms));
   }
@@ -544,7 +542,7 @@ describe("watchPostComments", () => {
 
       let error: any;
       try {
-        const unwatch = await watchPostComments(
+        const unwatch = await watchNewPostComments(
           ctx.withSubscription(account.id, () => {
             throw new Error("Unexpected");
           }),
@@ -570,7 +568,7 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const unwatch = await watchPostComments(
+      const unwatch = await watchNewPostComments(
         ctx.withSubscription(account.id, () => {
           throw new Error("Unexpected");
         }),
@@ -595,7 +593,7 @@ describe("watchPostComments", () => {
 
       const logs: Array<CommentID> = [];
 
-      const unwatch = await watchPostComments(
+      const unwatch = await watchNewPostComments(
         ctx.withSubscription(account.id, ({comment}) => {
           logs.push(comment.id);
         }),
@@ -636,7 +634,7 @@ describe("watchPostComments", () => {
 
       const logs: Array<CommentID> = [];
 
-      const unwatch = await watchPostComments(
+      const unwatch = await watchNewPostComments(
         ctx.withSubscription(account1.id, ({comment}) => {
           logs.push(comment.id);
         }),
@@ -679,7 +677,7 @@ describe("watchPostComments", () => {
 
       const logs: Array<CommentID> = [];
 
-      const unwatch = await watchPostComments(
+      const unwatch = await watchNewPostComments(
         ctx.withSubscription(account1.id, ({comment}) => {
           logs.push(comment.id);
         }),
@@ -734,7 +732,7 @@ describe("watchPostComments", () => {
 
       const logs: Array<CommentID> = [];
 
-      const unwatch = await watchPostComments(
+      const unwatch = await watchNewPostComments(
         ctx.withSubscription(account1.id, ({comment}) => {
           logs.push(comment.id);
         }),
@@ -792,13 +790,13 @@ describe("watchPostComments", () => {
       const logs2: Array<CommentID> = [];
 
       const [unwatch1, unwatch2] = await Promise.all([
-        watchPostComments(
+        watchNewPostComments(
           ctx.withSubscription(account1.id, ({comment}) => {
             logs1.push(comment.id);
           }),
           {postID: post.id},
         ),
-        watchPostComments(
+        watchNewPostComments(
           ctx.withSubscription(account2.id, ({comment}) => {
             logs2.push(comment.id);
           }),
@@ -859,14 +857,14 @@ describe("watchPostComments", () => {
       const logs1: Array<CommentID> = [];
       const logs2: Array<CommentID> = [];
 
-      const unwatch1 = await watchPostComments(
+      const unwatch1 = await watchNewPostComments(
         ctx.withSubscription(account1.id, ({comment}) => {
           logs1.push(comment.id);
         }),
         {postID: post.id},
       );
 
-      const unwatch2 = await watchPostComments(
+      const unwatch2 = await watchNewPostComments(
         ctx.withSubscription(account2.id, ({comment}) => {
           logs2.push(comment.id);
         }),
