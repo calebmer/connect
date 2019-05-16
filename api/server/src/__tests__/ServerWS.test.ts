@@ -157,7 +157,7 @@ test("will not accept binary data", done => {
 
   socket.on("message", message => {
     expect(JSON.parse(message as string)).toEqual({
-      type: "error",
+      type: "Error",
       error: {code: APIErrorCode.BAD_INPUT},
     });
     done();
@@ -173,7 +173,7 @@ test("will not non-JSON data", done => {
 
   socket.on("message", message => {
     expect(JSON.parse(message as string)).toEqual({
-      type: "error",
+      type: "Error",
       error: {code: APIErrorCode.BAD_INPUT},
     });
     done();
@@ -189,7 +189,7 @@ test("will not accept objects that are not in the right message format", done =>
 
   socket.on("message", message => {
     expect(JSON.parse(message as string)).toEqual({
-      type: "error",
+      type: "Error",
       error: {code: APIErrorCode.BAD_INPUT},
     });
     done();
@@ -202,7 +202,7 @@ test("will error for not found subscription routes", done => {
   socket.on("open", () => {
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/nope",
         input: {},
@@ -212,7 +212,7 @@ test("will error for not found subscription routes", done => {
 
   socket.on("message", message => {
     expect(JSON.parse(message as string)).toEqual({
-      type: "error",
+      type: "Error",
       error: {code: APIErrorCode.NOT_FOUND},
     });
     done();
@@ -225,7 +225,7 @@ test("will error for incorrectly formatted subscription input", done => {
   socket.on("open", () => {
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: 42,
@@ -235,7 +235,7 @@ test("will error for incorrectly formatted subscription input", done => {
 
   socket.on("message", message => {
     expect(JSON.parse(message as string)).toEqual({
-      type: "error",
+      type: "Error",
       error: {code: APIErrorCode.BAD_INPUT},
     });
     done();
@@ -251,7 +251,7 @@ test("will subscribe to a subscription defined in our schema", done => {
     expect(watchPostComments).toHaveBeenCalledTimes(0);
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID},
@@ -276,7 +276,7 @@ test("will subscribe to a subscription with the correct authorization", done => 
     expect(watchPostComments).toHaveBeenCalledTimes(0);
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID},
@@ -300,7 +300,7 @@ test("will subscribe and receive a message from a subscription", done => {
     expect(watchPostComments).toHaveBeenCalledTimes(0);
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: subscriptionID,
         path: "/comment/watchPostComments",
         input: {postID},
@@ -314,7 +314,7 @@ test("will subscribe and receive a message from a subscription", done => {
 
   socket.on("message", message => {
     expect(JSON.parse(message as string)).toEqual({
-      type: "message",
+      type: "Message",
       id: subscriptionID,
       message: {works: true},
     });
@@ -335,7 +335,7 @@ test("will subscribe and receive multiple messages from a subscription", done =>
     expect(watchPostComments).toHaveBeenCalledTimes(0);
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: subscriptionID,
         path: "/comment/watchPostComments",
         input: {postID},
@@ -352,7 +352,7 @@ test("will subscribe and receive multiple messages from a subscription", done =>
 
   socket.on("message", message => {
     expect(JSON.parse(message as string)).toEqual({
-      type: "message",
+      type: "Message",
       id: subscriptionID,
       message: {value: expected++},
     });
@@ -371,7 +371,7 @@ test("will error when trying to subscribe while using the same ID", done => {
   socket.on("open", () => {
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: subscriptionID,
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -379,7 +379,7 @@ test("will error when trying to subscribe while using the same ID", done => {
     );
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: subscriptionID,
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -389,7 +389,7 @@ test("will error when trying to subscribe while using the same ID", done => {
 
   socket.on("message", message => {
     expect(JSON.parse(message as string)).toEqual({
-      type: "error",
+      type: "Error",
       error: {code: APIErrorCode.ALREADY_EXISTS},
     });
     done();
@@ -405,7 +405,7 @@ test("will unsubscribe when the socket closes", done => {
   socket.on("open", () => {
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: subscriptionID,
         path: "/comment/watchPostComments",
         input: {postID},
@@ -429,7 +429,7 @@ test("will unsubscribe from everything when the socket closes", done => {
   socket.on("open", () => {
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -437,7 +437,7 @@ test("will unsubscribe from everything when the socket closes", done => {
     );
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -445,7 +445,7 @@ test("will unsubscribe from everything when the socket closes", done => {
     );
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -469,7 +469,7 @@ test("will error if trying to unsubscribe from a subscription that does not exis
   socket.on("open", () => {
     socket.send(
       JSON.stringify({
-        type: "unsubscribe",
+        type: "Unsubscribe",
         id: generateID(),
       }),
     );
@@ -477,7 +477,7 @@ test("will error if trying to unsubscribe from a subscription that does not exis
 
   socket.on("message", message => {
     expect(JSON.parse(message as string)).toEqual({
-      type: "error",
+      type: "Error",
       error: {code: APIErrorCode.NOT_FOUND},
     });
     done();
@@ -490,7 +490,7 @@ test("will error if trying to unsubscribe from a subscription when some exist", 
   socket.on("open", () => {
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -498,7 +498,7 @@ test("will error if trying to unsubscribe from a subscription when some exist", 
     );
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -506,7 +506,7 @@ test("will error if trying to unsubscribe from a subscription when some exist", 
     );
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -514,7 +514,7 @@ test("will error if trying to unsubscribe from a subscription when some exist", 
     );
     socket.send(
       JSON.stringify({
-        type: "unsubscribe",
+        type: "Unsubscribe",
         id: generateID(),
       }),
     );
@@ -522,7 +522,7 @@ test("will error if trying to unsubscribe from a subscription when some exist", 
 
   socket.on("message", message => {
     expect(JSON.parse(message as string)).toEqual({
-      type: "error",
+      type: "Error",
       error: {code: APIErrorCode.NOT_FOUND},
     });
     done();
@@ -537,7 +537,7 @@ test("will unsubscribe with an unsubscribe message", done => {
   socket.on("open", () => {
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: subscriptionID,
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -548,7 +548,7 @@ test("will unsubscribe with an unsubscribe message", done => {
       expect(watchPostCommentsUnsubscribe).toHaveBeenCalledTimes(0);
       socket.send(
         JSON.stringify({
-          type: "unsubscribe",
+          type: "Unsubscribe",
           id: subscriptionID,
         }),
       );
@@ -568,7 +568,7 @@ test("will unsubscribe with an unsubscribe message when there are many subscript
   socket.on("open", () => {
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -576,7 +576,7 @@ test("will unsubscribe with an unsubscribe message when there are many subscript
     );
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: subscriptionID,
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -584,7 +584,7 @@ test("will unsubscribe with an unsubscribe message when there are many subscript
     );
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -595,7 +595,7 @@ test("will unsubscribe with an unsubscribe message when there are many subscript
       expect(watchPostCommentsUnsubscribe).toHaveBeenCalledTimes(0);
       socket.send(
         JSON.stringify({
-          type: "unsubscribe",
+          type: "Unsubscribe",
           id: subscriptionID,
         }),
       );
@@ -615,7 +615,7 @@ test("will unsubscribe with an unsubscribe message and unsubscribes from the res
   socket.on("open", () => {
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -623,7 +623,7 @@ test("will unsubscribe with an unsubscribe message and unsubscribes from the res
     );
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: subscriptionID,
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -631,7 +631,7 @@ test("will unsubscribe with an unsubscribe message and unsubscribes from the res
     );
     socket.send(
       JSON.stringify({
-        type: "subscribe",
+        type: "Subscribe",
         id: generateID(),
         path: "/comment/watchPostComments",
         input: {postID: generateID()},
@@ -642,7 +642,7 @@ test("will unsubscribe with an unsubscribe message and unsubscribes from the res
       expect(watchPostCommentsUnsubscribe).toHaveBeenCalledTimes(0);
       socket.send(
         JSON.stringify({
-          type: "unsubscribe",
+          type: "Unsubscribe",
           id: subscriptionID,
         }),
       );
