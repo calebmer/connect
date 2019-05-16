@@ -22,7 +22,9 @@ import {
   SchemaSubscription,
   SubscriptionID,
   SubscriptionMessageClient,
+  SubscriptionMessageClientType,
   SubscriptionMessageServer,
+  SubscriptionMessageServerType,
 } from "@connect/api-client";
 import {AccessTokenData, AccessTokenGenerator} from "./AccessToken";
 import {ContextSubscription} from "./Context";
@@ -199,7 +201,7 @@ function handleConnection(
       }
       // Always report our errors back to the user.
       publish({
-        type: "error",
+        type: SubscriptionMessageServerType.Error,
         error: APIError.toJSON(error),
       });
     }
@@ -210,7 +212,7 @@ function handleConnection(
    */
   async function handleMessage(message: SubscriptionMessageClient) {
     switch (message.type) {
-      case "subscribe": {
+      case SubscriptionMessageClientType.Subscribe: {
         const subscriptionRoute = server.router.get(message.path);
         if (subscriptionRoute === undefined) {
           throw new APIError(APIErrorCode.NOT_FOUND);
@@ -222,7 +224,7 @@ function handleConnection(
           message.input,
         );
       }
-      case "unsubscribe": {
+      case SubscriptionMessageClientType.Unsubscribe: {
         return await handleUnsubscribe(message.id);
       }
       default:
@@ -259,7 +261,11 @@ function handleConnection(
     // gave us so the client knows the exact subscription the new message
     // is for.
     const ctx = new ContextSubscription<Message>(accessToken.id, message => {
-      publish({type: "message", id, message});
+      publish({
+        type: SubscriptionMessageServerType.Message,
+        id,
+        message,
+      });
     });
 
     // Setup our subscription! Store the unsubscribe function for later usage.

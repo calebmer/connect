@@ -50,17 +50,33 @@ export type SubscriptionMessageClient = SchemaInputValue<
 >;
 
 /**
+ * The type of `SubscriptionMessageClient`.
+ */
+export enum SubscriptionMessageClientType {
+  Subscribe = "Subscribe",
+  Unsubscribe = "Unsubscribe",
+}
+
+/**
  * The input validator for an API client message from the client to the server.
  */
 export const SubscriptionMessageClient = SchemaInput.union(
+  /**
+   * Subscribe to a given subscription path with some input. We can subscribe
+   * to the same path multiple times as long as we use a different ID.
+   */
   SchemaInput.object({
-    type: SchemaInput.constant("subscribe"),
+    type: SchemaInput.constant(SubscriptionMessageClientType.Subscribe),
     id: SchemaInput.string<SubscriptionID>(),
     path: SchemaInput.string(),
     input: SchemaInput.unknown(),
   }),
+
+  /**
+   * Unsubscribe from a subscription that we previously setup.
+   */
   SchemaInput.object({
-    type: SchemaInput.constant("unsubscribe"),
+    type: SchemaInput.constant(SubscriptionMessageClientType.Unsubscribe),
     id: SchemaInput.string<SubscriptionID>(),
   }),
 );
@@ -69,15 +85,47 @@ export const SubscriptionMessageClient = SchemaInput.union(
  * A message sent from the server to the client in our subscription protocol.
  */
 export type SubscriptionMessageServer =
+  /**
+   * Our `subscribe` message was successful! We can now expect to receive all
+   * the events from the stream we subscribed to.
+   */
   | {
-      type: "message";
-      id: SubscriptionID;
-      message: unknown;
+      readonly type: SubscriptionMessageServerType.Subscribed;
+      readonly id: SubscriptionID;
     }
+
+  /**
+   * A new message from one of our subscriptions. We know which subscription
+   * since we’re provided with the ID.
+   */
   | {
-      type: "error";
-      error: {
-        code: APIErrorCode;
-        serverStack?: string;
+      readonly type: SubscriptionMessageServerType.Message;
+      readonly id: SubscriptionID;
+      readonly message: unknown;
+    }
+
+  /**
+   * Some error ocurred.
+   */
+  | {
+      readonly type: SubscriptionMessageServerType.Error;
+      readonly error: {
+        readonly code: APIErrorCode;
+        readonly serverStack?: string;
       };
-    };
+    }
+
+  /**
+   * We may add a new event type at any point. This case helps force us to deal
+   * with that eventuality in the types.
+   */
+  | {readonly type: never}; // NOTE: Ideally this would be: `string & not SubscriptionMessageServerType`.
+
+/**
+ * The type of `SubscriptionMessageServer`.
+ */
+export enum SubscriptionMessageServerType {
+  Subscribed = "Subscribed",
+  Message = "Message",
+  Error = "Error",
+}
