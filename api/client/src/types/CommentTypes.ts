@@ -23,31 +23,6 @@ export type Comment = {
 };
 
 /**
- * An event we see while watching new post comments.
- */
-export type CommentEvent =
-  /**
-   * A new comment was added to a post.
-   */
-  | {
-      readonly type: CommentEventType.New;
-      readonly comment: Comment;
-    }
-
-  /**
-   * We may add a new event type at any point. This case helps force us to deal
-   * with that eventuality in the types.
-   */
-  | {readonly type: never}; // NOTE: Ideally this would be: `string & not PostCommentsEventType`.
-
-/**
- * The type of `CommentEvent`.
- */
-export enum CommentEventType {
-  New = "New",
-}
-
-/**
  * A cursor represents the position of a comment in a list ordered by the
  * comment’s `publishedAt` date.
  */

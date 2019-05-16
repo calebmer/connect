@@ -199,7 +199,7 @@ function handleConnection(
       }
       // Always report our errors back to the user.
       publish({
-        type: "Error",
+        type: "error",
         error: APIError.toJSON(error),
       });
     }
@@ -210,7 +210,7 @@ function handleConnection(
    */
   async function handleMessage(message: SubscriptionMessageClient) {
     switch (message.type) {
-      case "Subscribe": {
+      case "subscribe": {
         const subscriptionRoute = server.router.get(message.path);
         if (subscriptionRoute === undefined) {
           throw new APIError(APIErrorCode.NOT_FOUND);
@@ -222,7 +222,7 @@ function handleConnection(
           message.input,
         );
       }
-      case "Unsubscribe": {
+      case "unsubscribe": {
         return await handleUnsubscribe(message.id);
       }
       default:
@@ -259,7 +259,7 @@ function handleConnection(
     // gave us so the client knows the exact subscription the new message
     // is for.
     const ctx = new ContextSubscription<Message>(accessToken.id, message => {
-      publish({type: "Message", id, message});
+      publish({type: "message", id, message});
     });
 
     // Setup our subscription! Store the unsubscribe function for later usage.
@@ -274,7 +274,7 @@ function handleConnection(
     // Once we’ve successfully subscribed, let the client know by publishing
     // a message. It may take us some time to subscribe to the service so we
     // need to let the client know when they are actually online.
-    publish({type: "Subscribed", id});
+    publish({type: "subscribed", id});
   }
 
   /**

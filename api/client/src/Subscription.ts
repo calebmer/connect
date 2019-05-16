@@ -53,22 +53,14 @@ export type SubscriptionMessageClient = SchemaInputValue<
  * The input validator for an API client message from the client to the server.
  */
 export const SubscriptionMessageClient = SchemaInput.union(
-  /**
-   * Subscribe to a given subscription path with some input. We can subscribe
-   * to the same path multiple times as long as we use a different ID.
-   */
   SchemaInput.object({
-    type: SchemaInput.constant("Subscribe"),
+    type: SchemaInput.constant("subscribe"),
     id: SchemaInput.string<SubscriptionID>(),
     path: SchemaInput.string(),
     input: SchemaInput.unknown(),
   }),
-
-  /**
-   * Unsubscribe from a subscription that we previously setup.
-   */
   SchemaInput.object({
-    type: SchemaInput.constant("Unsubscribe"),
+    type: SchemaInput.constant("unsubscribe"),
     id: SchemaInput.string<SubscriptionID>(),
   }),
 );
@@ -78,20 +70,18 @@ export const SubscriptionMessageClient = SchemaInput.union(
  */
 export type SubscriptionMessageServer =
   /**
-   * Our `subscribe` message was successful! We can now expect to receive all
-   * the events from the stream we subscribed to.
+   * Message to let the client know they have successfully subscribed.
    */
   | {
-      readonly type: "Subscribed";
+      readonly type: "subscribed";
       readonly id: SubscriptionID;
     }
 
   /**
-   * A new message from one of our subscriptions. We know which subscription
-   * since we’re provided with the ID.
+   * A new message for our subscription stream.
    */
   | {
-      readonly type: "Message";
+      readonly type: "message";
       readonly id: SubscriptionID;
       readonly message: unknown;
     }
@@ -100,7 +90,7 @@ export type SubscriptionMessageServer =
    * Some error ocurred.
    */
   | {
-      readonly type: "Error";
+      readonly type: "error";
       readonly error: {
         readonly code: APIErrorCode;
         readonly serverStack?: string;

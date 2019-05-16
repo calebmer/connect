@@ -1,6 +1,6 @@
 import {AccessToken, RefreshToken} from "./types/TokenTypes";
 import {AccountID, AccountProfile} from "./types/AccountTypes";
-import {Comment, CommentEvent, CommentID} from "./types/CommentTypes";
+import {Comment, CommentID} from "./types/CommentTypes";
 import {DateTime, Group, GroupID} from "./types/GroupTypes";
 import {Post, PostCursor, PostID} from "./types/PostTypes";
 import {RangeInputFields} from "./Range";
@@ -290,7 +290,9 @@ export const APISchema = Schema.namespace({
       input: {
         postID: SchemaInput.string<PostID>(),
       },
-      message: SchemaOutput.t<CommentEvent>(),
+      message: SchemaOutput.t<{
+        readonly comment: Comment;
+      }>(),
     }),
   }),
 });
