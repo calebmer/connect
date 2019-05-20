@@ -558,14 +558,16 @@ class APIClientSubscription {
 
     // Forward any errors to our listener. If we have no listener then treat
     // the error as an unhandled error.
-    this.socket.addEventListener("error", event => {
-      handleError(event);
+    this.socket.addEventListener("error", () => {
+      handleError(new Error("WebSocket connection closed unexpectedly."));
     });
 
     // If the socket closes before we’ve stopped the producer, then try to
     // re-connect! The WebSocket closing does not mean there will be no more
     // events. It more likely means the internet temporarily disconnected.
     this.socket.addEventListener("close", () => {
+      this.socket = null;
+
       // TODO: Try to re-connect with exponential back off.
       //
       // TODO: When we disconnect report that the individual subscriptions
@@ -592,6 +594,17 @@ class APIClientSubscription {
    * we will wait until it opens to send the message.
    */
   public publish(message: SubscriptionClientMessage) {
-    this.ensureSocket().send(JSON.stringify(message));
+    const socket = this.ensureSocket();
+
+    if (socket.readyState === WebSocket.CONNECTING) {
+      function handleOpen() {
+        socket.removeEventListener("open", handleOpen);
+        socket.send(JSON.stringify(message));
+      }
+
+      socket.addEventListener("open", handleOpen);
+    } else {
+      socket.send(JSON.stringify(message));
+    }
   }
 }
