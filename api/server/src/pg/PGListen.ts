@@ -41,7 +41,7 @@ async function actuallyConnectClient(): Promise<Client> {
     if (!notification.channel.startsWith("connect.")) return;
     const channelName = notification.channel.slice(8);
 
-    debug(`Received notification from "${channelName}"`);
+    debug(`Received notification from channel "${channelName}"`);
 
     const channelListeners = listeners.get(channelName);
     if (channelListeners === undefined) return;
