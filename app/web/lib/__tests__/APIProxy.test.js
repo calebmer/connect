@@ -1,3 +1,5 @@
+/* eslint-disable consistent-return */
+
 const url = require("url");
 const http = require("http");
 const jwt = require("jsonwebtoken");
@@ -497,9 +499,9 @@ describe("HTTP", () => {
         "Set-Cookie",
         "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict,refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
       )
-      .expect(400, {
+      .expect(401, {
         ok: false,
-        error: {code: "REFRESH_TOKEN_INVALID", extra: 42},
+        error: {code: "UNAUTHORIZED"},
       });
   });
 
@@ -573,7 +575,7 @@ describe("HTTP", () => {
         .send({email: "yolo", password: "swag"})
         .expect(
           "Set-Cookie",
-          "access_token=yolo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict,refresh_token=swag; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+          "access_token=yolo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict, refresh_token=swag; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
         )
         .expect("Content-Type", "application/json")
         .expect(200, {ok: true, data: {accessToken: "", refreshToken: ""}});
@@ -637,7 +639,7 @@ describe("HTTP", () => {
         .send({email: "yolo", password: "swag"})
         .expect(
           "Set-Cookie",
-          "access_token=yolo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict,refresh_token=swag; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+          "access_token=yolo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict, refresh_token=swag; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
         )
         .expect("Content-Type", "application/json")
         .expect(200, {ok: true, data: {accessToken: "", refreshToken: ""}});
@@ -760,14 +762,18 @@ describe("HTTP", () => {
 });
 
 describe("WS", () => {
-  const upgradeServer = http.createServer((_req, res) => {
+  const handleRequest = jest.fn((_req, res) => {
     res.statusCode = 404;
     res.end();
   });
 
+  const upgradeServer = http.createServer(handleRequest);
+
+  const verifyClient = jest.fn(({req}) => !!req.headers.forwarded);
+
   const targetServer = new WebSocket.Server({
     server: upgradeServer,
-    verifyClient: ({req}) => !!req.headers.forwarded,
+    verifyClient,
   });
 
   const handleConnection = jest.fn(() => {});
@@ -822,6 +828,7 @@ describe("WS", () => {
 
     socket.on("open", () => {
       expect(handleConnection).toBeCalledTimes(1);
+      socket.close();
       done();
     });
   });
@@ -842,6 +849,9 @@ describe("WS", () => {
       expect(opens).toBeLessThanOrEqual(3);
       if (opens === 3) {
         expect(handleConnection).toBeCalledTimes(3);
+        socket1.close();
+        socket2.close();
+        socket3.close();
         done();
       }
     }
@@ -850,9 +860,10 @@ describe("WS", () => {
   test("will send WebSocket messages", done => {
     const socket = new WebSocket(proxyUrl);
 
-    handleConnection.mockImplementation(socket => {
+    handleConnection.mockImplementationOnce(socket => {
       socket.on("message", message => {
         expect(message).toEqual("yolo");
+        socket.close();
         done();
       });
     });
@@ -865,13 +876,442 @@ describe("WS", () => {
   test("will receive WebSocket messages", done => {
     const socket = new WebSocket(proxyUrl);
 
-    handleConnection.mockImplementation(socket => {
+    handleConnection.mockImplementationOnce(socket => {
       socket.send("yolo");
     });
 
     socket.on("message", message => {
       expect(message).toEqual("yolo");
+      socket.close();
       done();
     });
+  });
+
+  test("will handle an unauthorized connection error", done => {
+    verifyClient.mockImplementationOnce(() => false);
+
+    const socket = new WebSocket(proxyUrl);
+
+    socket.on("unexpected-response", (_req, res) => {
+      let data = "";
+
+      res.on("data", buffer => {
+        data += buffer.toString("utf8");
+      });
+
+      res.on("end", () => {
+        expect(res.statusCode).toEqual(401);
+        expect(data).toEqual("Unauthorized");
+        done();
+      });
+    });
+  });
+
+  test("will handle an unauthorized connection and close after headers", done => {
+    verifyClient.mockImplementationOnce(() => false);
+
+    const socket = new WebSocket(proxyUrl);
+
+    socket.on("unexpected-response", req => {
+      req.end();
+      done();
+    });
+  });
+
+  test("adds an access token query when there is a corresponding cookie", done => {
+    jwt.sign({works: true}, "yolo-swag", (error, accessToken) => {
+      if (error) return done(error);
+
+      const socket = new WebSocket(proxyUrl, {
+        headers: {
+          Cookie: `access_token=${accessToken}`,
+        },
+      });
+
+      socket.on("upgrade", res => {
+        expect(res.headers["set-cookie"]).toEqual(undefined);
+        next();
+      });
+
+      handleConnection.mockImplementationOnce((_socket, req) => {
+        expect(req.url).toEqual(`/?access_token=${accessToken}`);
+        next();
+      });
+
+      let count = 2;
+      function next() {
+        count--;
+        if (count === 0) {
+          socket.on("open", () => {
+            socket.close();
+          });
+          done();
+        } else if (count < 0) {
+          done(new Error("Called next() too many times."));
+        }
+      }
+    });
+  });
+
+  test("adds an access token query when there is a corresponding non-expired access token cookie", done => {
+    jwt.sign(
+      {works: true},
+      "yolo-swag",
+      {expiresIn: "1h"},
+      (error, accessToken) => {
+        if (error) return done(error);
+
+        const socket = new WebSocket(proxyUrl, {
+          headers: {
+            Cookie: `access_token=${accessToken}`,
+          },
+        });
+
+        socket.on("upgrade", res => {
+          expect(res.headers["set-cookie"]).toEqual(undefined);
+          next();
+        });
+
+        handleConnection.mockImplementationOnce((_socket, req) => {
+          expect(req.url).toEqual(`/?access_token=${accessToken}`);
+          next();
+        });
+
+        let count = 2;
+        function next() {
+          count--;
+          if (count === 0) {
+            socket.on("open", () => {
+              socket.close();
+            });
+            done();
+          } else if (count < 0) {
+            done(new Error("Called next() too many times."));
+          }
+        }
+      },
+    );
+  });
+
+  test("adds an access token query when there is a corresponding non-expired access token cookie that expires soon", done => {
+    jwt.sign(
+      {works: true},
+      "yolo-swag",
+      {expiresIn: "40s"},
+      (error, accessToken) => {
+        if (error) return done(error);
+
+        const socket = new WebSocket(proxyUrl, {
+          headers: {
+            Cookie: `access_token=${accessToken}`,
+          },
+        });
+
+        socket.on("upgrade", res => {
+          expect(res.headers["set-cookie"]).toEqual(undefined);
+          next();
+        });
+
+        handleConnection.mockImplementationOnce((_socket, req) => {
+          expect(req.url).toEqual(`/?access_token=${accessToken}`);
+          next();
+        });
+
+        let count = 2;
+        function next() {
+          count--;
+          if (count === 0) {
+            socket.on("open", () => {
+              socket.close();
+            });
+            done();
+          } else if (count < 0) {
+            done(new Error("Called next() too many times."));
+          }
+        }
+      },
+    );
+  });
+
+  test("an expired access token attempts to refresh its access token", done => {
+    jwt.sign(
+      {works: true},
+      "yolo-swag",
+      {expiresIn: "-1h"},
+      (error, accessToken) => {
+        if (error) return done(error);
+
+        handleRequest.mockImplementationOnce((req, res) => {
+          if (req.url === "/account/refreshAccessToken") {
+            let data = "";
+            req.on("data", buffer => (data += buffer.toString("utf8")));
+            req.on("end", () => {
+              expect(data).toEqual(JSON.stringify({refreshToken: "yoyoyo"}));
+              res.statusCode = 400;
+              res.end();
+            });
+          } else {
+            res.statusCode = 404;
+            res.end();
+          }
+        });
+
+        const socket = new WebSocket(proxyUrl, {
+          headers: {
+            Cookie: `refresh_token=yoyoyo; access_token=${accessToken}`,
+          },
+        });
+
+        socket.on("unexpected-response", (_req, res) => {
+          let data = "";
+          res.on("data", buffer => (data += buffer.toString("utf8")));
+          res.on("end", () => {
+            expect(res.statusCode).toEqual(401);
+            expect(res.headers["set-cookie"]).toEqual([
+              "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict, refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
+            ]);
+            expect(data).toEqual("Unauthorized");
+            done();
+          });
+        });
+      },
+    );
+  });
+
+  test("refreshes the access token when it has expired", done => {
+    jwt.sign(
+      {works: true},
+      "yolo-swag",
+      {expiresIn: "-1h"},
+      (error, accessToken) => {
+        if (error) return done(error);
+
+        handleRequest.mockImplementationOnce((req, res) => {
+          if (req.url === "/account/refreshAccessToken") {
+            let data = "";
+            req.on("data", buffer => (data += buffer.toString("utf8")));
+            req.on("end", () => {
+              res.statusCode = 200;
+              res.write(
+                JSON.stringify({
+                  ok: true,
+                  data: {accessToken: JSON.parse(data).refreshToken},
+                }),
+              );
+              res.end();
+            });
+          } else {
+            res.statusCode = 404;
+            res.end();
+          }
+        });
+
+        const socket = new WebSocket(proxyUrl, {
+          headers: {
+            Cookie: `refresh_token=yoyoyo; access_token=${accessToken}`,
+          },
+        });
+
+        socket.on("upgrade", res => {
+          expect(res.headers["set-cookie"]).toEqual([
+            "access_token=yoyoyo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+          ]);
+          next();
+        });
+
+        handleConnection.mockImplementationOnce((_socket, req) => {
+          expect(req.url).toEqual(`/?access_token=yoyoyo`);
+          next();
+        });
+
+        let count = 2;
+        function next() {
+          count--;
+          if (count === 0) {
+            socket.on("open", () => {
+              socket.close();
+            });
+            done();
+          } else if (count < 0) {
+            done(new Error("Called next() too many times."));
+          }
+        }
+      },
+    );
+  });
+
+  test("refreshes the access token when it has just expired", done => {
+    jwt.sign(
+      {works: true},
+      "yolo-swag",
+      {expiresIn: "0"},
+      (error, accessToken) => {
+        if (error) return done(error);
+
+        handleRequest.mockImplementationOnce((req, res) => {
+          if (req.url === "/account/refreshAccessToken") {
+            let data = "";
+            req.on("data", buffer => (data += buffer.toString("utf8")));
+            req.on("end", () => {
+              res.statusCode = 200;
+              res.write(
+                JSON.stringify({
+                  ok: true,
+                  data: {accessToken: JSON.parse(data).refreshToken},
+                }),
+              );
+              res.end();
+            });
+          } else {
+            res.statusCode = 404;
+            res.end();
+          }
+        });
+
+        const socket = new WebSocket(proxyUrl, {
+          headers: {
+            Cookie: `refresh_token=yoyoyo; access_token=${accessToken}`,
+          },
+        });
+
+        socket.on("upgrade", res => {
+          expect(res.headers["set-cookie"]).toEqual([
+            "access_token=yoyoyo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+          ]);
+          next();
+        });
+
+        handleConnection.mockImplementationOnce((_socket, req) => {
+          expect(req.url).toEqual(`/?access_token=yoyoyo`);
+          next();
+        });
+
+        let count = 2;
+        function next() {
+          count--;
+          if (count === 0) {
+            socket.on("open", () => {
+              socket.close();
+            });
+            done();
+          } else if (count < 0) {
+            done(new Error("Called next() too many times."));
+          }
+        }
+      },
+    );
+  });
+
+  test("refreshes the access token when it will almost expire", done => {
+    jwt.sign(
+      {works: true},
+      "yolo-swag",
+      {expiresIn: "20s"},
+      (error, accessToken) => {
+        if (error) return done(error);
+
+        handleRequest.mockImplementationOnce((req, res) => {
+          if (req.url === "/account/refreshAccessToken") {
+            let data = "";
+            req.on("data", buffer => (data += buffer.toString("utf8")));
+            req.on("end", () => {
+              res.statusCode = 200;
+              res.write(
+                JSON.stringify({
+                  ok: true,
+                  data: {accessToken: JSON.parse(data).refreshToken},
+                }),
+              );
+              res.end();
+            });
+          } else {
+            res.statusCode = 404;
+            res.end();
+          }
+        });
+
+        const socket = new WebSocket(proxyUrl, {
+          headers: {
+            Cookie: `refresh_token=yoyoyo; access_token=${accessToken}`,
+          },
+        });
+
+        socket.on("upgrade", res => {
+          expect(res.headers["set-cookie"]).toEqual([
+            "access_token=yoyoyo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+          ]);
+          next();
+        });
+
+        handleConnection.mockImplementationOnce((_socket, req) => {
+          expect(req.url).toEqual(`/?access_token=yoyoyo`);
+          next();
+        });
+
+        let count = 2;
+        function next() {
+          count--;
+          if (count === 0) {
+            socket.on("open", () => {
+              socket.close();
+            });
+            done();
+          } else if (count < 0) {
+            done(new Error("Called next() too many times."));
+          }
+        }
+      },
+    );
+  });
+
+  test("an expired access token attempts to refresh its access token", done => {
+    jwt.sign(
+      {works: true},
+      "yolo-swag",
+      {expiresIn: "-1h"},
+      (error, accessToken) => {
+        if (error) return done(error);
+
+        handleRequest.mockImplementationOnce((req, res) => {
+          if (req.url === "/account/refreshAccessToken") {
+            let data = "";
+            req.on("data", buffer => (data += buffer.toString("utf8")));
+            req.on("end", () => {
+              expect(data).toEqual(JSON.stringify({refreshToken: "yoyoyo"}));
+              res.statusCode = 400;
+              res.write(
+                JSON.stringify({
+                  ok: false,
+                  error: {code: "REFRESH_TOKEN_INVALID", extra: 42},
+                }),
+              );
+              res.end();
+            });
+          } else {
+            res.statusCode = 404;
+            res.end();
+          }
+        });
+
+        const socket = new WebSocket(proxyUrl, {
+          headers: {
+            Cookie: `refresh_token=yoyoyo; access_token=${accessToken}`,
+          },
+        });
+
+        socket.on("unexpected-response", (_req, res) => {
+          let data = "";
+          res.on("data", buffer => (data += buffer.toString("utf8")));
+          res.on("end", () => {
+            expect(res.statusCode).toEqual(401);
+            expect(res.headers["set-cookie"]).toEqual([
+              "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict, refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
+            ]);
+            expect(data).toEqual("Unauthorized");
+            done();
+          });
+        });
+      },
+    );
   });
 });

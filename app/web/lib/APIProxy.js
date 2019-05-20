@@ -51,6 +51,88 @@ const apiClient = got.extend({
 });
 
 /**
+ * Gets the access token from the request cookies and passes them to our
+ * callback. If the access token or refresh token does not exist then we call
+ * the callback with undefined.
+ */
+function getAccessToken(apiUrl, req, callback) {
+  // We first try to parse the access and refresh tokens from our cookie. If
+  // the access token has expired then we try to refresh it before sending
+  // our request.
+  let accessToken = undefined;
+  let refreshToken = undefined;
+
+  // Parse the access token and refresh token from the request cookies.
+  const cookieHeader = req.headers.cookie;
+  if (cookieHeader !== undefined) {
+    try {
+      // Parse our cookie header.
+      const result = cookie.parse(cookieHeader);
+      accessToken = result.access_token;
+      refreshToken = result.refresh_token;
+
+      // If the access token has expired then we need to generate a new access
+      // token! We refresh the token even if the token will only expire in 30
+      // seconds. That’s to factor in network latency. We want to avoid the
+      // token expiring while in flight to our API server.
+      if (
+        accessToken !== undefined &&
+        Math.floor(Date.now() / 1000) >= jwt.decode(accessToken).exp - 30
+      ) {
+        refreshAccessToken();
+      } else {
+        // Otherwise our access token did not expire and we can send
+        // our request.
+        callback(null, accessToken, false);
+      }
+    } catch (error) {
+      callback(error);
+    }
+  } else {
+    // If we do not have a cookie header then send our request on its way!
+    callback(null, accessToken, false);
+  }
+
+  /**
+   * Generates a new access token before sending our request.
+   */
+  async function refreshAccessToken() {
+    try {
+      // Make the request to our API with `got` in JSON mode. We will want to
+      // inspect the result of this request instead of simply streaming
+      // it through.
+      const apiResponse = await apiClient.post(
+        {...apiUrl, path: "/account/refreshAccessToken"},
+        {body: {refreshToken}},
+      );
+
+      const result = apiResponse.body;
+
+      // If we did not get a successful API response then re-throw the error and
+      // unset our cookies!
+      if (result.ok !== true) {
+        const error = new Error("Failed to refresh access token.");
+        error.resetTokens = true;
+        throw error;
+      }
+
+      // Retrieve the new access token.
+      const newAccessToken = result.data.accessToken;
+
+      // Set the access token in our closure to the new access token.
+      accessToken = newAccessToken;
+    } catch (error) {
+      callback(error);
+      return;
+    }
+
+    // Yay! Now that we have a non-expired access token we can actually send
+    // our API request.
+    callback(null, accessToken, true);
+  }
+}
+
+/**
  * Proxies a request to our API.
  *
  * Adds special handling for authorization. When signing in we will attach our
@@ -76,48 +158,24 @@ function proxyRequest(apiUrl, req, res, pathname) {
  * this since we really need to be fast.
  */
 function proxyNormalRequest(apiUrl, req, res, pathname) {
-  // We first try to parse the access and refresh tokens from our cookie. If
-  // the access token has expired then we try to refresh it before sending
-  // our request.
-  let accessToken;
-  let refreshToken;
-
-  // Parse the access token and refresh token from the request cookies.
-  const cookieHeader = req.headers.cookie;
-  if (cookieHeader !== undefined) {
-    try {
-      // Parse our cookie header.
-      const result = cookie.parse(cookieHeader);
-      accessToken = result.access_token;
-      refreshToken = result.refresh_token;
-
-      // If the access token has expired then we need to generate a new access
-      // token! We refresh the token even if the token will only expire in 30
-      // seconds. That’s to factor in network latency. We want to avoid the
-      // token expiring while in flight to our API server.
-      if (
-        accessToken !== undefined &&
-        Math.floor(Date.now() / 1000) >= jwt.decode(accessToken).exp - 30
-      ) {
-        refreshAccessToken();
-      } else {
-        // Otherwise our access token did not expire and we can send
-        // our request.
-        sendRequest();
-      }
-    } catch (error) {
+  getAccessToken(apiUrl, req, (error, accessToken, newAccessToken) => {
+    // If our request failed then handle the error...
+    if (error) {
       handleError(res, error);
+      return;
     }
-  } else {
-    // If we do not have a cookie header then send our request on its way!
-    sendRequest();
-  }
 
-  /**
-   * Sends the request we are proxying to our API server. We might have to
-   * refresh our access token before we can proxy a request.
-   */
-  function sendRequest() {
+    if (newAccessToken && accessToken !== undefined) {
+      // Set our cookie with the updated access token. This way we won’t
+      // need to generate an access token for every request. We can use
+      // this one for the next hour or so.
+      res.setHeader(
+        "Set-Cookie",
+        cookie.serialize("access_token", accessToken, cookieSettings),
+      );
+    }
+
+    // Construct the actual HTTP request...
     const apiRequest = http.request({
       protocol: apiUrl.protocol,
       hostname: apiUrl.hostname,
@@ -153,72 +211,20 @@ function proxyNormalRequest(apiUrl, req, res, pathname) {
 
     // Pipe the body we received into the proxy request body.
     req.pipe(apiRequest);
-  }
 
-  // When we get a response pipe it to our actual HTTP response so our browser
-  // can use it.
-  function handleResponse(apiResponse) {
-    // Copy the status code and headers from our proxy response.
-    res.statusCode = apiResponse.statusCode;
-    for (let i = 0; i < apiResponse.rawHeaders.length; i += 2) {
-      res.setHeader(apiResponse.rawHeaders[i], apiResponse.rawHeaders[i + 1]);
-    }
-
-    // Send the body to our actual response.
-    apiResponse.pipe(res);
-  }
-
-  /**
-   * Generates a new access token before sending our request.
-   */
-  async function refreshAccessToken() {
-    try {
-      // Make the request to our API with `got` in JSON mode. We will want to
-      // inspect the result of this request instead of simply streaming
-      // it through.
-      const apiResponse = await apiClient.post(
-        {...apiUrl, path: "/account/refreshAccessToken"},
-        {body: {refreshToken}},
-      );
-
-      const result = apiResponse.body;
-
-      // If we did not get a successful API response then re-throw the error and
-      // unset our cookies!
-      if (result.ok !== true) {
-        res.statusCode = apiResponse.statusCode;
-        res.setHeader("Content-Type", "application/json");
-        res.setHeader("Set-Cookie", [
-          cookie.serialize("access_token", "", cookieExpireSettings),
-          cookie.serialize("refresh_token", "", cookieExpireSettings),
-        ]);
-        res.write(JSON.stringify(result));
-        res.end();
-        return;
+    // When we get a response pipe it to our actual HTTP response so our browser
+    // can use it.
+    function handleResponse(apiResponse) {
+      // Copy the status code and headers from our proxy response.
+      res.statusCode = apiResponse.statusCode;
+      for (let i = 0; i < apiResponse.rawHeaders.length; i += 2) {
+        res.setHeader(apiResponse.rawHeaders[i], apiResponse.rawHeaders[i + 1]);
       }
 
-      // Retrieve the new access token.
-      const newAccessToken = result.data.accessToken;
-
-      // Set our cookie with the updated access token. This way we won’t
-      // need to generate an access token for every request. We can use
-      // this one for the next hour or so.
-      res.setHeader(
-        "Set-Cookie",
-        cookie.serialize("access_token", newAccessToken, cookieSettings),
-      );
-
-      // Set the access token in our closure to the new access token.
-      accessToken = newAccessToken;
-    } catch (error) {
-      handleError(res, error);
-      return;
+      // Send the body to our actual response.
+      apiResponse.pipe(res);
     }
-
-    // Yay! Now that we have a non-expired access token we can actually send
-    // our API request.
-    sendRequest();
-  }
+  });
 }
 
 /**
@@ -285,14 +291,21 @@ async function proxySignInRequest(apiUrl, req, res, pathname) {
     //
     // Since refresh tokens are very dangerous in the wrong hands we also
     // force the cookie to only be sent over secure contexts.
-    res.setHeader("Set-Cookie", [
-      cookie.serialize("access_token", result.data.accessToken, cookieSettings),
-      cookie.serialize(
-        "refresh_token",
-        result.data.refreshToken,
-        cookieSettings,
-      ),
-    ]);
+    res.setHeader(
+      "Set-Cookie",
+      [
+        cookie.serialize(
+          "access_token",
+          result.data.accessToken,
+          cookieSettings,
+        ),
+        cookie.serialize(
+          "refresh_token",
+          result.data.refreshToken,
+          cookieSettings,
+        ),
+      ].join(", "),
+    );
 
     // Send an ok response to our client. We remove the refresh and access
     // tokens from the response body so that client-side code will never
@@ -379,25 +392,52 @@ function handleError(res, error) {
     logError(error);
   }
 
-  // Send an unknown error to the client.
-  res.statusCode = 500;
-  res.setHeader("Content-Type", "application/json");
-  res.write(
-    JSON.stringify({
-      ok: false,
-      error: {
-        code: "UNKNOWN",
+  if (error.resetTokens) {
+    // If we were told to reset tokens then send an unauthorized error instead
+    // of an unknown error.
+    res.statusCode = 401;
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Set-Cookie", [
+      cookie.serialize("access_token", "", cookieExpireSettings),
+      cookie.serialize("refresh_token", "", cookieExpireSettings),
+    ]);
+    res.write(
+      JSON.stringify({
+        ok: false,
+        error: {
+          code: "UNAUTHORIZED",
 
-        // If we are in development mode then include the stack of our error
-        // from the server. This should help in debugging why an error ocurred.
-        serverStack:
-          process.env.NODE_ENV === "development" && error instanceof Error
-            ? error.stack
-            : undefined,
-      },
-    }),
-  );
-  res.end();
+          // If we are in development mode then include the stack of our error
+          // from the server. This should help in debugging why an error ocurred.
+          serverStack:
+            process.env.NODE_ENV === "development" && error instanceof Error
+              ? error.stack
+              : undefined,
+        },
+      }),
+    );
+    res.end();
+  } else {
+    // Send an unknown error to the client.
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json");
+    res.write(
+      JSON.stringify({
+        ok: false,
+        error: {
+          code: "UNKNOWN",
+
+          // If we are in development mode then include the stack of our error
+          // from the server. This should help in debugging why an error ocurred.
+          serverStack:
+            process.env.NODE_ENV === "development" && error instanceof Error
+              ? error.stack
+              : undefined,
+        },
+      }),
+    );
+    res.end();
+  }
 }
 
 /**
@@ -427,88 +467,122 @@ function proxyUpgrade(apiUrl, req, socket, firstPacket) {
 
   setupSocket(socket);
 
+  // If the socket errs then log it instead of crashing the process.
+  socket.on("error", error => {
+    logError(error);
+  });
+
   // The first packet was read from our socket. This “un-reads” the packet by
   // putting it back in the socket’s readable stream.
   if (firstPacket && firstPacket.length) {
     socket.unshift(firstPacket);
   }
 
-  const apiRequest = http.request({
-    protocol: apiUrl.protocol,
-    hostname: apiUrl.hostname,
-    port: apiUrl.port,
-    agent: apiProxyAgent,
-    method: req.method,
-    path: "",
-  });
+  // We need access to these variables here but we only get them asynchronously
+  // in our callback.
+  let accessToken;
+  let newAccessToken = false;
 
-  apiRequest.on("error", error => {
-    logError(error);
-    socket.end();
-  });
-
-  apiRequest.on("response", handleResponse);
-  apiRequest.on("upgrade", handleUpgrade);
-
-  // Copy headers we’re ok with proxying to our request options.
-  for (let i = 0; i < req.rawHeaders.length; i += 2) {
-    const header = req.rawHeaders[i];
-    apiRequest.setHeader(header, req.rawHeaders[i + 1]);
-  }
-
-  // Add the `Forwarded` header to our request so the API server knows who
-  // the request was originally from.
-  apiRequest.setHeader("Forwarded", getForwardedHeader(req));
-
-  // Send the API request!
-  apiRequest.end();
-
-  /**
-   * We only really need to handle the response when we aren’t going to be
-   * upgrading to WebSockets. If we aren’t upgrading then we want to send over
-   * the HTTP response and the rest of the body.
-   */
-  function handleResponse(apiResponse) {
-    // If upgrade event isn't going to happen, close the socket...
-    if (!apiResponse.upgrade) {
-      // Write the HTTP headers from our API response to the socket.
-      writeHead(apiResponse.statusCode, apiResponse.rawHeaders);
-
-      // Pipe the rest of the API response to our socket...
-      apiResponse.pipe(socket);
+  getAccessToken(apiUrl, req, (error, _accessToken, _newAccessToken) => {
+    // If there was an error while trying to fetch our access token write an
+    // error response to our socket...
+    if (error) {
+      let statusCode = 500;
+      const rawHeaders = [];
+      if (error.resetTokens) {
+        statusCode = 401;
+        rawHeaders.push(
+          "Set-Cookie",
+          cookie.serialize("access_token", "", cookieExpireSettings) +
+            ", " +
+            cookie.serialize("refresh_token", "", cookieExpireSettings),
+        );
+      }
+      writeResponse(statusCode, rawHeaders);
+      return;
     }
-  }
 
-  /**
-   * If the HTTP request upgrades then we handle it with this function. We
-   * respond to our client with an HTTP 101 status code and pipe the API socket
-   * to our client’s socket.
-   */
-  function handleUpgrade(apiResponse, apiSocket, apiFirstPacket) {
-    apiSocket.on("error", error => {
+    accessToken = _accessToken;
+    newAccessToken = _newAccessToken;
+
+    // Construct the HTTP request which should trigger an upgrade...
+    const apiRequest = http.request({
+      protocol: apiUrl.protocol,
+      hostname: apiUrl.hostname,
+      port: apiUrl.port,
+      agent: apiProxyAgent,
+      method: req.method,
+      path: accessToken ? `/?access_token=${accessToken}` : "",
+    });
+
+    apiRequest.on("error", error => {
       logError(error);
       socket.end();
     });
 
-    socket.on("error", error => {
-      logError(error);
-      apiSocket.end();
-    });
+    apiRequest.on("response", handleResponse);
+    apiRequest.on("upgrade", handleUpgrade);
 
-    setupSocket(apiSocket);
-
-    // The first packet was read from our socket. This “un-reads” the packet by
-    // putting it back in the socket’s readable stream.
-    if (apiFirstPacket && apiFirstPacket.length) {
-      apiSocket.unshift(apiFirstPacket);
+    // Copy headers we’re ok with proxying to our request options.
+    for (let i = 0; i < req.rawHeaders.length; i += 2) {
+      const header = req.rawHeaders[i];
+      apiRequest.setHeader(header, req.rawHeaders[i + 1]);
     }
 
-    // Write the HTTP headers from our API response to the socket.
-    writeHead(101, apiResponse.rawHeaders);
+    // Add the `Forwarded` header to our request so the API server knows who
+    // the request was originally from.
+    apiRequest.setHeader("Forwarded", getForwardedHeader(req));
 
-    // Pipe the sockets together! Yay we did it!
-    apiSocket.pipe(socket).pipe(apiSocket);
-  }
+    // Send the API request!
+    apiRequest.end();
+
+    /**
+     * We only really need to handle the response when we aren’t going to be
+     * upgrading to WebSockets. If we aren’t upgrading then we want to send over
+     * the HTTP response and the rest of the body.
+     */
+    function handleResponse(apiResponse) {
+      // If upgrade event isn't going to happen, close the socket...
+      if (!apiResponse.upgrade) {
+        // Write the HTTP headers from our API response to the socket.
+        writeHead(apiResponse.statusCode, apiResponse.rawHeaders);
+
+        // Pipe the rest of the API response to our socket...
+        apiResponse.pipe(socket);
+      }
+    }
+
+    /**
+     * If the HTTP request upgrades then we handle it with this function. We
+     * respond to our client with an HTTP 101 status code and pipe the API socket
+     * to our client’s socket.
+     */
+    function handleUpgrade(apiResponse, apiSocket, apiFirstPacket) {
+      apiSocket.on("error", error => {
+        logError(error);
+        socket.end();
+      });
+
+      socket.on("error", error => {
+        logError(error);
+        apiSocket.end();
+      });
+
+      setupSocket(apiSocket);
+
+      // The first packet was read from our socket. This “un-reads” the packet by
+      // putting it back in the socket’s readable stream.
+      if (apiFirstPacket && apiFirstPacket.length) {
+        apiSocket.unshift(apiFirstPacket);
+      }
+
+      // Write the HTTP headers from our API response to the socket.
+      writeHead(101, apiResponse.rawHeaders);
+
+      // Pipe the sockets together! Yay we did it!
+      apiSocket.pipe(socket).pipe(apiSocket);
+    }
+  });
 
   /**
    * Writes an HTTP head to our socket. We ask for the raw headers array
@@ -516,9 +590,25 @@ function proxyUpgrade(apiUrl, req, socket, firstPacket) {
    */
   function writeHead(statusCode, rawHeaders) {
     let head = `HTTP/1.1 ${statusCode} ${http.STATUS_CODES[statusCode]}\r\n`;
+
+    // Add all of our raw headers...
     for (let i = 0; i < rawHeaders.length; i += 2) {
       head += `${rawHeaders[i]}: ${rawHeaders[i + 1]}\r\n`;
     }
+
+    // When writing the head if we have a new access token let’s add a
+    // `Set-Cookie` header...
+    if (newAccessToken && accessToken !== undefined) {
+      // Set our cookie with the updated access token. This way we won’t
+      // need to generate an access token for every request. We can use
+      // this one for the next hour or so.
+      head += `Set-Cookie: ${cookie.serialize(
+        "access_token",
+        accessToken,
+        cookieSettings,
+      )}\r\n`;
+    }
+
     head += "\r\n";
 
     socket.write(head);
@@ -528,7 +618,11 @@ function proxyUpgrade(apiUrl, req, socket, firstPacket) {
    * Writes an entire plain text response to our socket. We ask for a headers
    * object and convert it to a raw headers array.
    */
-  function writeResponse(statusCode, bodyText = http.STATUS_CODES[statusCode]) {
+  function writeResponse(
+    statusCode,
+    rawHeaders = [],
+    bodyText = http.STATUS_CODES[statusCode],
+  ) {
     // Write the head to our socket...
     writeHead(statusCode, [
       "Connection",
@@ -537,13 +631,14 @@ function proxyUpgrade(apiUrl, req, socket, firstPacket) {
       "text/html",
       "Content-Length",
       Buffer.byteLength(bodyText),
+      ...rawHeaders,
     ]);
 
     // Write the body to our socket...
     socket.write(bodyText);
 
-    // We are done with our socket so destroy it!
-    socket.destroy();
+    // We are done with our socket so end it!
+    socket.end();
   }
 }
 

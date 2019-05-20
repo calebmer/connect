@@ -56,11 +56,21 @@ module.exports = {
     // This lets us open files from the runtime error overlay.
     app.use(errorOverlayMiddleware());
 
-    // Add our API proxy to the Webpack Dev Server.
-    const {proxyRequest} = require("./lib/APIProxy");
+    const {proxyRequest, proxyUpgrade} = require("./lib/APIProxy");
     const apiUrl = url.parse("http://localhost:4000");
+
+    // Add our HTTP API proxy to the Webpack Dev Server.
     app.use("/api", (req, res) => {
       proxyRequest(apiUrl, req, res, req.url);
+    });
+
+    // Add our WS API proxy to the Webpack Dev Server.
+    server.websocketProxies.push({
+      upgrade: (req, socket, head) => {
+        if (req.url.startsWith("/api")) {
+          proxyUpgrade(apiUrl, req, socket, head);
+        }
+      },
     });
   },
 };
