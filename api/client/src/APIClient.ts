@@ -92,7 +92,9 @@ type ClientMethod<Input, Output> = {} extends Input
  * To start a subscription we give the server some input and it responds with
  * a “subscribed” message along with any messages from that subscription.
  */
-type ClientSubscription<Input, Message> = (input: Input) => Stream<Message>;
+type ClientSubscription<Input, Message> = (
+  input: Input,
+) => Stream<Message | {type: "subscribed"} | {type: "unsubscribed"}>;
 
 /**
  * Creates an API client based on the schema we were provided.
@@ -307,6 +309,14 @@ export function isSyntaxJSON(value: string): boolean {
  * Builds an API client endpoint for subscriptions. The subscription endpoint
  * is a function that returns a stream. When the stream is subscribed we will
  * subscribe with the provided input on the server.
+ *
+ * Also sends messages to let the listener know if we are subscribed or
+ * unsubscribed to the server. When calling the endpoint we return a stream that
+ * has completely separate subscription state. Even if it has the same input as
+ * another stream. The first message in the stream will always be “subscribed”.
+ * However, if you add a second listener after the stream has already subscribed
+ * you will not see the “subscribed” message. That’s how XStream’s
+ * hot-by-default streams work.
  */
 function buildSubscription<
   Input extends JSONObjectValue,
@@ -320,10 +330,15 @@ function buildSubscription<
   const fullPath = `/${path.join("/")}`;
 
   return input => {
-    // Local state which lets us know if we are subscribed on the server or not.
-    // We set this to true while we are subscribing even if the server has not
+    // State which lets us know if are in the process of subscribing. We set
+    // this to true while we are subscribing even if the server has not
     // confirmed that we are subscribed yet.
-    let isSubscribed = false;
+    let isSubscribedLocal = false;
+
+    // State which lets us know if we are fully subscribed on the server. Unlike
+    // `isSubscribedLocal` which is only a reflection of if we are in the
+    // process of subscribing locally.
+    let isSubscribedRemote = false;
 
     // Generate an ID for our subscription. We will use this ID to determine
     // which messages were meant for us. If we unsubscribe and then re-subscribe
@@ -333,7 +348,9 @@ function buildSubscription<
     // If the listener is null then that means our stream is currently
     // unsubscribed. If it is not null then our stream has at least
     // one subscriber.
-    let listener: Listener<Message> | null = null;
+    let listener: Listener<
+      Message | {type: "subscribed"} | {type: "unsubscribed"}
+    > | null = null;
 
     // We attach this listener to our stream of _all_ subscription messages from
     // the server. This listener serves to filter messages and forward them on
@@ -355,8 +372,15 @@ function buildSubscription<
             return;
           }
 
-          // noop
+          // If the server reports that we successfully subscribed then forward
+          // that information to our listener.
           case "subscribed": {
+            if (message.id === subscriptionID) {
+              if (isSubscribedRemote === false) {
+                isSubscribedRemote = true;
+                listener.next({type: "subscribed"});
+              }
+            }
             return;
           }
 
@@ -364,7 +388,11 @@ function buildSubscription<
           // our subscriptions as well. Represent this in our local state so we
           // don’t manually unsubscribe which would be redundant.
           case "disconnected": {
-            isSubscribed = false;
+            isSubscribedLocal = false;
+            if (isSubscribedRemote === true) {
+              isSubscribedRemote = false;
+              listener.next({type: "unsubscribed"});
+            }
             return;
           }
 
@@ -442,8 +470,8 @@ function buildSubscription<
      * we are connected.
      */
     function trySubscribe() {
-      if (isSubscribed === false) {
-        isSubscribed = true;
+      if (isSubscribedLocal === false) {
+        isSubscribedLocal = true;
 
         subscription.publish({
           type: "subscribe",
@@ -460,8 +488,8 @@ function buildSubscription<
      * subscription after this.
      */
     function tryUnsubscribe() {
-      if (isSubscribed === true) {
-        isSubscribed = false;
+      if (isSubscribedLocal === true) {
+        isSubscribedLocal = false;
 
         subscription.publish({
           type: "unsubscribe",
