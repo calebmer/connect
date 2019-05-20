@@ -484,6 +484,13 @@ class APIClientSubscription {
    */
   public readonly stream: Stream<APIClientSubscriptionMessage>;
 
+  /**
+   * When the WebSocket closes we try to re-open it since we expect our
+   * WebSocket with the server to live forever. This timer, created by
+   * `setTimeout`, can be used to cancel a retry.
+   */
+  private retryTimeout: number | null = null;
+
   private constructor(private readonly config: APIClientConfig) {
     // Create the message stream...
     this.stream = xs.create({
@@ -508,6 +515,13 @@ class APIClientSubscription {
    * one. If a socket does exist then we return it.
    */
   private ensureSocket(): WebSocket {
+    // If we scheduled a retry then cancel it since we are retrying right now!
+    if (this.retryTimeout !== null) {
+      clearTimeout(this.retryTimeout);
+      this.retryTimeout = null;
+    }
+
+    // We already have the socket. We don’t need to connect a new one.
     if (this.socket !== null) {
       return this.socket;
     }
@@ -573,10 +587,17 @@ class APIClientSubscription {
     this.socket.addEventListener("close", () => {
       this.socket = null;
 
-      // TODO: Try to re-connect with exponential back off.
-      //
-      // TODO: When we disconnect report that the individual subscriptions
-      // unsubscribed and re-subscribed.
+      // If the WebSocket closes unexpectedly then after some delay we try to
+      // re-connect.
+      if (this.listener !== null && this.retryTimeout === null) {
+        this.retryTimeout = setTimeout(() => {
+          this.retryTimeout = null;
+
+          if (this.listener !== null) {
+            this.ensureSocket();
+          }
+        }, 1000);
+      }
     });
 
     /**
