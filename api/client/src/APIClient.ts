@@ -320,6 +320,11 @@ function buildSubscription<
   const fullPath = `/${path.join("/")}`;
 
   return input => {
+    // Local state which lets us know if we are subscribed on the server or not.
+    // We set this to true while we are subscribing even if the server has not
+    // confirmed that we are subscribed yet.
+    let isSubscribed = false;
+
     // Generate an ID for our subscription. We will use this ID to determine
     // which messages were meant for us. If we unsubscribe and then re-subscribe
     // then we will use the same ID.
@@ -339,19 +344,38 @@ function buildSubscription<
         if (listener === null) {
           throw new Error("Expected listener to not be null.");
         }
+
         switch (message.type) {
+          // If we get a message for our subscription then send that to our
+          // listener assuming that it has the right type.
           case "message": {
-            // If we get a message for our subscription then send that to our
-            // listener assuming that it has the right type.
             if (message.id === subscriptionID) {
               listener.next(message.message as Message);
             }
             return;
           }
+
+          // noop
           case "subscribed": {
-            // noop
             return;
           }
+
+          // Disconnecting from the server will automatically disconnect all of
+          // our subscriptions as well. Represent this in our local state so we
+          // don’t manually unsubscribe which would be redundant.
+          case "disconnected": {
+            isSubscribed = false;
+            return;
+          }
+
+          // Whenever we connect try to subscribe! If we are already subscribed
+          // then this will be a noop. If we were unsubscribed then we will try
+          // to re-subscribe.
+          case "connected": {
+            trySubscribe();
+            return;
+          }
+
           default: {
             // noop, but use TypeScript’s `never` to make sure we’ve tested all
             // the cases above.
@@ -388,15 +412,8 @@ function buildSubscription<
         }
         listener = newListener;
 
-        // Subscribe with our given input! This won’t subscribe us immediately.
-        // Eventually the server will send us a “subscribed” message to let us
-        // know we are connected.
-        subscription.publish({
-          type: "subscribe",
-          id: subscriptionID,
-          path: fullPath,
-          input,
-        });
+        // Subscribe on the server...
+        trySubscribe();
 
         // Our subscription stream is like a `map()` stream so make sure we
         // subscribe to the underlying stream so we can intercept
@@ -411,18 +428,47 @@ function buildSubscription<
         }
         listener = null;
 
-        // Let the server know that we don’t care about messages for this
-        // subscription anymore. The server will release resources for this
-        // subscription after this.
-        subscription.publish({
-          type: "unsubscribe",
-          id: subscriptionID,
-        });
+        // Unsubscribe from the server...
+        tryUnsubscribe();
 
         // We don’t care about messages from the server now so unsubscribe.
         subscription.stream.removeListener(serverListener);
       },
     });
+
+    /**
+     * Subscribe with our given input! This won’t subscribe us immediately.
+     * Eventually the server will send us a “subscribed” message to let us know
+     * we are connected.
+     */
+    function trySubscribe() {
+      if (isSubscribed === false) {
+        isSubscribed = true;
+
+        subscription.publish({
+          type: "subscribe",
+          id: subscriptionID,
+          path: fullPath,
+          input,
+        });
+      }
+    }
+
+    /**
+     * Let the server know that we don’t care about messages for this
+     * subscription anymore. The server will release resources for this
+     * subscription after this.
+     */
+    function tryUnsubscribe() {
+      if (isSubscribed === true) {
+        isSubscribed = false;
+
+        subscription.publish({
+          type: "unsubscribe",
+          id: subscriptionID,
+        });
+      }
+    }
   };
 }
 
@@ -431,7 +477,10 @@ function buildSubscription<
  * are transformed into actual exceptions) and with messages to indicate when
  * the client connects and disconnects.
  */
-type APIClientSubscriptionMessage = WithoutError<SubscriptionServerMessage>;
+type APIClientSubscriptionMessage =
+  | WithoutError<SubscriptionServerMessage>
+  | {type: "connected"}
+  | {type: "disconnected"};
 
 /**
  * Filters a message with type `"error"` out of a tagged union
@@ -544,6 +593,13 @@ class APIClientSubscription {
     // Start our connection with the modified URL!
     this.socket = new WebSocket(url);
 
+    this.socket.addEventListener("open", () => {
+      // Let the listener know our socket connected.
+      if (this.listener !== null) {
+        this.listener.next({type: "connected"});
+      }
+    });
+
     // When we get a message we parse the message as JSON and send it to
     // our listener.
     this.socket.addEventListener("message", event => {
@@ -586,6 +642,12 @@ class APIClientSubscription {
     // events. It more likely means the internet temporarily disconnected.
     this.socket.addEventListener("close", () => {
       this.socket = null;
+
+      // Let the listener know our socket disconnected. If the listener waits
+      // long enough the socket will re-connect.
+      if (this.listener !== null) {
+        this.listener.next({type: "disconnected"});
+      }
 
       // If the WebSocket closes unexpectedly then after some delay we try to
       // re-connect.
