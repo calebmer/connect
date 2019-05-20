@@ -20,9 +20,9 @@ import {
   JSONObjectValue,
   JSONValue,
   SchemaSubscription,
+  SubscriptionClientMessage,
   SubscriptionID,
-  SubscriptionMessageClient,
-  SubscriptionMessageServer,
+  SubscriptionServerMessage,
 } from "@connect/api-client";
 import {AccessTokenData, AccessTokenGenerator} from "./AccessToken";
 import {ContextSubscription} from "./Context";
@@ -185,7 +185,7 @@ function handleConnection(
       // Validate that the message, which is user input, is indeed a
       // subscription message! We can’t trust the message to be valid since
       // the user could give us any arbitrary JSON value.
-      if (!SubscriptionMessageClient.validate(message)) {
+      if (!SubscriptionClientMessage.validate(message)) {
         throw new APIError(APIErrorCode.BAD_INPUT);
       }
 
@@ -208,7 +208,7 @@ function handleConnection(
   /**
    * Handles an incoming message from our client.
    */
-  async function handleMessage(message: SubscriptionMessageClient) {
+  async function handleMessage(message: SubscriptionClientMessage) {
     switch (message.type) {
       case "subscribe": {
         const subscriptionRoute = server.router.get(message.path);
@@ -299,7 +299,7 @@ function handleConnection(
   /**
    * Publishes a message to our API client.
    */
-  function publish(message: SubscriptionMessageServer) {
+  function publish(message: SubscriptionServerMessage) {
     socket.send(JSON.stringify(message));
   }
 }

@@ -8,8 +8,15 @@ import {
   SchemaNamespace,
   SchemaSubscription,
 } from "./Schema";
+import {
+  SubscriptionClientMessage,
+  SubscriptionID,
+  SubscriptionServerMessage,
+} from "./Subscription";
+import xs, {Listener, Stream} from "xstream";
 import {APISchema} from "./APISchema";
 import {AccessToken} from "./types/TokenTypes";
+import {generateID} from "./generateID";
 
 /**
  * The type of an API client.
@@ -81,7 +88,11 @@ type ClientMethod<Input, Output> = {} extends Input
   ? ((input?: undefined, options?: ClientMethodOptions) => Promise<Output>)
   : ((input: Input, options?: ClientMethodOptions) => Promise<Output>);
 
-type ClientSubscription<Input, Message> = null;
+/**
+ * To start a subscription we give the server some input and it responds with
+ * a “subscribed” message along with any messages from that subscription.
+ */
+type ClientSubscription<Input, Message> = (input: Input) => Stream<Message>;
 
 /**
  * Creates an API client based on the schema we were provided.
@@ -98,7 +109,7 @@ function buildClient(
     case SchemaKind.METHOD_UNAUTHORIZED:
       return buildClientMethod(config, path, schema);
     case SchemaKind.SUBSCRIPTION:
-      return buildSubscription();
+      return buildSubscription(config, path, schema);
     default: {
       const never: never = schema;
       throw new Error(`Unrecognized schema kind: ${never["kind"]}`);
@@ -217,16 +228,7 @@ function buildClientMethod<
     if (result.ok) {
       return result.data;
     } else {
-      // Log the server error if our result gave us the server’s error
-      // stack trace.
-      //
-      // NOTE: We use `console.log()` since `console.error()` in React Native
-      // will throw up a big red error box!
-      if (result.error.serverStack) {
-        console.log(`Server Error: ${result.error.serverStack}`); // eslint-disable-line no-console
-      }
-
-      throw new APIError(result.error.code);
+      throw new APIError(result.error.code, result.error.serverStack);
     }
   }) as ClientMethod<Input, Output>;
 }
@@ -249,9 +251,7 @@ function buildClientMethod<
  * ?a=1&b=2&b=3&b=4
  * ```
  */
-function queryStringSerialize<Input extends JSONObjectValue>(
-  input: Input,
-): string {
+function queryStringSerialize(input: JSONObjectValue): string {
   const query: Array<string> = [];
   for (const [key, value] of Object.entries(input)) {
     const encodedKey = encodeURIComponent(key);
@@ -272,9 +272,7 @@ function queryStringSerialize<Input extends JSONObjectValue>(
  * JSON stringifies all values except for strings that start with a letter and
  * aren’t a JSON keyword.
  */
-function queryStringValueSerialize<Value extends JSONValue>(
-  value: Value,
-): string {
+function queryStringValueSerialize(value: JSONValue): string {
   if (typeof value === "string" && !isSyntaxJSON(value)) {
     return encodeURIComponent(value);
   } else {
@@ -305,6 +303,295 @@ export function isSyntaxJSON(value: string): boolean {
   );
 }
 
-function buildSubscription() {
-  return null;
+/**
+ * Builds an API client endpoint for subscriptions. The subscription endpoint
+ * is a function that returns a stream. When the stream is subscribed we will
+ * subscribe with the provided input on the server.
+ */
+function buildSubscription<
+  Input extends JSONObjectValue,
+  Message extends JSONObjectValue
+>(
+  config: APIClientConfig,
+  path: Array<string>,
+  _schema: SchemaSubscription<Input, Message>,
+): ClientSubscription<Input, Message> {
+  const subscription = APIClientSubscription.get(config);
+  const fullPath = `/${path.join("/")}`;
+
+  return input => {
+    // Generate an ID for our subscription. We will use this ID to determine
+    // which messages were meant for us. If we unsubscribe and then re-subscribe
+    // then we will use the same ID.
+    const subscriptionID = generateID<SubscriptionID>();
+
+    // If the listener is null then that means our stream is currently
+    // unsubscribed. If it is not null then our stream has at least
+    // one subscriber.
+    let listener: Listener<Message> | null = null;
+
+    // We attach this listener to our stream of _all_ subscription messages from
+    // the server. This listener serves to filter messages and forward them on
+    // to our own listener.
+    const serverListener: Listener<WithoutError<SubscriptionServerMessage>> = {
+      // Pass on messages for this subscription only...
+      next(message) {
+        if (listener === null) {
+          throw new Error("Expected listener to not be null.");
+        }
+        switch (message.type) {
+          case "message": {
+            // If we get a message for our subscription then send that to our
+            // listener assuming that it has the right type.
+            if (message.id === subscriptionID) {
+              listener.next(message.message as Message);
+            }
+            break;
+          }
+          case "subscribed": {
+            // noop
+            break;
+          }
+          default: {
+            // noop, but use TypeScript’s `never` to make sure we’ve tested all
+            // the cases above.
+            const never: never = message;
+            (_never => {})(never); // HACK: Make TypeScript accept the variable as used.
+            break;
+          }
+        }
+      },
+
+      // Pass on error messages...
+      error(error) {
+        if (listener === null) {
+          throw new Error("Expected listener to not be null.");
+        }
+        listener.error(error);
+      },
+
+      // Pass on completion messages...
+      complete() {
+        if (listener === null) {
+          throw new Error("Expected listener to not be null.");
+        }
+        listener.complete();
+      },
+    };
+
+    return xs.create({
+      start(newListener) {
+        // We expect there to only be one listener at a time. If XStream wants
+        // to re-subscribe we expect it to call stop first.
+        if (listener !== null) {
+          throw new Error("Expected listener to be null.");
+        }
+        listener = newListener;
+
+        // Subscribe with our given input! This won’t subscribe us immediately.
+        // Eventually the server will send us a “subscribed” message to let us
+        // know we are connected.
+        subscription.publish({
+          type: "subscribe",
+          id: subscriptionID,
+          path: fullPath,
+          input,
+        });
+
+        // Our subscription stream is like a `map()` stream so make sure we
+        // subscribe to the underlying stream so we can intercept
+        // server messages.
+        subscription.stream.addListener(serverListener);
+      },
+      stop() {
+        // We expect that `start()` has been called before we can stop. Unset
+        // the listener so we don’t send it any new messages.
+        if (listener === null) {
+          throw new Error("Expected listener to not be null.");
+        }
+        listener = null;
+
+        // Let the server know that we don’t care about messages for this
+        // subscription anymore. The server will release resources for this
+        // subscription after this.
+        subscription.publish({
+          type: "unsubscribe",
+          id: subscriptionID,
+        });
+
+        // We don’t care about messages from the server now so unsubscribe.
+        subscription.stream.removeListener(serverListener);
+      },
+    });
+  };
+}
+
+/**
+ * Filters a message with type `"error"` out of a tagged union
+ * like `SubscriptionServerMessage`.
+ */
+type WithoutError<Message> = Message extends {type: "error"} ? never : Message;
+
+/**
+ * The subscription client manages our WebSocket connection over the course of
+ * the application’s life cycle.
+ */
+class APIClientSubscription {
+  /** Associate subscription clients with a specific config object. */
+  private static clients = new WeakMap<
+    APIClientConfig,
+    APIClientSubscription
+  >();
+
+  /**
+   * Get a subscription client for a given config. Configs that are
+   * referentially equal will return referentially equal subscription clients.
+   * That way we only have one underlying WebSocket connection for each
+   * API client.
+   */
+  public static get(config: APIClientConfig): APIClientSubscription {
+    let client = this.clients.get(config);
+    if (client === undefined) {
+      client = new APIClientSubscription(config);
+      this.clients.set(config, client);
+    }
+    return client;
+  }
+
+  /**
+   * The WebSocket we use for communicating subscriptions in realtime.
+   */
+  private socket: WebSocket | null = null;
+
+  /**
+   * The current XStream listener we will send messages to.
+   */
+  private listener: Listener<
+    WithoutError<SubscriptionServerMessage>
+  > | null = null;
+
+  /**
+   * A stream which emits messages sent from the server as we receive them.
+   * Subscribe to this stream to listen for the messages.
+   *
+   * If we get an error message from the server then we turn it into an
+   * `APIError` and
+   */
+  public readonly stream: Stream<WithoutError<SubscriptionServerMessage>>;
+
+  constructor(private readonly config: APIClientConfig) {
+    // Create the message stream...
+    this.stream = xs.create({
+      start: listener => {
+        if (this.listener !== null) {
+          throw new Error("Expected listener to be null.");
+        }
+        this.listener = listener;
+        this.ensureSocket();
+      },
+      stop: () => {
+        if (this.listener === null) {
+          throw new Error("Expected listener to not be null.");
+        }
+        this.listener = null;
+      },
+    });
+  }
+
+  /**
+   * Makes sure that a socket exists. If a socket does not exist then we create
+   * one. If a socket does exist then we return it.
+   */
+  private ensureSocket(): WebSocket {
+    if (this.socket !== null) {
+      return this.socket;
+    }
+
+    // We will modify the URL given to us in configuration to get the right
+    // WebSocket URL.
+    let url = this.config.url;
+
+    // If this is an absolute path then add the origin of the page to the URL.
+    if (url.startsWith("/")) {
+      url = window.location.origin + url;
+    }
+
+    // If the URL is using the HTTP protocol then let’s switch to the WS
+    // protocol. This works for both HTTP to WS and HTTPS to WSS.
+    if (url.startsWith("http")) {
+      url = "ws" + url.slice(4);
+    }
+
+    // Start our connection with the modified URL!
+    this.socket = new WebSocket(url);
+
+    // When we get a message we parse the message as JSON and send it to
+    // our listener.
+    this.socket.addEventListener("message", event => {
+      try {
+        // Parse the message from our server as JSON. Assume that our server
+        // gave us a correctly formatted subscription message.
+        const rawMessage = event.data as unknown;
+        if (typeof rawMessage !== "string") {
+          throw new Error("Expected string.");
+        }
+        const message: SubscriptionServerMessage = JSON.parse(rawMessage);
+
+        switch (message.type) {
+          // If our message was an error then convert it to an `APIError` and
+          // throw instead of passing the error on to our listener.
+          case "error": {
+            throw new APIError(message.error.code, message.error.serverStack);
+          }
+          default: {
+            // If we have a listener then send it the message...
+            if (this.listener !== null) {
+              this.listener.next(message);
+            }
+            break;
+          }
+        }
+      } catch (error) {
+        handleError(error);
+      }
+    });
+
+    // Forward any errors to our listener. If we have no listener then treat
+    // the error as an unhandled error.
+    this.socket.addEventListener("error", event => {
+      handleError(event);
+    });
+
+    // If the socket closes before we’ve stopped the producer, then try to
+    // re-connect! The WebSocket closing does not mean there will be no more
+    // events. It more likely means the internet temporarily disconnected.
+    this.socket.addEventListener("close", () => {
+      // TODO: Try to re-connect with exponential back off.
+      //
+      // TODO: When we disconnect report that the individual subscriptions
+      // unsubscribed and re-subscribed.
+    });
+
+    /**
+     * Handles an error by sending it to our listener or reporting it internally
+     * if there are no listeners to handle the error.
+     */
+    const handleError = (error: unknown) => {
+      if (this.listener !== null) {
+        this.listener.error(error);
+      } else {
+        console.error(error); // eslint-disable-line no-console
+      }
+    };
+
+    return this.socket;
+  }
+
+  /**
+   * Publishes a message to our WebSocket. If our WebSocket is not yet open then
+   * we will wait until it opens to send the message.
+   */
+  public publish(message: SubscriptionClientMessage) {
+    this.ensureSocket().send(JSON.stringify(message));
+  }
 }

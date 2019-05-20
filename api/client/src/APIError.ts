@@ -121,7 +121,7 @@ export class APIError extends Error {
    */
   public readonly code: APIErrorCode;
 
-  constructor(code: APIErrorCode) {
+  constructor(code: APIErrorCode, serverStack?: string) {
     super(`API error: ${code}`);
 
     // Maintains proper stack trace for where our error was thrown
@@ -131,6 +131,15 @@ export class APIError extends Error {
     }
 
     this.code = code;
+
+    // Log the server error if our result gave us the server’s error
+    // stack trace. Our server should only give us a trace in development.
+    //
+    // NOTE: We use `console.log()` since `console.error()` in React Native
+    // will throw up a big red error box!
+    if (serverStack !== undefined) {
+      console.log(`Server Error: ${serverStack}`); // eslint-disable-line no-console
+    }
   }
 
   /**

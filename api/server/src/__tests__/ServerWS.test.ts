@@ -773,6 +773,58 @@ test("will unsubscribe with an unsubscribe message and unsubscribes from the res
   });
 });
 
+test("will unsubscribe with and re-subscribe with the same subscription ID", done => {
+  const subscriptionID = generateID();
+
+  const socket = createWebSocketClient(done);
+
+  socket.on("open", () => {
+    socket.send(
+      JSON.stringify({
+        type: "subscribe",
+        id: subscriptionID,
+        path: "/comment/watchNewPostComments",
+        input: {postID: generateID()},
+      }),
+    );
+    setTimeout(() => {
+      expect(watchNewPostComments).toHaveBeenCalledTimes(1);
+      expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(0);
+      socket.send(
+        JSON.stringify({
+          type: "unsubscribe",
+          id: subscriptionID,
+        }),
+      );
+      setTimeout(() => {
+        expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(1);
+        socket.send(
+          JSON.stringify({
+            type: "subscribe",
+            id: subscriptionID,
+            path: "/comment/watchNewPostComments",
+            input: {postID: generateID()},
+          }),
+        );
+        setTimeout(() => {
+          expect(watchNewPostComments).toHaveBeenCalledTimes(2);
+          expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(1);
+          socket.send(
+            JSON.stringify({
+              type: "unsubscribe",
+              id: subscriptionID,
+            }),
+          );
+          setTimeout(() => {
+            expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(2);
+            done();
+          }, 10);
+        }, 10);
+      }, 10);
+    }, 10);
+  });
+});
+
 test("will error if no access token was provided", done => {
   const port = (server.address() as any).port;
   const socket = new WebSocket(`ws://localhost:${port}`);

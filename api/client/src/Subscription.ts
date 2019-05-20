@@ -45,14 +45,14 @@ declare const SubscriptionID: unique symbol;
  * This type is generated from a `SchemaInput` since it is client input sent to
  * the server which means we need to validate it.
  */
-export type SubscriptionMessageClient = SchemaInputValue<
-  typeof SubscriptionMessageClient
+export type SubscriptionClientMessage = SchemaInputValue<
+  typeof SubscriptionClientMessage
 >;
 
 /**
  * The input validator for an API client message from the client to the server.
  */
-export const SubscriptionMessageClient = SchemaInput.union(
+export const SubscriptionClientMessage = SchemaInput.union(
   SchemaInput.object({
     type: SchemaInput.constant("subscribe"),
     id: SchemaInput.string<SubscriptionID>(),
@@ -68,7 +68,7 @@ export const SubscriptionMessageClient = SchemaInput.union(
 /**
  * A message sent from the server to the client in our subscription protocol.
  */
-export type SubscriptionMessageServer =
+export type SubscriptionServerMessage =
   /**
    * Message to let the client know they have successfully subscribed.
    */
@@ -95,10 +95,4 @@ export type SubscriptionMessageServer =
         readonly code: APIErrorCode;
         readonly serverStack?: string;
       };
-    }
-
-  /**
-   * We may add a new event type at any point. This case helps force us to deal
-   * with that eventuality in the types.
-   */
-  | {readonly type: never}; // NOTE: Ideally this would be: `string & not SubscriptionMessageServerType`.
+    };
