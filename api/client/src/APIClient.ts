@@ -333,7 +333,7 @@ function buildSubscription<
     // We attach this listener to our stream of _all_ subscription messages from
     // the server. This listener serves to filter messages and forward them on
     // to our own listener.
-    const serverListener: Listener<WithoutError<SubscriptionServerMessage>> = {
+    const serverListener: Listener<APIClientSubscriptionMessage> = {
       // Pass on messages for this subscription only...
       next(message) {
         if (listener === null) {
@@ -346,18 +346,18 @@ function buildSubscription<
             if (message.id === subscriptionID) {
               listener.next(message.message as Message);
             }
-            break;
+            return;
           }
           case "subscribed": {
             // noop
-            break;
+            return;
           }
           default: {
             // noop, but use TypeScript’s `never` to make sure we’ve tested all
             // the cases above.
             const never: never = message;
             (_never => {})(never); // HACK: Make TypeScript accept the variable as used.
-            break;
+            return;
           }
         }
       },
@@ -427,6 +427,13 @@ function buildSubscription<
 }
 
 /**
+ * Any message we might get from our subscription server without errors (which
+ * are transformed into actual exceptions) and with messages to indicate when
+ * the client connects and disconnects.
+ */
+type APIClientSubscriptionMessage = WithoutError<SubscriptionServerMessage>;
+
+/**
  * Filters a message with type `"error"` out of a tagged union
  * like `SubscriptionServerMessage`.
  */
@@ -466,9 +473,7 @@ class APIClientSubscription {
   /**
    * The current XStream listener we will send messages to.
    */
-  private listener: Listener<
-    WithoutError<SubscriptionServerMessage>
-  > | null = null;
+  private listener: Listener<APIClientSubscriptionMessage> | null = null;
 
   /**
    * A stream which emits messages sent from the server as we receive them.
@@ -477,9 +482,9 @@ class APIClientSubscription {
    * If we get an error message from the server then we turn it into an
    * `APIError` and
    */
-  public readonly stream: Stream<WithoutError<SubscriptionServerMessage>>;
+  public readonly stream: Stream<APIClientSubscriptionMessage>;
 
-  constructor(private readonly config: APIClientConfig) {
+  private constructor(private readonly config: APIClientConfig) {
     // Create the message stream...
     this.stream = xs.create({
       start: listener => {
