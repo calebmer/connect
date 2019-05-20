@@ -116,11 +116,16 @@ export async function publishComment(
   // Notify anyone listening that a comment was just inserted! Send the post and
   // comment ID so that listeners can determine if they are interested or not.
   //
+  // We only send the notification after the transaction commits so that
+  // listeners are able to see the comment we inserted.
+  //
   // We manually notify in our API method instead of using a Postgres trigger
   // in case we want to swap out Postgres for dedicated pub/sub infrastructure.
-  await PGListen.notify(CommentInsertChannel, {
-    postID: input.postID,
-    commentID: input.id,
+  ctx.afterCommit(async () => {
+    await PGListen.notify(CommentInsertChannel, {
+      postID: input.postID,
+      commentID: input.id,
+    });
   });
 
   return {

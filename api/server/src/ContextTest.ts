@@ -114,9 +114,13 @@ export class ContextTest implements ContextQueryable {
     await this.client.query("SET LOCAL ROLE connect_api");
     const ctx = new (ContextUnauthorized as any)(this.client);
     try {
-      return await action(ctx);
+      const result = await action(ctx);
+      await ctx.handleCommit();
+      return result;
+    } catch (error) {
+      await ctx.handleRollback();
+      throw error;
     } finally {
-      ctx.invalidate();
       try {
         await this.client.query("RESET ROLE");
       } catch (error) {
@@ -167,9 +171,13 @@ export class ContextTest implements ContextQueryable {
     await this.client.query(`SET LOCAL connect.account_id = ${accountID}`);
     const ctx = new (Context as any)(this.client, accountID);
     try {
-      return await action(ctx);
+      const result = await action(ctx);
+      await ctx.handleCommit();
+      return result;
+    } catch (error) {
+      await ctx.handleRollback();
+      throw error;
     } finally {
-      ctx.invalidate();
       try {
         await this.client.query("RESET ROLE");
         await this.client.query("RESET connect.account_id");

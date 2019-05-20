@@ -81,7 +81,9 @@ export const PGClient = {
 
   /**
    * Executes an action with a Postgres client from our connection pool. Once
-   * the action finishes we release the client back to our pool.
+   * the action finishes we release the client back to our pool. Always executes
+   * the action in a transaction. If the action throws then we rollback
+   * the transaction.
    */
   async with<T>(action: (client: PGClient) => Promise<T>): Promise<T> {
     const client = await pool.connect();

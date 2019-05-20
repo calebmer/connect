@@ -24,17 +24,30 @@ export class ContextUnauthorized implements ContextQueryable {
   /**
    * Run an asynchronous action in an unauthorized context.
    */
-  static withUnauthorized<T>(
+  static async withUnauthorized<T>(
     action: (ctx: ContextUnauthorized) => Promise<T>,
   ): Promise<T> {
-    return PGClient.with(async client => {
-      const ctx = new ContextUnauthorized(client);
-      try {
-        return await action(ctx);
-      } finally {
-        ctx.invalidate();
+    let ctx: ContextUnauthorized | undefined;
+    try {
+      // Connect a Postgres client. This will execute the action in
+      // a transaction.
+      const result = await PGClient.with(client => {
+        ctx = new ContextUnauthorized(client);
+        return action(ctx);
+      });
+
+      // Commit the context! This will invalidate the context so it can’t be
+      // queried again and will run any after-commit callbacks.
+      await ctx!.handleCommit();
+
+      return result;
+    } catch (error) {
+      // If there was an error we still need to invalidate our context...
+      if (ctx !== undefined) {
+        await ctx.handleRollback();
       }
-    });
+      throw error;
+    }
   }
 
   /**
@@ -50,6 +63,15 @@ export class ContextUnauthorized implements ContextQueryable {
    */
   private client: PGClient | undefined;
 
+  /**
+   * Callbacks which are scheduled to run after our context’s transaction has
+   * been commit.
+   *
+   * The commit callback may not use the context! The context will be
+   * invalidated before the callbacks are executed.
+   */
+  private readonly afterCommitCallbacks: Array<() => Promise<void>> = [];
+
   protected constructor(client: PGClient) {
     this.client = client;
   }
@@ -63,9 +85,9 @@ export class ContextUnauthorized implements ContextQueryable {
    * - We convert some database error codes into API error codes.
    * - We prevent querying after the client has been released back to the pool.
    */
-  query(query: SQLQuery): Promise<QueryResult> {
+  public query(query: SQLQuery): Promise<QueryResult> {
     if (this.client === undefined) {
-      throw new Error("Cannot query a context after it has been invalidated.");
+      throw new Error("Cannot use the context after it has been invalidated.");
     }
 
     const queryConfig = sql.compile(query);
@@ -75,11 +97,38 @@ export class ContextUnauthorized implements ContextQueryable {
   }
 
   /**
-   * Invalidates a context which prevents it from being used. This is useful for
-   * stopping leaks where the programmer accidentally returns the context from
-   * their transaction.
+   * Schedules a callback to run after the context successfully commits. This
+   * callback will not run if the action owning the transaction throws!
+   *
+   * The context will be invalidated before running the callback so you won’t
+   * be able to use any context methods like `Context.query`.
    */
-  protected invalidate() {
+  public afterCommit(callback: () => Promise<void>) {
+    if (this.client === undefined) {
+      throw new Error("Cannot use the context after it has been invalidated.");
+    }
+    this.afterCommitCallbacks.push(callback);
+  }
+
+  /**
+   * Invalidates a context after the transaction has committed. Also runs all
+   * the callbacks scheduled to run after we commit. Awaits all those callbacks
+   * to complete.
+   *
+   * Invaliding the context is useful for stopping leaks where the programmer
+   * accidentally returns the context from their transaction.
+   */
+  protected async handleCommit(): Promise<void> {
+    this.client = undefined;
+    await Promise.all(this.afterCommitCallbacks.map(callback => callback()));
+  }
+
+  /**
+   * Invalidates a context after the transaction has been rolled back. This is
+   * useful for stopping leaks where the programmer accidentally returns the
+   * context from their transaction.
+   */
+  protected async handleRollback(): Promise<void> {
     this.client = undefined;
   }
 }
@@ -91,34 +140,43 @@ export class Context extends ContextUnauthorized {
   /**
    * Run an asynchronous action in an authorized context.
    */
-  static withAuthorized<T>(
+  static async withAuthorized<T>(
     accountID: AccountID,
     action: (ctx: Context) => Promise<T>,
   ): Promise<T> {
-    return PGClient.with(async client => {
-      // Set the account ID database parameter in our authenticated context
-      // before running the action. We first verify that `accountID` is, indeed,
-      // a number to avoid SQL injection attacks. Then we insert it directly
-      // into the query.
-      //
-      // We use the underlying client from the `pg` module to avoid logging this
-      // query which runs on every authorized API request.
-      if (typeof accountID === "number") {
-        await client.query(`SET LOCAL connect.account_id = ${accountID}`);
-      } else {
-        throw new Error("Expected accountID to be a number.");
-      }
+    let ctx: Context | undefined;
+    try {
+      const result = await PGClient.with(async client => {
+        // Set the account ID database parameter in our authenticated context
+        // before running the action. We first verify that `accountID` is, indeed,
+        // a number to avoid SQL injection attacks. Then we insert it directly
+        // into the query.
+        //
+        // We use the underlying client from the `pg` module to avoid logging this
+        // query which runs on every authorized API request.
+        if (typeof accountID === "number") {
+          await client.query(`SET LOCAL connect.account_id = ${accountID}`);
+        } else {
+          throw new Error("Expected accountID to be a number.");
+        }
 
-      // Create our context. We will invalidate it after the action completes.
-      const ctx = new Context(client, accountID);
-      try {
-        // The await here is important so that we wait before invalidating
-        // the context!
-        return await action(ctx);
-      } finally {
-        ctx.invalidate();
+        // Create our context. We will invalidate it after the action completes.
+        ctx = new Context(client, accountID);
+        return action(ctx);
+      });
+
+      // Commit the context! This will invalidate the context so it can’t be
+      // queried again and will run any after-commit callbacks.
+      await ctx!.handleCommit();
+
+      return result;
+    } catch (error) {
+      // If there was an error we still need to invalidate our context...
+      if (ctx !== undefined) {
+        await ctx.handleRollback();
       }
-    });
+      throw error;
+    }
   }
 
   /**
