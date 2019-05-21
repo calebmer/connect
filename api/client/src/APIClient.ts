@@ -92,7 +92,7 @@ type ClientMethod<Input, Output> = {} extends Input
  * To start a subscription we give the server some input and it responds with
  * a “subscribed” message along with any messages from that subscription.
  */
-type ClientSubscription<Input, Message> = (
+type ClientSubscription<Input, Message extends {type: string}> = (
   input: Input,
 ) => Stream<Message | {type: "subscribed"} | {type: "unsubscribed"}>;
 
@@ -320,7 +320,7 @@ export function isSyntaxJSON(value: string): boolean {
  */
 function buildSubscription<
   Input extends JSONObjectValue,
-  Message extends JSONObjectValue
+  Message extends JSONObjectValue & {type: string}
 >(
   config: APIClientConfig,
   path: Array<string>,

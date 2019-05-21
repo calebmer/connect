@@ -23,6 +23,14 @@ export type Comment = {
 };
 
 /**
+ * An event we receive while watching post comments.
+ */
+export type PostCommentEvent = {
+  readonly type: "new";
+  readonly comment: Comment;
+};
+
+/**
  * A cursor represents the position of a comment in a list ordered by the
  * comment’s `publishedAt` date.
  */

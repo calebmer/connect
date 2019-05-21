@@ -4,6 +4,7 @@ import {
   Comment,
   CommentID,
   DateTime,
+  PostCommentEvent,
   PostID,
 } from "@connect/api-client";
 import {Context, ContextSubscription} from "../Context";
@@ -142,7 +143,7 @@ const CommentInsertChannel = PGListenChannel.create<{
 // All the subscribers for various posts in our application.
 const subscribers = new Map<
   PostID,
-  Set<ContextSubscription<{comment: Comment}>>
+  Set<ContextSubscription<PostCommentEvent>>
 >();
 
 // If we are listening to the database for comment insertions then this will be
@@ -153,7 +154,7 @@ let unlistenCommentInsert: Promise<() => Promise<void>> | undefined;
  * Subscribes to new comments for the provided post.
  */
 export async function watchNewPostComments(
-  ctx: ContextSubscription<{comment: Comment}>,
+  ctx: ContextSubscription<PostCommentEvent>,
   input: {postID: PostID},
 ): Promise<() => Promise<void>> {
   // Check to make sure that the subscriber is allowed to see the post we will
@@ -243,7 +244,7 @@ async function handleCommentInsertAll(payload: {
  * Handle a comment insertion notification for a single user.
  */
 async function handleCommentInsert(
-  ctx: ContextSubscription<{comment: Comment}>,
+  ctx: ContextSubscription<PostCommentEvent>,
   postID: PostID,
   commentID: CommentID,
 ) {
@@ -272,6 +273,6 @@ async function handleCommentInsert(
 
   // Actually publish the comment!
   if (comment !== undefined) {
-    ctx.publish({comment});
+    ctx.publish({type: "new", comment});
   }
 }

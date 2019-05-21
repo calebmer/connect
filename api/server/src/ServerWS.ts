@@ -39,8 +39,14 @@ export type ServerWS = WebSocket.Server & {
   router: Map<
     string,
     {
-      definition: ServerSubscription<JSONObjectValue, JSONObjectValue>;
-      schema: SchemaSubscription<JSONObjectValue, JSONObjectValue>;
+      definition: ServerSubscription<
+        JSONObjectValue,
+        JSONObjectValue & {type: string}
+      >;
+      schema: SchemaSubscription<
+        JSONObjectValue,
+        JSONObjectValue & {type: string}
+      >;
     }
   >;
 };
@@ -84,7 +90,7 @@ function create(server: http.Server): ServerWS {
  */
 function initializeSubscription<
   Input extends JSONObjectValue,
-  Message extends JSONObjectValue
+  Message extends JSONObjectValue & {type: string}
 >(
   server: WebSocket.Server,
   path: ReadonlyArray<string>,
@@ -235,7 +241,7 @@ function handleConnection(
    */
   async function handleSubscribe<
     Input extends JSONObjectValue,
-    Message extends JSONObjectValue
+    Message extends JSONObjectValue & {type: string}
   >(
     definition: ServerSubscription<Input, Message>,
     schema: SchemaSubscription<Input, Message>,

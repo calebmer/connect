@@ -88,7 +88,7 @@ export const Schema = {
    */
   subscription<
     Inputs extends {readonly [key: string]: SchemaInput<JSONValue>},
-    Message extends JSONObjectValue
+    Message extends JSONObjectValue & {type: string}
   >({
     input,
     message,
@@ -118,7 +118,7 @@ export type SchemaBase =
   | SchemaNamespace<{readonly [key: string]: SchemaBase}>
   | SchemaMethod<JSONObjectValue, JSONObjectValue>
   | SchemaMethodUnauthorized<JSONObjectValue, JSONObjectValue>
-  | SchemaSubscription<JSONObjectValue, JSONObjectValue>;
+  | SchemaSubscription<JSONObjectValue, JSONObjectValue & {type: string}>;
 
 /**
  * The kind of a schema.
@@ -179,10 +179,13 @@ export type SchemaMethodUnauthorized<
  *
  * Can be implemented as either WebSockets or Server-sent events since a
  * subscription is intentionally not bi-directional.
+ *
+ * The message type is forced to be a tagged union because we will often mix
+ * messages with other events.
  */
 export type SchemaSubscription<
   Input extends JSONObjectValue,
-  Message extends JSONObjectValue = never
+  Message extends JSONObjectValue & {type: string}
 > = {
   readonly kind: SchemaKind.SUBSCRIPTION;
   readonly input: SchemaInputObject<Input>;
