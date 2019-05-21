@@ -16,6 +16,10 @@ type CommentShimmer = {
 /**
  * Mock data for creating a visually interesting comment shimmer conversation.
  * Roughly taken from a conversation in Definitely Work.
+ *
+ * It’s important that we keep shimmer’s small. We don’t really want one more
+ * than two lines long. That’s because if the shimmers are larger than the real
+ * conversation, we’ll have loaded too few items to fit into the current screen.
  */
 const conversation: ReadonlyArray<CommentShimmer> = [
   {byline: true, lines: [84]},
@@ -23,8 +27,10 @@ const conversation: ReadonlyArray<CommentShimmer> = [
   {byline: false, lines: [37]},
   {byline: true, lines: [100, 57]},
   {byline: false, lines: [100, 12]},
-  {byline: true, lines: [100, 88, 37]},
-  {byline: true, lines: [92, 100, 65]},
+  {byline: true, lines: [100, 88]},
+  {byline: false, lines: [37]},
+  {byline: true, lines: [92, 100]},
+  {byline: false, lines: [65]},
   {byline: false, lines: [92]},
   {byline: true, lines: [38]},
   {byline: true, lines: [63, 56]},

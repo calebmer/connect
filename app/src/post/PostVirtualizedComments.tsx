@@ -253,7 +253,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
       this.state.commentHeights,
       firstOffset,
     );
-    first -= 1 + overscanCount;
+    first -= 1;
     if (first < 0) first = 0;
 
     // Get the ending index of visible items.
@@ -262,7 +262,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
       this.state.commentHeights,
       lastOffset,
     );
-    last += overscanCount;
     if (last > commentCount) last = commentCount;
 
     // Update the visible range if it changed.
@@ -460,20 +459,28 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   );
 
   render() {
-    let visibleRange: RenderRange = this.state.visibleRange;
+    const commentCount = this.props.post.commentCount;
+    const actualVisibleRange: RenderRange = this.state.visibleRange;
+
+    // Add overscan to the visible range. We render more comments off-screen
+    // but we don’t report them in our visible range state.
+    let visibleRange: RenderRange = {
+      first: Math.max(actualVisibleRange.first - overscanCount, 0),
+      last: Math.min(actualVisibleRange.last + overscanCount, commentCount),
+    };
 
     // We always render some items at the very beginning of the list so that
     // “jump to start” are perceived to render quickly.
     let leadingRange: RenderRange | null = {
       first: 0,
-      last: Math.min(leadingCount, this.props.post.commentCount),
+      last: Math.min(leadingCount, commentCount),
     };
 
     // We always render some items at the very end of the list so that
     // “jump to start” are perceived to render quickly.
     let trailingRange: RenderRange | null = {
-      first: Math.max(0, this.props.post.commentCount - trailingCount),
-      last: this.props.post.commentCount,
+      first: Math.max(0, commentCount - trailingCount),
+      last: commentCount,
     };
 
     // Merge the leading range with the visible range if needed.
