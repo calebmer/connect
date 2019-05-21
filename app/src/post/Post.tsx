@@ -1,12 +1,23 @@
 import {Color, Font, Shadow, Space} from "../atoms";
 import {
+  CommentCache,
+  CommentCacheEntryStatus,
   PostCommentsCache,
   PostCommentsCacheEntry,
   commentCountMore,
 } from "../comment/CommentCache";
-import React, {useCallback, useContext, useMemo, useRef, useState} from "react";
+import {CommentID, PostID} from "@connect/api-client";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {ScrollEvent, ScrollView, StyleSheet, View} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
+import {API} from "../api/API";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
@@ -14,7 +25,6 @@ import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
-import {PostID} from "@connect/api-client";
 import {PostVirtualizedComments} from "./PostVirtualizedComments";
 import {Route} from "../router/Route";
 import {Skimmer} from "../cache/Skimmer";
@@ -53,6 +63,10 @@ function Post({
     PostID,
     {items: ReadonlyArray<PostCommentsCacheEntry | undefined>}
   >(PostCommentsCache, postID, {items: []});
+
+  // Keep track of all the realtime comments which were published after we
+  // mounted this component.
+  const realtimeComments = useRealtimeComments(postID);
 
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar =
@@ -179,12 +193,24 @@ function Post({
         <PostContent postID={post.id} />
         <Trough title="Comments" />
         <PostVirtualizedComments
-          commentCount={post.commentCount}
+          commentCount={post.commentCount + realtimeComments.length}
           getComment={useCallback(
             (index: number) => {
-              return comments[index];
+              // If we have exceeded the range of our loaded comments then start
+              // indexing into our realtime comments.
+              if (index >= post.commentCount) {
+                return realtimeComments[index - post.commentCount];
+              } else {
+                // Try to get our comment in the loaded comments array.
+                const comment = comments[index];
+                if (comment !== undefined) {
+                  return comment.id;
+                } else {
+                  return undefined;
+                }
+              }
             },
-            [comments],
+            [comments, post.commentCount, realtimeComments],
           )}
           onScroll={virtualizeScroll}
           onVisibleRangeChange={useCallback((range: RenderRange) => {
@@ -208,6 +234,52 @@ export {PostMemo as Post};
 type RenderRange = {first: number; last: number};
 
 type MaybePromise<T> = T | Promise<T>;
+
+/**
+ * Accumulates comments as they are published in realtime. The returned array
+ * includes all of the new comments which were added since our
+ * component mounted.
+ */
+function useRealtimeComments(postID: PostID): ReadonlyArray<CommentID> {
+  const [realtimeComments, setRealtimeComments] = useState<
+    ReadonlyArray<CommentID>
+  >([]);
+
+  useEffect(() => {
+    const subscription = API.comment.watchPostComments({postID}).subscribe({
+      next(message) {
+        switch (message.type) {
+          // When we get a new comment:
+          //
+          // 1. Insert the comment into our cache.
+          // 2. Insert the comment into our realtime array of incoming comments.
+          case "new": {
+            const {comment} = message;
+
+            CommentCache.insert(comment.id, {
+              status: CommentCacheEntryStatus.Commit,
+              comment,
+            });
+
+            setRealtimeComments(prevRealtimeComments => [
+              ...prevRealtimeComments,
+              comment.id,
+            ]);
+            break;
+          }
+        }
+      },
+      error() {
+        // TODO: error handling
+      },
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [postID]);
+
+  return realtimeComments;
+}
 
 const styles = StyleSheet.create({
   background: {

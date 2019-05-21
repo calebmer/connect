@@ -6,13 +6,11 @@ import {
   View,
 } from "react-native";
 import {Font, Space} from "../atoms";
-import {
-  PostCommentsCacheEntry,
-  commentCountMore,
-} from "../comment/CommentCache";
 import React, {ReactElement} from "react";
 import {Comment} from "../comment/Comment";
+import {CommentID} from "@connect/api-client";
 import {CommentShimmer} from "../comment/CommentShimmer";
+import {commentCountMore} from "../comment/CommentCache";
 import {reactSchedulerFlushSync} from "../utils/forks/reactSchedulerFlushSync";
 
 // The number of items to render outside of the viewport range.
@@ -50,7 +48,7 @@ type Props = {
    * interface with `commentCount` and `getComment` which can be implemented in
    * any arbitrary way under the hood.
    */
-  getComment: (index: number) => PostCommentsCacheEntry | undefined;
+  getComment: (index: number) => CommentID | undefined;
 
   /**
    * HACK: We want this component to have access to the `onScroll` event but we
@@ -441,7 +439,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   // parameters change.
   private renderItem = memoizeLast(
     (
-      getComment: (index: number) => PostCommentsCacheEntry | undefined,
+      getComment: (index: number) => CommentID | undefined,
       commentChunks: ReadonlyArray<CommentChunk>,
       commentHeights: ReadonlyArray<number | undefined>,
     ) =>
@@ -747,13 +745,13 @@ function renderFiller(
  */
 function renderItem(
   handleCommentLayout: (index: number, event: LayoutChangeEvent) => void,
-  getComment: (index: number) => PostCommentsCacheEntry | undefined,
+  getComment: (index: number) => CommentID | undefined,
   commentChunks: ReadonlyArray<CommentChunk>,
   commentHeights: ReadonlyArray<number | undefined>,
   index: number,
 ): ReactElement {
-  const comment = getComment(index);
-  const lastComment = getComment(index - 1);
+  const commentID = getComment(index);
+  const lastCommentID = getComment(index - 1);
   const commentHeight = commentHeights[index];
   const offset = getOffset(commentChunks, commentHeights, index);
 
@@ -763,7 +761,7 @@ function renderItem(
 
   return (
     <React.Fragment key={index}>
-      {comment !== undefined && (
+      {commentID !== undefined && (
         <View
           style={{
             position: "absolute",
@@ -775,12 +773,12 @@ function renderItem(
           onLayout={event => handleCommentLayout(index, event)}
         >
           <Comment
-            commentID={comment.id}
-            lastCommentID={lastComment !== undefined ? lastComment.id : null}
+            commentID={commentID}
+            lastCommentID={lastCommentID || null}
           />
         </View>
       )}
-      {(comment === undefined || commentHeight === undefined) && (
+      {(commentID === undefined || commentHeight === undefined) && (
         <ViewComponent
           style={{
             position: "absolute",

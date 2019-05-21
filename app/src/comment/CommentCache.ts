@@ -29,7 +29,7 @@ export const CommentCache = new Cache<CommentID, CommentCacheEntry>({
 /**
  * The status of a `CommentCacheEntry`. Uses common lingo from transaction status.
  */
-enum CommentCacheEntryStatus {
+export enum CommentCacheEntryStatus {
   /** The cache entry is optimistic and has not yet been committed. */
   Pending,
   /** The cache entry is fully commit to the backend, hooray! */
