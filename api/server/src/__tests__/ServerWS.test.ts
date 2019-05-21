@@ -15,7 +15,7 @@ import jwt from "jsonwebtoken";
 
 const watchNewPostCommentsUnsubscribe = jest.fn(async () => {});
 
-const watchNewPostComments = jest.fn(async (_ctx: any, _input: any) => {
+const watchPostComments = jest.fn(async (_ctx: any, _input: any) => {
   return watchNewPostCommentsUnsubscribe;
 });
 
@@ -28,9 +28,9 @@ const serverWS = ServerWS.create(server);
 
 ServerWS.initializeSubscription(
   serverWS,
-  ["comment", "watchNewPostComments"],
-  watchNewPostComments,
-  APISchema.schemas.comment.schemas.watchNewPostComments,
+  ["comment", "watchPostComments"],
+  watchPostComments,
+  APISchema.schemas.comment.schemas.watchPostComments,
 );
 
 // Have the server start listening for requests on a randomly selected port
@@ -227,7 +227,7 @@ test("will error for incorrectly formatted subscription input", done => {
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: 42,
       }),
     );
@@ -248,18 +248,18 @@ test("will subscribe to a subscription defined in our schema", done => {
   const socket = createWebSocketClient(done);
 
   socket.on("open", () => {
-    expect(watchNewPostComments).toHaveBeenCalledTimes(0);
+    expect(watchPostComments).toHaveBeenCalledTimes(0);
     socket.send(
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID},
       }),
     );
     setTimeout(() => {
-      expect(watchNewPostComments).toHaveBeenCalledTimes(1);
-      expect(watchNewPostComments).toHaveBeenCalledWith(expect.anything(), {
+      expect(watchPostComments).toHaveBeenCalledTimes(1);
+      expect(watchPostComments).toHaveBeenCalledWith(expect.anything(), {
         postID,
       });
       done();
@@ -273,18 +273,18 @@ test("will subscribe to a subscription with the correct authorization", done => 
   const socket = createWebSocketClient(done);
 
   socket.on("open", () => {
-    expect(watchNewPostComments).toHaveBeenCalledTimes(0);
+    expect(watchPostComments).toHaveBeenCalledTimes(0);
     socket.send(
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID},
       }),
     );
     setTimeout(() => {
-      expect(watchNewPostComments).toHaveBeenCalledTimes(1);
-      expect(watchNewPostComments.mock.calls[0][0].accountID).toEqual(
+      expect(watchPostComments).toHaveBeenCalledTimes(1);
+      expect(watchPostComments.mock.calls[0][0].accountID).toEqual(
         accountID,
       );
       done();
@@ -299,12 +299,12 @@ test("will subscribe and receive a subscribed notification", done => {
   const socket = createWebSocketClient(done);
 
   socket.on("open", () => {
-    expect(watchNewPostComments).toHaveBeenCalledTimes(0);
+    expect(watchPostComments).toHaveBeenCalledTimes(0);
     socket.send(
       JSON.stringify({
         type: "subscribe",
         id: subscriptionID,
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID},
       }),
     );
@@ -337,18 +337,18 @@ test("will subscribe and receive a message from a subscription", done => {
   const socket = createWebSocketClient(done);
 
   socket.on("open", () => {
-    expect(watchNewPostComments).toHaveBeenCalledTimes(0);
+    expect(watchPostComments).toHaveBeenCalledTimes(0);
     socket.send(
       JSON.stringify({
         type: "subscribe",
         id: subscriptionID,
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID},
       }),
     );
     setTimeout(() => {
-      expect(watchNewPostComments).toHaveBeenCalledTimes(1);
-      watchNewPostComments.mock.calls[0][0].publish({works: true});
+      expect(watchPostComments).toHaveBeenCalledTimes(1);
+      watchPostComments.mock.calls[0][0].publish({works: true});
     }, 10);
   });
 
@@ -390,18 +390,18 @@ test("will subscribe and receive multiple messages from a subscription", done =>
   const socket = createWebSocketClient(done);
 
   socket.on("open", () => {
-    expect(watchNewPostComments).toHaveBeenCalledTimes(0);
+    expect(watchPostComments).toHaveBeenCalledTimes(0);
     socket.send(
       JSON.stringify({
         type: "subscribe",
         id: subscriptionID,
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID},
       }),
     );
     setTimeout(() => {
-      expect(watchNewPostComments).toHaveBeenCalledTimes(1);
-      const ctx = watchNewPostComments.mock.calls[0][0];
+      expect(watchPostComments).toHaveBeenCalledTimes(1);
+      const ctx = watchPostComments.mock.calls[0][0];
       ctx.publish({value: actual++});
       ctx.publish({value: actual++});
       ctx.publish({value: actual++});
@@ -450,7 +450,7 @@ test("will error when trying to subscribe while using the same ID", done => {
       JSON.stringify({
         type: "subscribe",
         id: subscriptionID,
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -458,7 +458,7 @@ test("will error when trying to subscribe while using the same ID", done => {
       JSON.stringify({
         type: "subscribe",
         id: subscriptionID,
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -502,12 +502,12 @@ test("will unsubscribe when the socket closes", done => {
       JSON.stringify({
         type: "subscribe",
         id: subscriptionID,
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID},
       }),
     );
     setTimeout(() => {
-      expect(watchNewPostComments).toHaveBeenCalledTimes(1);
+      expect(watchPostComments).toHaveBeenCalledTimes(1);
       expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(0);
       socket.close();
       setTimeout(() => {
@@ -526,7 +526,7 @@ test("will unsubscribe from everything when the socket closes", done => {
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -534,7 +534,7 @@ test("will unsubscribe from everything when the socket closes", done => {
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -542,12 +542,12 @@ test("will unsubscribe from everything when the socket closes", done => {
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
     setTimeout(() => {
-      expect(watchNewPostComments).toHaveBeenCalledTimes(3);
+      expect(watchPostComments).toHaveBeenCalledTimes(3);
       expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(0);
       socket.close();
       setTimeout(() => {
@@ -587,7 +587,7 @@ test("will error if trying to unsubscribe from a subscription when some exist", 
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -595,7 +595,7 @@ test("will error if trying to unsubscribe from a subscription when some exist", 
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -603,7 +603,7 @@ test("will error if trying to unsubscribe from a subscription when some exist", 
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -654,12 +654,12 @@ test("will unsubscribe with an unsubscribe message", done => {
       JSON.stringify({
         type: "subscribe",
         id: subscriptionID,
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
     setTimeout(() => {
-      expect(watchNewPostComments).toHaveBeenCalledTimes(1);
+      expect(watchPostComments).toHaveBeenCalledTimes(1);
       expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(0);
       socket.send(
         JSON.stringify({
@@ -685,7 +685,7 @@ test("will unsubscribe with an unsubscribe message when there are many subscript
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -693,7 +693,7 @@ test("will unsubscribe with an unsubscribe message when there are many subscript
       JSON.stringify({
         type: "subscribe",
         id: subscriptionID,
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -701,12 +701,12 @@ test("will unsubscribe with an unsubscribe message when there are many subscript
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
     setTimeout(() => {
-      expect(watchNewPostComments).toHaveBeenCalledTimes(3);
+      expect(watchPostComments).toHaveBeenCalledTimes(3);
       expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(0);
       socket.send(
         JSON.stringify({
@@ -732,7 +732,7 @@ test("will unsubscribe with an unsubscribe message and unsubscribes from the res
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -740,7 +740,7 @@ test("will unsubscribe with an unsubscribe message and unsubscribes from the res
       JSON.stringify({
         type: "subscribe",
         id: subscriptionID,
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
@@ -748,12 +748,12 @@ test("will unsubscribe with an unsubscribe message and unsubscribes from the res
       JSON.stringify({
         type: "subscribe",
         id: generateID(),
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
     setTimeout(() => {
-      expect(watchNewPostComments).toHaveBeenCalledTimes(3);
+      expect(watchPostComments).toHaveBeenCalledTimes(3);
       expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(0);
       socket.send(
         JSON.stringify({
@@ -783,12 +783,12 @@ test("will unsubscribe with and re-subscribe with the same subscription ID", don
       JSON.stringify({
         type: "subscribe",
         id: subscriptionID,
-        path: "/comment/watchNewPostComments",
+        path: "/comment/watchPostComments",
         input: {postID: generateID()},
       }),
     );
     setTimeout(() => {
-      expect(watchNewPostComments).toHaveBeenCalledTimes(1);
+      expect(watchPostComments).toHaveBeenCalledTimes(1);
       expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(0);
       socket.send(
         JSON.stringify({
@@ -802,12 +802,12 @@ test("will unsubscribe with and re-subscribe with the same subscription ID", don
           JSON.stringify({
             type: "subscribe",
             id: subscriptionID,
-            path: "/comment/watchNewPostComments",
+            path: "/comment/watchPostComments",
             input: {postID: generateID()},
           }),
         );
         setTimeout(() => {
-          expect(watchNewPostComments).toHaveBeenCalledTimes(2);
+          expect(watchPostComments).toHaveBeenCalledTimes(2);
           expect(watchNewPostCommentsUnsubscribe).toHaveBeenCalledTimes(1);
           socket.send(
             JSON.stringify({

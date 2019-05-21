@@ -28,7 +28,7 @@
  * may unsubscribe.
  *
  * The client may subscribe to multiple different “paths”. For example, a client
- * could subscribe to /comment/watchNewPostComments and /post/watchGroupPosts. The
+ * could subscribe to /comment/watchPostComments and /post/watchGroupPosts. The
  * client may also subscribe to the same path multiple times with different
  * inputs. The server’s message will include the “id” of the subscription.
  */

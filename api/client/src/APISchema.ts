@@ -286,7 +286,7 @@ export const APISchema = Schema.namespace({
      * close the connection if a client loses their access to a post
      * while subscribed.
      */
-    watchNewPostComments: Schema.subscription({
+    watchPostComments: Schema.subscription({
       input: {
         postID: SchemaInput.string<PostID>(),
       },

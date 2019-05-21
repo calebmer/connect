@@ -153,7 +153,7 @@ let unlistenCommentInsert: Promise<() => Promise<void>> | undefined;
 /**
  * Subscribes to new comments for the provided post.
  */
-export async function watchNewPostComments(
+export async function watchPostComments(
   ctx: ContextSubscription<PostCommentEvent>,
   input: {postID: PostID},
 ): Promise<() => Promise<void>> {
