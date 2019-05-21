@@ -25,15 +25,15 @@ import {reactSchedulerFlushSync} from "../utils/forks/reactSchedulerFlushSync";
 //
 // This is a bit of a hack to fix the jankiness of loading each comment as it
 // scrolls into view.
-const overscanCount = commentCountMore;
+const overscanCount = commentCountMore / 2;
 
 // The number of items we will always render at the beginning of our list to
 // improve perceived performance.
-const leadingCount = 12;
+const leadingCount = commentCountMore / 2;
 
 // The number of items we will always render at the end of our list to
 // improve perceived performance.
-const trailingCount = 24;
+const trailingCount = commentCountMore;
 
 type Props = {
   /**
