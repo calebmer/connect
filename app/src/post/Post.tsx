@@ -1,10 +1,9 @@
 import {Color, Font, Shadow, Space} from "../atoms";
 import {
-  CommentCache,
-  CommentCacheEntryStatus,
   PostCommentsCache,
   PostCommentsCacheEntry,
   commentCountMore,
+  watchPostComments,
 } from "../comment/CommentCache";
 import React, {
   useCallback,
@@ -16,7 +15,6 @@ import React, {
 } from "react";
 import {ScrollEvent, ScrollView, StyleSheet, View} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
-import {API} from "../api/API";
 import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
@@ -66,7 +64,10 @@ function Post({
 
   // Keep track of all the realtime comments which were published after we
   // mounted this component.
-  useRealtimeComments(postID);
+  useEffect(() => {
+    const subscription = watchPostComments(postID);
+    return () => subscription.unsubscribe();
+  }, [postID]);
 
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar =
@@ -217,59 +218,6 @@ export {PostMemo as Post};
 type RenderRange = {first: number; last: number};
 
 type MaybePromise<T> = T | Promise<T>;
-
-/**
- * Accumulates comments as they are published in realtime. The returned array
- * includes all of the new comments which were added since our
- * component mounted.
- */
-function useRealtimeComments(postID: PostID): void {
-  useEffect(() => {
-    const subscription = API.comment.watchPostComments({postID}).subscribe({
-      next(message) {
-        switch (message.type) {
-          // When we get the number of comments in our entire list as the very
-          // first message of our subscription, we use that information to make
-          // sure our comments skim list has the correct length.
-          //
-          // The skim list could have an outdated length based on
-          // `post.commentCount` which might have changed since we last
-          // fetched data.
-          case "count": {
-            PostCommentsCache.updateWhenReady(postID, comments => {
-              return comments.setLength(message.commentCount);
-            });
-            break;
-          }
-
-          // When we get a new comment:
-          //
-          // 1. Insert the comment into our cache.
-          // 2. Insert the comment into our realtime array of incoming comments.
-          case "new": {
-            const {comment} = message;
-
-            CommentCache.insert(comment.id, {
-              status: CommentCacheEntryStatus.Commit,
-              comment,
-            });
-
-            PostCommentsCache.updateWhenReady(postID, comments => {
-              return comments.setItem(comments.items.length, {id: comment.id});
-            });
-            break;
-          }
-        }
-      },
-      error() {
-        // TODO: error handling
-      },
-    });
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [postID]);
-}
 
 const styles = StyleSheet.create({
   background: {

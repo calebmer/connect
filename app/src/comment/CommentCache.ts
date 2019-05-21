@@ -117,6 +117,12 @@ export const PostCommentsCache = new Cache<
 });
 
 /**
+ * A set of comments that were published locally. We use this set to ignore
+ * messages from our subscription if we know a comment was published locally.
+ */
+const locallyPublishedComments = new Set<CommentID>();
+
+/**
  * Publishes a new comment! Immediately generates a new comment ID and inserts a
  * pending comment object into the cache. We return the new comment ID
  * synchronously so that the caller can optimistically display the new comment.
@@ -155,15 +161,14 @@ export function publishComment({
     comment: pendingComment,
   });
 
-  // TODO:
-  //
-  // // Insert our post as a phantom item in our group post list immediately so
-  // // that it’s shown in the UI.
-  // PostCommentsCache.update(postID, comments => {
-  //   return comments.insert({
-  //     id: commentID,
-  //   });
-  // });
+  // Insert our comment as a phantom item in our post comment list immediately
+  // so that it’s shown in the UI.
+  PostCommentsCache.updateWhenReady(postID, comments => {
+    return comments.setItem(comments.items.length, {id: commentID});
+  });
+
+  // Mark this comment as a locally published comment.
+  locallyPublishedComments.add(commentID);
 
   // TODO: Error handling!
   (async () => {
@@ -195,4 +200,55 @@ export function publishComment({
   })();
 
   return commentID;
+}
+
+/**
+ * Watches the comments on a post and keeps `PostCommentsCache` up to date as
+ * new comments are added in realtime.
+ */
+export function watchPostComments(postID: PostID): {unsubscribe: () => void} {
+  return API.comment.watchPostComments({postID}).subscribe({
+    next(message) {
+      switch (message.type) {
+        // When we get the number of comments in our entire list as the very
+        // first message of our subscription, we use that information to make
+        // sure our comments skim list has the correct length.
+        //
+        // The skim list could have an outdated length based on
+        // `post.commentCount` which might have changed since we last
+        // fetched data.
+        case "count": {
+          PostCommentsCache.updateWhenReady(postID, comments => {
+            return comments.setLength(message.commentCount);
+          });
+          break;
+        }
+
+        // When we get a new comment:
+        //
+        // 1. Insert the comment into our cache.
+        // 2. Insert the comment into our realtime array of incoming comments.
+        case "new": {
+          const {comment} = message;
+
+          // If this comment was locally published then don’t bother adding it
+          // to our cache again. We call `delete()` to avoid leaking memory.
+          if (locallyPublishedComments.delete(comment.id)) return;
+
+          CommentCache.insert(comment.id, {
+            status: CommentCacheEntryStatus.Commit,
+            comment,
+          });
+
+          PostCommentsCache.updateWhenReady(postID, comments => {
+            return comments.setItem(comments.items.length, {id: comment.id});
+          });
+          break;
+        }
+      }
+    },
+    error() {
+      // TODO: error handling
+    },
+  });
 }
