@@ -13,7 +13,6 @@ import {
 import React, {ReactElement} from "react";
 import {Comment} from "../comment/Comment";
 import {CommentShimmer} from "../comment/CommentShimmer";
-import {Post} from "@connect/api-client";
 import {reactSchedulerFlushSync} from "../utils/forks/reactSchedulerFlushSync";
 
 // The number of items to render outside of the viewport range.
@@ -36,15 +35,22 @@ const trailingCount = commentCountMore;
 
 type Props = {
   /**
-   * The post we are rendering comments on.
+   * The total number of comments in our list. We will render a list that can
+   * fit this many comments.
    */
-  post: Post;
+  commentCount: number;
 
   /**
-   * The comments for our post. If an entry is `Skimmer.empty` that means the
-   * comment has not yet loaded.
+   * Fetches an individual comment from our list. We expect this function to be
+   * memoized against the data it fetches with `useCallback`! If we have a
+   * loaded comment cache entry we will return that. Otherwise we will return
+   * undefined if the comment was not yet loaded.
+   *
+   * So instead of taking an array of comments, we instead take an array-like
+   * interface with `commentCount` and `getComment` which can be implemented in
+   * any arbitrary way under the hood.
    */
-  comments: ReadonlyArray<PostCommentsCacheEntry | undefined>;
+  getComment: (index: number) => PostCommentsCacheEntry | undefined;
 
   /**
    * HACK: We want this component to have access to the `onScroll` event but we
@@ -117,7 +123,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
       Math.ceil(
         (Dimensions.get("screen").height * 0.75) / (Font.size2.lineHeight * 2),
       ),
-      this.props.post.commentCount,
+      this.props.commentCount,
     );
 
     this.state = {
@@ -191,7 +197,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     const postOffset = this.postOffset;
     if (postOffset === null) return;
 
-    const commentCount = this.props.post.commentCount;
+    const commentCount = this.props.commentCount;
 
     // Get the range of visible content in the scroll view from the event.
     const timestamp = event.timeStamp;
@@ -435,14 +441,14 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   // parameters change.
   private renderItem = memoizeLast(
     (
-      comments: ReadonlyArray<PostCommentsCacheEntry | undefined>,
+      getComment: (index: number) => PostCommentsCacheEntry | undefined,
       commentChunks: ReadonlyArray<CommentChunk>,
       commentHeights: ReadonlyArray<number | undefined>,
     ) =>
       memoize((index: number) =>
         renderItem(
           this.handleCommentLayout, // We know this event handler is constant in our class.
-          comments,
+          getComment,
           commentChunks,
           commentHeights,
           index,
@@ -451,7 +457,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   );
 
   render() {
-    const commentCount = this.props.post.commentCount;
+    const commentCount = this.props.commentCount;
     const actualVisibleRange: RenderRange = this.state.visibleRange;
 
     // Add overscan to the visible range. We render more comments off-screen
@@ -498,7 +504,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // Get the render item function based on our state. The render item function
     // is memoized so it comes with a cache.
     const renderItem = this.renderItem(
-      this.props.comments,
+      this.props.getComment,
       this.state.commentChunks,
       this.state.commentHeights,
     );
@@ -527,7 +533,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
         {this.renderFiller(
           this.state.commentChunks,
           this.state.commentHeights,
-          this.props.post,
+          this.props.commentCount,
         )}
         {items}
       </View>
@@ -725,10 +731,10 @@ function getIndex(
 function renderFiller(
   commentChunks: ReadonlyArray<CommentChunk>,
   commentHeights: ReadonlyArray<number | undefined>,
-  post: Post,
+  commentCount: number,
 ) {
   const height =
-    getOffset(commentChunks, commentHeights, post.commentCount) + Space.space3;
+    getOffset(commentChunks, commentHeights, commentCount) + Space.space3;
   return <View style={{height}} />;
 }
 
@@ -741,13 +747,13 @@ function renderFiller(
  */
 function renderItem(
   handleCommentLayout: (index: number, event: LayoutChangeEvent) => void,
-  comments: ReadonlyArray<PostCommentsCacheEntry | undefined>,
+  getComment: (index: number) => PostCommentsCacheEntry | undefined,
   commentChunks: ReadonlyArray<CommentChunk>,
   commentHeights: ReadonlyArray<number | undefined>,
   index: number,
 ): ReactElement {
-  const comment = comments[index];
-  const lastComment = comments[index - 1];
+  const comment = getComment(index);
+  const lastComment = getComment(index - 1);
   const commentHeight = commentHeights[index];
   const offset = getOffset(commentChunks, commentHeights, index);
 

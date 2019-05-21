@@ -179,8 +179,13 @@ function Post({
         <PostContent postID={post.id} />
         <Trough title="Comments" />
         <PostVirtualizedComments
-          post={post}
-          comments={comments}
+          commentCount={post.commentCount}
+          getComment={useCallback(
+            (index: number) => {
+              return comments[index];
+            },
+            [comments],
+          )}
           onScroll={virtualizeScroll}
           onVisibleRangeChange={useCallback((range: RenderRange) => {
             visibleRange.current = range;
