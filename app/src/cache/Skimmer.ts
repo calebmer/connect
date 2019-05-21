@@ -154,13 +154,37 @@ export class Skimmer<Item> {
       items[offset + i] = newItems[i];
     }
 
-    // There are no more items if we fetched less than expected when our range
-    // exceeds the current number of items.
-    const noMoreItems =
-      this.noMoreItems ||
-      (offset + limit > this.items.length && newItems.length < limit);
+    // If we got fewer items then we expected, we assume we have loaded the
+    // maximum amount of items. We will never load more items outside of the
+    // range of our skim list since we know there won’t be more.
+    const noMoreItems = this.noMoreItems || offset + limit > this.items.length;
 
     // Return our updated list.
     return new Skimmer(this.fetchMore, items, noMoreItems);
+  }
+
+  /**
+   * Sets the number of items in our skim list.
+   *
+   * Also sets `noMoreItems` to `true` which means we will never load items
+   * beyond the length we set here.
+   */
+  public setLength(length: number) {
+    const items = this.items.slice();
+    items.length = length;
+    return new Skimmer(this.fetchMore, items, true);
+  }
+
+  /**
+   * Sets an item in our skim list. If the index is larger than the current
+   * length of the list then we will grow the list.
+   *
+   * WARNING: Weird behaviors will ensue if you set an item at a range far
+   * beyond the range of the list we are progressively loading.
+   */
+  public setItem(index: number, item: Item) {
+    const items = this.items.slice();
+    items[index] = item;
+    return new Skimmer(this.fetchMore, items, this.noMoreItems);
   }
 }

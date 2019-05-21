@@ -6,11 +6,13 @@ import {
   View,
 } from "react-native";
 import {Font, Space} from "../atoms";
+import {
+  PostCommentsCacheEntry,
+  commentCountMore,
+} from "../comment/CommentCache";
 import React, {ReactElement} from "react";
 import {Comment} from "../comment/Comment";
-import {CommentID} from "@connect/api-client";
 import {CommentShimmer} from "../comment/CommentShimmer";
-import {commentCountMore} from "../comment/CommentCache";
 import {reactSchedulerFlushSync} from "../utils/forks/reactSchedulerFlushSync";
 
 // The number of items to render outside of the viewport range.
@@ -39,16 +41,12 @@ type Props = {
   commentCount: number;
 
   /**
-   * Fetches an individual comment from our list. We expect this function to be
-   * memoized against the data it fetches with `useCallback`! If we have a
-   * loaded comment cache entry we will return that. Otherwise we will return
-   * undefined if the comment was not yet loaded.
-   *
-   * So instead of taking an array of comments, we instead take an array-like
-   * interface with `commentCount` and `getComment` which can be implemented in
-   * any arbitrary way under the hood.
+   * The underlying array of comments we will render. `undefined` comments are
+   * represented with a comment shimmer. We will always render `commentCount`
+   * number of comments. Whether or not that’s more or less than the actual
+   * number of comments.
    */
-  getComment: (index: number) => CommentID | undefined;
+  comments: ReadonlyArray<PostCommentsCacheEntry | undefined>;
 
   /**
    * HACK: We want this component to have access to the `onScroll` event but we
@@ -439,14 +437,14 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   // parameters change.
   private renderItem = memoizeLast(
     (
-      getComment: (index: number) => CommentID | undefined,
+      comments: ReadonlyArray<PostCommentsCacheEntry | undefined>,
       commentChunks: ReadonlyArray<CommentChunk>,
       commentHeights: ReadonlyArray<number | undefined>,
     ) =>
       memoize((index: number) =>
         renderItem(
           this.handleCommentLayout, // We know this event handler is constant in our class.
-          getComment,
+          comments,
           commentChunks,
           commentHeights,
           index,
@@ -502,7 +500,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // Get the render item function based on our state. The render item function
     // is memoized so it comes with a cache.
     const renderItem = this.renderItem(
-      this.props.getComment,
+      this.props.comments,
       this.state.commentChunks,
       this.state.commentHeights,
     );
@@ -745,13 +743,13 @@ function renderFiller(
  */
 function renderItem(
   handleCommentLayout: (index: number, event: LayoutChangeEvent) => void,
-  getComment: (index: number) => CommentID | undefined,
+  comments: ReadonlyArray<PostCommentsCacheEntry | undefined>,
   commentChunks: ReadonlyArray<CommentChunk>,
   commentHeights: ReadonlyArray<number | undefined>,
   index: number,
 ): ReactElement {
-  const commentID = getComment(index);
-  const lastCommentID = getComment(index - 1);
+  const comment = comments[index];
+  const lastComment = comments[index - 1];
   const commentHeight = commentHeights[index];
   const offset = getOffset(commentChunks, commentHeights, index);
 
@@ -761,7 +759,7 @@ function renderItem(
 
   return (
     <React.Fragment key={index}>
-      {commentID !== undefined && (
+      {comment !== undefined && (
         <View
           style={{
             position: "absolute",
@@ -773,12 +771,12 @@ function renderItem(
           onLayout={event => handleCommentLayout(index, event)}
         >
           <Comment
-            commentID={commentID}
-            lastCommentID={lastCommentID || null}
+            commentID={comment.id}
+            lastCommentID={lastComment !== undefined ? lastComment.id : null}
           />
         </View>
       )}
-      {(commentID === undefined || commentHeight === undefined) && (
+      {(comment === undefined || commentHeight === undefined) && (
         <ViewComponent
           style={{
             position: "absolute",

@@ -6,7 +6,6 @@ import {
   PostCommentsCacheEntry,
   commentCountMore,
 } from "../comment/CommentCache";
-import {CommentID, PostID} from "@connect/api-client";
 import React, {
   useCallback,
   useContext,
@@ -25,6 +24,7 @@ import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
+import {PostID} from "@connect/api-client";
 import {PostVirtualizedComments} from "./PostVirtualizedComments";
 import {Route} from "../router/Route";
 import {Skimmer} from "../cache/Skimmer";
@@ -66,7 +66,7 @@ function Post({
 
   // Keep track of all the realtime comments which were published after we
   // mounted this component.
-  const realtimeComments = useRealtimeComments(postID);
+  useRealtimeComments(postID);
 
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar =
@@ -193,25 +193,8 @@ function Post({
         <PostContent postID={post.id} />
         <Trough title="Comments" />
         <PostVirtualizedComments
-          commentCount={post.commentCount + realtimeComments.length}
-          getComment={useCallback(
-            (index: number) => {
-              // If we have exceeded the range of our loaded comments then start
-              // indexing into our realtime comments.
-              if (index >= post.commentCount) {
-                return realtimeComments[index - post.commentCount];
-              } else {
-                // Try to get our comment in the loaded comments array.
-                const comment = comments[index];
-                if (comment !== undefined) {
-                  return comment.id;
-                } else {
-                  return undefined;
-                }
-              }
-            },
-            [comments, post.commentCount, realtimeComments],
-          )}
+          commentCount={Math.max(post.commentCount, comments.length)}
+          comments={comments}
           onScroll={virtualizeScroll}
           onVisibleRangeChange={useCallback((range: RenderRange) => {
             visibleRange.current = range;
@@ -240,15 +223,25 @@ type MaybePromise<T> = T | Promise<T>;
  * includes all of the new comments which were added since our
  * component mounted.
  */
-function useRealtimeComments(postID: PostID): ReadonlyArray<CommentID> {
-  const [realtimeComments, setRealtimeComments] = useState<
-    ReadonlyArray<CommentID>
-  >([]);
-
+function useRealtimeComments(postID: PostID): void {
   useEffect(() => {
     const subscription = API.comment.watchPostComments({postID}).subscribe({
       next(message) {
         switch (message.type) {
+          // When we get the number of comments in our entire list as the very
+          // first message of our subscription, we use that information to make
+          // sure our comments skim list has the correct length.
+          //
+          // The skim list could have an outdated length based on
+          // `post.commentCount` which might have changed since we last
+          // fetched data.
+          case "count": {
+            PostCommentsCache.updateWhenReady(postID, comments => {
+              return comments.setLength(message.commentCount);
+            });
+            break;
+          }
+
           // When we get a new comment:
           //
           // 1. Insert the comment into our cache.
@@ -261,10 +254,9 @@ function useRealtimeComments(postID: PostID): ReadonlyArray<CommentID> {
               comment,
             });
 
-            setRealtimeComments(prevRealtimeComments => [
-              ...prevRealtimeComments,
-              comment.id,
-            ]);
+            PostCommentsCache.updateWhenReady(postID, comments => {
+              return comments.setItem(comments.items.length, {id: comment.id});
+            });
             break;
           }
         }
@@ -277,8 +269,6 @@ function useRealtimeComments(postID: PostID): ReadonlyArray<CommentID> {
       subscription.unsubscribe();
     };
   }, [postID]);
-
-  return realtimeComments;
 }
 
 const styles = StyleSheet.create({
