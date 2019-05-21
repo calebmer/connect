@@ -61,6 +61,8 @@ type CommentCacheEntry = {
 export type PostCommentsCacheEntry = {
   /** The ID of this comment. */
   readonly id: CommentID;
+  /** Was this comment added to the cache as a part of a realtime event? */
+  readonly realtime: boolean;
 };
 
 /** The number of comments we load for a post in our initial fetch. */
@@ -100,6 +102,7 @@ export const PostCommentsCache = new Cache<
           accountIDs.add(comment.authorID);
           const entry: PostCommentsCacheEntry = {
             id: comment.id,
+            realtime: false,
           };
           return entry;
         });
@@ -164,7 +167,10 @@ export function publishComment({
   // Insert our comment as a phantom item in our post comment list immediately
   // so that it’s shown in the UI.
   PostCommentsCache.updateWhenReady(postID, comments => {
-    return comments.setItem(comments.items.length, {id: commentID});
+    return comments.setItem(comments.items.length, {
+      id: commentID,
+      realtime: true,
+    });
   });
 
   // Mark this comment as a locally published comment.
@@ -241,7 +247,10 @@ export function watchPostComments(postID: PostID): {unsubscribe: () => void} {
           });
 
           PostCommentsCache.updateWhenReady(postID, comments => {
-            return comments.setItem(comments.items.length, {id: comment.id});
+            return comments.setItem(comments.items.length, {
+              id: comment.id,
+              realtime: true,
+            });
           });
           break;
         }

@@ -196,7 +196,8 @@ function Post({
         <PostVirtualizedComments
           commentCount={Math.max(post.commentCount, comments.length)}
           comments={comments}
-          onScroll={virtualizeScroll}
+          scrollViewRef={scrollViewRef}
+          handleScroll={virtualizeScroll}
           onVisibleRangeChange={useCallback((range: RenderRange) => {
             visibleRange.current = range;
           }, [])}

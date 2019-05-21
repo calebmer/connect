@@ -3,6 +3,7 @@ import {
   LayoutChangeEvent,
   Platform,
   ScrollEvent,
+  ScrollView,
   View,
 } from "react-native";
 import {Font, Space} from "../atoms";
@@ -49,12 +50,18 @@ type Props = {
   comments: ReadonlyArray<PostCommentsCacheEntry | undefined>;
 
   /**
+   * A reference to the scroll view that our virtualized comment list
+   * is inside.
+   */
+  scrollViewRef: React.RefObject<ScrollView>;
+
+  /**
    * HACK: We want this component to have access to the `onScroll` event but we
    * don’t render the scroll view. Our parent is responsible for rendering the
    * scroll view. So we use a ref to pass “up” an event handler to our
    * parent component.
    */
-  onScroll: React.MutableRefObject<null | ((event: ScrollEvent) => void)>;
+  handleScroll: React.MutableRefObject<null | ((event: ScrollEvent) => void)>;
 
   /**
    * When the visible items change, we call this callback. The parent component
@@ -139,7 +146,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   componentDidMount() {
     // HACK: Set our scroll handler to the mutable ref. This is how we “pass up”
     // our event handler.
-    this.props.onScroll.current = this.handleScroll;
+    this.props.handleScroll.current = this.handleScroll;
 
     // Report the initial visible range before scrolling.
     this.props.onVisibleRangeChange(this.state.visibleRange);
@@ -160,7 +167,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
-    this.props.onScroll.current = null;
+    this.props.handleScroll.current = null;
   }
 
   componentDidUpdate(_prevProps: Props, prevState: State) {
@@ -304,7 +311,11 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   /**
    * When a comment’s layout changes we fire this event...
    */
-  private handleCommentLayout = (index: number, event: LayoutChangeEvent) => {
+  private handleCommentLayout: HandleCommentLayout = (
+    index: number,
+    comment: PostCommentsCacheEntry,
+    event: LayoutChangeEvent,
+  ) => {
     const height = event.nativeEvent.layout.height;
 
     // If we already have the correct height for this comment in our state
@@ -332,10 +343,15 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     //    need to immediately re-layout everything. If we let the browser paint
     //    the new comment then the list will look weird since the comment will
     //    fill up more or less of its height.
+    //
+    // 3. If a comment being measured is a realtime comment. When a comment is
+    //    added in realtime we don’t want to see the flash of an
+    //    unmeasured comment.
     this.pendingCommentHeights.important =
       this.pendingCommentHeights.important ||
       this.hasPainted === false ||
-      this.state.commentHeights[index] !== undefined;
+      this.state.commentHeights[index] !== undefined ||
+      comment.realtime === true;
 
     // Add the pending comment height.
     this.pendingCommentHeights.heights.push({index, height});
@@ -444,6 +460,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
       memoize((index: number) =>
         renderItem(
           this.handleCommentLayout, // We know this event handler is constant in our class.
+          this.props.scrollViewRef, // Refs are constant objects that are changed via imperative mutation.
           comments,
           commentChunks,
           commentHeights,
@@ -742,7 +759,8 @@ function renderFiller(
  * can correctly determine when the result should change.
  */
 function renderItem(
-  handleCommentLayout: (index: number, event: LayoutChangeEvent) => void,
+  handleCommentLayout: HandleCommentLayout,
+  scrollViewRef: React.RefObject<ScrollView>,
   comments: ReadonlyArray<PostCommentsCacheEntry | undefined>,
   commentChunks: ReadonlyArray<CommentChunk>,
   commentHeights: ReadonlyArray<number | undefined>,
@@ -768,11 +786,13 @@ function renderItem(
             right: 0,
             opacity: commentHeight === undefined ? 0 : 1,
           }}
-          onLayout={event => handleCommentLayout(index, event)}
+          onLayout={event => handleCommentLayout(index, comment, event)}
         >
           <Comment
             commentID={comment.id}
             lastCommentID={lastComment !== undefined ? lastComment.id : null}
+            realtime={comment.realtime}
+            scrollViewRef={scrollViewRef}
           />
         </View>
       )}
@@ -791,6 +811,12 @@ function renderItem(
     </React.Fragment>
   );
 }
+
+type HandleCommentLayout = (
+  index: number,
+  comment: PostCommentsCacheEntry,
+  event: LayoutChangeEvent,
+) => void;
 
 /**
  * Do the two ranges intersect with one another? Returns true if they intersect.

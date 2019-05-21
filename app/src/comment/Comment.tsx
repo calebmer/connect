@@ -1,15 +1,15 @@
+import {AccountCache, useCurrentAccount} from "../account/AccountCache";
 import {
   AccountProfile,
   CommentID,
   Comment as _Comment,
 } from "@connect/api-client";
 import {BodyText, Font, Space} from "../atoms";
-import {StyleSheet, View} from "react-native";
+import {Platform, ScrollView, StyleSheet, View} from "react-native";
+import React, {useRef} from "react";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 import {AccountByline} from "../account/AccountByline";
-import {AccountCache} from "../account/AccountCache";
 import {CommentCache} from "./CommentCache";
-import React from "react";
 import {useCache} from "../cache/Cache";
 
 // NOTE: Having a React component and a type with the same name is ok in
@@ -20,9 +20,13 @@ type Comment = _Comment;
 function Comment({
   commentID,
   lastCommentID,
+  realtime,
+  scrollViewRef,
 }: {
   commentID: CommentID;
   lastCommentID: CommentID | null;
+  realtime: boolean;
+  scrollViewRef: React.RefObject<ScrollView>;
 }) {
   // If we were provided an ID for the comment before our own then preload that
   // data since we’ll be using it.
@@ -33,6 +37,9 @@ function Comment({
   // Load our comment data.
   const {comment} = useCache(CommentCache, commentID);
   const author = useCache(AccountCache, comment.authorID);
+
+  // Scroll to the end of our scroll view if this is a realtime comment.
+  useScrollToEnd(scrollViewRef, author, realtime);
 
   // If there was no comment before this one then we definitely want to render
   // the comment with a byline. Otherwise we want to do some conditional data
@@ -117,6 +124,55 @@ function CommentWithoutByline({comment}: {comment: Comment}) {
       <BodyText selectable>{comment.content}</BodyText>
     </View>
   );
+}
+
+/**
+ * Scrolls to the end of our scroll view when the comment mounts since
+ * presumably a new mounted component will be at the end of the scroll view.
+ */
+function useScrollToEnd(
+  scrollViewRef: React.RefObject<ScrollView>,
+  authorAccount: AccountProfile,
+  realtime: boolean,
+) {
+  const scrolled = useRef(false);
+  const currentAccount = useCurrentAccount();
+
+  // Use a layout effect so that the browser doesn’t get a chance to finish
+  // painting before we scroll.
+  const useEffect =
+    Platform.OS === "web" ? React.useLayoutEffect : React.useEffect;
+
+  useEffect(() => {
+    // If we don’t have a scroll view ref then don’t run our effect. If the
+    // scroll view is mounting at the same time as our comment is running its
+    // layout effect on web, then we won’t have a scroll view ref!
+    if (scrollViewRef.current === null) {
+      return;
+    }
+
+    // Should we scroll to this comment?
+    const shouldScroll =
+      // Was this comment added to the list as a part of a realtime event?
+      // Either it came from the server or it was added when the user sent
+      // a message.
+      realtime === true &&
+      // We only want to scroll the view once in our comment’s life cycle. If
+      // we’ve scrolled before then don’t scroll again.
+      scrolled.current === false &&
+      // Always scroll if this comment was authored by our current user.
+      authorAccount.id === currentAccount.id;
+
+    if (shouldScroll) {
+      // We only allow scrolling once per component.
+      scrolled.current = true;
+
+      // We assume the new comment was added to the end of our scroll view. To
+      // avoid flashes we immediately call `scrollToEnd()` instead of attempting
+      // to measure out comment which would technically be more correct.
+      scrollViewRef.current.scrollToEnd({animated: false});
+    }
+  }, [authorAccount.id, currentAccount.id, realtime, scrollViewRef]);
 }
 
 const styles = StyleSheet.create({
