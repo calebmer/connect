@@ -14,7 +14,6 @@ import React, {ReactElement} from "react";
 import {Comment} from "../comment/Comment";
 import {CommentShimmer} from "../comment/CommentShimmer";
 import {Post} from "@connect/api-client";
-import {Skimmer} from "../cache/Skimmer";
 import {reactSchedulerFlushSync} from "../utils/forks/reactSchedulerFlushSync";
 
 // The number of items to render outside of the viewport range.
@@ -45,7 +44,7 @@ type Props = {
    * The comments for our post. If an entry is `Skimmer.empty` that means the
    * comment has not yet loaded.
    */
-  comments: ReadonlyArray<PostCommentsCacheEntry | typeof Skimmer.empty>;
+  comments: ReadonlyArray<PostCommentsCacheEntry | undefined>;
 
   /**
    * HACK: We want this component to have access to the `onScroll` event but we
@@ -368,15 +367,8 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
           newCommentHeights = prevState.commentHeights.slice();
         }
 
-        // If our comment heights array is to small for this index then make
-        // sure to fill it up with `push()`.
-        if (newCommentHeights.length < index) {
-          for (let k = newCommentHeights.length; k <= index; k++) {
-            newCommentHeights.push(k === index ? height : undefined);
-          }
-        } else {
-          newCommentHeights[index] = height;
-        }
+        // Set the new height in our new comment heights array.
+        newCommentHeights[index] = height;
       }
 
       // If none of our comment heights changed then don’t update our state!
@@ -443,7 +435,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   // parameters change.
   private renderItem = memoizeLast(
     (
-      comments: ReadonlyArray<PostCommentsCacheEntry | typeof Skimmer.empty>,
+      comments: ReadonlyArray<PostCommentsCacheEntry | undefined>,
       commentChunks: ReadonlyArray<CommentChunk>,
       commentHeights: ReadonlyArray<number | undefined>,
     ) =>
@@ -749,7 +741,7 @@ function renderFiller(
  */
 function renderItem(
   handleCommentLayout: (index: number, event: LayoutChangeEvent) => void,
-  comments: ReadonlyArray<PostCommentsCacheEntry | typeof Skimmer.empty>,
+  comments: ReadonlyArray<PostCommentsCacheEntry | undefined>,
   commentChunks: ReadonlyArray<CommentChunk>,
   commentHeights: ReadonlyArray<number | undefined>,
   index: number,
@@ -765,7 +757,7 @@ function renderItem(
 
   return (
     <React.Fragment key={index}>
-      {isComment(comment) && (
+      {comment !== undefined && (
         <View
           style={{
             position: "absolute",
@@ -778,11 +770,11 @@ function renderItem(
         >
           <Comment
             commentID={comment.id}
-            lastCommentID={isComment(lastComment) ? lastComment.id : null}
+            lastCommentID={lastComment !== undefined ? lastComment.id : null}
           />
         </View>
       )}
-      {(!isComment(comment) || commentHeight === undefined) && (
+      {(comment === undefined || commentHeight === undefined) && (
         <ViewComponent
           style={{
             position: "absolute",
@@ -796,15 +788,6 @@ function renderItem(
       )}
     </React.Fragment>
   );
-}
-
-/**
- * Checks if an item from a `Skimmer` comments array is a comment.
- */
-function isComment(
-  comment: PostCommentsCacheEntry | typeof Skimmer.empty | undefined,
-): comment is PostCommentsCacheEntry {
-  return comment !== undefined && comment !== Skimmer.empty;
 }
 
 /**

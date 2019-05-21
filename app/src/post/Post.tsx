@@ -51,7 +51,7 @@ function Post({
     data: {items: comments},
   } = useCacheWithPrev<
     PostID,
-    {items: ReadonlyArray<PostCommentsCacheEntry | typeof Skimmer.empty>}
+    {items: ReadonlyArray<PostCommentsCacheEntry | undefined>}
   >(PostCommentsCache, postID, {items: []});
 
   // Hide the navbar when we are using the laptop layout.
@@ -113,7 +113,7 @@ function Post({
     // Used to calculate the velocity at which we will cancel loading more
     // comments. Velocity is calculated by “dy / dt” where dy is the difference
     // in position and dt is the difference in time. So in our case,
-    // 800px / 200ms = 4 px/ms. This means if we scroll faster than 4px per 1ms
+    // 400px / 200ms = 2px/ms. This means if we scroll faster than 2px per 1ms
     // we will consider the scroll to be “fast” and won’t load any comments.
     const differencePosition = 400;
     const differenceTime = 200;

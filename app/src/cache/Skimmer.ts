@@ -1,5 +1,3 @@
-const empty = Symbol("Skimmer.empty");
-
 /**
  * An immutable utility class for creating an infinite list which can be
  * randomly accessed at any part of the list. An infinite list which can be
@@ -13,14 +11,6 @@ const empty = Symbol("Skimmer.empty");
  * add items to the end of the list.
  */
 export class Skimmer<Item> {
-  /**
-   * We use this symbol when we have a “gap” in our skim list. When there is an
-   * item that is not yet loaded.
-   *
-   * We use a symbol instead of `null` since it is truthy.
-   */
-  static empty: typeof empty = empty;
-
   /**
    * Creates a new skim list.
    */
@@ -46,9 +36,14 @@ export class Skimmer<Item> {
     }) => Promise<ReadonlyArray<Item>>,
 
     /**
-     * The current items in our skimmer.
+     * The current items in our skimmer. Represented as a sparse array.
+     *
+     * The item type is `Item | undefined`. While we never store `undefined` in
+     * the array, TypeScript allows us to access every index assuming it is
+     * `Item`. By adding `undefined` TypeScript forces us to deal with the
+     * sparse case.
      */
-    public readonly items: ReadonlyArray<Item | typeof empty>,
+    public readonly items: ReadonlyArray<Item | undefined>,
 
     /**
      * If we have fetched all the items in this list then we set this flag
@@ -95,7 +90,7 @@ export class Skimmer<Item> {
     while (
       start < maxStart - 1 &&
       start < this.items.length &&
-      this.items[start] !== empty
+      this.items[start] !== undefined
     ) {
       start++;
     }
@@ -113,7 +108,7 @@ export class Skimmer<Item> {
     let end = start;
     while (
       end - start < requestedLimit &&
-      (end >= this.items.length || this.items[end] === empty)
+      (end >= this.items.length || this.items[end] === undefined)
     ) {
       end++;
     }
@@ -121,11 +116,11 @@ export class Skimmer<Item> {
     // If the start cursor is currently pointing at an empty item and our range
     // covers fewer items then the requested limit, try moving our cursor back
     // to the previous empty item to try and fill our limit.
-    if (this.items[start] === empty) {
+    if (this.items[start] === undefined) {
       while (
         end - start < requestedLimit &&
         start > 0 &&
-        this.items[start - 1] === empty
+        this.items[start - 1] === undefined
       ) {
         start--;
       }
@@ -153,12 +148,6 @@ export class Skimmer<Item> {
 
     // Clone our items array.
     const items = this.items.slice();
-
-    // If the items array is missing items before our offset then fill our array
-    // with nulls.
-    while (items.length < offset) {
-      items.push(empty);
-    }
 
     // Add our new items to the list.
     for (let i = 0; i < newItems.length; i++) {

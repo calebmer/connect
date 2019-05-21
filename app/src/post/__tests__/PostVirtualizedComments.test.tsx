@@ -16,6 +16,6 @@ describe("getIndex", () => {
     ];
     const maxOffset = 41518.96296296296;
 
-    expect(getIndex(commentChunks, commentHeights, maxOffset)).toEqual(580);
+    expect(getIndex(commentChunks, commentHeights, maxOffset)).toEqual(677);
   });
 });
