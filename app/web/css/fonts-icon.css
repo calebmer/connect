@@ -3,8 +3,8 @@
   src: url("../../src/assets/icons/Feather.eot");
   src: url("../../src/assets/icons/Feather.eot#iefix")
       format("embedded-opentype"),
-    url("../../src/assets/icons/Feather.woff") format("woff"),
     url("../../src/assets/icons/Feather.ttf") format("truetype"),
+    url("../../src/assets/icons/Feather.woff") format("woff"),
     url("../../src/assets/icons/Feather.svg#Feather") format("svg");
   font-weight: normal;
   font-style: normal;
