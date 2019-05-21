@@ -7,6 +7,7 @@ import {
 import {Pool, PoolClient, QueryResult} from "pg";
 import {SQLQuery, sql} from "./pg/SQL";
 import {AccountID} from "@connect/api-client";
+import {PGClient} from "./pg/PGClient";
 import {TEST} from "./RunConfig";
 import createDebugger from "debug";
 
@@ -112,7 +113,9 @@ export class ContextTest implements ContextQueryable {
       throw new Error("Cannot query a context after it has been invalidated.");
     }
     await this.client.query("SET LOCAL ROLE connect_api");
-    const ctx = new (ContextUnauthorized as any)(this.client);
+    const ctx = new (ContextUnauthorized as any)(
+      new (PGClient as any)(this.client),
+    );
     try {
       const result = await action(ctx);
       await ctx.handleCommit();
@@ -169,7 +172,10 @@ export class ContextTest implements ContextQueryable {
     }
     await this.client.query("SET LOCAL ROLE connect_api");
     await this.client.query(`SET LOCAL connect.account_id = ${accountID}`);
-    const ctx = new (Context as any)(this.client, accountID);
+    const ctx = new (Context as any)(
+      new (PGClient as any)(this.client),
+      accountID,
+    );
     try {
       const result = await action(ctx);
       await ctx.handleCommit();

@@ -1,10 +1,7 @@
-import {APIError, APIErrorCode, AccountID} from "@connect/api-client";
 import {SQLQuery, sql} from "./pg/SQL";
+import {AccountID} from "@connect/api-client";
 import {PGClient} from "./pg/PGClient";
 import {QueryResult} from "pg";
-import createDebugger from "debug";
-
-const debug = createDebugger("connect:api:pg");
 
 /**
  * A context that can be queried.
@@ -61,7 +58,7 @@ export class ContextUnauthorized implements ContextQueryable {
    * prevents accidental leaks where the context is returned in some way by the
    * transaction it was scoped to.
    */
-  private client: PGClient | undefined;
+  private readonly client: PGClient;
 
   /**
    * Callbacks which are scheduled to run after our context’s transaction has
@@ -86,14 +83,7 @@ export class ContextUnauthorized implements ContextQueryable {
    * - We prevent querying after the client has been released back to the pool.
    */
   public query(query: SQLQuery): Promise<QueryResult> {
-    if (this.client === undefined) {
-      throw new Error("Cannot use the context after it has been invalidated.");
-    }
-
-    const queryConfig = sql.compile(query);
-    debug(typeof queryConfig === "string" ? queryConfig : queryConfig.text);
-
-    return this.client.query(queryConfig).catch(handlePGError);
+    return this.client.query(query);
   }
 
   /**
@@ -104,9 +94,6 @@ export class ContextUnauthorized implements ContextQueryable {
    * be able to use any context methods like `Context.query`.
    */
   public afterCommit(callback: () => Promise<void>) {
-    if (this.client === undefined) {
-      throw new Error("Cannot use the context after it has been invalidated.");
-    }
     this.afterCommitCallbacks.push(callback);
   }
 
@@ -119,7 +106,6 @@ export class ContextUnauthorized implements ContextQueryable {
    * accidentally returns the context from their transaction.
    */
   protected async handleCommit(): Promise<void> {
-    this.client = undefined;
     await Promise.all(this.afterCommitCallbacks.map(callback => callback()));
   }
 
@@ -128,9 +114,7 @@ export class ContextUnauthorized implements ContextQueryable {
    * useful for stopping leaks where the programmer accidentally returns the
    * context from their transaction.
    */
-  protected async handleRollback(): Promise<void> {
-    this.client = undefined;
-  }
+  protected async handleRollback(): Promise<void> {}
 }
 
 /**
@@ -155,7 +139,11 @@ export class Context extends ContextUnauthorized {
         // We use the underlying client from the `pg` module to avoid logging this
         // query which runs on every authorized API request.
         if (typeof accountID === "number") {
-          await client.query(`SET LOCAL connect.account_id = ${accountID}`);
+          await client.query(
+            sql`SET LOCAL connect.account_id = ${sql.dangerouslyInjectRawString(
+              String(accountID),
+            )}`,
+          );
         } else {
           throw new Error("Expected accountID to be a number.");
         }
@@ -218,29 +206,5 @@ export class ContextSubscription<Message> {
    */
   withAuthorized<T>(action: (ctx: Context) => Promise<T>): Promise<T> {
     return Context.withAuthorized(this.accountID, action);
-  }
-}
-
-/**
- * Handles an error thrown by Postgres. Depending on the error code, we will
- * convert some common Postgres errors into API errors.
- */
-function handlePGError(error: unknown): never {
-  if (!(error instanceof Error)) {
-    throw error;
-  }
-
-  // https://www.postgresql.org/docs/current/errcodes-appendix.html
-  switch ((error as any).code) {
-    // unique_violation
-    case "23505":
-      throw new APIError(APIErrorCode.ALREADY_EXISTS);
-
-    // insufficient_privilege
-    case "42501":
-      throw new APIError(APIErrorCode.UNAUTHORIZED);
-
-    default:
-      throw error;
   }
 }

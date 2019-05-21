@@ -1,10 +1,11 @@
 import {PGClient} from "../PGClient";
+import {sql} from "../SQL";
 
 test("uses the API role", async () => {
   await PGClient.with(async client => {
     const {
       rows: [row],
-    } = await client.query("SELECT current_user");
+    } = await client.query(sql`SELECT current_user`);
     expect(row.current_user).toEqual("connect_api");
   });
 });
@@ -12,9 +13,11 @@ test("uses the API role", async () => {
 test("rolls back the changes in a failed transaction while testing", async () => {
   try {
     await PGClient.with(async client => {
-      await client.query("CREATE TABLE public.test (id INT PRIMARY KEY)");
-      await client.query("INSERT INTO public.test (id) VALUES (1), (2), (3)");
-      const {rowCount} = await client.query("SELECT * FROM public.test");
+      await client.query(sql`CREATE TABLE public.test (id INT PRIMARY KEY)`);
+      await client.query(
+        sql`INSERT INTO public.test (id) VALUES (1), (2), (3)`,
+      );
+      const {rowCount} = await client.query(sql`SELECT * FROM public.test`);
       expect(rowCount).toEqual(3);
       throw new Error("fail");
     });
@@ -24,7 +27,7 @@ test("rolls back the changes in a failed transaction while testing", async () =>
   await PGClient.with(async client => {
     let error;
     try {
-      await client.query("SELECT * FROM public.test");
+      await client.query(sql`SELECT * FROM public.test`);
     } catch (e) {
       error = e;
     }
@@ -35,15 +38,15 @@ test("rolls back the changes in a failed transaction while testing", async () =>
 
 test("rolls back the changes in a successful transaction while testing", async () => {
   await PGClient.with(async client => {
-    await client.query("CREATE TABLE public.test (id INT PRIMARY KEY)");
-    await client.query("INSERT INTO public.test (id) VALUES (1), (2), (3)");
-    const {rowCount} = await client.query("SELECT * FROM public.test");
+    await client.query(sql`CREATE TABLE public.test (id INT PRIMARY KEY)`);
+    await client.query(sql`INSERT INTO public.test (id) VALUES (1), (2), (3)`);
+    const {rowCount} = await client.query(sql`SELECT * FROM public.test`);
     expect(rowCount).toEqual(3);
   });
   await PGClient.with(async client => {
     let error;
     try {
-      await client.query("SELECT * FROM public.test");
+      await client.query(sql`SELECT * FROM public.test`);
     } catch (e) {
       error = e;
     }
