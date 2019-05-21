@@ -132,12 +132,18 @@ export class Cache<Key extends string | number, Data> {
    *
    * If you are loading data for a React component, please call the React hook
    * `useCacheData()` instead which will watch the cache for changes.
+   *
+   * NOTE: The promise might resolve _after_ we actually get data in the cache.
+   * For example, someone calls `load(key)` which starts loading new data and
+   * returns a promise. Before that promise resolves someone else calls
+   * `insert(key)` which means the cache now has data for this key. But our
+   * promise is still waiting for the async data to resolve! We need to consider
+   * this before open sourcing.
    */
-  public load(key: Key): Promise<Data> {
-    const value = this.accessEntry(key)
+  public async load(key: Key): Promise<void> {
+    await this.accessEntry(key)
       .getAtThisMomentInTime()
       .get();
-    return Promise.resolve(value);
   }
 
   /**
@@ -148,6 +154,25 @@ export class Cache<Key extends string | number, Data> {
    */
   public preload(key: Key): void {
     this.accessEntry(key);
+  }
+
+  /**
+   * Forces the cache to reload data for the given key. We immediately change
+   * the cache entry to the pending asynchronous value. If there are any
+   * watchers that want to use the previously cached value they’ll have to do
+   * that on their own.
+   *
+   * NOTE: The promise might resolve _after_ we actually get data in the cache.
+   * For example, someone calls `load(key)` which starts loading new data and
+   * returns a promise. Before that promise resolves someone else calls
+   * `insert(key)` which means the cache now has data for this key. But our
+   * promise is still waiting for the async data to resolve! We need to consider
+   * this before open sourcing.
+   */
+  public async forceReload(key: Key): Promise<void> {
+    const data = this._load(key);
+    this.insertEntry(key, new Async(data));
+    await data;
   }
 
   /**
