@@ -157,17 +157,6 @@ export async function watchPostComments(
   ctx: ContextSubscription<PostCommentEvent>,
   input: {postID: PostID},
 ): Promise<() => Promise<void>> {
-  // Check to make sure that the subscriber is allowed to see the post we will
-  // be listening to.
-  await ctx.withAuthorized(async ctx => {
-    const {rowCount} = await ctx.query(
-      sql`SELECT 1 FROM post WHERE id = ${input.postID}`,
-    );
-    if (rowCount !== 1) {
-      throw new APIError(APIErrorCode.UNAUTHORIZED);
-    }
-  });
-
   // If we haven’t yet listened to our Postgres channel then do that now.
   //
   // We do this before everything else since in case this function fails we
@@ -187,6 +176,32 @@ export async function watchPostComments(
     await unlistenCommentInsert;
   }
 
+  // Check to make sure that the subscriber is allowed to see the post we will
+  // be listening to. Get the comment count from that post and send it to
+  // our client.
+  //
+  // We must try to get the comment count _after_ we’ve successfully listened
+  // so that we don’t miss any comments.
+  //
+  // If we fail then we need to unsubscribe.
+  try {
+    const {
+      rows: [row],
+    } = await ctx.query(
+      sql`SELECT comment_count FROM post WHERE id = ${input.postID}`,
+    );
+    if (row === undefined) {
+      throw new APIError(APIErrorCode.UNAUTHORIZED);
+    }
+    ctx.publish({
+      type: "count",
+      commentCount: row.comment_count,
+    });
+  } catch (error) {
+    await unsubscribe();
+    throw error;
+  }
+
   // Get the subscribers for the provided post ID. If there are no subscribers
   // then create a new set.
   let postSubscribers = subscribers.get(input.postID);
@@ -198,7 +213,9 @@ export async function watchPostComments(
   // Add our subscription to the set.
   postSubscribers.add(ctx);
 
-  return async () => {
+  return unsubscribe;
+
+  async function unsubscribe() {
     // Delete the subscriber from our map when unsubscribing from a
     // post’s comments.
     const postSubscribers = subscribers.get(input.postID);
@@ -216,7 +233,7 @@ export async function watchPostComments(
       unlistenCommentInsert = undefined;
       await actualUnlistenCommentInsert();
     }
-  };
+  }
 }
 
 /**

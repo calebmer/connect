@@ -25,10 +25,27 @@ export type Comment = {
 /**
  * An event we receive while watching post comments.
  */
-export type PostCommentEvent = {
-  readonly type: "new";
-  readonly comment: Comment;
-};
+export type PostCommentEvent =
+  /**
+   * Immediately after subscribing we send a single `count` event with the
+   * current number of comments. We never again send this event.
+   *
+   * This event is important for making sure our client knows how many comments
+   * to load before we start getting realtime comments.
+   */
+  | {
+      readonly type: "count";
+      readonly commentCount: number;
+    }
+
+  /**
+   * Whenever a new comment is published we send this event to all the
+   * watching clients.
+   */
+  | {
+      readonly type: "new";
+      readonly comment: Comment;
+    };
 
 /**
  * A cursor represents the position of a comment in a list ordered by the

@@ -260,12 +260,21 @@ function handleConnection(
       throw new APIError(APIErrorCode.BAD_INPUT);
     }
 
+    // If the context publishes messages before we’ve finished subscribing then
+    // we add them to this message queue. The queue is undefined when
+    // we’ve subscribed.
+    let messageQueue: Array<SubscriptionServerMessage> | undefined = [];
+
     // Create the context for our subscription. When we publish to our
     // subscription we will, in turn, publish to our client using the ID they
     // gave us so the client knows the exact subscription the new message
     // is for.
     const ctx = new ContextSubscription<Message>(accessToken.id, message => {
-      publish({type: "message", id, message});
+      if (messageQueue !== undefined) {
+        messageQueue.push({type: "message", id, message});
+      } else {
+        publish({type: "message", id, message});
+      }
     });
 
     // Setup our subscription! Store the unsubscribe function for later usage.
@@ -281,6 +290,14 @@ function handleConnection(
     // a message. It may take us some time to subscribe to the service so we
     // need to let the client know when they are actually online.
     publish({type: "subscribed", id});
+
+    // Empty out our message queue now that we’ve subscribed.
+    if (messageQueue !== undefined) {
+      for (let i = 0; i < messageQueue.length; i++) {
+        publish(messageQueue[i]);
+      }
+      messageQueue = undefined;
+    }
   }
 
   /**

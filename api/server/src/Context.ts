@@ -10,6 +10,8 @@ export interface ContextQueryable {
   /**
    * Executes a SQL query. We require a `SQLQuery` object to prevent SQL
    * injection attacks entirely.
+   *
+   * May or may not execute the SQL query in a transaction!
    */
   query(query: SQLQuery): Promise<QueryResult>;
 }
@@ -184,7 +186,7 @@ export class Context extends ContextUnauthorized {
  * to a `Context`. For this reason, a subscription context can live as long as
  * we’d like and isn’t scoped to a particular function call.
  */
-export class ContextSubscription<Message> {
+export class ContextSubscription<Message> implements ContextQueryable {
   /**
    * The ID of the authenticated account.
    */
@@ -204,7 +206,14 @@ export class ContextSubscription<Message> {
    * Upgrades our subscription context to an authorized `Context` that we can
    * run database queries against.
    */
-  withAuthorized<T>(action: (ctx: Context) => Promise<T>): Promise<T> {
+  public withAuthorized<T>(action: (ctx: Context) => Promise<T>): Promise<T> {
     return Context.withAuthorized(this.accountID, action);
+  }
+
+  /**
+   * Executes a single query outside of a transaction.
+   */
+  public query(query: SQLQuery): Promise<QueryResult> {
+    return this.withAuthorized(ctx => ctx.query(query));
   }
 }

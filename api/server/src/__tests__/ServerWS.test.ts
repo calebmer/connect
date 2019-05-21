@@ -284,9 +284,7 @@ test("will subscribe to a subscription with the correct authorization", done => 
     );
     setTimeout(() => {
       expect(watchPostComments).toHaveBeenCalledTimes(1);
-      expect(watchPostComments.mock.calls[0][0].accountID).toEqual(
-        accountID,
-      );
+      expect(watchPostComments.mock.calls[0][0].accountID).toEqual(accountID);
       done();
     }, 10);
   });
@@ -904,4 +902,82 @@ test("will fail if the access token expired", done => {
       });
     },
   );
+});
+
+test("queues messages published before we are done subscribing", done => {
+  watchPostComments.mockImplementationOnce(async ctx => {
+    ctx.publish({test: 1});
+    ctx.publish({test: 2});
+    setTimeout(() => {
+      ctx.publish({test: 3});
+      ctx.publish({test: 4});
+    }, 10);
+    return watchNewPostCommentsUnsubscribe;
+  });
+
+  const subscriptionID = generateID();
+
+  const socket = createWebSocketClient(done);
+
+  socket.on("open", () => {
+    socket.send(
+      JSON.stringify({
+        type: "subscribe",
+        id: subscriptionID,
+        path: "/comment/watchPostComments",
+        input: {postID: generateID()},
+      }),
+    );
+  });
+
+  let messageCount = 0;
+
+  socket.on("message", message => {
+    switch (messageCount++) {
+      case 0: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "subscribed",
+          id: subscriptionID,
+        });
+        break;
+      }
+      case 1: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "message",
+          id: subscriptionID,
+          message: {test: 1},
+        });
+        break;
+      }
+      case 2: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "message",
+          id: subscriptionID,
+          message: {test: 2},
+        });
+        break;
+      }
+      case 3: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "message",
+          id: subscriptionID,
+          message: {test: 3},
+        });
+        break;
+      }
+      case 4: {
+        expect(JSON.parse(message as string)).toEqual({
+          type: "message",
+          id: subscriptionID,
+          message: {test: 4},
+        });
+        done();
+        break;
+      }
+      default: {
+        done(new Error("unexpected"));
+        break;
+      }
+    }
+  });
 });

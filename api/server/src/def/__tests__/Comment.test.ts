@@ -2,6 +2,7 @@ import {
   APIError,
   APIErrorCode,
   CommentID,
+  PostCommentEvent,
   generateID,
 } from "@connect/api-client";
 import {
@@ -568,14 +569,18 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
+      const logs: Array<PostCommentEvent> = [];
+
       const unwatch = await watchPostComments(
-        ctx.withSubscription(account.id, () => {
-          throw new Error("Unexpected");
+        ctx.withSubscription(account.id, event => {
+          logs.push(event);
         }),
         {postID: post.id},
       );
 
       await unwatch();
+
+      expect(logs).toEqual([{type: "count", commentCount: 0}]);
     });
   });
 
@@ -591,11 +596,11 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs: Array<CommentID> = [];
+      const logs: Array<PostCommentEvent> = [];
 
       const unwatch = await watchPostComments(
-        ctx.withSubscription(account.id, ({comment}) => {
-          logs.push(comment.id);
+        ctx.withSubscription(account.id, event => {
+          logs.push(event);
         }),
         {postID: post.id},
       );
@@ -611,7 +616,10 @@ describe("watchPostComments", () => {
       await wait(20);
       await unwatch();
 
-      expect(logs).toEqual([commentID]);
+      expect(logs).toEqual([
+        {type: "count", commentCount: 0},
+        {type: "new", comment: expect.objectContaining({id: commentID})},
+      ]);
     });
   });
 
@@ -632,11 +640,11 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs: Array<CommentID> = [];
+      const logs: Array<PostCommentEvent> = [];
 
       const unwatch = await watchPostComments(
-        ctx.withSubscription(account1.id, ({comment}) => {
-          logs.push(comment.id);
+        ctx.withSubscription(account1.id, event => {
+          logs.push(event);
         }),
         {postID: post.id},
       );
@@ -652,7 +660,10 @@ describe("watchPostComments", () => {
       await wait(20);
       await unwatch();
 
-      expect(logs).toEqual([commentID]);
+      expect(logs).toEqual([
+        {type: "count", commentCount: 0},
+        {type: "new", comment: expect.objectContaining({id: commentID})},
+      ]);
     });
   });
 
@@ -675,11 +686,11 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs: Array<CommentID> = [];
+      const logs: Array<PostCommentEvent> = [];
 
       const unwatch = await watchPostComments(
-        ctx.withSubscription(account1.id, ({comment}) => {
-          logs.push(comment.id);
+        ctx.withSubscription(account1.id, event => {
+          logs.push(event);
         }),
         {postID: post.id},
       );
@@ -709,7 +720,12 @@ describe("watchPostComments", () => {
       await wait(20);
       await unwatch();
 
-      expect(logs).toEqual([commentID1, commentID2, commentID3]);
+      expect(logs).toEqual([
+        {type: "count", commentCount: 0},
+        {type: "new", comment: expect.objectContaining({id: commentID1})},
+        {type: "new", comment: expect.objectContaining({id: commentID2})},
+        {type: "new", comment: expect.objectContaining({id: commentID3})},
+      ]);
     });
   });
 
@@ -730,11 +746,11 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs: Array<CommentID> = [];
+      const logs: Array<PostCommentEvent> = [];
 
       const unwatch = await watchPostComments(
-        ctx.withSubscription(account1.id, ({comment}) => {
-          logs.push(comment.id);
+        ctx.withSubscription(account1.id, event => {
+          logs.push(event);
         }),
         {postID: post.id},
       );
@@ -760,7 +776,124 @@ describe("watchPostComments", () => {
 
       await wait(20);
 
-      expect(logs).toEqual([commentID]);
+      expect(logs).toEqual([
+        {type: "count", commentCount: 0},
+        {type: "new", comment: expect.objectContaining({id: commentID})},
+      ]);
+    });
+  });
+
+  test("will not see a comment before watching", () => {
+    return ContextTest.with(async ctx => {
+      const commentID = generateID<CommentID>();
+
+      const account1 = await createAccount(ctx);
+      const account2 = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account1.id,
+        groupID: post.groupID,
+      });
+      await createGroupMember(ctx, {
+        accountID: account2.id,
+        groupID: post.groupID,
+      });
+
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: generateID(),
+          postID: post.id,
+          content: "test 1",
+        });
+      });
+
+      const logs: Array<PostCommentEvent> = [];
+
+      const unwatch = await watchPostComments(
+        ctx.withSubscription(account1.id, event => {
+          logs.push(event);
+        }),
+        {postID: post.id},
+      );
+
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test 2",
+        });
+      });
+
+      await wait(20);
+      await unwatch();
+
+      expect(logs).toEqual([
+        {type: "count", commentCount: 1},
+        {type: "new", comment: expect.objectContaining({id: commentID})},
+      ]);
+    });
+  });
+
+  test("will not see a comment before watching and after unwatching", () => {
+    return ContextTest.with(async ctx => {
+      const commentID = generateID<CommentID>();
+
+      const account1 = await createAccount(ctx);
+      const account2 = await createAccount(ctx);
+      const post = await createPost(ctx);
+
+      await createGroupMember(ctx, {
+        accountID: account1.id,
+        groupID: post.groupID,
+      });
+      await createGroupMember(ctx, {
+        accountID: account2.id,
+        groupID: post.groupID,
+      });
+
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: generateID(),
+          postID: post.id,
+          content: "test 1",
+        });
+      });
+
+      const logs: Array<PostCommentEvent> = [];
+
+      const unwatch = await watchPostComments(
+        ctx.withSubscription(account1.id, event => {
+          logs.push(event);
+        }),
+        {postID: post.id},
+      );
+
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test 2",
+        });
+      });
+
+      await wait(20);
+      await unwatch();
+
+      await ctx.withAuthorized(account2.id, async ctx => {
+        await publishComment(ctx, {
+          id: generateID(),
+          postID: post.id,
+          content: "test 3",
+        });
+      });
+
+      await wait(20);
+
+      expect(logs).toEqual([
+        {type: "count", commentCount: 1},
+        {type: "new", comment: expect.objectContaining({id: commentID})},
+      ]);
     });
   });
 
@@ -786,19 +919,19 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs1: Array<CommentID> = [];
-      const logs2: Array<CommentID> = [];
+      const logs1: Array<PostCommentEvent> = [];
+      const logs2: Array<PostCommentEvent> = [];
 
       const [unwatch1, unwatch2] = await Promise.all([
         watchPostComments(
-          ctx.withSubscription(account1.id, ({comment}) => {
-            logs1.push(comment.id);
+          ctx.withSubscription(account1.id, event => {
+            logs1.push(event);
           }),
           {postID: post.id},
         ),
         watchPostComments(
-          ctx.withSubscription(account2.id, ({comment}) => {
-            logs2.push(comment.id);
+          ctx.withSubscription(account2.id, event => {
+            logs2.push(event);
           }),
           {postID: post.id},
         ),
@@ -826,8 +959,15 @@ describe("watchPostComments", () => {
 
       await wait(20);
 
-      expect(logs1).toEqual([commentID]);
-      expect(logs2).toEqual([commentID]);
+      expect(logs1).toEqual([
+        {type: "count", commentCount: 0},
+        {type: "new", comment: expect.objectContaining({id: commentID})},
+      ]);
+
+      expect(logs2).toEqual([
+        {type: "count", commentCount: 0},
+        {type: "new", comment: expect.objectContaining({id: commentID})},
+      ]);
     });
   });
 
@@ -854,19 +994,19 @@ describe("watchPostComments", () => {
         groupID: post.groupID,
       });
 
-      const logs1: Array<CommentID> = [];
-      const logs2: Array<CommentID> = [];
+      const logs1: Array<PostCommentEvent> = [];
+      const logs2: Array<PostCommentEvent> = [];
 
       const unwatch1 = await watchPostComments(
-        ctx.withSubscription(account1.id, ({comment}) => {
-          logs1.push(comment.id);
+        ctx.withSubscription(account1.id, event => {
+          logs1.push(event);
         }),
         {postID: post.id},
       );
 
       const unwatch2 = await watchPostComments(
-        ctx.withSubscription(account2.id, ({comment}) => {
-          logs2.push(comment.id);
+        ctx.withSubscription(account2.id, event => {
+          logs2.push(event);
         }),
         {postID: post.id},
       );
@@ -905,8 +1045,16 @@ describe("watchPostComments", () => {
       await unwatch1();
       await unwatch2();
 
-      expect(logs1).toEqual([commentID1]);
-      expect(logs2).toEqual([commentID1, commentID2]);
+      expect(logs1).toEqual([
+        {type: "count", commentCount: 0},
+        {type: "new", comment: expect.objectContaining({id: commentID1})},
+      ]);
+
+      expect(logs2).toEqual([
+        {type: "count", commentCount: 0},
+        {type: "new", comment: expect.objectContaining({id: commentID1})},
+        {type: "new", comment: expect.objectContaining({id: commentID2})},
+      ]);
     });
   });
 });
