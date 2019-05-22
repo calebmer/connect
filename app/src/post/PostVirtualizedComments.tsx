@@ -24,7 +24,7 @@ import {reactSchedulerFlushSync} from "../utils/forks/reactSchedulerFlushSync";
 //
 // This is a bit of a hack to fix the jankiness of loading each comment as it
 // scrolls into view.
-const overscanCount = commentCountMore / 2;
+const overscanCount = commentCountMore;
 
 // The number of items we will always render at the beginning of our list to
 // improve perceived performance.
@@ -181,16 +181,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   }
 
   /**
-   * Information from the last scroll event that we use to compute the average
-   * velocity of a scroll sequence over time.
-   */
-  private lastScroll: {
-    timestamp: number;
-    offset: number;
-    velocity: number;
-  } | null = null;
-
-  /**
    * Handles a scroll event by measuring the items we should be rendering and
    * updating state if it changed.
    */
@@ -203,7 +193,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     const commentCount = this.props.commentCount;
 
     // Get the range of visible content in the scroll view from the event.
-    const timestamp = event.timeStamp;
     const offset = event.nativeEvent.contentOffset.y - postOffset;
     const viewport = event.nativeEvent.layoutMeasurement.height;
 
@@ -211,49 +200,8 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     if (viewport === 0) return;
 
     // Get the begin and end offset for the visible content.
-    let firstOffset = offset;
-    let lastOffset = offset + viewport;
-
-    // If we’ve scrolled recently then measure the velocity of our scrolling and
-    // extend the bounds of the items we want to render to cover the distance
-    // the user will scroll before our scroll event handler will run again.
-    if (
-      this.lastScroll !== null &&
-      timestamp - this.lastScroll.timestamp <
-        PostVirtualizedComments.scrollEventThrottle
-    ) {
-      // Get the average velocity between this scroll and the last scroll.
-      const velocity =
-        timestamp > this.lastScroll.timestamp
-          ? // Velocity calculation: dx / dt
-            (offset - this.lastScroll.offset) /
-            (timestamp - this.lastScroll.timestamp)
-          : // If, for some reason (usually an overloaded main thread in React
-            // Native), the last scroll event and this scroll event have the
-            // _same_ timestamp then let’s reuse the velocity from the last
-            // scroll event.
-            this.lastScroll.velocity;
-
-      // Record the timestamp and offset of the last scroll event for future
-      // velocity calculations.
-      this.lastScroll = {timestamp, offset, velocity};
-
-      // Estimate how many items we’ll scroll before the next scroll event.
-      const estimatedOffset =
-        velocity * PostVirtualizedComments.scrollEventThrottle;
-
-      // Add the estimated offset so that we render enough items while the user
-      // is scrolling before the next scroll event which will recalculate again.
-      if (estimatedOffset > 0) {
-        lastOffset += estimatedOffset;
-      } else {
-        firstOffset += estimatedOffset;
-      }
-    } else {
-      // Record the timestamp and offset of the last scroll event for future
-      // velocity calculations.
-      this.lastScroll = {timestamp, offset, velocity: 0};
-    }
+    const firstOffset = offset;
+    const lastOffset = offset + viewport;
 
     // Get the beginning index of visible items.
     let first = getIndex(
