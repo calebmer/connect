@@ -78,14 +78,34 @@ function Post({
   // an event handler “up”.
   const virtualizeScroll = useRef<null | ((event: ScrollEvent) => void)>(null);
 
-  // The current visible range of comments in our virtualized comment list.
-  const visibleRange = useRef<RenderRange | null>(null);
-
   /**
    * Handles a scroll event on our navbar scroll view. Will both update the
    * virtualized list visible items and will load more items if applicable.
    */
-  const handleScroll = useMemo(() => {
+  const handleScroll = useCallback((event: ScrollEvent) => {
+    // Call the virtualized scroll event. This will update which comments are
+    // visible in our virtualized list.
+    if (virtualizeScroll.current !== null) {
+      virtualizeScroll.current(event);
+    }
+
+    // Measure the offset of the scrolled content from the top of the
+    // scrollable container.
+    const offset = event.nativeEvent.contentOffset.y;
+
+    // Only show the jump button if our scroll offset is below the jump
+    // button threshold.
+    setShowJumpButton(offset <= showJumpButtonThreshold);
+  }, []);
+
+  // The current visible range of comments in our virtualized comment list.
+  const visibleRange = useRef<RenderRange | null>(null);
+
+  /**
+   * When the range of visible items changes we try to load the items in the
+   * visible range if they are not already loaded.
+   */
+  const handleVisibleRangeChange = useMemo(() => {
     /**
      * Load more comments based on the items in view when our current comment
      * list has finished loading.
@@ -125,50 +145,9 @@ function Post({
       }
     }
 
-    // Used to calculate the velocity at which we will cancel loading more
-    // comments. Velocity is calculated by “dy / dt” where dy is the difference
-    // in position and dt is the difference in time. So in our case,
-    // 400px / 200ms = 2px/ms. This means if we scroll faster than 2px per 1ms
-    // we will consider the scroll to be “fast” and won’t load any comments.
-    const differencePosition = 400;
-    const differenceTime = 200;
-
-    // The pending load which might be cancelled if we detect a fast scroll.
-    let pendingLoad: {timeoutID: number; offset: number} | null = null;
-
-    return (event: ScrollEvent) => {
-      // Call the virtualized scroll event. This will update which comments are
-      // visible in our virtualized list.
-      if (virtualizeScroll.current !== null) {
-        virtualizeScroll.current(event);
-      }
-
-      // Measure the offset of the scrolled content from the top of the
-      // scrollable container.
-      const offset = event.nativeEvent.contentOffset.y;
-
-      // Only show the jump button if our scroll offset is below the jump
-      // button threshold.
-      setShowJumpButton(offset <= showJumpButtonThreshold);
-
-      // If we do not have a pending load then schedule one...
-      if (pendingLoad === null) {
-        // If our timeout runs then update our comment cache and load
-        // more comments.
-        const timeoutID = setTimeout(() => {
-          pendingLoad = null;
-          PostCommentsCache.updateWhenReady(postID, loadMoreComments);
-        }, differenceTime);
-
-        pendingLoad = {timeoutID, offset};
-      } else {
-        // If we traveled too many pixels than cancel our load to fetch
-        // more comments.
-        if (Math.abs(offset - pendingLoad.offset) > differencePosition) {
-          clearTimeout(pendingLoad.timeoutID);
-          pendingLoad = null;
-        }
-      }
+    return (range: RenderRange) => {
+      visibleRange.current = range;
+      PostCommentsCache.updateWhenReady(postID, loadMoreComments);
     };
   }, [postID]);
 
@@ -199,9 +178,7 @@ function Post({
           comments={comments}
           scrollViewRef={scrollViewRef}
           handleScroll={virtualizeScroll}
-          onVisibleRangeChange={useCallback((range: RenderRange) => {
-            visibleRange.current = range;
-          }, [])}
+          onVisibleRangeChange={handleVisibleRangeChange}
         />
       </NavbarScrollView>
       <CommentNewToolbar
