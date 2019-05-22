@@ -5,6 +5,7 @@ import {AccountByline} from "../account/AccountByline";
 import {AccountCache} from "../account/AccountCache";
 import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupItem} from "./GroupItem";
+import {Platform} from "react-native";
 import {PostCache} from "../post/PostCache";
 import {PostCommentsCache} from "../comment/CommentCache";
 import {PostID} from "@connect/api-client";
@@ -54,29 +55,36 @@ function GroupItemFeed({
     // this back to false once we’ve selected the component.
     setSelecting(true);
 
-    // Wait for comments to load before pushing the new route...
+    // Wait for comments to load before pushing the new route. That will avoid
+    // a loading spinner flash if the comments load from the network quickly.
     //
-    // We assume that this will eventually change `selectedPostID`.
-    stall(PostCommentsCache.load(postID), () => {
-      route
-        .push(PostRoute, {groupSlug, postID: String(postID)})
-        .then(done, done);
+    // However, on native stalling on the comment load is noticeable since we
+    // also have configured `react-native-navigation` to wait for the next
+    // screen to finish rendering before we animate the screen in.
+    if (Platform.OS === "web") {
+      stall(PostCommentsCache.load(postID), actuallyHandleSelect);
+    } else {
+      actuallyHandleSelect();
+    }
+  }
 
-      function done() {
-        // Schedule a callback to unselect the item (which starts an animation).
-        // This way we let the post finish rendering before starting the
-        // animation. If we animated while the post was rendering then we’d
-        // probably drop animation frames.
-        unstable_scheduleCallback(() => {
-          // NOTE: On mobile calling `route.push()` will immediately unmount the
-          // component. React will warn us that we tried to update state after
-          // unmounting so only update state if we are mounted.
-          if (isMounted.current) {
-            setSelecting(false);
-          }
-        });
-      }
-    });
+  function actuallyHandleSelect() {
+    route.push(PostRoute, {groupSlug, postID: String(postID)}).then(done, done);
+
+    function done() {
+      // Schedule a callback to unselect the item (which starts an animation).
+      // This way we let the post finish rendering before starting the
+      // animation. If we animated while the post was rendering then we’d
+      // probably drop animation frames.
+      unstable_scheduleCallback(() => {
+        // NOTE: On mobile calling `route.push()` will immediately unmount the
+        // component. React will warn us that we tried to update state after
+        // unmounting so only update state if we are mounted.
+        if (isMounted.current) {
+          setSelecting(false);
+        }
+      });
+    }
   }
 
   // On a laptop, you can open a post without leaving the feed. So favor shorter

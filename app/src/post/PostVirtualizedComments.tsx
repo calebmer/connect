@@ -275,9 +275,18 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // together we’ll only update our state once.
     if (this.pendingCommentHeights === null) {
       this.pendingCommentHeights = {important: false, heights: []};
-      Promise.resolve().then(() => {
-        this.flushCommentHeights();
-      });
+      if (Platform.OS === "web") {
+        // On web, schedule the flush in a micro-tick which will fire before the
+        // next paint.
+        Promise.resolve().then(() => {
+          this.flushCommentHeights();
+        });
+      } else {
+        // On native, use a macro-task since that’s what the message queue uses.
+        setTimeout(() => {
+          this.flushCommentHeights();
+        }, 0);
+      }
     }
 
     // Should we make this batch of pending comment heights important? The

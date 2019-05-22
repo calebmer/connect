@@ -51,6 +51,14 @@ export class RouteConfig<
       component: {
         name: this.path.getID(),
         passProps: props,
+        options: {
+          animations: {
+            // Wait for the screen to fully render before firing the animation.
+            // This avoids a brief flash of white.
+            push: {waitForRender: true},
+            showModal: {waitForRender: true},
+          },
+        },
       },
     };
   }
