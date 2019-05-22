@@ -545,7 +545,7 @@ class APIClientSubscription {
   /**
    * The WebSocket we use for communicating subscriptions in realtime.
    */
-  private socket: WebSocket | null = null;
+  private socket: Promise<WebSocket> | null = null;
 
   /**
    * The current XStream listener we will send messages to.
@@ -591,7 +591,7 @@ class APIClientSubscription {
    * Makes sure that a socket exists. If a socket does not exist then we create
    * one. If a socket does exist then we return it.
    */
-  private ensureSocket(): WebSocket {
+  private ensureSocket(): Promise<WebSocket> {
     // If we scheduled a retry then cancel it since we are retrying right now!
     if (this.retryTimeout !== null) {
       clearTimeout(this.retryTimeout);
@@ -603,6 +603,14 @@ class APIClientSubscription {
       return this.socket;
     }
 
+    // If we don‘t have a WebSocket then create one...
+    return (this.socket = this.createSocket());
+  }
+
+  /**
+   * Creates a new WebSocket.
+   */
+  private async createSocket(): Promise<WebSocket> {
     // We will modify the URL given to us in configuration to get the right
     // WebSocket URL.
     let url = this.config.url;
@@ -618,10 +626,19 @@ class APIClientSubscription {
       url = "ws" + url.slice(4);
     }
 
-    // Start our connection with the modified URL!
-    this.socket = new WebSocket(url);
+    // If we were given a function to fetch our authorization then let’s call
+    // that so we can attach an access token to our WebSocket request.
+    if (this.config.auth !== undefined) {
+      const accessToken = await this.config.auth();
+      if (accessToken !== null) {
+        url += `/?access_token=${accessToken}`;
+      }
+    }
 
-    this.socket.addEventListener("open", () => {
+    // Start our connection with the modified URL!
+    const socket = new WebSocket(url);
+
+    socket.addEventListener("open", () => {
       // Let the listener know our socket connected.
       if (this.listener !== null) {
         this.listener.next({type: "connected"});
@@ -630,7 +647,7 @@ class APIClientSubscription {
 
     // When we get a message we parse the message as JSON and send it to
     // our listener.
-    this.socket.addEventListener("message", event => {
+    socket.addEventListener("message", event => {
       try {
         // Parse the message from our server as JSON. Assume that our server
         // gave us a correctly formatted subscription message.
@@ -655,20 +672,20 @@ class APIClientSubscription {
           }
         }
       } catch (error) {
-        handleError(error);
+        this.handleError(error);
       }
     });
 
     // Forward any errors to our listener. If we have no listener then treat
     // the error as an unhandled error.
-    this.socket.addEventListener("error", () => {
-      handleError(new Error("WebSocket connection closed unexpectedly."));
+    socket.addEventListener("error", () => {
+      this.handleError(new Error("WebSocket connection closed unexpectedly."));
     });
 
     // If the socket closes before we’ve stopped the producer, then try to
     // re-connect! The WebSocket closing does not mean there will be no more
     // events. It more likely means the internet temporarily disconnected.
-    this.socket.addEventListener("close", () => {
+    socket.addEventListener("close", () => {
       this.socket = null;
 
       // Let the listener know our socket disconnected. If the listener waits
@@ -690,19 +707,19 @@ class APIClientSubscription {
       }
     });
 
-    /**
-     * Handles an error by sending it to our listener or reporting it internally
-     * if there are no listeners to handle the error.
-     */
-    const handleError = (error: unknown) => {
-      if (this.listener !== null) {
-        this.listener.error(error);
-      } else {
-        console.error(error); // eslint-disable-line no-console
-      }
-    };
+    return socket;
+  }
 
-    return this.socket;
+  /**
+   * Handles an error by sending it to our listener or reporting it internally
+   * if there are no listeners to handle the error.
+   */
+  private handleError(error: unknown) {
+    if (this.listener !== null) {
+      this.listener.error(error);
+    } else {
+      console.error(error); // eslint-disable-line no-console
+    }
   }
 
   /**
@@ -710,17 +727,17 @@ class APIClientSubscription {
    * we will wait until it opens to send the message.
    */
   public publish(message: SubscriptionClientMessage) {
-    const socket = this.ensureSocket();
+    this.ensureSocket().then(socket => {
+      if (socket.readyState === WebSocket.CONNECTING) {
+        function handleOpen() {
+          socket.removeEventListener("open", handleOpen);
+          socket.send(JSON.stringify(message));
+        }
 
-    if (socket.readyState === WebSocket.CONNECTING) {
-      function handleOpen() {
-        socket.removeEventListener("open", handleOpen);
+        socket.addEventListener("open", handleOpen);
+      } else {
         socket.send(JSON.stringify(message));
       }
-
-      socket.addEventListener("open", handleOpen);
-    } else {
-      socket.send(JSON.stringify(message));
-    }
+    });
   }
 }
