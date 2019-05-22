@@ -143,7 +143,8 @@ function Post({
         virtualizeScroll.current(event);
       }
 
-      // Retrieve the vertical offset of this scroll event.
+      // Measure the offset of the scrolled content from the top of the
+      // scrollable container.
       const offset = event.nativeEvent.contentOffset.y;
 
       // Only show the jump button if our scroll offset is below the jump
