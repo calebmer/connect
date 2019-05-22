@@ -1,3 +1,4 @@
+import {AccountID, SubscriptionID, generateID} from "@connect/api-client";
 import {
   Context,
   ContextQueryable,
@@ -6,7 +7,6 @@ import {
 } from "./Context";
 import {Pool, PoolClient, QueryResult} from "pg";
 import {SQLQuery, sql} from "./pg/SQL";
-import {AccountID} from "@connect/api-client";
 import {PGClient} from "./pg/PGClient";
 import {TEST} from "./RunConfig";
 import createDebugger from "debug";
@@ -202,7 +202,7 @@ export class ContextTest implements ContextQueryable {
     accountID: AccountID,
     publish: (message: Message) => void,
   ): ContextSubscription<Message> {
-    return new ContextTestSubscription(this, accountID, publish);
+    return new ContextTestSubscription(this, generateID(), accountID, publish);
   }
 
   /**
@@ -260,10 +260,11 @@ class ContextTestSubscription<Message> extends ContextSubscription<Message> {
 
   constructor(
     ctx: ContextTest,
+    subscriptionID: SubscriptionID,
     accountID: AccountID,
     publish: (message: Message) => void,
   ) {
-    super(accountID, publish);
+    super(subscriptionID, accountID, publish);
     this.ctx = ctx;
   }
 

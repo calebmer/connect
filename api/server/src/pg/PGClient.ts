@@ -48,9 +48,14 @@ function getConnectionConfig(): ConnectionConfig {
  */
 const pool = new Pool(getConnectionConfig());
 
+let poolID = 1;
+
 // Whenever the pool newly connects a client this event is called and we can run
 // some setup commands.
 pool.on("connect", client => {
+  // Mark the client with an ID which we will use in debugging.
+  (client as any).poolID = poolID++;
+
   // Set the search path to our project’s database schema.
   client.query("SET search_path = connect");
 });
@@ -181,7 +186,16 @@ export class PGClient {
     }
 
     const queryConfig = sql.compile(query);
-    debug(typeof queryConfig === "string" ? queryConfig : queryConfig.text);
+
+    // If we have enabled query debugging then log our query along with the ID
+    // of the pool the query is associated with. Useful for debugging queries
+    // running concurrently.
+    if (debug.enabled) {
+      const poolID = (this.client as any).poolID;
+      const queryText =
+        typeof queryConfig === "string" ? queryConfig : queryConfig.text;
+      debug((poolID != null ? `[${poolID}] ` : "") + queryText);
+    }
 
     return this.client.query(queryConfig).catch(handlePGError);
   }

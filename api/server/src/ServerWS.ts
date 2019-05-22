@@ -28,9 +28,12 @@ import {AccessTokenData, AccessTokenGenerator} from "./AccessToken";
 import {ContextSubscription} from "./Context";
 import {ServerSubscription} from "./Server";
 import WebSocket from "ws";
+import createDebugger from "debug";
 import http from "http";
 import {logError} from "./logError";
 import {parse as parseURL} from "url";
+
+const debug = createDebugger("connect:api:subscription");
 
 /**
  * The type of our WebSocket server which comes with some extra properties.
@@ -159,7 +162,9 @@ function handleConnection(
   // subscriptions! Otherwise we have a memory leak.
   socket.on("close", () => {
     // Unsubscribe from all of our subscriptions in parallel.
-    for (const unsubscribe of subscriptions.values()) {
+    for (const [id, unsubscribe] of subscriptions.entries()) {
+      debug(`Unsubscribing "${id}"`);
+
       unsubscribe
         .then(unsubscribe => unsubscribe())
         .catch(error => logError(error));
@@ -217,6 +222,8 @@ function handleConnection(
   async function handleMessage(message: SubscriptionClientMessage) {
     switch (message.type) {
       case "subscribe": {
+        debug(`Subscribing "${message.id}" to ${message.path}`);
+
         const subscriptionRoute = server.router.get(message.path);
         if (subscriptionRoute === undefined) {
           throw new APIError(APIErrorCode.NOT_FOUND);
@@ -229,6 +236,8 @@ function handleConnection(
         );
       }
       case "unsubscribe": {
+        debug(`Unsubscribing "${message.id}"`);
+
         return await handleUnsubscribe(message.id);
       }
       default:
@@ -269,13 +278,19 @@ function handleConnection(
     // subscription we will, in turn, publish to our client using the ID they
     // gave us so the client knows the exact subscription the new message
     // is for.
-    const ctx = new ContextSubscription<Message>(accessToken.id, message => {
+    const ctx = new ContextSubscription<Message>(
+      id,
+      accessToken.id,
+      handlePublish,
+    );
+
+    function handlePublish(message: Message) {
       if (messageQueue !== undefined) {
         messageQueue.push({type: "message", id, message});
       } else {
         publish({type: "message", id, message});
       }
-    });
+    }
 
     // Setup our subscription! Store the unsubscribe function for later usage.
     //

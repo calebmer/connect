@@ -229,9 +229,9 @@ export async function watchPostComments(
     // If we have no more subscribers, then stop listening to the database for
     // comment insertions.
     if (subscribers.size === 0 && unlistenCommentInsert !== undefined) {
-      const actualUnlistenCommentInsert = await unlistenCommentInsert;
+      const actualUnlistenCommentInsert = unlistenCommentInsert;
       unlistenCommentInsert = undefined;
-      await actualUnlistenCommentInsert();
+      await actualUnlistenCommentInsert.then(unsubscribe => unsubscribe());
     }
   }
 }

@@ -1,5 +1,5 @@
+import {AccountID, SubscriptionID} from "@connect/api-client";
 import {SQLQuery, sql} from "./pg/SQL";
-import {AccountID} from "@connect/api-client";
 import {PGClient} from "./pg/PGClient";
 import {QueryResult} from "pg";
 
@@ -188,6 +188,11 @@ export class Context extends ContextUnauthorized {
  */
 export class ContextSubscription<Message> implements ContextQueryable {
   /**
+   * The ID of this subscription.
+   */
+  public readonly subscriptionID: SubscriptionID;
+
+  /**
    * The ID of the authenticated account.
    */
   public readonly accountID: AccountID;
@@ -197,7 +202,12 @@ export class ContextSubscription<Message> implements ContextQueryable {
    */
   public readonly publish: (message: Message) => void;
 
-  constructor(accountID: AccountID, publish: (message: Message) => void) {
+  constructor(
+    subscriptionID: SubscriptionID,
+    accountID: AccountID,
+    publish: (message: Message) => void,
+  ) {
+    this.subscriptionID = subscriptionID;
     this.accountID = accountID;
     this.publish = publish;
   }
