@@ -1,6 +1,5 @@
 import {Breakpoint, useBreakpoint} from "../utils/useBreakpoint";
 import {Group, GroupRoute as GroupRouteComponent} from "./Group";
-import {Post, Post as PostRouteComponent} from "../post/Post";
 import React, {useCallback, useEffect} from "react";
 import {StyleSheet, View} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
@@ -9,9 +8,11 @@ import {GroupCache} from "./GroupCache";
 import {GroupHomeContainer} from "./GroupHomeContainer";
 import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupPostsCache} from "../post/PostCache";
+import {Post} from "../post/Post";
 import {PostID} from "@connect/api-client";
 import {PostNewPopupContext} from "../post/PostNewPopupContext";
 import {PostRoute} from "../router/AllRoutes";
+import {PostShimmer} from "../post/PostShimmer";
 import {Route} from "../router/Route";
 import {Space} from "../atoms";
 import {useMutableContainer} from "../cache/Mutable";
@@ -40,13 +41,15 @@ function GroupHome({
         <View style={styles.group}>
           <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
         </View>
-        {postID != null && (
+        {postID != null ? (
           <Post
             key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
             route={route}
             groupSlug={groupSlug}
             postID={postID}
           />
+        ) : (
+          <PostShimmer />
         )}
       </PostNewPopupContext>
     </GroupHomeContainer>
@@ -122,13 +125,7 @@ export function GroupHomeRoute({
     if (postID == null) {
       return <GroupRouteComponent route={route} groupSlug={groupSlug} />;
     } else {
-      return (
-        <PostRouteComponent
-          route={route}
-          groupSlug={groupSlug}
-          postID={postID}
-        />
-      );
+      return <Post route={route} groupSlug={groupSlug} postID={postID} />;
     }
   } else {
     return (

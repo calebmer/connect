@@ -3,6 +3,7 @@ import React, {ReactElement} from "react";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 import {CommentMeasurements} from "./CommentMeasurements";
 import {StyleSheet} from "react-native";
+import {TextShimmer} from "../molecules/TextShimmer";
 import {createDivElement} from "../utils/forks/createDivElement";
 
 /**
@@ -61,10 +62,8 @@ function getConversationNodes() {
           {style: styles.body},
           comment.byline && createDivElement({style: styles.byline}),
           comment.lines.map((line, index) =>
-            createDivElement({
-              key: String(index),
-              style: [styles.line, {width: `${line}%`}],
-            }),
+            // Call the component directly so we can memoize the result...
+            React.cloneElement(TextShimmer({width: line}), {key: index}),
           ),
         ),
       ),
@@ -84,6 +83,16 @@ const _CommentShimmer = Object.assign(React.memo(CommentShimmer), {
 });
 
 export {_CommentShimmer as CommentShimmer};
+
+export function CommentConversationShimmer() {
+  return (
+    <>
+      {conversation.map((_comment, index) => (
+        <CommentShimmer key={index} index={index} />
+      ))}
+    </>
+  );
+}
 
 /**
  * Gets the height of a single comment shimmer.
@@ -170,9 +179,6 @@ function getIndex(offset: number, startIndex: number = 0): number {
   return index;
 }
 
-const shimmerColor = "hsl(0, 0%, 94%)"; // `Color.grey0` is too light and `Color.grey1` is too dark
-const lineBarHeight = Font.size2.fontSize * 0.6;
-
 const styles = StyleSheet.create({
   comment: {
     position: "relative",
@@ -194,22 +200,16 @@ const styles = StyleSheet.create({
     width: AccountAvatarSmall.size,
     height: AccountAvatarSmall.size,
     borderRadius: AccountAvatarSmall.size / 2,
-    backgroundColor: shimmerColor,
+    backgroundColor: TextShimmer.shimmerColor,
   },
   body: {
     marginLeft: AccountAvatarSmall.size + Space.space2,
   },
   byline: {
     width: "20%",
-    height: lineBarHeight,
-    marginVertical: (Font.size2.lineHeight - lineBarHeight) / 2,
-    backgroundColor: shimmerColor,
-    borderRadius: Border.radius0,
-  },
-  line: {
-    height: lineBarHeight,
-    marginVertical: (Font.size2.lineHeight - lineBarHeight) / 2,
-    backgroundColor: shimmerColor,
+    height: TextShimmer.lineBarHeight,
+    marginVertical: (Font.size2.lineHeight - TextShimmer.lineBarHeight) / 2,
+    backgroundColor: TextShimmer.shimmerColor,
     borderRadius: Border.radius0,
   },
 });
