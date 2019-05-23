@@ -13,6 +13,11 @@ import {
   commentCountMore,
 } from "../comment/CommentCache";
 import React, {ReactElement} from "react";
+import {
+  unstable_LowPriority,
+  unstable_runWithPriority,
+  unstable_scheduleCallback,
+} from "scheduler";
 import {Comment} from "../comment/Comment";
 import {CommentShimmer} from "../comment/CommentShimmer";
 import {reactSchedulerFlushSync} from "../utils/forks/reactSchedulerFlushSync";
@@ -73,6 +78,13 @@ type Props = {
 
 type State = {
   /**
+   * Is this the very first render of our component? We start by only rendering
+   * the actually visible range. In subsequent renders we’ll render all the
+   * overscroll and leading/trailing items.
+   */
+  initialRender: boolean;
+
+  /**
    * The currently visible range of items.
    */
   visibleRange: RenderRange;
@@ -131,6 +143,7 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     );
 
     this.state = {
+      initialRender: true,
       visibleRange: {first, last},
       commentHeights: [],
       commentChunks: [],
@@ -165,6 +178,14 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     setTimeout(() => {
       this.hasPainted = true;
     }, 0);
+
+    // After we’ve rendered, schedule a low priority callback to render the rest
+    // of the leading/trailing/overscan items.
+    unstable_runWithPriority(unstable_LowPriority, () => {
+      unstable_scheduleCallback(() => {
+        this.setState({initialRender: false});
+      });
+    });
   }
 
   componentDidUpdate(_prevProps: Props, prevState: State) {
@@ -431,43 +452,51 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     const commentCount = this.props.commentCount;
     const actualVisibleRange: RenderRange = this.state.visibleRange;
 
-    // Add overscan to the visible range. We render more comments off-screen
-    // but we don’t report them in our visible range state.
-    let visibleRange: RenderRange = {
-      first: Math.max(actualVisibleRange.first - overscanCount, 0),
-      last: Math.min(actualVisibleRange.last + overscanCount, commentCount),
-    };
+    // The ranges of items we will render...
+    let visibleRange: RenderRange = actualVisibleRange;
+    let leadingRange: RenderRange | null = null;
+    let trailingRange: RenderRange | null = null;
 
-    // We always render some items at the very beginning of the list so that
-    // “jump to start” are perceived to render quickly.
-    let leadingRange: RenderRange | null = {
-      first: 0,
-      last: Math.min(leadingCount, commentCount),
-    };
-
-    // We always render some items at the very end of the list so that
-    // “jump to start” are perceived to render quickly.
-    let trailingRange: RenderRange | null = {
-      first: Math.max(0, commentCount - trailingCount),
-      last: commentCount,
-    };
-
-    // Merge the leading range with the visible range if needed.
-    if (intersects(visibleRange, leadingRange)) {
+    // On the initial render, only render the _actually_ visible range.
+    if (this.state.initialRender === false) {
+      // Add overscan to the visible range. We render more comments off-screen
+      // but we don’t report them in our visible range state.
       visibleRange = {
-        first: Math.min(visibleRange.first, leadingRange.first),
-        last: Math.max(visibleRange.last, leadingRange.last),
+        first: Math.max(actualVisibleRange.first - overscanCount, 0),
+        last: Math.min(actualVisibleRange.last + overscanCount, commentCount),
       };
-      leadingRange = null;
-    }
 
-    // Merge the trailing range with the visible range if needed.
-    if (intersects(visibleRange, trailingRange)) {
-      visibleRange = {
-        first: Math.min(visibleRange.first, trailingRange.first),
-        last: Math.max(visibleRange.last, trailingRange.last),
+      // We always render some items at the very beginning of the list so that
+      // “jump to start” are perceived to render quickly.
+      leadingRange = {
+        first: 0,
+        last: Math.min(leadingCount, commentCount),
       };
-      trailingRange = null;
+
+      // We always render some items at the very end of the list so that
+      // “jump to start” are perceived to render quickly.
+      trailingRange = {
+        first: Math.max(0, commentCount - trailingCount),
+        last: commentCount,
+      };
+
+      // Merge the leading range with the visible range if needed.
+      if (intersects(visibleRange, leadingRange)) {
+        visibleRange = {
+          first: Math.min(visibleRange.first, leadingRange.first),
+          last: Math.max(visibleRange.last, leadingRange.last),
+        };
+        leadingRange = null;
+      }
+
+      // Merge the trailing range with the visible range if needed.
+      if (intersects(visibleRange, trailingRange)) {
+        visibleRange = {
+          first: Math.min(visibleRange.first, trailingRange.first),
+          last: Math.max(visibleRange.last, trailingRange.last),
+        };
+        trailingRange = null;
+      }
     }
 
     const items: Array<ReactElement> = [];
