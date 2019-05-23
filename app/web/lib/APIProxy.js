@@ -112,6 +112,8 @@ function getAccessToken(apiUrl, req, callback) {
       // unset our cookies!
       if (result.ok !== true) {
         const error = new Error("Failed to refresh access token.");
+        error.statusCode = apiResponse.statusCode;
+        error.apiError = result.error;
         error.resetTokens = true;
         throw error;
       }
@@ -291,21 +293,14 @@ async function proxySignInRequest(apiUrl, req, res, pathname) {
     //
     // Since refresh tokens are very dangerous in the wrong hands we also
     // force the cookie to only be sent over secure contexts.
-    res.setHeader(
-      "Set-Cookie",
-      [
-        cookie.serialize(
-          "access_token",
-          result.data.accessToken,
-          cookieSettings,
-        ),
-        cookie.serialize(
-          "refresh_token",
-          result.data.refreshToken,
-          cookieSettings,
-        ),
-      ].join(", "),
-    );
+    res.setHeader("Set-Cookie", [
+      cookie.serialize("access_token", result.data.accessToken, cookieSettings),
+      cookie.serialize(
+        "refresh_token",
+        result.data.refreshToken,
+        cookieSettings,
+      ),
+    ]);
 
     // Send an ok response to our client. We remove the refresh and access
     // tokens from the response body so that client-side code will never
@@ -388,39 +383,32 @@ async function proxySignOutRequest(apiUrl, req, res) {
  */
 function handleError(res, error) {
   if (process.env.NODE_ENV !== "test") {
-    // Log the error for debugging purposes.
-    logError(error);
+    if (!error.apiError) {
+      // Log the error for debugging purposes.
+      logError(error);
+    }
   }
 
+  res.statusCode = error.statusCode || 500;
+  res.setHeader("Content-Type", "application/json");
+
+  // If we were told to reset tokens then add a header which will unset
+  // the tokens.
   if (error.resetTokens) {
-    // If we were told to reset tokens then send an unauthorized error instead
-    // of an unknown error.
-    res.statusCode = 401;
-    res.setHeader("Content-Type", "application/json");
     res.setHeader("Set-Cookie", [
       cookie.serialize("access_token", "", cookieExpireSettings),
       cookie.serialize("refresh_token", "", cookieExpireSettings),
     ]);
+  }
+
+  if (error.apiError) {
     res.write(
       JSON.stringify({
         ok: false,
-        error: {
-          code: "UNAUTHORIZED",
-
-          // If we are in development mode then include the stack of our error
-          // from the server. This should help in debugging why an error ocurred.
-          serverStack:
-            process.env.NODE_ENV === "development" && error instanceof Error
-              ? error.stack
-              : undefined,
-        },
+        error: error.apiError,
       }),
     );
-    res.end();
   } else {
-    // Send an unknown error to the client.
-    res.statusCode = 500;
-    res.setHeader("Content-Type", "application/json");
     res.write(
       JSON.stringify({
         ok: false,
@@ -436,8 +424,9 @@ function handleError(res, error) {
         },
       }),
     );
-    res.end();
   }
+
+  res.end();
 }
 
 /**
@@ -487,15 +476,16 @@ function proxyUpgrade(apiUrl, req, socket, firstPacket) {
     // If there was an error while trying to fetch our access token write an
     // error response to our socket...
     if (error) {
-      let statusCode = 500;
+      const statusCode = error.statusCode || 500;
       const rawHeaders = [];
       if (error.resetTokens) {
-        statusCode = 401;
         rawHeaders.push(
           "Set-Cookie",
-          cookie.serialize("access_token", "", cookieExpireSettings) +
-            ", " +
-            cookie.serialize("refresh_token", "", cookieExpireSettings),
+          cookie.serialize("access_token", "", cookieExpireSettings),
+        );
+        rawHeaders.push(
+          "Set-Cookie",
+          cookie.serialize("refresh_token", "", cookieExpireSettings),
         );
       }
       writeResponse(statusCode, rawHeaders);

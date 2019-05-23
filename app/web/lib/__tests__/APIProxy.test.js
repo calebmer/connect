@@ -499,9 +499,9 @@ describe("HTTP", () => {
         "Set-Cookie",
         "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict,refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
       )
-      .expect(401, {
+      .expect(400, {
         ok: false,
-        error: {code: "UNAUTHORIZED"},
+        error: {code: "REFRESH_TOKEN_INVALID", extra: 42},
       });
   });
 
@@ -509,7 +509,7 @@ describe("HTTP", () => {
     await request(APIProxy)
       .get("/")
       .ok(() => true)
-      .expect(500, {ok: false, error: {code: "UNKNOWN"}});
+      .expect(404, {ok: false, error: {code: "UNKNOWN"}});
   });
 
   test("adds a `Forwarded` header to proxied requests", async () => {
@@ -575,10 +575,16 @@ describe("HTTP", () => {
         .send({email: "yolo", password: "swag"})
         .expect(
           "Set-Cookie",
-          "access_token=yolo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict, refresh_token=swag; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+          "access_token=yolo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict,refresh_token=swag; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
         )
         .expect("Content-Type", "application/json")
-        .expect(200, {ok: true, data: {accessToken: "", refreshToken: ""}});
+        .expect(200, {ok: true, data: {accessToken: "", refreshToken: ""}})
+        .expect(res => {
+          expect(res.headers["set-cookie"]).toEqual([
+            "access_token=yolo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+            "refresh_token=swag; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+          ]);
+        });
     });
 
     test("if failed then we proxy the body", async () => {
@@ -639,10 +645,16 @@ describe("HTTP", () => {
         .send({email: "yolo", password: "swag"})
         .expect(
           "Set-Cookie",
-          "access_token=yolo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict, refresh_token=swag; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+          "access_token=yolo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict,refresh_token=swag; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
         )
         .expect("Content-Type", "application/json")
-        .expect(200, {ok: true, data: {accessToken: "", refreshToken: ""}});
+        .expect(200, {ok: true, data: {accessToken: "", refreshToken: ""}})
+        .expect(res => {
+          expect(res.headers["set-cookie"]).toEqual([
+            "access_token=yolo; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+            "refresh_token=swag; Max-Age=3153600000; Path=/api; HttpOnly; Secure; SameSite=Strict",
+          ]);
+        });
     });
 
     test("if failed then we proxy the body", async () => {
@@ -1066,11 +1078,12 @@ describe("WS", () => {
           let data = "";
           res.on("data", buffer => (data += buffer.toString("utf8")));
           res.on("end", () => {
-            expect(res.statusCode).toEqual(401);
+            expect(res.statusCode).toEqual(400);
             expect(res.headers["set-cookie"]).toEqual([
-              "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict, refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
+              "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
+              "refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
             ]);
-            expect(data).toEqual("Unauthorized");
+            expect(data).toEqual("Bad Request");
             done();
           });
         });
@@ -1303,11 +1316,12 @@ describe("WS", () => {
           let data = "";
           res.on("data", buffer => (data += buffer.toString("utf8")));
           res.on("end", () => {
-            expect(res.statusCode).toEqual(401);
+            expect(res.statusCode).toEqual(400);
             expect(res.headers["set-cookie"]).toEqual([
-              "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict, refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
+              "access_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
+              "refresh_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Strict",
             ]);
-            expect(data).toEqual("Unauthorized");
+            expect(data).toEqual("Bad Request");
             done();
           });
         });
