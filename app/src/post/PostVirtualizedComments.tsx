@@ -167,8 +167,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     }, 0);
   }
 
-  private _lastScrollHeight: number | null = null;
-
   componentDidUpdate(_prevProps: Props, prevState: State) {
     // Report a change in the visible if there is one.
     if (
@@ -176,27 +174,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
       prevState.visibleRange.last !== this.state.visibleRange.last
     ) {
       this.props.onVisibleRangeChange(this.state.visibleRange);
-    }
-
-    if (Platform.OS === "web") {
-      if (this.props.scrollViewRef.current) {
-        const scrollView: HTMLDivElement = this.props.scrollViewRef.current.getScrollableNode();
-        const lastScrollHeight = this._lastScrollHeight;
-        this._lastScrollHeight = scrollView.scrollHeight;
-        if (lastScrollHeight !== null) {
-          const lastScrollBottom =
-            lastScrollHeight - (scrollView.scrollTop + scrollView.clientHeight);
-
-          const nextScrollTop =
-            scrollView.scrollHeight -
-            scrollView.clientHeight -
-            lastScrollBottom;
-
-          if (scrollView.scrollTop !== nextScrollTop) {
-            scrollView.scrollTop = nextScrollTop;
-          }
-        }
-      }
     }
   }
 
