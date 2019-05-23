@@ -1,6 +1,10 @@
 import {Skimmer} from "../Skimmer";
 
-const items = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+let items: Array<number> = [];
+
+beforeEach(() => {
+  items = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+});
 
 const load = jest.fn(async ({offset, limit}) => {
   return items.slice(offset, offset + limit);
@@ -152,4 +156,15 @@ test("loads a small gap of items", async () => {
     [{offset: 4, limit: 3}],
     [{offset: 3, limit: 1}],
   ]);
+});
+
+test("does not load more from an empty list", async () => {
+  items = [];
+  let skimmer = Skimmer.create({load});
+  skimmer = await skimmer.load({offset: 0, limit: 3});
+  expect(skimmer.items).toEqual([]);
+  skimmer = await skimmer.load({offset: 0, limit: 3});
+  skimmer = await skimmer.load({offset: 0, limit: 3});
+  expect(skimmer.items).toEqual([]);
+  expect(load.mock.calls).toEqual([[{offset: 0, limit: 3}]]);
 });

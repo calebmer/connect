@@ -76,19 +76,12 @@ export class Skimmer<Item> {
     requestedLimit = Math.max(requestedLimit, 0);
     requestedOffset = Math.max(requestedOffset, 0);
 
-    // The maximum possible start position for our load. If we’ve reached the
-    // end of our list then we won’t load beyond our items list.
-    let maxStart = requestedOffset + requestedLimit;
-    if (this.noMoreItems) {
-      maxStart = Math.min(maxStart, this.items.length);
-    }
-
     // Find the first offset where we have not yet loaded data. The end of our
     // list is always not yet loaded so stop incrementing our start
     // cursor there.
     let start = requestedOffset;
     while (
-      start < maxStart - 1 &&
+      start < requestedOffset + requestedLimit - 1 &&
       start < this.items.length &&
       this.items[start] !== undefined
     ) {
@@ -107,8 +100,9 @@ export class Skimmer<Item> {
     // two fetches in parallel.
     let end = start;
     while (
+      (this.noMoreItems ? end < this.items.length : true) &&
       end - start < requestedLimit &&
-      (end >= this.items.length || this.items[end] === undefined)
+      this.items[end] === undefined
     ) {
       end++;
     }
@@ -157,7 +151,7 @@ export class Skimmer<Item> {
     // If we got fewer items then we expected, we assume we have loaded the
     // maximum amount of items. We will never load more items outside of the
     // range of our skim list since we know there won’t be more.
-    const noMoreItems = this.noMoreItems || offset + limit > this.items.length;
+    const noMoreItems = this.noMoreItems || offset + limit > items.length;
 
     // Return our updated list.
     return new Skimmer(this.fetchMore, items, noMoreItems);
