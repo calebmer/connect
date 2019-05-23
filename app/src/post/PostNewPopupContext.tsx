@@ -2,9 +2,10 @@ import React, {useContext, useMemo, useState} from "react";
 import {Route} from "../router/Route";
 
 const PostNewPopup = React.lazy(() => {
-  return import("./PostNewPopup").then(m => ({
-    default: m.PostNewPopup,
-  }));
+  return import(
+    /* webpackChunkName: "PostNewPopup" */
+    "./PostNewPopup"
+  ).then(m => ({default: m.PostNewPopup}));
 });
 
 /**

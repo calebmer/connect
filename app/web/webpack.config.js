@@ -15,6 +15,7 @@ const ModuleNotFoundPlugin = require("react-dev-utils/ModuleNotFoundPlugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const CircularDependencyPlugin = require("circular-dependency-plugin");
+const {BundleAnalyzerPlugin} = require("webpack-bundle-analyzer");
 
 const dev = process.env.NODE_ENV !== "production";
 
@@ -282,6 +283,8 @@ module.exports = {
     // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
     // You can remove this if you don't use Moment.js:
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+    // Install the bundle analyzer so we can look for ways to slim the bundle.
+    false && new BundleAnalyzerPlugin(),
   ].filter(Boolean),
 
   // Some libraries import Node modules but don't use them in the browser.
