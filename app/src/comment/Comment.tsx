@@ -17,6 +17,7 @@ import React, {useRef} from "react";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 import {AccountByline} from "../account/AccountByline";
 import {CommentCache} from "./CommentCache";
+import {CommentMeasurements} from "./CommentMeasurements";
 import {useCache} from "../cache/Cache";
 
 // NOTE: Having a React component and a type with the same name is ok in
@@ -74,18 +75,7 @@ function Comment({
   }
 }
 
-Comment.paddingLeft = Space.space3 + AccountAvatarSmall.size + Space.space2;
-Comment.paddingRight = Space.space4;
-Comment.paddingTopWithByline = Space.space3;
-Comment.paddingTopWithoutByline = Font.size2.lineHeight / 3;
-
-const CommentMemo = Object.assign(React.memo(Comment), {
-  paddingLeft: Comment.paddingLeft,
-  paddingRight: Comment.paddingRight,
-  paddingTopWithByline: Comment.paddingTopWithByline,
-  paddingTopWithoutByline: Comment.paddingTopWithoutByline,
-});
-
+const CommentMemo = React.memo(Comment);
 export {CommentMemo as Comment};
 
 // Used to conditionally suspend on some data.
@@ -255,7 +245,7 @@ function useScrollToEnd(
 const styles = StyleSheet.create({
   comment: {
     flexDirection: "row",
-    paddingTop: Comment.paddingTopWithByline,
+    paddingTop: CommentMeasurements.paddingTopWithByline,
     paddingHorizontal: Space.space3,
   },
   commentAvatar: {
@@ -265,11 +255,11 @@ const styles = StyleSheet.create({
   commentWithByline: {
     flex: 1,
     paddingLeft: Space.space2,
-    paddingRight: Comment.paddingRight,
+    paddingRight: CommentMeasurements.paddingRight,
   },
   commentWithoutByline: {
-    paddingTop: Comment.paddingTopWithoutByline,
-    paddingLeft: Comment.paddingLeft,
-    paddingRight: Comment.paddingRight,
+    paddingTop: CommentMeasurements.paddingTopWithoutByline,
+    paddingLeft: CommentMeasurements.paddingLeft,
+    paddingRight: CommentMeasurements.paddingRight,
   },
 });

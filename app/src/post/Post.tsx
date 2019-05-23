@@ -1,4 +1,4 @@
-import {Color, Font, Shadow, Space} from "../atoms";
+import {Color, Shadow, Space} from "../atoms";
 import {
   PostCommentsCache,
   PostCommentsCacheEntry,
@@ -15,7 +15,6 @@ import React, {
 } from "react";
 import {ScrollEvent, ScrollView, StyleSheet, View} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
-import {Comment} from "../comment/Comment";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
@@ -23,6 +22,7 @@ import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
+import {PostMeasurements} from "./PostMeasurements";
 import {PostVirtualizedComments} from "./PostVirtualizedComments";
 import {Route} from "../router/Route";
 import {Skimmer} from "../cache/Skimmer";
@@ -204,9 +204,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: Color.white,
     ...Shadow.elevation3,
-
-    // The maximum width is designed to give a comment `Font.maxWidth` which
-    // means the post text will end up being a bit wider.
-    maxWidth: Comment.paddingLeft + Font.maxWidth + Comment.paddingRight,
+    maxWidth: PostMeasurements.maxWidth,
   },
 });

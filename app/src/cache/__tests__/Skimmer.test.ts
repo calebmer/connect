@@ -6,7 +6,7 @@ const load = jest.fn(async ({offset, limit}) => {
   return items.slice(offset, offset + limit);
 });
 
-const e = Skimmer.empty;
+const e = undefined;
 
 test("loads from the beginning", async () => {
   let skimmer = Skimmer.create({load});

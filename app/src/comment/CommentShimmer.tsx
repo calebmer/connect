@@ -1,7 +1,7 @@
 import {Border, Font, Space} from "../atoms";
 import React, {ReactElement} from "react";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
-import {Comment} from "./Comment";
+import {CommentMeasurements} from "./CommentMeasurements";
 import {StyleSheet} from "react-native";
 import {createDivElement} from "../utils/forks/createDivElement";
 
@@ -93,8 +93,8 @@ function getCommentHeight(comment: CommentShimmer): number {
 
   // Add the height for the comment’s top padding.
   height += comment.byline
-    ? Comment.paddingTopWithByline
-    : Comment.paddingTopWithoutByline;
+    ? CommentMeasurements.paddingTopWithByline
+    : CommentMeasurements.paddingTopWithoutByline;
 
   // Add the height for the comment’s byline.
   if (comment.byline) {
@@ -177,18 +177,18 @@ const styles = StyleSheet.create({
   comment: {
     position: "relative",
     paddingLeft: Space.space3,
-    paddingRight: Comment.paddingRight,
+    paddingRight: CommentMeasurements.paddingRight,
   },
   commentWithByline: {
-    paddingTop: Comment.paddingTopWithByline,
+    paddingTop: CommentMeasurements.paddingTopWithByline,
   },
   commentWithoutByline: {
-    paddingTop: Comment.paddingTopWithoutByline,
+    paddingTop: CommentMeasurements.paddingTopWithoutByline,
   },
   avatar: {
     position: "absolute",
     top:
-      Comment.paddingTopWithByline +
+      CommentMeasurements.paddingTopWithByline +
       (Font.size2.lineHeight - AccountAvatarSmall.size / 2 - 4),
     left: Space.space3,
     width: AccountAvatarSmall.size,
