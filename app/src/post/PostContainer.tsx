@@ -1,7 +1,9 @@
 import {Color, Shadow} from "../atoms";
 import {StyleSheet, View} from "react-native";
+import {ErrorScreen} from "../frame/ErrorScreen";
 import {Post} from "./Post";
-import {PostError} from "./PostError";
+import {PostCache} from "./PostCache";
+import {PostCommentsCache} from "../comment/CommentCache";
 import {PostID} from "@connect/api-client";
 import {PostMeasurements} from "./PostMeasurements";
 import {PostShimmer} from "./PostShimmer";
@@ -42,6 +44,14 @@ export class PostContainer extends React.Component<Props, State> {
   }
 
   handleRetry = () => {
+    const {postID} = this.props;
+
+    // Force ourselves to reload the post and comments before we retry.
+    if (postID !== null) {
+      PostCache.forceReload(postID);
+      PostCommentsCache.forceReload(postID);
+    }
+
     this.setState({
       hasError: false,
       error: null,
@@ -54,12 +64,7 @@ export class PostContainer extends React.Component<Props, State> {
     return (
       <View style={styles.container}>
         {hasError ? (
-          <PostError
-            route={route}
-            postID={postID}
-            error={error}
-            onRetry={this.handleRetry}
-          />
+          <ErrorScreen route={route} error={error} onRetry={this.handleRetry} />
         ) : postID != null ? (
           <React.Suspense fallback={<PostShimmer route={route} />}>
             <Post route={route} groupSlug={groupSlug} postID={postID} />
