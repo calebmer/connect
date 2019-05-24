@@ -1,7 +1,8 @@
 import {Breakpoint, useBreakpoint} from "../utils/Breakpoint";
 import {Group, GroupRoute as GroupRouteComponent} from "./Group";
-import React, {useCallback, useEffect} from "react";
-import {StyleSheet, View} from "react-native";
+import {GroupRoute, PostRoute} from "../router/AllRoutes";
+import React, {useCallback, useEffect, useRef} from "react";
+import {Platform, StyleSheet, View} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {CurrentAccountCache} from "../account/AccountCache";
 import {GroupCache} from "./GroupCache";
@@ -10,7 +11,6 @@ import {GroupPostsCache} from "../post/PostCache";
 import {PostContainer} from "../post/PostContainer";
 import {PostID} from "@connect/api-client";
 import {PostNewPopupContext} from "../post/PostNewPopupContext";
-import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {Space} from "../atoms";
 import {useGroupHomeLayout} from "./useGroupHomeLayout";
@@ -110,9 +110,34 @@ export function GroupHomeRoute({
   groupSlug: string;
   postID?: string;
 }) {
-  const postID = _postID as PostID;
+  const postID = _postID as PostID | undefined;
 
-  if (useGroupHomeLayout()) {
+  const groupHomeLayout = useGroupHomeLayout();
+
+  // NOTE: We use `history.replaceState()` to redirect the user to the first
+  // post in a group. This works well in our layered group home layout, but on
+  // mobile the group and post are two separate routes. When we switch between
+  // our mobile and laptop layouts on web, edit the browser history so that
+  // you can get back to the group route by pressing the back button.
+  const lastGroupHomeLayout = useRef(groupHomeLayout);
+  useEffect(() => {
+    if (
+      Platform.OS === "web" &&
+      lastGroupHomeLayout.current !== groupHomeLayout &&
+      groupHomeLayout === false &&
+      postID !== undefined
+    ) {
+      window.history.replaceState({}, "group", `/group/${groupSlug}`);
+      window.history.pushState(
+        {},
+        "post",
+        `/group/${groupSlug}/post/${postID}`,
+      );
+    }
+    lastGroupHomeLayout.current = groupHomeLayout;
+  }, [groupHomeLayout, groupSlug, postID, route]);
+
+  if (groupHomeLayout) {
     return <GroupHome route={route} groupSlug={groupSlug} postID={postID} />;
   } else {
     if (postID == null) {
