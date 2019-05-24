@@ -1,4 +1,5 @@
 import {GroupRoute, SignInRoute} from "./router/AllRoutes";
+import {Color} from "./atoms";
 import {Navigation} from "react-native-navigation";
 import {YellowBox} from "react-native";
 import {loadTokensFromStorage} from "./api/API.native";
@@ -35,6 +36,9 @@ function main(isAuthenticated: boolean) {
   Navigation.setDefaultOptions({
     topBar: {
       visible: false,
+    },
+    layout: {
+      backgroundColor: Color.grey8,
     },
   });
 
