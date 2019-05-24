@@ -1,4 +1,5 @@
 import {API} from "../api/API";
+import {AppError} from "../api/AppError";
 import {Cache} from "../cache/Cache";
 import {Group} from "@connect/api-client";
 import {Image} from "react-native";
@@ -10,7 +11,9 @@ import defaultBackgroundImage from "../assets/images/group-banner-background.png
 export const GroupCache = new Cache<string, Group>({
   async load(slug) {
     const {group} = await API.group.getGroupBySlug({slug});
-    if (group == null) throw new Error("Group not found.");
+    if (group == null) {
+      throw new AppError("Can not find this group.");
+    }
     await preloadGroupBackground(group);
     return group;
   },

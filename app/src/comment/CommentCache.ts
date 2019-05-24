@@ -8,6 +8,7 @@ import {
 } from "@connect/api-client";
 import {API} from "../api/API";
 import {AccountCache} from "../account/AccountCache";
+import {AppError} from "../api/AppError";
 import {Cache} from "../cache/Cache";
 import {Skimmer} from "../cache/Skimmer";
 
@@ -17,7 +18,9 @@ import {Skimmer} from "../cache/Skimmer";
 export const CommentCache = new Cache<CommentID, CommentCacheEntry>({
   async load(id) {
     const {comment} = await API.comment.getComment({id});
-    if (comment == null) throw new Error("Comment not found.");
+    if (comment == null) {
+      throw new AppError("Can not find this comment.");
+    }
     AccountCache.preload(comment.authorID); // Preload the comment’s author. We will probably need that.
     return {
       status: CommentCacheEntryStatus.Commit,

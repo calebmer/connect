@@ -2,6 +2,7 @@ import {AccountID, AccountProfile} from "@connect/api-client";
 import {Cache, useCache} from "../cache/Cache";
 import {CacheSingleton, useCacheSingletonData} from "../cache/CacheSingleton";
 import {API} from "../api/API";
+import {AppError} from "../api/AppError";
 import {Image} from "react-native";
 
 /**
@@ -10,7 +11,9 @@ import {Image} from "react-native";
 export const AccountCache = new Cache<AccountID, AccountProfile>({
   async load(id) {
     const {account} = await API.account.getProfile({id});
-    if (account == null) throw new Error("Account not found.");
+    if (account == null) {
+      throw new AppError("Can not find this account.");
+    }
     await preloadAccountAvatar(account);
     return account;
   },
