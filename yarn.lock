@@ -9125,10 +9125,10 @@ react-native-navigation@^2.15.0:
     prop-types "^15.6.0"
     react-timer-mixin "^0.13.4"
 
-"react-native@npm:@calebmer/react-native@0.59.8-patch.1":
-  version "0.59.8-patch.1"
-  resolved "https://registry.yarnpkg.com/@calebmer/react-native/-/react-native-0.59.8-patch.1.tgz#a13b1aff98f10a47a028cd25f041e89b60504199"
-  integrity sha512-FKL9FA0apNSKOiHnq0XncDDEoMBgtgWp+2bVujNbldJauwVagMj/pz3GDDm3eUMDaDKCFnlrxESZcuxwBqRX2Q==
+"react-native@npm:@calebmer/react-native@0.59.8-patch.5":
+  version "0.59.8-patch.5"
+  resolved "https://registry.yarnpkg.com/@calebmer/react-native/-/react-native-0.59.8-patch.5.tgz#5a361b3f6c75885758612b6193e64cb82c3db1f4"
+  integrity sha512-r9qsS50C66MBd+ZmqkVvjaZy3hJj3nj48iIU0Ze9E/vEjdKCvDYbAknMbU3CrgCyz7dRmOvqroCAEyUV/RRv1Q==
   dependencies:
     "@babel/runtime" "^7.0.0"
     "@react-native-community/cli" "^1.2.1"
