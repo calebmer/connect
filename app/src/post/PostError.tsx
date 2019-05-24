@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
   icon: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: Space.space10,
+    marginTop: Space.space9,
     marginHorizontal: Space.space3,
   },
   message: {
