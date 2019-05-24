@@ -173,8 +173,18 @@ export async function watchPostComments(
       CommentInsertChannel,
       handleCommentInsertAll,
     );
-    await unlistenCommentInsert;
   }
+
+  // Get the subscribers for the provided post ID. If there are no subscribers
+  // then create a new set.
+  let postSubscribers = subscribers.get(input.postID);
+  if (postSubscribers === undefined) {
+    postSubscribers = new Set();
+    subscribers.set(input.postID, postSubscribers);
+  }
+
+  // Add our subscription to the set.
+  postSubscribers.add(ctx);
 
   // Check to make sure that the subscriber is allowed to see the post we will
   // be listening to. Get the comment count from that post and send it to
@@ -202,16 +212,9 @@ export async function watchPostComments(
     throw error;
   }
 
-  // Get the subscribers for the provided post ID. If there are no subscribers
-  // then create a new set.
-  let postSubscribers = subscribers.get(input.postID);
-  if (postSubscribers === undefined) {
-    postSubscribers = new Set();
-    subscribers.set(input.postID, postSubscribers);
-  }
-
-  // Add our subscription to the set.
-  postSubscribers.add(ctx);
+  // Make sure `PGListen.listen` has resolved before we return to fully signal
+  // that we’re subscribed!
+  await unlistenCommentInsert;
 
   return unsubscribe;
 
