@@ -10,6 +10,7 @@ import {API} from "../api/API";
 import {AccountCache} from "../account/AccountCache";
 import {AppError} from "../api/AppError";
 import {Cache} from "../cache/Cache";
+import {Repair} from "../cache/Repair";
 import {Skimmer} from "../cache/Skimmer";
 
 /**
@@ -28,6 +29,9 @@ export const CommentCache = new Cache<CommentID, CommentCacheEntry>({
     };
   },
 });
+
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(CommentCache);
 
 /**
  * The status of a `CommentCacheEntry`. Uses common lingo from transaction status.
@@ -121,6 +125,9 @@ export const PostCommentsCache = new Cache<
     return await comments.load({limit: commentCountInitial, offset: 0});
   },
 });
+
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(PostCommentsCache);
 
 /**
  * A set of comments that were published locally. We use this set to ignore

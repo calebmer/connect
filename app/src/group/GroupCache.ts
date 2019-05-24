@@ -3,6 +3,7 @@ import {AppError} from "../api/AppError";
 import {Cache} from "../cache/Cache";
 import {Group} from "@connect/api-client";
 import {Image} from "react-native";
+import {Repair} from "../cache/Repair";
 import defaultBackgroundImage from "../assets/images/group-banner-background.png";
 
 /**
@@ -18,6 +19,9 @@ export const GroupCache = new Cache<string, Group>({
     return group;
   },
 });
+
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(GroupCache);
 
 /**
  * Preloads the account’s avatar if one exists. Any errors while loading the

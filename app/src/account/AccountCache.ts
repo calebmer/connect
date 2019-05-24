@@ -4,6 +4,7 @@ import {CacheSingleton, useCacheSingletonData} from "../cache/CacheSingleton";
 import {API} from "../api/API";
 import {AppError} from "../api/AppError";
 import {Image} from "react-native";
+import {Repair} from "../cache/Repair";
 
 /**
  * Caches accounts by their ID.
@@ -46,6 +47,9 @@ export const AccountCache = new Cache<AccountID, AccountProfile>({
     );
   },
 });
+
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(AccountCache);
 
 /**
  * Cache that holds the identity of the current account. Also loads the current

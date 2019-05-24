@@ -66,6 +66,13 @@ export class Async<Value> implements FastEquals {
   }
 
   /**
+   * Was our async value rejected?
+   */
+  public isRejected(): boolean {
+    return this.status === AsyncStatus.Rejected;
+  }
+
+  /**
    * Gets the asynchronous value. If the value is resolved then we synchronously
    * return it. Otherwise we return a promise that resolves when the
    * asynchronous value is ready.

@@ -162,6 +162,8 @@ export class Cache<Key extends string | number, Data> {
    * watchers that want to use the previously cached value they’ll have to do
    * that on their own.
    *
+   * Does not reject even if the underlying request fails.
+   *
    * NOTE: The promise might resolve _after_ we actually get data in the cache.
    * For example, someone calls `load(key)` which starts loading new data and
    * returns a promise. Before that promise resolves someone else calls
@@ -173,6 +175,26 @@ export class Cache<Key extends string | number, Data> {
     const data = this._load(key);
     this.insertEntry(key, new Async(data));
     await data.catch(() => {}); // Errors should be handled by cache consumers.
+  }
+
+  /**
+   * Forces a reload for all of the entries in our cache that failed to load. We
+   * use this as a “retry” mechanism to try and get our cache back to a
+   * good state.
+   *
+   * WARNING: This method can be expensive since we synchronously search through
+   * all of the cache’s items!
+   */
+  public async forceReloadFailedEntries(): Promise<void> {
+    const promises: Array<Promise<unknown>> = [];
+
+    this.entries.forEach((data, key) => {
+      if (data.getAtThisMomentInTime().isRejected()) {
+        promises.push(this.forceReload(key));
+      }
+    });
+
+    await Promise.all(promises);
   }
 
   /**

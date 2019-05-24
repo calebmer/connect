@@ -80,7 +80,7 @@ export class RouteConfig<
         // unmount the old component.
         return React.createElement(
           RouteContainer,
-          null,
+          {route} as any,
           React.createElement(LazyComponent, {...variables, route} as any),
         );
       },

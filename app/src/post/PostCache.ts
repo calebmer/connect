@@ -13,6 +13,7 @@ import {AccountCache} from "../account/AccountCache";
 import {AppError} from "../api/AppError";
 import {Cache} from "../cache/Cache";
 import {Paginator} from "../cache/Paginator";
+import {Repair} from "../cache/Repair";
 
 /**
  * Caches posts by their ID.
@@ -30,6 +31,9 @@ export const PostCache = new Cache<PostID, PostCacheEntry>({
     };
   },
 });
+
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(PostCache);
 
 /**
  * The status of a `PostCacheEntry`. Uses common lingo from transaction status.
@@ -119,6 +123,9 @@ export const GroupPostsCache = new Cache<
     return await posts.loadMore(postCountInitial);
   },
 });
+
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(GroupPostsCache);
 
 /**
  * Publishes a new post! Immediately generates a new post ID and inserts a

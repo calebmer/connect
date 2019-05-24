@@ -33,6 +33,6 @@
     "typescript": "~3.3.3333"
   },
   "resolutions": {
-    "react-error-overlay": "npm:@calebmer/react-error-overlay@5.1.6-patch.2"
+    "react-error-overlay": "npm:@calebmer/react-error-overlay@5.1.6-patch.4"
   }
 }
