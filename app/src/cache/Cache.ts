@@ -1,4 +1,4 @@
-import {Async, useAsyncWithPrev} from "./Async";
+import {Async, useAsyncWithLastKnownGood, useAsyncWithPrev} from "./Async";
 import {Mutable, ReadonlyMutable, useMutable} from "./Mutable";
 
 /**
@@ -314,4 +314,22 @@ export function useCacheWithPrev<Key extends string | number, Data>(
   const entry = cache.loadEntry(key);
   const {loading, value} = useAsyncWithPrev(useMutable(entry), initialData);
   return {loading, data: value};
+}
+
+/**
+ * Use some data from the cache in a React component. If the data has not yet
+ * loaded and we have not rendered before with some data then we will throw a
+ * promise. (Suspense style.) If the data has rejected then we will throw
+ * an error.
+ *
+ * If the cache reloads data then we will return the last successfully
+ * loaded value.
+ */
+export function useCacheWithLastKnownGood<Key extends string | number, Data>(
+  cache: Cache<Key, Data>,
+  key: Key,
+): {loading: boolean; error: unknown; data: Data} {
+  const entry = cache.loadEntry(key);
+  const {loading, error, value} = useAsyncWithLastKnownGood(useMutable(entry));
+  return {loading, error, data: value};
 }

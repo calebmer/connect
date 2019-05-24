@@ -1,6 +1,7 @@
 import {BodyText, Font} from "../atoms";
 import React, {useContext, useEffect, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableSelect} from "../cache/Mutable";
+import {useCache, useCacheWithLastKnownGood} from "../cache/Cache";
 import {AccountByline} from "../account/AccountByline";
 import {AccountCache} from "../account/AccountCache";
 import {GroupHomeLayout} from "./GroupHomeLayout";
@@ -13,7 +14,6 @@ import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {stall} from "../utils/stall";
 import {unstable_scheduleCallback} from "scheduler";
-import {useCache} from "../cache/Cache";
 
 function GroupItemFeed({
   route,
@@ -35,8 +35,10 @@ function GroupItemFeed({
     };
   }, []);
 
-  // TODO: Suspense handler for _just_ this component.
-  const {post} = useCache(PostCache, postID);
+  // Load data from our cache!
+  const {
+    data: {post},
+  } = useCacheWithLastKnownGood(PostCache, postID);
   const account = useCache(AccountCache, post.authorID);
 
   // Is this post selected? We will only re-render if the value of

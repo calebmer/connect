@@ -4,9 +4,9 @@ import {useForceUpdate} from "../utils/useForceUpdate";
 
 /** The status of an async value. Can be any of the promise statuses. */
 enum AsyncStatus {
-  Pending,
-  Resolved,
-  Rejected,
+  Pending = "pending",
+  Resolved = "resolved",
+  Rejected = "rejected",
 }
 
 /**
@@ -73,15 +73,16 @@ export class Async<Value> implements FastEquals {
    * If the asynchronous value rejected then we _synchronously_ throw an error.
    */
   public get(): Value | Promise<Value> {
-    switch (this.status) {
+    const asyncValue = (this as unknown) as AsyncUnion<Value>;
+    switch (asyncValue.status) {
       case AsyncStatus.Pending:
-        return this.value as Promise<Value>;
+        return asyncValue.value;
       case AsyncStatus.Resolved:
-        return this.value as Value;
+        return asyncValue.value;
       case AsyncStatus.Rejected:
-        throw this.value;
+        throw asyncValue.value;
       default: {
-        const never: never = this.status;
+        const never: never = asyncValue["status"];
         throw new Error(`Unexpected status: ${never}`);
       }
     }
@@ -99,15 +100,16 @@ export class Async<Value> implements FastEquals {
    * running again.
    */
   public suspend(): Value {
-    switch (this.status) {
+    const asyncValue = (this as unknown) as AsyncUnion<Value>;
+    switch (asyncValue.status) {
       case AsyncStatus.Pending:
-        throw this.value as Promise<Value>;
+        throw asyncValue.value;
       case AsyncStatus.Resolved:
-        return this.value as Value;
+        return asyncValue.value;
       case AsyncStatus.Rejected:
-        throw this.value;
+        throw asyncValue.value;
       default: {
-        const never: never = this.status;
+        const never: never = asyncValue["status"];
         throw new Error(`Unexpected status: ${never}`);
       }
     }
@@ -124,6 +126,25 @@ export class Async<Value> implements FastEquals {
     );
   }
 }
+
+/**
+ * An `Async<Value>` is always in one of these states. However, we can’t model
+ * a mutable class as a union in this way. We have a type alias to easily “view”
+ * our class as a union.
+ */
+type AsyncUnion<Value> =
+  | {
+      readonly status: AsyncStatus.Pending;
+      readonly value: Promise<Value>;
+    }
+  | {
+      readonly status: AsyncStatus.Resolved;
+      readonly value: Value;
+    }
+  | {
+      readonly status: AsyncStatus.Rejected;
+      readonly value: unknown;
+    };
 
 /**
  * A unique symbol we use to represent a “no value” state since using null or
@@ -213,4 +234,95 @@ function useAsyncForceUpdate<Value>(
   }, [forceUpdate, value]);
 
   return value;
+}
+
+/**
+ * Returns the last known good value from the async container. If when we render
+ * for the first time the async container is pending or rejected then we will
+ * suspend or throw respectively. If when the hook re-renders with a pending or
+ * rejected async container after receiving a good async container then we will
+ * return the previous good value along with the error/loading state.
+ */
+export function useAsyncWithLastKnownGood<Value>(
+  asyncValue: Async<Value>,
+): {loading: boolean; error: unknown; value: Value} {
+  // Cast to an `AsyncUnion` so we can work with the internals.
+  const asyncValueUnion = (asyncValue as unknown) as AsyncUnion<Value>;
+
+  // Remember the last value and the last error we’ve seen.
+  const lastValue = useRef<Value | typeof noValue>(noValue);
+  const lastError = useRef<unknown>(null);
+
+  // Force update function lets us manually refresh our component.
+  const forceUpdate = useForceUpdate();
+
+  // When we have a pending asynchronous value then attach event handlers to
+  // the promise which will force update our component when we’ve resolved.
+  useEffect(() => {
+    if (asyncValueUnion.status !== AsyncStatus.Pending) {
+      return;
+    }
+
+    let cancelled = false;
+
+    function done() {
+      if (!cancelled) {
+        forceUpdate();
+      }
+    }
+
+    asyncValueUnion.value.then(done, done);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [asyncValueUnion, forceUpdate]);
+
+  switch (asyncValueUnion.status) {
+    // Return a resolved async value! Make sure to clear the error out first.
+    // We are now successful and should not show an error.
+    case AsyncStatus.Resolved: {
+      lastValue.current = asyncValueUnion.value;
+      lastError.current = null;
+      return {
+        loading: false,
+        error: lastError.current,
+        value: lastValue.current,
+      };
+    }
+
+    // If we’re pending then suspend unless we have a last value. If we have
+    // a previous value then return that along with the last error.
+    case AsyncStatus.Pending: {
+      if (lastValue.current !== noValue) {
+        return {
+          loading: true,
+          error: lastError.current,
+          value: lastValue.current,
+        };
+      } else {
+        throw asyncValueUnion.value;
+      }
+    }
+
+    // If we’ve rejected then throw the error unless we have a last value. If
+    // we have a previous value then return that along with the error.
+    case AsyncStatus.Rejected: {
+      lastError.current = asyncValueUnion.value;
+      if (lastValue.current !== noValue) {
+        return {
+          loading: false,
+          error: lastError.current,
+          value: lastValue.current,
+        };
+      } else {
+        throw lastError.current;
+      }
+    }
+
+    default: {
+      const never: never = asyncValueUnion["status"];
+      throw new Error(`Unexpected status: ${never}`);
+    }
+  }
 }
