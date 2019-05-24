@@ -47,11 +47,11 @@ export class PostContainer extends React.Component<Props, State> {
     return (
       <View style={styles.container}>
         {hasError ? (
-          <PostError error={error} />
+          <PostError route={route} error={error} />
         ) : postID != null ? (
           <Post route={route} groupSlug={groupSlug} postID={postID} />
         ) : (
-          <PostShimmer />
+          <PostShimmer route={route} />
         )}
       </View>
     );

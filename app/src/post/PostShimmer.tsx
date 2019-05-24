@@ -1,8 +1,11 @@
 import {Border, Font, Space} from "../atoms";
+import React, {useContext} from "react";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatar} from "../account/AccountAvatar";
 import {CommentConversationShimmer} from "../comment/CommentShimmer";
-import React from "react";
+import {GroupHomeLayout} from "../group/GroupHomeLayout";
+import {NavbarScrollView} from "../frame/NavbarScrollView";
+import {Route} from "../router/Route";
 import {TextShimmer} from "../molecules/TextShimmer";
 import {Trough} from "../molecules/Trough";
 
@@ -15,9 +18,13 @@ const body: ReadonlyArray<ReadonlyArray<number>> = [
   [94, 100, 94, 73],
 ];
 
-export function PostShimmer() {
+export function PostShimmer({route}: {route: Route}) {
+  // Hide the navbar when we are using the laptop layout.
+  const hideNavbar =
+    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
+
   return (
-    <>
+    <NavbarScrollView route={route} title="Error" hideNavbar={hideNavbar}>
       <View style={styles.header}>
         <View style={styles.avatar} />
         <View style={styles.byline} />
@@ -34,7 +41,7 @@ export function PostShimmer() {
       </View>
       <Trough title="Comments" />
       <CommentConversationShimmer />
-    </>
+    </NavbarScrollView>
   );
 }
 

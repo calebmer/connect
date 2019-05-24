@@ -1,16 +1,25 @@
 import {Color, Font, Icon, Space} from "../atoms";
+import React, {useContext} from "react";
 import {StyleSheet, Text, View} from "react-native";
 import {AppError} from "../api/AppError";
-import React from "react";
+import {GroupHomeLayout} from "../group/GroupHomeLayout";
+import {NavbarScrollView} from "../frame/NavbarScrollView";
+import {Route} from "../router/Route";
 
-export function PostError({error}: {error: unknown}) {
+export function PostError({route, error}: {route: Route; error: unknown}) {
+  // Hide the navbar when we are using the laptop layout.
+  const hideNavbar =
+    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
+
   return (
-    <View style={styles.container}>
-      <View style={styles.icon}>
-        <Icon name="alert-triangle" size={Space.space7} color={Color.red4} />
+    <NavbarScrollView route={route} title="Error" hideNavbar={hideNavbar}>
+      <View style={styles.container}>
+        <View style={styles.icon}>
+          <Icon name="alert-triangle" size={Space.space7} color={Color.red4} />
+        </View>
+        <Text style={styles.message}>{AppError.displayMessage(error)}</Text>
       </View>
-      <Text style={styles.message}>{AppError.displayMessage(error)}</Text>
-    </View>
+    </NavbarScrollView>
   );
 }
 
