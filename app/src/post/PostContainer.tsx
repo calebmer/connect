@@ -11,7 +11,7 @@ import {Route} from "../router/Route";
 type Props = {
   route: Route;
   groupSlug: string;
-  postID: PostID | null | undefined;
+  postID: PostID | null;
 };
 
 type State = {
@@ -41,13 +41,25 @@ export class PostContainer extends React.Component<Props, State> {
     // Seems like adding this will cause React to print the component stack.
   }
 
+  handleRetry = () => {
+    this.setState({
+      hasError: false,
+      error: null,
+    });
+  };
+
   render() {
     const {route, groupSlug, postID} = this.props;
     const {hasError, error} = this.state;
     return (
       <View style={styles.container}>
         {hasError ? (
-          <PostError route={route} error={error} />
+          <PostError
+            route={route}
+            postID={postID}
+            error={error}
+            onRetry={this.handleRetry}
+          />
         ) : postID != null ? (
           <Post route={route} groupSlug={groupSlug} postID={postID} />
         ) : (

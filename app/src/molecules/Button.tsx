@@ -125,17 +125,16 @@ const themeColors = {
   },
 };
 
+Button.heightLarge = Space.space6;
 Button.heightSmall = Space.space5;
 
 const styles = StyleSheet.create({
   button: {
-    flexDirection: "row",
-    alignItems: "center",
     paddingHorizontal: Space.space2,
     backgroundColor: Color.yellow3,
   },
   buttonLarge: {
-    height: Space.space6,
+    height: Button.heightLarge,
     borderRadius: Border.radius2,
   },
   buttonSmall: {
@@ -143,15 +142,16 @@ const styles = StyleSheet.create({
     borderRadius: Border.radius0,
   },
   label: {
-    flex: 1,
     textAlign: "center",
   },
   labelLarge: {
     ...Font.sansBold,
     ...Font.size3,
+    marginVertical: (Button.heightLarge - Font.size3.lineHeight) / 2,
   },
   labelSmall: {
     ...Font.sans,
     ...Font.size2,
+    marginVertical: (Button.heightSmall - Font.size3.lineHeight) / 2,
   },
 });

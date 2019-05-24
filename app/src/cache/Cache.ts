@@ -172,7 +172,7 @@ export class Cache<Key extends string | number, Data> {
   public async forceReload(key: Key): Promise<void> {
     const data = this._load(key);
     this.insertEntry(key, new Async(data));
-    await data;
+    await data.catch(() => {}); // Errors should be handled by cache consumers.
   }
 
   /**

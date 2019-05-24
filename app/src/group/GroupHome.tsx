@@ -44,7 +44,7 @@ function GroupHome({
           key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
           route={route}
           groupSlug={groupSlug}
-          postID={postID}
+          postID={postID || null}
         />
       </PostNewPopupContext>
     </GroupHomeContainer>
@@ -121,7 +121,11 @@ export function GroupHomeRoute({
       return <GroupRouteComponent route={route} groupSlug={groupSlug} />;
     } else {
       return (
-        <PostContainer route={route} groupSlug={groupSlug} postID={postID} />
+        <PostContainer
+          route={route}
+          groupSlug={groupSlug}
+          postID={postID || null}
+        />
       );
     }
   } else {

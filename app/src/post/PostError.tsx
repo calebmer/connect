@@ -5,19 +5,47 @@ import {AppError} from "../api/AppError";
 import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {Route} from "../router/Route";
+import {PostID} from "@connect/api-client";
+import {PostCache} from "./PostCache";
+import {PostCommentsCache} from "../comment/CommentCache";
+import {Button} from "../molecules/Button";
 
-export function PostError({route, error}: {route: Route; error: unknown}) {
+export function PostError({
+  route,
+  postID,
+  error,
+  onRetry,
+}: {
+  route: Route;
+  postID: PostID | null;
+  error: unknown;
+  onRetry: () => void;
+}) {
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar =
     useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
 
+  function handleRetry() {
+    if (postID !== null) {
+      PostCache.forceReload(postID);
+      PostCommentsCache.forceReload(postID);
+    }
+    onRetry();
+  }
+
   return (
-    <NavbarScrollView route={route} title="Error" hideNavbar={hideNavbar}>
-      <View style={styles.container}>
-        <View style={styles.icon}>
-          <Icon name="alert-triangle" size={Space.space7} color={Color.red4} />
-        </View>
-        <Text style={styles.message}>{AppError.displayMessage(error)}</Text>
+    <NavbarScrollView
+      route={route}
+      title="Error"
+      hideNavbar={hideNavbar}
+      contentContainerStyle={styles.container}
+    >
+      <View style={styles.icon}>
+        <Icon name="alert-triangle" size={Space.space7} color={Color.red4} />
+      </View>
+      <Text style={styles.message}>{AppError.displayMessage(error)}</Text>
+      <View style={styles.retry}>
+        <Button label="Retry" onPress={handleRetry} />
       </View>
     </NavbarScrollView>
   );
@@ -35,11 +63,15 @@ const styles = StyleSheet.create({
   },
   message: {
     marginTop: Space.space4,
+    marginBottom: Space.space3,
     marginHorizontal: Space.space3,
     maxWidth: Space.space11,
     textAlign: "center",
     color: Color.grey8,
     ...Font.sans,
     ...Font.size3,
+  },
+  retry: {
+    flexDirection: "row",
   },
 });
