@@ -1,8 +1,7 @@
-import {Border, Color, Font, Shadow, Space} from "../atoms";
+import {Border, Font, Space} from "../atoms";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatar} from "../account/AccountAvatar";
 import {CommentConversationShimmer} from "../comment/CommentShimmer";
-import {PostMeasurements} from "./PostMeasurements";
 import React from "react";
 import {TextShimmer} from "../molecules/TextShimmer";
 import {Trough} from "../molecules/Trough";
@@ -18,7 +17,7 @@ const body: ReadonlyArray<ReadonlyArray<number>> = [
 
 export function PostShimmer() {
   return (
-    <View style={styles.post}>
+    <>
       <View style={styles.header}>
         <View style={styles.avatar} />
         <View style={styles.byline} />
@@ -35,18 +34,11 @@ export function PostShimmer() {
       </View>
       <Trough title="Comments" />
       <CommentConversationShimmer />
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  post: {
-    flex: 1,
-    overflow: "hidden",
-    backgroundColor: Color.white,
-    ...Shadow.elevation3,
-    maxWidth: PostMeasurements.maxWidth,
-  },
   header: {
     flexDirection: "row",
     padding: Space.space3,

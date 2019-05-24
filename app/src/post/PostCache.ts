@@ -10,6 +10,7 @@ import {
 } from "@connect/api-client";
 import {API} from "../api/API";
 import {AccountCache} from "../account/AccountCache";
+import {AppError} from "../api/AppError";
 import {Cache} from "../cache/Cache";
 import {Paginator} from "../cache/Paginator";
 
@@ -19,7 +20,9 @@ import {Paginator} from "../cache/Paginator";
 export const PostCache = new Cache<PostID, PostCacheEntry>({
   async load(id) {
     const {post} = await API.post.getPost({id});
-    if (post == null) throw new Error("Post not found.");
+    if (post == null) {
+      throw new AppError("Can not find this post.");
+    }
     AccountCache.preload(post.authorID); // Preload the post’s author. We will probably need that.
     return {
       status: PostCacheEntryStatus.Commit,

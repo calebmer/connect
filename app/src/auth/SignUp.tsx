@@ -5,11 +5,12 @@ import {Platform, StyleSheet, View} from "react-native";
 import React, {useRef, useState} from "react";
 import {TextInput, TextInputInstance} from "../molecules/TextInput";
 import {API} from "../api/API";
+import {AppError} from "../api/AppError";
 import {Button} from "../molecules/Button";
 import {Route} from "../router/Route";
 import {SignUpLayout} from "./SignUpLayout";
 import {TextLink} from "../molecules/TextLink";
-import {displayErrorMessage} from "../api/ErrorMessage";
+import {logError} from "../../../api/server/src/logError";
 
 export function SignUp({
   route,
@@ -100,15 +101,17 @@ export function SignUp({
           // Navigate into the app after successfully signing in!
           route.nativeSwapRoot(AccountTestRoute, {});
         } else {
+          if (!(error instanceof APIError)) logError(error);
+
           // Set server error.
           if (
             error instanceof APIError &&
             error.code === APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED
           ) {
-            setEmailServerError(displayErrorMessage(error));
+            setEmailServerError(AppError.displayMessage(error));
             if (emailInput.current) emailInput.current.focus();
           } else {
-            setNameServerError(displayErrorMessage(error));
+            setNameServerError(AppError.displayMessage(error));
             if (nameInput.current) nameInput.current.focus();
           }
         }

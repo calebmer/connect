@@ -9078,10 +9078,10 @@ react-dom@16.8.3:
     prop-types "^15.6.2"
     scheduler "^0.13.3"
 
-react-error-overlay@^5.1.4:
-  version "5.1.5"
-  resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-5.1.5.tgz#884530fd055476c764eaa8ab13b8ecf1f57bbf2c"
-  integrity sha512-O9JRum1Zq/qCPFH5qVEvDDrVun8Jv9vbHtZXCR1EuRj9sKg1xJTlHxBzU6AkCzpvxRLuiY4OKImy3cDLQ+UTdg==
+react-error-overlay@^5.1.4, "react-error-overlay@npm:@calebmer/react-error-overlay@5.1.6-patch.2":
+  version "5.1.6-patch.2"
+  resolved "https://registry.yarnpkg.com/@calebmer/react-error-overlay/-/react-error-overlay-5.1.6-patch.2.tgz#32fab11014d4c148755db3c73463eaa12b201e4d"
+  integrity sha512-6Vi+8ireV7u2MuvPgajeNYg3MrpoigMj0o4ptVRI6oWfuSrv8DlX7FXSo0F3zdOdjfPEqv4mkAB5G9PlCoGtxw==
 
 react-is@^16.7.0, react-is@^16.8.1, react-is@^16.8.4, react-is@^16.8.6:
   version "16.8.6"

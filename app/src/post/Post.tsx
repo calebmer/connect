@@ -1,4 +1,3 @@
-import {Color, Shadow, Space} from "../atoms";
 import {
   PostCommentsCache,
   PostCommentsCacheEntry,
@@ -13,7 +12,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {ScrollEvent, ScrollView, StyleSheet, View} from "react-native";
+import {ScrollEvent, ScrollView} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {GroupCache} from "../group/GroupCache";
@@ -22,10 +21,10 @@ import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
-import {PostMeasurements} from "./PostMeasurements";
 import {PostVirtualizedComments} from "./PostVirtualizedComments";
 import {Route} from "../router/Route";
 import {Skimmer} from "../cache/Skimmer";
+import {Space} from "../atoms";
 import {Trough} from "../molecules/Trough";
 
 // The threshold at which we will show the jump button. When the threshold is
@@ -161,7 +160,7 @@ function Post({
   const [showJumpButton, setShowJumpButton] = useState(true);
 
   return (
-    <View style={styles.background}>
+    <>
       <NavbarScrollView
         ref={scrollViewRef}
         route={route}
@@ -186,7 +185,7 @@ function Post({
         showJumpButton={showJumpButton && jumpButtonAvailable}
         scrollViewRef={scrollViewRef}
       />
-    </View>
+    </>
   );
 }
 
@@ -197,13 +196,3 @@ export {PostMemo as Post};
 type RenderRange = {first: number; last: number};
 
 type MaybePromise<T> = T | Promise<T>;
-
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    overflow: "hidden",
-    backgroundColor: Color.white,
-    ...Shadow.elevation3,
-    maxWidth: PostMeasurements.maxWidth,
-  },
-});

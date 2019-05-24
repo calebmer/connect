@@ -2,14 +2,6 @@
   "private": true,
   "name": "@connect/app",
   "version": "0.0.0",
-  "workspaces": {
-    "nohoist": [
-      "react-native",
-      "react-native-navigation",
-      "react-native-keyboard-tracking-view",
-      "@react-native-community/async-storage"
-    ]
-  },
   "scripts": {
     "dev:web": "node web/scripts/dev.js",
     "dev:native": "node node_modules/react-native/local-cli/cli.js start"
@@ -60,5 +52,13 @@
     "webpack-cli": "^3.2.3",
     "webpack-dev-server": "^3.4.1",
     "ws": "^7.0.0"
+  },
+  "workspaces": {
+    "nohoist": [
+      "react-native",
+      "react-native-navigation",
+      "react-native-keyboard-tracking-view",
+      "@react-native-community/async-storage"
+    ]
   }
 }

@@ -31,5 +31,8 @@
     "postinstall-postinstall": "^2.0.0",
     "prettier": "^1.16.4",
     "typescript": "~3.3.3333"
+  },
+  "resolutions": {
+    "react-error-overlay": "npm:@calebmer/react-error-overlay@5.1.6-patch.2"
   }
 }

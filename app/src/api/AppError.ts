@@ -1,26 +1,42 @@
 import {APIError, APIErrorCode} from "@connect/api-client";
 
-/**
- * Displays a human-readable message for an unknown error.
- */
-export function displayErrorMessage(error: unknown): string {
-  if (error instanceof APIError) {
-    return displayErrorCodeMessage(error.code);
-  } else {
-    // If we have an error that is not an `APIError` then it is unexpected. Log
-    // the error to our console for debugging.
-    if (error instanceof Error) {
-      console.error(error.stack); // eslint-disable-line no-console
-    }
+const unexpectedErrorMessage = "Uh oh! Something unexpected went wrong.";
 
-    return displayErrorCodeMessage(APIErrorCode.UNKNOWN);
+/**
+ * A custom `Error` class specifically for application errors. Thrown by the
+ * application with a custom message.
+ *
+ * The message you provide to an `AppError` _will_ be shown to the user!
+ */
+export class AppError extends Error {
+  constructor(message: string) {
+    super(message);
+
+    // Maintains proper stack trace for where our error was thrown
+    // (only available on V8).
+    if ((Error as any).captureStackTrace) {
+      (Error as any).captureStackTrace(this, AppError);
+    }
+  }
+
+  /**
+   * Displays a human-readable message for any error object.
+   */
+  public static displayMessage(error: unknown) {
+    if (error instanceof AppError) {
+      return error.message;
+    } else if (error instanceof APIError) {
+      return apiErrorDisplayMessage(error.code);
+    } else {
+      return unexpectedErrorMessage;
+    }
   }
 }
 
 /**
  * Displays an error message to the user based on the error code.
  */
-function displayErrorCodeMessage(errorCode: APIErrorCode): string {
+function apiErrorDisplayMessage(errorCode: APIErrorCode): string {
   switch (errorCode) {
     case APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED:
       return "An account with this email address already exists.";
@@ -46,7 +62,7 @@ function displayErrorCodeMessage(errorCode: APIErrorCode): string {
     case APIErrorCode.REFRESH_TOKEN_INVALID:
     case APIErrorCode.CHAOS_MONKEY:
     case APIErrorCode.UNKNOWN: {
-      let message = "Uh oh! Something unexpected went wrong.";
+      let message = unexpectedErrorMessage;
 
       // Display the error code with the message in development.
       if (process.env.NODE_ENV === "development") {
@@ -68,8 +84,14 @@ function displayErrorCodeMessage(errorCode: APIErrorCode): string {
         console.error(`Unrecognized error code: ${unrecognizedErrorCode}`); // eslint-disable-line no-console
       }
 
-      // Use an unknown error message for the user.
-      return displayErrorCodeMessage(APIErrorCode.UNKNOWN);
+      let message = unexpectedErrorMessage;
+
+      // Display the error code with the message in development.
+      if (process.env.NODE_ENV === "development") {
+        message += ` (APIErrorCode.${errorCode})`;
+      }
+
+      return message;
     }
   }
 }

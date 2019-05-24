@@ -5,11 +5,12 @@ import {Platform, StyleSheet, View} from "react-native";
 import React, {useRef, useState} from "react";
 import {TextInput, TextInputInstance} from "../molecules/TextInput";
 import {API} from "../api/API";
+import {AppError} from "../api/AppError";
 import {Button} from "../molecules/Button";
 import {Route} from "../router/Route";
 import {SignUpLayout} from "./SignUpLayout";
 import {TextLink} from "../molecules/TextLink";
-import {displayErrorMessage} from "../api/ErrorMessage";
+import {logError} from "../../../api/server/src/logError";
 
 export function SignIn({
   route,
@@ -82,15 +83,17 @@ export function SignIn({
           // Navigate into the app after successfully signing in!
           route.nativeSwapRoot(AccountTestRoute, {});
         } else {
+          if (!(error instanceof APIError)) logError(error);
+
           // If we got an error then decide which input to display the error on.
           if (
             error instanceof APIError &&
             error.code === APIErrorCode.SIGN_IN_INCORRECT_PASSWORD
           ) {
-            setPasswordServerError(displayErrorMessage(error));
+            setPasswordServerError(AppError.displayMessage(error));
             if (passwordInput.current) passwordInput.current.focus();
           } else {
-            setEmailServerError(displayErrorMessage(error));
+            setEmailServerError(AppError.displayMessage(error));
             if (emailInput.current) emailInput.current.focus();
           }
         }

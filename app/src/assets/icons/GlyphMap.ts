@@ -14,7 +14,7 @@ export const GlyphMap = {
   // airplay: 0xe901,
   // "alert-circle": 0xe902,
   // "alert-octagon": 0xe903,
-  // "alert-triangle": 0xe904,
+  "alert-triangle": 0xe904,
   // "align-center": 0xe905,
   // "align-justify": 0xe906,
   // "align-left": 0xe907,

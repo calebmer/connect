@@ -8,11 +8,10 @@ import {GroupCache} from "./GroupCache";
 import {GroupHomeContainer} from "./GroupHomeContainer";
 import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupPostsCache} from "../post/PostCache";
-import {Post} from "../post/Post";
+import {PostContainer} from "../post/PostContainer";
 import {PostID} from "@connect/api-client";
 import {PostNewPopupContext} from "../post/PostNewPopupContext";
 import {PostRoute} from "../router/AllRoutes";
-import {PostShimmer} from "../post/PostShimmer";
 import {Route} from "../router/Route";
 import {Space} from "../atoms";
 import {useMutableContainer} from "../cache/Mutable";
@@ -41,16 +40,12 @@ function GroupHome({
         <View style={styles.group}>
           <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
         </View>
-        {postID != null ? (
-          <Post
-            key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
-            route={route}
-            groupSlug={groupSlug}
-            postID={postID}
-          />
-        ) : (
-          <PostShimmer />
-        )}
+        <PostContainer
+          key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
+          route={route}
+          groupSlug={groupSlug}
+          postID={postID}
+        />
       </PostNewPopupContext>
     </GroupHomeContainer>
   );
@@ -125,7 +120,9 @@ export function GroupHomeRoute({
     if (postID == null) {
       return <GroupRouteComponent route={route} groupSlug={groupSlug} />;
     } else {
-      return <Post route={route} groupSlug={groupSlug} postID={postID} />;
+      return (
+        <PostContainer route={route} groupSlug={groupSlug} postID={postID} />
+      );
     }
   } else {
     return (
