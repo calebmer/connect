@@ -24,7 +24,12 @@ export function PostShimmer({route}: {route: Route}) {
     useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
 
   return (
-    <NavbarScrollView route={route} title="Error" hideNavbar={hideNavbar}>
+    <NavbarScrollView
+      route={route}
+      title=""
+      hideNavbar={hideNavbar}
+      scrollEnabled={false}
+    >
       <View style={styles.header}>
         <View style={styles.avatar} />
         <View style={styles.byline} />

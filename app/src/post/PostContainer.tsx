@@ -61,7 +61,9 @@ export class PostContainer extends React.Component<Props, State> {
             onRetry={this.handleRetry}
           />
         ) : postID != null ? (
-          <Post route={route} groupSlug={groupSlug} postID={postID} />
+          <React.Suspense fallback={<PostShimmer route={route} />}>
+            <Post route={route} groupSlug={groupSlug} postID={postID} />
+          </React.Suspense>
         ) : (
           <PostShimmer route={route} />
         )}
