@@ -1,14 +1,14 @@
 import {Color, Font, Icon, Space} from "../atoms";
-import React, {useContext} from "react";
 import {StyleSheet, Text, View} from "react-native";
 import {AppError} from "../api/AppError";
 import {Button} from "../molecules/Button";
-import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
 import {PostCommentsCache} from "../comment/CommentCache";
 import {PostID} from "@connect/api-client";
+import React from "react";
 import {Route} from "../router/Route";
+import {useGroupHomeLayout} from "../group/useGroupHomeLayout";
 
 export function PostError({
   route,
@@ -22,8 +22,7 @@ export function PostError({
   onRetry: () => void;
 }) {
   // Hide the navbar when we are using the laptop layout.
-  const hideNavbar =
-    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
+  const hideNavbar = useGroupHomeLayout();
 
   function handleRetry() {
     if (postID !== null) {

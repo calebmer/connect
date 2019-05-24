@@ -1,13 +1,13 @@
 import {Border, Font, Space} from "../atoms";
-import React, {useContext} from "react";
 import {StyleSheet, View} from "react-native";
 import {AccountAvatar} from "../account/AccountAvatar";
 import {CommentConversationShimmer} from "../comment/CommentShimmer";
-import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
+import React from "react";
 import {Route} from "../router/Route";
 import {TextShimmer} from "../molecules/TextShimmer";
 import {Trough} from "../molecules/Trough";
+import {useGroupHomeLayout} from "../group/useGroupHomeLayout";
 
 /**
  * Mock data for creating a visually interesting post body content shimmer.
@@ -20,8 +20,7 @@ const body: ReadonlyArray<ReadonlyArray<number>> = [
 
 export function PostShimmer({route}: {route: Route}) {
   // Hide the navbar when we are using the laptop layout.
-  const hideNavbar =
-    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
+  const hideNavbar = useGroupHomeLayout();
 
   return (
     <NavbarScrollView

@@ -17,12 +17,11 @@ import {
   postCountMore,
 } from "../post/PostCache";
 import {PostID, Group as _Group} from "@connect/api-client";
-import React, {useContext, useMemo, useRef, useState} from "react";
+import React, {useMemo, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableContainer} from "../cache/Mutable";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {GroupBanner} from "./GroupBanner";
 import {GroupCache} from "./GroupCache";
-import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {Loading} from "../molecules/Loading";
@@ -32,6 +31,7 @@ import {Trough} from "../molecules/Trough";
 import {getAdjustedContentInsetTop} from "../utils/getAdjustedContentInset";
 import {useAnimatedValue} from "../utils/useAnimatedValue";
 import {useCacheSingletonData} from "../cache/CacheSingleton";
+import {useGroupHomeLayout} from "./useGroupHomeLayout";
 
 // NOTE: Having a React component and a type with the same name is ok in
 // TypeScript, but eslint complains when it’s an import. So import the type with
@@ -63,8 +63,7 @@ function Group({
   const scrollView = useRef<any>(null);
 
   // Are we using the mobile group home layout?
-  const showNavbar =
-    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Mobile;
+  const showNavbar = !useGroupHomeLayout();
 
   // On iOS the top of the content is not zero! It is
   // `-adjustedContentInset.top`. `adjustedContentInset` is `contentInset` plus

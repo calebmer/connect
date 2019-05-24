@@ -2,6 +2,7 @@ import {Layout, Navigation} from "react-native-navigation";
 import {PathBase, PathVariableProps} from "./Path";
 import React, {useMemo} from "react";
 import {RouteBase, RouteConfigBase} from "./RouteBase";
+import {RouteContainer} from "./RouteContainer";
 
 // Utility type for removing keys from an object.
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
@@ -21,7 +22,7 @@ export class RouteConfig<
   protected registerComponent(LazyComponent: React.ComponentType<Props>): void {
     // Register the navigation component at our route’s path.
     Navigation.registerComponent(this.path.getID(), () => {
-      return function RouteRoot({
+      return function RouteContainerNative({
         componentId: componentID,
         componentModalRoot = false,
         ...props
@@ -36,9 +37,9 @@ export class RouteConfig<
         props.route = route;
         const element = React.createElement(LazyComponent, props);
 
-        // We need to wrap our lazy component in `<React.Suspense>` to handle
-        // the `LazyComponent` suspend.
-        return React.createElement(React.Suspense, {fallback: null}, element);
+        // We need to wrap our lazy component in `<React.Suspense>` which is
+        // added by `<RouteContainer>` to handle the `LazyComponent` suspend.
+        return React.createElement(RouteContainer, null, element);
       };
     });
   }

@@ -1,4 +1,4 @@
-import {Breakpoint, useBreakpoint} from "../utils/useBreakpoint";
+import {Breakpoint, useBreakpoint} from "../utils/Breakpoint";
 import {Group, GroupRoute as GroupRouteComponent} from "./Group";
 import React, {useCallback, useEffect} from "react";
 import {StyleSheet, View} from "react-native";
@@ -6,7 +6,6 @@ import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {CurrentAccountCache} from "../account/AccountCache";
 import {GroupCache} from "./GroupCache";
 import {GroupHomeContainer} from "./GroupHomeContainer";
-import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupPostsCache} from "../post/PostCache";
 import {PostContainer} from "../post/PostContainer";
 import {PostID} from "@connect/api-client";
@@ -14,18 +13,17 @@ import {PostNewPopupContext} from "../post/PostNewPopupContext";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {Space} from "../atoms";
+import {useGroupHomeLayout} from "./useGroupHomeLayout";
 import {useMutableContainer} from "../cache/Mutable";
 
 function GroupHome({
   route,
   groupSlug,
   postID,
-  breakpoint,
 }: {
   route: Route;
   groupSlug: string;
   postID?: PostID;
-  breakpoint: Breakpoint;
 }) {
   // Always preload the current account...
   CurrentAccountCache.preload();
@@ -35,7 +33,7 @@ function GroupHome({
       <PostNewPopupContext
         route={route}
         groupSlug={groupSlug}
-        available={breakpoint > Breakpoint.Tablet}
+        available={useBreakpoint() > Breakpoint.Tablet}
       >
         <View style={styles.group}>
           <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
@@ -114,9 +112,9 @@ export function GroupHomeRoute({
 }) {
   const postID = _postID as PostID;
 
-  const breakpoint = useBreakpoint();
-
-  if (breakpoint <= Breakpoint.TabletSmall) {
+  if (useGroupHomeLayout()) {
+    return <GroupHome route={route} groupSlug={groupSlug} postID={postID} />;
+  } else {
     if (postID == null) {
       return <GroupRouteComponent route={route} groupSlug={groupSlug} />;
     } else {
@@ -128,17 +126,6 @@ export function GroupHomeRoute({
         />
       );
     }
-  } else {
-    return (
-      <GroupHomeLayout.Context.Provider value={GroupHomeLayout.Laptop}>
-        <GroupHome
-          route={route}
-          groupSlug={groupSlug}
-          postID={postID}
-          breakpoint={breakpoint}
-        />
-      </GroupHomeLayout.Context.Provider>
-    );
   }
 }
 

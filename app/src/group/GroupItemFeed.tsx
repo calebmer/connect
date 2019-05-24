@@ -1,10 +1,9 @@
 import {BodyText, Font} from "../atoms";
-import React, {useContext, useEffect, useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableSelect} from "../cache/Mutable";
 import {useCache, useCacheWithLastKnownGood} from "../cache/Cache";
 import {AccountByline} from "../account/AccountByline";
 import {AccountCache} from "../account/AccountCache";
-import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupItem} from "./GroupItem";
 import {Platform} from "react-native";
 import {PostCache} from "../post/PostCache";
@@ -14,6 +13,7 @@ import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {stall} from "../utils/stall";
 import {unstable_scheduleCallback} from "scheduler";
+import {useGroupHomeLayout} from "./useGroupHomeLayout";
 
 function GroupItemFeed({
   route,
@@ -91,8 +91,7 @@ function GroupItemFeed({
 
   // On a laptop, you can open a post without leaving the feed. So favor shorter
   // post previews and more posts on screen.
-  const numberOfLines =
-    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop ? 2 : 4;
+  const numberOfLines = useGroupHomeLayout() ? 2 : 4;
 
   return (
     <GroupItem
