@@ -30,6 +30,8 @@ export const PORT = 4000;
 export const JWT_SECRET: string = (() => {
   if (DEV || TEST) {
     return "secret";
+  } else if (process.env.JWT_SECRET) {
+    return process.env.JWT_SECRET;
   } else {
     throw new Error("JWT secret is not configured.");
   }

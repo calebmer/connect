@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "yarn workspace @connect/db start && concurrently -n api,web,ntv -c magenta.dim,green.dim,cyan.dim 'DEBUG_COLORS=true yarn workspace @connect/api-server dev' 'yarn workspace @connect/app dev:web' 'yarn workspace @connect/app dev:native'",
     "types": "tsc",
+    "build-api": "yarn workspace @connect/api-client build && yarn workspace @connect/api-server build",
     "lint": "eslint . --ext .js,.ts,.tsx",
     "format": "prettier \"**/*.{js,ts,tsx}\" --write",
     "test": "jest --watch",
@@ -17,6 +18,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@babel/cli": "^7.4.4",
     "@types/jest": "^24.0.9",
     "@typescript-eslint/eslint-plugin": "^1.4.1",
     "@typescript-eslint/parser": "^1.4.1",

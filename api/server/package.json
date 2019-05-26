@@ -2,9 +2,10 @@
   "name": "@connect/api-server",
   "version": "0.0.0",
   "license": "UNLICENSED",
-  "main": "./src/index.ts",
+  "main": "index",
   "scripts": {
     "dev": "NODE_ENV=development DEBUG=connect:* babel-watch src/index.ts --extensions .ts,.js",
+    "build": "babel src -d build --extensions .ts,.js",
     "test": "jest --watch"
   },
   "dependencies": {
