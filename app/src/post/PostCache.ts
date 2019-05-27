@@ -12,53 +12,26 @@ import {API} from "../api/API";
 import {AccountCache} from "../account/AccountCache";
 import {AppError} from "../api/AppError";
 import {Cache} from "../cache/Cache";
+import {ErrorAlert} from "../frame/ErrorAlert";
 import {Paginator} from "../cache/Paginator";
 import {Repair} from "../cache/Repair";
 
 /**
  * Caches posts by their ID.
  */
-export const PostCache = new Cache<PostID, PostCacheEntry>({
+export const PostCache = new Cache<PostID, Post>({
   async load(id) {
     const {post} = await API.post.getPost({id});
     if (post == null) {
       throw new AppError("Can not find this post.");
     }
     AccountCache.preload(post.authorID); // Preload the post’s author. We will probably need that.
-    return {
-      status: PostCacheEntryStatus.Commit,
-      post,
-    };
+    return post;
   },
 });
 
 // Register the cache for repairing when requested by the user...
 Repair.registerCache(PostCache);
-
-/**
- * The status of a `PostCacheEntry`. Uses common lingo from transaction status.
- */
-enum PostCacheEntryStatus {
-  /** The cache entry is optimistic and has not yet been committed. */
-  Pending,
-  /** The cache entry is fully commit to the backend, hooray! */
-  Commit,
-  /** The cache entry failed to commit so we need to roll it back. */
-  Rollback,
-}
-
-/**
- * An entry for a post in our `PostCache`. It contains the post data from the
- * API and other status information about the post.
- *
- * When we publish a post we insert a cache entry with a status of
- * “pending”. When we finish publishing the post we change the status to
- * “commit”. If we fail to publish the post we change the status to “rollback”.
- */
-type PostCacheEntry = {
-  readonly status: PostCacheEntryStatus;
-  readonly post: Post;
-};
 
 /**
  * An entry for a `Post` in a `CacheList`. Notice how this only has the post ID?
@@ -100,10 +73,7 @@ export const GroupPostsCache = new Cache<
         // Loop through all the posts and create cache entries for our post
         // list. Also insert each post into our `PostCache`.
         const entries = posts.map(post => {
-          PostCache.insert(post.id, {
-            status: PostCacheEntryStatus.Commit,
-            post,
-          });
+          PostCache.insert(post.id, post);
           accountIDs.add(post.authorID);
           const entry: GroupPostsCacheEntry = {
             id: post.id,
@@ -128,15 +98,14 @@ export const GroupPostsCache = new Cache<
 Repair.registerCache(GroupPostsCache);
 
 /**
- * Publishes a new post! Immediately generates a new post ID and inserts a
- * pending post object into the cache. We return the new post ID synchronously
- * so that the caller can optimistically display the new post.
+ * Publishes a new post! Unlike `publishComment()`, we do not optimistically add
+ * the post to our cache. Instead we wait until the post has been published
+ * before returning.
  *
- * We then trigger an asynchronous API call to actually publish the post in the
- * background. If the API fails then we will change the status of our cache
- * entry to reflect the failure.
+ * This function should never throw. Instead if we failed to publish then we
+ * will return `null` instead of a post ID.
  */
-export function publishPost({
+export async function publishPost({
   authorID,
   groupID,
   content,
@@ -144,66 +113,47 @@ export function publishPost({
   authorID: AccountID;
   groupID: GroupID;
   content: string;
-}): PostID {
-  // Generate a new ID for our post. The ID we generate should be globally
-  // unique thanks to our algorithm.
-  const postID = generateID<PostID>();
+}): Promise<PostID | null> {
+  try {
+    // Generate a new ID for our post. The ID we generate should be globally
+    // unique thanks to our algorithm.
+    const postID = generateID<PostID>();
 
-  // Create a pending post object. This is what the final post _should_
-  // look like.
-  const pendingPost: Post = {
-    id: postID,
-    groupID,
-    authorID,
-    publishedAt: DateTime.now(), // The server will assign a definitive timestamp.
-    commentCount: 0,
-    content: content.trim(),
-  };
-
-  // Insert our pending post into the cache! This way it will
-  // render immediately.
-  PostCache.insert(postID, {
-    status: PostCacheEntryStatus.Pending,
-    post: pendingPost,
-  });
-
-  // Insert our post as a phantom item in our group post list immediately so
-  // that it’s shown in the UI.
-  GroupPostsCache.updateWhenReady(groupID, posts => {
-    return posts.insert({
+    // Actually publish the post using our API! The API will give us the server
+    // assigned publish date.
+    const {publishedAt} = await API.post.publishPost({
       id: postID,
-      publishedAt: pendingPost.publishedAt,
+      groupID,
+      content,
     });
-  });
 
-  // TODO: Error handling!
-  (async () => {
-    try {
-      // Actually publish the post using our API! The API will give us the server
-      // assigned publish date.
-      const {publishedAt} = await API.post.publishPost({
+    // Create the final post object.
+    const post: Post = {
+      id: postID,
+      groupID,
+      authorID,
+      publishedAt,
+      commentCount: 0,
+      content: content.trim(),
+    };
+
+    // Insert the final post object into the cache.
+    PostCache.insert(postID, post);
+
+    // Insert our post as a phantom item in our group post list immediately so
+    // that it’s shown in the UI.
+    GroupPostsCache.updateWhenReady(groupID, posts => {
+      return posts.insert({
         id: postID,
-        groupID,
-        content,
+        publishedAt: post.publishedAt,
       });
+    });
 
-      // Insert the final post object into the cache and flip the status
-      // to “commit”.
-      PostCache.insert(postID, {
-        status: PostCacheEntryStatus.Commit,
-        post: {...pendingPost, publishedAt},
-      });
-    } catch (error) {
-      // If we failed to insert the post then make sure to reflect that in
-      // our UI.
-      PostCache.insert(postID, {
-        status: PostCacheEntryStatus.Rollback,
-        post: pendingPost,
-      });
+    return postID;
+  } catch (error) {
+    // Display the error to the user...
+    ErrorAlert.alert(error, "Could not publish your post");
 
-      throw error;
-    }
-  })();
-
-  return postID;
+    return null;
+  }
 }

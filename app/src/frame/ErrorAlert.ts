@@ -1,4 +1,5 @@
 import {Alert, Platform} from "react-native";
+import {APIError} from "@connect/api-client";
 import {AppError} from "../api/AppError";
 import {logError} from "../utils/logError";
 
@@ -14,7 +15,7 @@ export const ErrorAlert = {
    */
   alert(error: unknown, contextMessage: string) {
     // Don’t show the React error overlay if we’ve caught the error.
-    if (__DEV__ && typeof error === "object" && error !== null) {
+    if (__DEV__ && (error instanceof AppError || error instanceof APIError)) {
       (error as any).disableReactErrorOverlay = true;
     }
 

@@ -36,9 +36,7 @@ function GroupItemFeed({
   }, []);
 
   // Load data from our cache!
-  const {
-    data: {post},
-  } = useCacheWithLastKnownGood(PostCache, postID);
+  const {data: post} = useCacheWithLastKnownGood(PostCache, postID);
   const account = useCache(AccountCache, post.authorID);
 
   // Is this post selected? We will only re-render if the value of

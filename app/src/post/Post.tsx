@@ -42,7 +42,7 @@ function Post({
   PostCommentsCache.preload(postID);
 
   // Load the data we will need for this component.
-  const {post} = useCache(PostCache, postID);
+  const post = useCache(PostCache, postID);
   const group = useCache(GroupCache, groupSlug);
 
   // Load the comments from our post comments cache. Never suspend, though. We
