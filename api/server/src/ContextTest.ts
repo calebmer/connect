@@ -167,11 +167,11 @@ export class ContextTest implements ContextQueryable {
     if (this.client === undefined) {
       throw new Error("Cannot query a context after it has been invalidated.");
     }
-    if (typeof accountID !== "number") {
-      throw new Error("Expected accountID to be a number.");
-    }
     await this.client.query("SET LOCAL ROLE connect_api");
-    await this.client.query(`SET LOCAL connect.account_id = ${accountID}`);
+    await this.client.query({
+      text: "SELECT set_config('connect.account_id', $1, true)",
+      values: [accountID],
+    });
     const ctx = new (Context as any)(
       new (PGClient as any)(this.client),
       accountID,

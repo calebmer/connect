@@ -54,7 +54,7 @@ afterAll(async () => {
   });
 });
 
-const accountID = 42 as AccountID;
+const accountID = generateID<AccountID>();
 const accessTokenData: AccessTokenData = {id: accountID};
 let accessToken: AccessToken;
 

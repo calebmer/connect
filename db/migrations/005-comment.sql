@@ -6,7 +6,7 @@ CREATE TABLE comment (
   -- The post this comment was left on.
   post_id CHAR(22) NOT NULL REFERENCES post(id),
   -- The author of this comment.
-  author_id INT NOT NULL REFERENCES account(id),
+  author_id CHAR(22) NOT NULL REFERENCES account(id),
   -- The time this comment was published. Could be different from the last time
   -- this comment was updated.
   published_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),

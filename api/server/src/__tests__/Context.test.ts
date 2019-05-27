@@ -11,11 +11,7 @@ async function getCurrentAccountID(
     sql`SELECT current_setting('connect.account_id', true) as account_id`,
   );
   if (row.account_id) {
-    const id = parseInt(row.account_id, 10);
-    if (!Number.isInteger(id)) {
-      throw new Error(`Not an integer: ${JSON.stringify(row.account_id)}`);
-    }
-    return id as AccountID;
+    return row.account_id as AccountID;
   } else {
     return null;
   }

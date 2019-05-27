@@ -119,7 +119,7 @@ export const APISchema = Schema.namespace({
      */
     getProfile: Schema.method({
       safe: true,
-      input: {id: SchemaInput.integer<AccountID>()},
+      input: {id: SchemaInput.string<AccountID>()},
       output: SchemaOutput.t<{readonly account: AccountProfile | null}>(),
     }),
 
@@ -132,7 +132,7 @@ export const APISchema = Schema.namespace({
      */
     getManyProfiles: Schema.method({
       safe: true,
-      input: {ids: SchemaInput.array(SchemaInput.integer<AccountID>())},
+      input: {ids: SchemaInput.array(SchemaInput.string<AccountID>())},
       output: SchemaOutput.t<{
         readonly accounts: ReadonlyArray<AccountProfile>;
       }>(),

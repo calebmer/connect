@@ -1,5 +1,5 @@
 /** A unique type which is used as an identifier for accounts. */
-export type AccountID = number & {readonly _type: typeof AccountID};
+export type AccountID = string & {readonly _type: typeof AccountID};
 declare const AccountID: unique symbol;
 
 /**

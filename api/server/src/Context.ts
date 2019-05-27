@@ -1,7 +1,7 @@
 import {AccountID, SubscriptionID} from "@connect/api-client";
-import {SQLQuery, sql} from "./pg/SQL";
 import {PGClient} from "./pg/PGClient";
 import {QueryResult} from "pg";
+import {SQLQuery} from "./pg/SQL";
 
 /**
  * A context that can be queried.
@@ -134,21 +134,13 @@ export class Context extends ContextUnauthorized {
     try {
       const result = await PGClient.with(async client => {
         // Set the account ID database parameter in our authenticated context
-        // before running the action. We first verify that `accountID` is, indeed,
-        // a number to avoid SQL injection attacks. Then we insert it directly
-        // into the query.
-        //
-        // We use the underlying client from the `pg` module to avoid logging this
-        // query which runs on every authorized API request.
-        if (typeof accountID === "number") {
-          await client.query(
-            sql`SET LOCAL connect.account_id = ${sql.dangerouslyInjectRawString(
-              String(accountID),
-            )}`,
-          );
-        } else {
-          throw new Error("Expected accountID to be a number.");
-        }
+        // before running the action. We use the underlying client from the `pg`
+        // module to avoid logging this query which runs on every authorized
+        // API request.
+        await (client as any).client.query({
+          text: "SELECT set_config('connect.account_id', $1, true)",
+          values: [accountID],
+        });
 
         // Create our context. We will invalidate it after the action completes.
         ctx = new Context(client, accountID);

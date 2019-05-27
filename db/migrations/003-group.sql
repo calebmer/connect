@@ -29,7 +29,7 @@ CREATE TABLE "group" (
   name TEXT NOT NULL,
   -- The account which currently owns the group. Usually the account which
   -- created the group although ownership may be transferred.
-  owner_id INT NOT NULL REFERENCES account(id),
+  owner_id CHAR(22) NOT NULL REFERENCES account(id),
   -- The time the group was created at for bookkeeping.
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -38,7 +38,7 @@ CREATE TABLE "group" (
 -- They must be invited to a group.
 CREATE TABLE group_member (
   -- The account which is a member of this group.
-  account_id INT NOT NULL REFERENCES account(id),
+  account_id CHAR(22) NOT NULL REFERENCES account(id),
   -- The group which this account is a part of.
   group_id CHAR(22) NOT NULL REFERENCES "group"(id),
   -- The date at which the account joined the group.

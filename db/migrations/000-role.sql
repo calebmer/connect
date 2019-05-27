@@ -21,6 +21,6 @@ CREATE ROLE connect_api_auth ROLE connect_api;
 GRANT USAGE ON SCHEMA connect TO connect_api, connect_api_auth;
 
 -- A convenience function that will return the current account ID.
-CREATE FUNCTION current_account_id() RETURNS INT AS $$
-  SELECT current_setting('connect.account_id', false)::INT;
+CREATE FUNCTION current_account_id() RETURNS CHAR(22) AS $$
+  SELECT current_setting('connect.account_id', false)::CHAR(22);
 $$ LANGUAGE SQL STABLE;

@@ -68,22 +68,20 @@ type FactoryAccount = {
 };
 
 export async function createAccount(ctx: ContextTest): Promise<FactoryAccount> {
+  const id = generateID<AccountID>();
   const n = accountSequence(ctx);
 
   const name = `Test ${n}`;
   const email = `test${n}@example.com`;
   const passwordHash = simplePasswordHash;
 
-  const {
-    rows: [row],
-  } = await ctx.query(sql`
-    INSERT INTO account (name, email, password_hash)
-         VALUES (${name}, ${email}, ${passwordHash})
-      RETURNING id
+  await ctx.query(sql`
+    INSERT INTO account (id, name, email, password_hash)
+         VALUES (${id}, ${name}, ${email}, ${passwordHash})
   `);
 
   return {
-    id: row.id,
+    id,
   };
 }
 
