@@ -141,7 +141,8 @@ export const APISchema = Schema.namespace({
 
   group: Schema.namespace({
     /**
-     * Fetches a group by its slug which was likely taken from a URL.
+     * Fetches a group by its slug which was likely taken from a URL. If the
+     * group does not have a slug then we will look it up by its ID.
      *
      * If we are not allowed to see a group or the group does not exist then
      * the method returns null.
@@ -177,7 +178,7 @@ export const APISchema = Schema.namespace({
     getGroupPosts: Schema.method({
       safe: true,
       input: {
-        groupID: SchemaInput.integer<GroupID>(),
+        groupID: SchemaInput.string<GroupID>(),
         ...RangeInputFields<PostCursor>(),
       },
       output: SchemaOutput.t<{
@@ -203,7 +204,7 @@ export const APISchema = Schema.namespace({
       safe: false,
       input: {
         id: SchemaInput.string<PostID>(),
-        groupID: SchemaInput.integer<GroupID>(),
+        groupID: SchemaInput.string<GroupID>(),
         content: SchemaInput.string(),
       },
       output: SchemaOutput.t<{

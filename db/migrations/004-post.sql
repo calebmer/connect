@@ -4,7 +4,7 @@ CREATE TABLE post (
   -- The unique identifier for this post.
   id CHAR(22) PRIMARY KEY,
   -- The group this was posted in.
-  group_id INT NOT NULL REFERENCES "group"(id),
+  group_id CHAR(22) NOT NULL REFERENCES "group"(id),
   -- The author of this post.
   author_id INT NOT NULL REFERENCES account(id),
   -- The time the post was published. In the future we might also have a

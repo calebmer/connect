@@ -1,8 +1,8 @@
+import {AccountProfile, Group} from "@connect/api-client";
 import {BodyText, Color, LabelText, Shadow, Space} from "../atoms";
 import React, {useState} from "react";
 import {StyleSheet, TouchableWithoutFeedback, View} from "react-native";
 import {AccountAvatar} from "../account/AccountAvatar";
-import {AccountProfile} from "@connect/api-client";
 import {IconPatch} from "../molecules/IconPatch";
 import {NewPostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
@@ -10,11 +10,11 @@ import {usePostNewPopupContext} from "../post/PostNewPopupContext";
 
 export function GroupPostPrompt({
   route,
-  groupSlug,
+  group,
   account,
 }: {
   route: Route;
-  groupSlug: string;
+  group: Group;
   account: AccountProfile;
 }) {
   const [pressed, setPressed] = useState(false);
@@ -28,7 +28,10 @@ export function GroupPostPrompt({
         if (popup.available) {
           popup.show();
         } else {
-          route.nativeShowModal(NewPostRoute, {groupSlug, lastRoute: route});
+          route.nativeShowModal(NewPostRoute, {
+            groupSlug: group.slug || group.id,
+            lastRoute: route,
+          });
         }
       }}
     >

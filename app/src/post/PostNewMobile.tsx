@@ -2,7 +2,6 @@ import {Color, Space} from "../atoms";
 import {Editor, EditorInstance} from "../editor/Editor";
 import {Keyboard, Platform, StyleSheet, View} from "react-native";
 import React, {useEffect, useRef, useState} from "react";
-import {GroupCache} from "../group/GroupCache";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostID} from "@connect/api-client";
 import {PostNewHeader} from "./PostNewHeader";
@@ -10,8 +9,8 @@ import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {logError} from "../utils/logError";
 import {publishPost} from "./PostCache";
-import {useCache} from "../cache/Cache";
 import {useCurrentAccount} from "../account/AccountCache";
+import {useGroupWithSlug} from "../group/GroupCache";
 import {useKeyboardHeight} from "../utils/useKeyboardHeight";
 
 export function PostNewMobile({
@@ -27,7 +26,7 @@ export function PostNewMobile({
   // in the component where we add the auto-focus effect. Otherwise the focus
   // will be a noop since the component is only “shadow mounted”.
   const currentAccount = useCurrentAccount();
-  const group = useCache(GroupCache, groupSlug);
+  const group = useGroupWithSlug(groupSlug);
 
   // Get an instance to our editor.
   const editor = useRef<EditorInstance>(null);

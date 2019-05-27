@@ -1,7 +1,7 @@
 import {AccountID} from "./AccountTypes";
 
 /** A unique type which is used as an identifier for groups. */
-export type GroupID = number & {readonly _type: typeof GroupID};
+export type GroupID = string & {readonly _type: typeof GroupID};
 declare const GroupID: unique symbol;
 
 /**
@@ -21,7 +21,7 @@ export type Group = {
    *
    * [1]: https://en.wikipedia.org/wiki/Clean_URL#Slug
    */
-  readonly slug: string;
+  readonly slug: string | null;
 
   /**
    * The human readable name of a group. This name will be displayed on the main

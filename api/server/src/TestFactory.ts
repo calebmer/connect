@@ -87,24 +87,35 @@ export async function createAccount(ctx: ContextTest): Promise<FactoryAccount> {
   };
 }
 
-export async function createGroup(ctx: ContextTest): Promise<Group> {
+type FactoryGroupConfig = {
+  slug?: true | string | null;
+};
+
+export async function createGroup(
+  ctx: ContextTest,
+  config: FactoryGroupConfig = {},
+): Promise<Group> {
+  const id = generateID<GroupID>();
   const n = groupSequence(ctx);
 
-  const slug = `group${n}`;
+  const slug =
+    config.slug === true || config.slug === undefined
+      ? `group${n}`
+      : config.slug !== null
+      ? config.slug
+      : null;
+
   const name = `Group ${n}`;
 
   const ownerID = (await createAccount(ctx)).id;
 
-  const {
-    rows: [row],
-  } = await ctx.query(sql`
-    INSERT INTO "group" (slug, name, owner_id)
-         VALUES (${slug}, ${name}, ${ownerID})
-      RETURNING id
+  await ctx.query(sql`
+    INSERT INTO "group" (id, slug, name, owner_id)
+         VALUES (${id}, ${slug}, ${name}, ${ownerID})
   `);
 
   return {
-    id: row.id,
+    id,
     slug,
     name,
   };

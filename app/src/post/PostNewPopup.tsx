@@ -11,7 +11,6 @@ import {Border, Color, Font, Icon, IconName, Shadow, Space} from "../atoms";
 import {Editor, EditorInstance} from "../editor/Editor";
 import React, {useEffect, useReducer, useRef, useState} from "react";
 import {Button} from "../molecules/Button";
-import {GroupCache} from "../group/GroupCache";
 import {PostID} from "@connect/api-client";
 import {PostNewHeader} from "./PostNewHeader";
 import {PostRoute} from "../router/AllRoutes";
@@ -19,8 +18,8 @@ import {Route} from "../router/Route";
 import {logError} from "../utils/logError";
 import {publishPost} from "./PostCache";
 import {useAnimatedValue} from "../utils/useAnimatedValue";
-import {useCache} from "../cache/Cache";
 import {useCurrentAccount} from "../account/AccountCache";
+import {useGroupWithSlug} from "../group/GroupCache";
 
 // The height of our editor’s title bar.
 PostNewPopupTitleBar.height = Font.size1.fontSize + Space.space2 * 2;
@@ -134,7 +133,7 @@ export function PostNewPopup({
   // Load the data we will need for our popup. Including the current account and
   // the current group.
   const currentAccount = useCurrentAccount();
-  const group = useCache(GroupCache, groupSlug);
+  const group = useGroupWithSlug(groupSlug);
 
   // Get a reference to our editor...
   const editor = useRef<EditorInstance>(null);

@@ -21,7 +21,7 @@ describe("getGroupBySlug", () => {
       const groupMember = await createGroupMember(ctx, {groupID: group.id});
 
       await ctx.withAuthorized(groupMember.accountID, async ctx => {
-        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({group});
+        expect(await getGroupBySlug(ctx, {slug: group.slug!})).toEqual({group});
       });
     });
   });
@@ -32,7 +32,7 @@ describe("getGroupBySlug", () => {
       const group = await createGroup(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({
+        expect(await getGroupBySlug(ctx, {slug: group.slug!})).toEqual({
           group: null,
         });
       });
@@ -47,7 +47,7 @@ describe("getGroupBySlug", () => {
       await createGroupMember(ctx, {groupID: group.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({
+        expect(await getGroupBySlug(ctx, {slug: group.slug!})).toEqual({
           group: null,
         });
       });
@@ -62,7 +62,7 @@ describe("getGroupBySlug", () => {
       await createGroupMember(ctx, {accountID: account.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({
+        expect(await getGroupBySlug(ctx, {slug: group.slug!})).toEqual({
           group: null,
         });
       });
@@ -79,7 +79,7 @@ describe("getGroupBySlug", () => {
       await createGroupMember(ctx, {accountID: account.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({
+        expect(await getGroupBySlug(ctx, {slug: group.slug!})).toEqual({
           group: null,
         });
       });
@@ -96,7 +96,33 @@ describe("getGroupBySlug", () => {
       await createGroupMember(ctx, {accountID: account.id, groupID: group.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getGroupBySlug(ctx, {slug: group.slug})).toEqual({group});
+        expect(await getGroupBySlug(ctx, {slug: group.slug!})).toEqual({group});
+      });
+    });
+  });
+
+  test("will lookup a group by its ID as well as its slug", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const group = await createGroup(ctx);
+      await createGroupMember(ctx, {accountID: account.id, groupID: group.id});
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        expect(await getGroupBySlug(ctx, {slug: group.id})).toEqual({group});
+        expect(await getGroupBySlug(ctx, {slug: group.slug!})).toEqual({group});
+      });
+    });
+  });
+
+  test("will lookup a group by its ID if it does not have a slug", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const group = await createGroup(ctx, {slug: null});
+      await createGroupMember(ctx, {accountID: account.id, groupID: group.id});
+      expect(group.slug).toEqual(null);
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        expect(await getGroupBySlug(ctx, {slug: group.id})).toEqual({group});
       });
     });
   });

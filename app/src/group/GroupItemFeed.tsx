@@ -1,4 +1,5 @@
 import {BodyText, Font} from "../atoms";
+import {Group, PostID} from "@connect/api-client";
 import React, {useEffect, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableSelect} from "../cache/Mutable";
 import {useCache, useCacheWithLastKnownGood} from "../cache/Cache";
@@ -8,7 +9,6 @@ import {GroupItem} from "./GroupItem";
 import {Platform} from "react-native";
 import {PostCache} from "../post/PostCache";
 import {PostCommentsCache} from "../comment/CommentCache";
-import {PostID} from "@connect/api-client";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {stall} from "../utils/stall";
@@ -17,12 +17,12 @@ import {useGroupHomeLayout} from "./useGroupHomeLayout";
 
 function GroupItemFeed({
   route,
-  groupSlug,
+  group,
   postID,
   selectedPostID,
 }: {
   route: Route;
-  groupSlug: string;
+  group: Group;
   postID: PostID;
   selectedPostID: ReadonlyMutable<PostID | undefined>;
 }) {
@@ -69,7 +69,13 @@ function GroupItemFeed({
   }
 
   function actuallyHandleSelect() {
-    route.push(PostRoute, {groupSlug, postID: String(postID)}).then(done, done);
+    const groupSlug = group.slug || group.id;
+    route
+      .push(PostRoute, {
+        groupSlug,
+        postID: String(postID),
+      })
+      .then(done, done);
 
     function done() {
       // Schedule a callback to unselect the item (which starts an animation).

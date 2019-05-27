@@ -2,9 +2,7 @@ import {Breakpoint, useBreakpoint} from "../utils/Breakpoint";
 import {Group, GroupRoute as GroupRouteComponent} from "./Group";
 import {Platform, StyleSheet, View} from "react-native";
 import React, {useCallback, useEffect, useRef} from "react";
-import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {CurrentAccountCache} from "../account/AccountCache";
-import {GroupCache} from "./GroupCache";
 import {GroupHomeContainer} from "./GroupHomeContainer";
 import {GroupPostsCache} from "../post/PostCache";
 import {PostContainer} from "../post/PostContainer";
@@ -13,7 +11,9 @@ import {PostNewPopupContext} from "../post/PostNewPopupContext";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {Space} from "../atoms";
+import {useCacheWithPrev} from "../cache/Cache";
 import {useGroupHomeLayout} from "./useGroupHomeLayout";
+import {useGroupWithSlug} from "./GroupCache";
 import {useMutableContainer} from "../cache/Mutable";
 
 function GroupHome({
@@ -59,7 +59,7 @@ function GroupSuspense({
   postID: PostID | undefined;
 }) {
   // Get the list of posts for this component.
-  const group = useCache(GroupCache, groupSlug);
+  const group = useGroupWithSlug(groupSlug);
   const {loading, data: posts} = useCacheWithPrev(GroupPostsCache, group.id);
 
   // If we are rendering a different post ID then the one we were provided,

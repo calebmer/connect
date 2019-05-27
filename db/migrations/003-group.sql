@@ -12,13 +12,18 @@
 CREATE TABLE "group" (
   -- The identifier for a group. We don’t use the slug as the identifier since
   -- the slug may change over time.
-  id SERIAL PRIMARY KEY,
+  id CHAR(22) PRIMARY KEY,
   -- The slug of a group represents the way we reference this group in a URL.
-  -- It is not the primary key of our table since it may change over time.
+  -- It is optional since not all groups have slugs! We require approval for a
+  -- group to start using a slug. This helps prevent the global namespace
+  -- problem. It’s impossible to name-squat since we won’t approve the
+  -- squatter’s group for a slug.
   --
   -- A slug can only be made up of alphanumeric characters and hyphens or
-  -- underscores. Twitter handle rules, basically.
-  slug TEXT NOT NULL UNIQUE,
+  -- underscores. Twitter handle rules, basically. We only allow slugs to be 21
+  -- characters long so that we never have a slug that conflicts with a
+  -- generated group ID.
+  slug VARCHAR(21) UNIQUE,
   -- The display name for this group in plain text. No limitations on the
   -- display name unlike the group’s slug.
   name TEXT NOT NULL,
@@ -35,7 +40,7 @@ CREATE TABLE group_member (
   -- The account which is a member of this group.
   account_id INT NOT NULL REFERENCES account(id),
   -- The group which this account is a part of.
-  group_id INT NOT NULL REFERENCES "group"(id),
+  group_id CHAR(22) NOT NULL REFERENCES "group"(id),
   -- The date at which the account joined the group.
   joined_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   -- We have a compound primary key on this table between the account and

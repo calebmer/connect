@@ -1,3 +1,4 @@
+import {GroupSlugCache, useGroupWithSlug} from "../group/GroupCache";
 import {
   PostCommentsCache,
   PostCommentsCacheEntry,
@@ -8,7 +9,6 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {ScrollEvent, ScrollView} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
-import {GroupCache} from "../group/GroupCache";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
@@ -37,13 +37,13 @@ function Post({
 
   // Preload all our post data so that they load in the background while we
   // render our component.
-  GroupCache.preload(groupSlug);
+  GroupSlugCache.preload(groupSlug);
   PostCache.preload(postID);
   PostCommentsCache.preload(postID);
 
   // Load the data we will need for this component.
   const post = useCache(PostCache, postID);
-  const group = useCache(GroupCache, groupSlug);
+  const group = useGroupWithSlug(groupSlug);
 
   // Load the comments from our post comments cache. Never suspend, though. We
   // want the post content to be visible while we load comments.

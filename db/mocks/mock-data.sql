@@ -26,30 +26,28 @@ INSERT INTO account (id, name, avatar_url, email, password_hash) VALUES
 ALTER SEQUENCE account_id_seq RESTART WITH 21;
 
 INSERT INTO "group" (id, slug, name, owner_id) VALUES
-  (1, 'nohello', 'Definitely Work', 3),
-  (2, 'dnd', 'D&D', 2),
-  (3, 'coffeekit', 'CoffeeKit', 17);
-
-ALTER SEQUENCE group_id_seq RESTART WITH 4;
+  ('01dbxcwqv4k2ccbvyedh2a', 'nohello', 'Definitely Work', 3),
+  ('01dbxcxpt03fjpa8n6p170', null, 'D&D', 2),
+  ('01dbxcxx7t05mg60ekxqh6', 'coffeekit', 'CoffeeKit', 17);
 
 INSERT INTO group_member (account_id, group_id) VALUES
-  (1, 1),
-  (2, 1),
-  (3, 1),
-  (4, 1),
-  (5, 1),
-  (6, 1),
-  (2, 2),
-  (12, 2),
-  (13, 2),
-  (14, 2),
-  (15, 2),
-  (16, 2),
-  (17, 3),
-  (18, 3),
-  (19, 3),
-  (20, 1),
-  (21, 1);
+  (1, '01dbxcwqv4k2ccbvyedh2a'),
+  (2, '01dbxcwqv4k2ccbvyedh2a'),
+  (3, '01dbxcwqv4k2ccbvyedh2a'),
+  (4, '01dbxcwqv4k2ccbvyedh2a'),
+  (5, '01dbxcwqv4k2ccbvyedh2a'),
+  (6, '01dbxcwqv4k2ccbvyedh2a'),
+  (2, '01dbxcxpt03fjpa8n6p170'),
+  (12, '01dbxcxpt03fjpa8n6p170'),
+  (13, '01dbxcxpt03fjpa8n6p170'),
+  (14, '01dbxcxpt03fjpa8n6p170'),
+  (15, '01dbxcxpt03fjpa8n6p170'),
+  (16, '01dbxcxpt03fjpa8n6p170'),
+  (17, '01dbxcxx7t05mg60ekxqh6'),
+  (18, '01dbxcxx7t05mg60ekxqh6'),
+  (19, '01dbxcxx7t05mg60ekxqh6'),
+  (20, '01dbxcwqv4k2ccbvyedh2a'),
+  (21, '01dbxcwqv4k2ccbvyedh2a');
 
 -- Generates an ID for the provided timestamp. We use the same implementation as
 -- in `api/client/generateID.ts`. We only use this when creating mock data since
@@ -82,18 +80,18 @@ $$ LANGUAGE plpgsql;
 -- posts 10 times.
 INSERT INTO post (id, group_id, author_id, published_at, content)
   SELECT mock_generate_id(mock_post.published_at), mock_post.*
-    FROM (SELECT mock_post.group_id,
+    FROM (SELECT '01dbxcwqv4k2ccbvyedh2a' as group_id,
                  mock_post.author_id,
                  NOW() - make_interval(hours := section * 8 + mock_post.id) - interval '45m' AS published_at,
                  mock_post.content
             FROM unnest(ARRAY[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) AS section,
-                 unnest(ARRAY[(0, 1, 6, 'Thoughts? https://brave.com'::TEXT),
-                              (1, 1, 1, 'never heard of bluebottle in my life, until Caleb and I went there to meet Jeff from the podcasts, now my feed is full of blue bottle ads'::TEXT),
-                              (3, 1, 3, 'I’m sad that indiehackers.com doesn’t have a mobile app. But if you don’t already read the content on the site. Start here: https://www.indiehackers.com/interviews/page/1'::TEXT),
-                              (4, 1, 21, 'what happened to DOGE life'::TEXT),
-                              (5, 1, 6, 'anyone ever deal with uploading files, possibly multiple files at the same time? I''ve done this a few different ways in the past, I''m looking for a super robust / scalable solution'::TEXT),
-                              (6, 1, 20, '@Caleb @Baruch If you like a lot of cool podcasts you guys should watch some of the Impact Theory episodes. The host is Tom Bilyeu who started Quest nutrition. But some of the episodes he does are insane. One with David Goggins is amazing among many other ones.'::TEXT)])
-                              AS mock_post (id INT, group_id INT, author_id INT, content TEXT)) AS mock_post;
+                 unnest(ARRAY[(0, 6, 'Thoughts? https://brave.com'::TEXT),
+                              (1, 1, 'never heard of bluebottle in my life, until Caleb and I went there to meet Jeff from the podcasts, now my feed is full of blue bottle ads'::TEXT),
+                              (3, 3, 'I’m sad that indiehackers.com doesn’t have a mobile app. But if you don’t already read the content on the site. Start here: https://www.indiehackers.com/interviews/page/1'::TEXT),
+                              (4, 21, 'what happened to DOGE life'::TEXT),
+                              (5, 6, 'anyone ever deal with uploading files, possibly multiple files at the same time? I''ve done this a few different ways in the past, I''m looking for a super robust / scalable solution'::TEXT),
+                              (6, 20, '@Caleb @Baruch If you like a lot of cool podcasts you guys should watch some of the Impact Theory episodes. The host is Tom Bilyeu who started Quest nutrition. But some of the episodes he does are insane. One with David Goggins is amazing among many other ones.'::TEXT)])
+                              AS mock_post (id INT, author_id INT, content TEXT)) AS mock_post;
 
 -- Insert some comments into our database. Insert the same set of comments for
 -- every mock post we’ve inserted!
