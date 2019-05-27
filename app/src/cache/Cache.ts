@@ -100,7 +100,11 @@ export class Cache<Key extends string | number, Data> {
         if (data instanceof Promise) {
           data.then(() => actuallyUpdate(), () => actuallyUpdate());
         } else {
-          entry.set(new Async(updater(data)));
+          try {
+            entry.set(new Async(updater(data)));
+          } catch (error) {
+            entry.set(Async.rejected(error));
+          }
         }
       } catch (error) {
         // noop: we expect the error to be handled in our UI.
