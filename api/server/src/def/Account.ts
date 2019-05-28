@@ -293,7 +293,7 @@ export async function getCurrentProfile(
  * does not exist or is not the member of any groups then we return an
  * empty array.
  */
-export async function getCurrentGroupsMemberships(
+export async function getCurrentGroupMemberships(
   ctx: Context,
 ): Promise<{readonly groups: ReadonlyArray<Group>}> {
   const {rows} = await ctx.query(sql`

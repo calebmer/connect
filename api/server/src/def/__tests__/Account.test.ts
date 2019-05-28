@@ -4,8 +4,9 @@ import {
   RefreshToken,
   generateID,
 } from "@connect/api-client";
+import {createAccount, createGroup, createGroupMember} from "../../TestFactory";
 import {
-  getCurrentGroupsMemberships,
+  getCurrentGroupMemberships,
   getCurrentProfile,
   getManyProfiles,
   getProfile,
@@ -19,7 +20,6 @@ import {Context} from "../../Context";
 import {ContextTest} from "../../ContextTest";
 import {sql} from "../../pg/SQL";
 import uuidV4 from "uuid/v4";
-import {createAccount, createGroup, createGroupMember} from "../../TestFactory";
 
 // NOTE: Run our tests concurrently for a nice speed boost.
 const test: jest.It = (global as any).test.concurrent;
@@ -298,11 +298,11 @@ describe("getCurrentProfile", () => {
   });
 });
 
-describe("getCurrentGroupsMemberships", () => {
+describe("getCurrentGroupMemberships", () => {
   test("returns an empty array if the account does not exist", () => {
     return ContextTest.with(async ctx => {
       await ctx.withAuthorized(generateID(), async ctx => {
-        expect(await getCurrentGroupsMemberships(ctx)).toEqual({groups: []});
+        expect(await getCurrentGroupMemberships(ctx)).toEqual({groups: []});
       });
     });
   });
@@ -312,7 +312,7 @@ describe("getCurrentGroupsMemberships", () => {
       const account = await createAccount(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getCurrentGroupsMemberships(ctx)).toEqual({groups: []});
+        expect(await getCurrentGroupMemberships(ctx)).toEqual({groups: []});
       });
     });
   });
@@ -325,7 +325,7 @@ describe("getCurrentGroupsMemberships", () => {
       await createGroupMember(ctx, {accountID: account.id, groupID: group.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getCurrentGroupsMemberships(ctx)).toEqual({
+        expect(await getCurrentGroupMemberships(ctx)).toEqual({
           groups: [group],
         });
       });
@@ -344,7 +344,7 @@ describe("getCurrentGroupsMemberships", () => {
       await createGroupMember(ctx, {accountID: account.id, groupID: group3.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getCurrentGroupsMemberships(ctx)).toEqual({
+        expect(await getCurrentGroupMemberships(ctx)).toEqual({
           groups: [group1, group2, group3],
         });
       });
@@ -362,7 +362,7 @@ describe("getCurrentGroupsMemberships", () => {
       await createGroupMember(ctx, {accountID: account.id, groupID: group3.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getCurrentGroupsMemberships(ctx)).toEqual({
+        expect(await getCurrentGroupMemberships(ctx)).toEqual({
           groups: [group1, group3],
         });
       });

@@ -113,7 +113,7 @@ export const APISchema = Schema.namespace({
      * If the current account’s profile does not exist or they aren’t a member
      * of any groups we will return an empty array.
      */
-    getCurrentGroupsMemberships: Schema.method({
+    getCurrentGroupMemberships: Schema.method({
       safe: true,
       input: {},
       output: SchemaOutput.t<{

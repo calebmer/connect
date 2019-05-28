@@ -32,6 +32,13 @@ export function BodyItalicText(props: TextProps) {
 }
 
 /**
+ * A link inside of `<BodyText>`.
+ */
+export function BodyLinkText(props: TextProps) {
+  return <Text {...props} style={[props.style, styles.body, styles.link]} />;
+}
+
+/**
  * Some information label in our UI. The same size and font of body text, a
  * smaller line height, limited to a single line, and bold.
  */
@@ -58,10 +65,11 @@ export function MetaText(props: TextProps) {
   );
 }
 
+/**
+ * Meta text with the styling of a link.
+ */
 export function MetaLinkText(props: TextProps) {
-  return (
-    <Text {...props} style={[props.style, styles.meta, styles.metaLink]} />
-  );
+  return <Text {...props} style={[props.style, styles.meta, styles.link]} />;
 }
 
 const styles = StyleSheet.create({
@@ -88,7 +96,7 @@ const styles = StyleSheet.create({
     ...Font.sans,
     ...Font.size0,
   },
-  metaLink: {
+  link: {
     color: Color.blue5,
     textDecorationLine: "underline",
   },
