@@ -124,7 +124,15 @@ export function Navbar({
           <View style={styles.button}>
             {leftIcon && (
               <TouchableOpacity hitSlop={hitSlop} onPress={onLeftIconPress}>
-                <Icon name={leftIcon} size={Space.space4} />
+                <Icon
+                  name={leftIcon}
+                  size={Space.space4}
+                  color={
+                    hideBackground && lightContentWithoutBackground
+                      ? Color.white
+                      : Color.grey7
+                  }
+                />
               </TouchableOpacity>
             )}
           </View>

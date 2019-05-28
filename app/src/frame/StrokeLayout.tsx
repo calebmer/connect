@@ -1,19 +1,33 @@
 import {Border, Color} from "../atoms";
-import {Platform, SafeAreaView, StyleSheet, View} from "react-native";
+import {
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  View,
+} from "react-native";
 import React from "react";
 
 export function StrokeLayout({children}: {children: React.Node}) {
   if (Platform.OS === "ios") {
     return (
-      <View style={styles.container}>
-        <View style={styles.bigStroke} />
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.container}>{children}</View>
-        </SafeAreaView>
-      </View>
+      <>
+        <StatusBar barStyle="dark-content" />
+        <View style={styles.container}>
+          <View style={styles.bigStroke} />
+          <SafeAreaView style={styles.safeArea}>
+            <View style={styles.container}>{children}</View>
+          </SafeAreaView>
+        </View>
+      </>
     );
   }
-  return <View style={[styles.container, styles.stroke]}>{children}</View>;
+  return (
+    <>
+      <StatusBar barStyle="dark-content" />{" "}
+      <View style={[styles.container, styles.stroke]}>{children}</View>
+    </>
+  );
 }
 
 const styles = StyleSheet.create({

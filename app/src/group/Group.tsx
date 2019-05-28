@@ -130,6 +130,8 @@ function Group({
       {showNavbar && (
         <Navbar
           title={group.name}
+          leftIcon="arrow-left"
+          onLeftIconPress={() => route.pop()}
           hideBackground={!showNavbarBackground}
           hideTitleWithBackground
           lightContentWithoutBackground
