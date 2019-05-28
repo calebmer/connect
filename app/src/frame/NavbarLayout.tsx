@@ -73,7 +73,15 @@ function create<Props extends ScrollViewProps>(
           <Navbar
             title={title}
             hideBackground={hideBackground}
-            leftIcon={route && route.nativeIsModalRoot() ? "x" : "arrow-left"}
+            leftIcon={
+              route !== null
+                ? route.nativeIsModalRoot()
+                  ? "x"
+                  : !route.nativeIsStackRoot()
+                  ? "arrow-left"
+                  : undefined
+                : undefined
+            }
             onLeftIconPress={() => {
               // Dismiss the keyboard when navigating backwards since any
               // component with focus will be unmounted.

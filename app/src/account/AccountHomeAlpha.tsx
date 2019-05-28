@@ -10,13 +10,7 @@ import {
 import {CurrentGroupMembershipsCache, GroupCache} from "../group/GroupCache";
 import {GroupRoute, SignInRoute} from "../router/AllRoutes";
 import React, {useEffect} from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import {ScrollView, StyleSheet, TouchableOpacity, View} from "react-native";
 import {API} from "../api/API";
 import {GroupID} from "@connect/api-client";
 import {Route} from "../router/Route";
@@ -44,8 +38,8 @@ export function AccountHomeAlpha({route}: {route: Route}) {
   }, []);
 
   return (
-    <ScrollView style={styles.scrollView}>
-      <StrokeLayout>
+    <StrokeLayout>
+      <ScrollView style={styles.scrollView}>
         <View style={styles.container}>
           {/* Account section */}
           <TitleText>Account</TitleText>
@@ -70,23 +64,21 @@ export function AccountHomeAlpha({route}: {route: Route}) {
               You aren’t a member of any groups 😔{"\n"}Ask for an invite!
             </BodyText>
           ) : (
-            <BodyText>
-              {groupIDs.map(groupID => (
-                <GroupLink key={groupID} route={route} groupID={groupID} />
-              ))}
-            </BodyText>
+            groupIDs.map(groupID => (
+              <GroupLink key={groupID} route={route} groupID={groupID} />
+            ))
           )}
         </View>
-      </StrokeLayout>
-    </ScrollView>
+      </ScrollView>
+    </StrokeLayout>
   );
 }
 
 function GroupLink({route, groupID}: {route: Route; groupID: GroupID}) {
   const group = useCache(GroupCache, groupID);
   return (
-    <BodyText>
-      <Text selectable={false}>{"• "}</Text>
+    <View style={styles.link}>
+      <BodyText selectable={false}>{"• "}</BodyText>
       <TouchableOpacity
         onPress={() =>
           route.push(GroupRoute, {
@@ -96,8 +88,7 @@ function GroupLink({route, groupID}: {route: Route; groupID: GroupID}) {
       >
         <BodyLinkText>{group.name}</BodyLinkText>
       </TouchableOpacity>
-      <Text selectable={false}>{"\n"}</Text>
-    </BodyText>
+    </View>
   );
 }
 
@@ -117,5 +108,8 @@ const styles = StyleSheet.create({
   },
   spacerLarge: {
     height: Space.space5,
+  },
+  link: {
+    flexDirection: "row",
   },
 });

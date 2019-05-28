@@ -1,3 +1,5 @@
+import {APIError} from "@connect/api-client";
+import {AppError} from "../api/AppError";
 import {BreakpointContext} from "../utils/Breakpoint";
 import {ErrorScreen} from "../frame/ErrorScreen";
 import React from "react";
@@ -35,8 +37,12 @@ export class RouteContainer extends React.Component<Props, State> {
 
   static getDerivedStateFromError(error: unknown): Partial<State> {
     // Don’t show the React error overlay if we’ve caught the error.
-    if (__DEV__ && typeof error === "object" && error !== null) {
-      (error as any).disableReactErrorOverlay = true;
+    if (__DEV__) {
+      if (error instanceof APIError || error instanceof AppError) {
+        (error as any).disableReactErrorOverlay = true;
+      } else {
+        console.error(error);
+      }
     }
 
     return {

@@ -24,6 +24,7 @@ export class RouteConfig<
     Navigation.registerComponent(this.path.getID(), () => {
       return function RouteContainerNative({
         componentId: componentID,
+        componentStackRoot = false,
         componentModalRoot = false,
         ...props
       }) {
@@ -31,8 +32,12 @@ export class RouteConfig<
         // Make sure to use the default props object in case some of our
         // required props were not provided!
         const route = useMemo(() => {
-          return new Route({componentID, componentModalRoot});
-        }, [componentID, componentModalRoot]);
+          return new Route({
+            componentID,
+            componentStackRoot,
+            componentModalRoot,
+          });
+        }, [componentID, componentModalRoot, componentStackRoot]);
 
         props.route = route;
         const element = React.createElement(LazyComponent, props);
@@ -71,17 +76,21 @@ export class RouteConfig<
  */
 export class Route extends RouteBase {
   private readonly componentID: string;
+  private readonly componentStackRoot: boolean;
   private readonly componentModalRoot: boolean;
 
   constructor({
     componentID,
+    componentStackRoot,
     componentModalRoot,
   }: {
     componentID: string;
+    componentStackRoot: boolean;
     componentModalRoot: boolean;
   }) {
     super();
     this.componentID = componentID;
+    this.componentStackRoot = componentStackRoot;
     this.componentModalRoot = componentModalRoot;
   }
 
@@ -158,9 +167,24 @@ export class Route extends RouteBase {
   ) {
     Navigation.showModal({
       stack: {
-        children: [nextRoute.getLayout({...props, componentModalRoot: true})],
+        children: [
+          nextRoute.getLayout({
+            ...props,
+            componentStackRoot: true,
+            componentModalRoot: true,
+          }),
+        ],
       },
     });
+  }
+
+  /**
+   * Is this route the root of a navigation stack?
+   *
+   * When `nativeIsModalRoot()` returns true this will also return true.
+   */
+  public nativeIsStackRoot(): boolean {
+    return this.componentStackRoot;
   }
 
   /**

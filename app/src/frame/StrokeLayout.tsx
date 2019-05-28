@@ -7,7 +7,9 @@ export function StrokeLayout({children}: {children: React.Node}) {
     return (
       <View style={styles.container}>
         <View style={styles.bigStroke} />
-        <SafeAreaView style={styles.cardContainer}>{children}</SafeAreaView>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.container}>{children}</View>
+        </SafeAreaView>
       </View>
     );
   }
@@ -19,7 +21,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Color.white,
   },
-  cardContainer: {
+  safeArea: {
     flex: 1,
   },
   stroke: {

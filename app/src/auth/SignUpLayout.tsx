@@ -1,6 +1,6 @@
-import {Color, Space} from "../atoms";
 import {StyleSheet, View} from "react-native";
 import React from "react";
+import {Space} from "../atoms";
 import {StrokeLayout} from "../frame/StrokeLayout";
 
 export function SignUpLayout({children}: {children: React.Node}) {
@@ -18,6 +18,5 @@ const styles = StyleSheet.create({
     padding: Space.space4,
     paddingTop: Space.space7,
     marginHorizontal: "auto",
-    backgroundColor: Color.white,
   },
 });

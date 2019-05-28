@@ -1,4 +1,4 @@
-import {GroupRoute, SignInRoute} from "./router/AllRoutes";
+import {AccountHomeAlphaRoute, SignInRoute} from "./router/AllRoutes";
 import {Color} from "./atoms";
 import {Navigation} from "react-native-navigation";
 import {YellowBox} from "react-native";
@@ -46,9 +46,12 @@ function main(isAuthenticated: boolean) {
     root: {
       stack: {
         children: [
-          isAuthenticated
-            ? (GroupRoute as any).getLayout({groupSlug: "nohello"})
-            : (SignInRoute as any).getLayout({}),
+          (isAuthenticated
+            ? (AccountHomeAlphaRoute as any)
+            : (SignInRoute as any)
+          ).getLayout({
+            componentStackRoot: true,
+          }),
         ],
       },
     },

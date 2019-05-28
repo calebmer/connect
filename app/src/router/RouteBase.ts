@@ -380,6 +380,15 @@ export abstract class RouteBase {
   ): void;
 
   /**
+   * Is this route the root of a navigation stack?
+   *
+   * When `nativeIsModalRoot()` returns true this will also return true.
+   */
+  public nativeIsStackRoot(): boolean {
+    return false;
+  }
+
+  /**
    * Was this route pushed as a modal route? This will always be false on web,
    * but will be true for routes created with `nativeShowModal()`.
    */
