@@ -2,6 +2,7 @@ import {
   BodyLinkText,
   BodyText,
   Color,
+  Font,
   MetaLinkText,
   Space,
   TitleText,
@@ -56,7 +57,13 @@ export function AccountHomeAlpha({route}: {route: Route}) {
           {/* Account section */}
           <TitleText>Account</TitleText>
           <View style={styles.spacerSmall} />
-          <BodyText>Hello {account.name}</BodyText>
+          <BodyText style={styles.bodyText}>
+            Hello {account.name}! Welcome to the Connect Alpha, we hope you
+            enjoy the product as much as we do. This is a work-in progress page
+            for navigating between your groups.{"\n\n"}You can email any
+            feedback directly to calebmeredith8@gmail.com
+          </BodyText>
+          <View style={styles.spacerSmall} />
           <TouchableOpacity onPress={handleSignOut}>
             <MetaLinkText>Sign Out</MetaLinkText>
           </TouchableOpacity>
@@ -103,6 +110,9 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: Space.space3,
+  },
+  bodyText: {
+    maxWidth: Font.maxWidth,
   },
   spacerSmall: {
     height: Space.space0,
