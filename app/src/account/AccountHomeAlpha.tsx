@@ -10,7 +10,13 @@ import {
 import {GroupCache, GroupSlugCache} from "../group/GroupCache";
 import {GroupRoute, SignInRoute} from "../router/AllRoutes";
 import React, {useEffect, useState} from "react";
-import {ScrollView, StyleSheet, TouchableOpacity, View} from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {API} from "../api/API";
 import {ErrorAlert} from "../frame/ErrorAlert";
 import {Group} from "@connect/api-client";
@@ -77,7 +83,7 @@ export function AccountHomeAlpha({route}: {route: Route}) {
             <BodyText>
               {groups.map(group => (
                 <BodyText key={group.id}>
-                  •{" "}
+                  <Text selectable={false}>{"• "}</Text>
                   <TouchableOpacity
                     onPress={() =>
                       route.push(GroupRoute, {
@@ -87,7 +93,7 @@ export function AccountHomeAlpha({route}: {route: Route}) {
                   >
                     <BodyLinkText>{group.name}</BodyLinkText>
                   </TouchableOpacity>
-                  {"\n"}
+                  <Text selectable={false}>{"\n"}</Text>
                 </BodyText>
               ))}
             </BodyText>
