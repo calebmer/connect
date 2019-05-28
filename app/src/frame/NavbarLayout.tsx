@@ -15,7 +15,7 @@ export interface NavbarLayoutProps {
   /**
    * The current route which we can use for navigation.
    */
-  route: Route;
+  route: Route | null;
 
   /**
    * The title to be rendered in our navbar.
@@ -73,13 +73,13 @@ function create<Props extends ScrollViewProps>(
           <Navbar
             title={title}
             hideBackground={hideBackground}
-            leftIcon={route.nativeIsModalRoot() ? "x" : "arrow-left"}
+            leftIcon={route && route.nativeIsModalRoot() ? "x" : "arrow-left"}
             onLeftIconPress={() => {
-              // Dismiss the keyboard when navigating backwards since any component
-              // with focus will be unmounted.
+              // Dismiss the keyboard when navigating backwards since any
+              // component with focus will be unmounted.
               Keyboard.dismiss();
 
-              route.pop();
+              if (route) route.pop();
             }}
             rightIcon={rightIcon}
             rightIconDisabled={rightIconDisabled}

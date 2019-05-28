@@ -12,16 +12,16 @@ export function ErrorScreen({
   error,
   onRetry,
 }: {
-  route: Route;
+  route?: Route;
   error: unknown;
-  onRetry: () => void;
+  onRetry?: () => void;
 }) {
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar = useGroupHomeLayout();
 
   return (
     <NavbarScrollView
-      route={route}
+      route={route || null}
       title="Error"
       hideNavbar={hideNavbar}
       contentContainerStyle={styles.container}
@@ -30,9 +30,11 @@ export function ErrorScreen({
         <Icon name="alert-triangle" size={Space.space7} color={Color.red4} />
       </View>
       <Text style={styles.message}>{AppError.displayMessage(error)}</Text>
-      <View style={styles.retry}>
-        <Button label="Retry" onPress={onRetry} />
-      </View>
+      {onRetry && (
+        <View style={styles.retry}>
+          <Button label="Retry" onPress={onRetry} />
+        </View>
+      )}
     </NavbarScrollView>
   );
 }
