@@ -7,9 +7,8 @@ import {
   Space,
   TitleText,
 } from "../atoms";
-import {GroupCache, GroupSlugCache} from "../group/GroupCache";
+import {CurrentGroupMembershipsCache, GroupCache} from "../group/GroupCache";
 import {GroupRoute, SignInRoute} from "../router/AllRoutes";
-import React, {useEffect, useState} from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -18,38 +17,25 @@ import {
   View,
 } from "react-native";
 import {API} from "../api/API";
-import {ErrorAlert} from "../frame/ErrorAlert";
-import {Group} from "@connect/api-client";
+import {GroupID} from "@connect/api-client";
+import React from "react";
 import {Route} from "../router/Route";
 import {StrokeLayout} from "../frame/StrokeLayout";
+import {useCache} from "../cache/Cache";
+import {useCacheSingletonData} from "../cache/CacheSingleton";
 import {useCurrentAccount} from "./AccountCache";
 
 export function AccountHomeAlpha({route}: {route: Route}) {
+  CurrentGroupMembershipsCache.preload();
+
   const account = useCurrentAccount();
-  const [groups, setGroups] = useState<null | ReadonlyArray<Group>>(null);
+  const groupIDs = useCacheSingletonData(CurrentGroupMembershipsCache);
 
   function handleSignOut() {
     API.account
       .signOut({refreshToken: "" as any}) // NOTE: sign-out is handled by our native/web API proxy.
       .then(() => route.nativeSwapRoot(SignInRoute, {}));
   }
-
-  // Loads all the groups the current account is a member of...
-  useEffect(() => {
-    API.account
-      .getCurrentGroupMemberships()
-      .then(({groups}) => {
-        groups.forEach(group => {
-          GroupCache.insert(group.id, group);
-          GroupSlugCache.insert(group.id, group.id);
-          if (group.slug) GroupSlugCache.insert(group.slug, group.id);
-        });
-        setGroups(groups);
-      })
-      .catch(error => {
-        ErrorAlert.alert("Could not get your group memberships", error);
-      });
-  }, []);
 
   return (
     <ScrollView style={styles.scrollView}>
@@ -73,34 +59,39 @@ export function AccountHomeAlpha({route}: {route: Route}) {
           {/* Group memberships section */}
           <TitleText>Groups</TitleText>
           <View style={styles.spacerSmall} />
-          {groups === null ? (
-            <BodyText>Loading...</BodyText>
-          ) : groups.length === 0 ? (
+          {groupIDs.length === 0 ? (
             <BodyText>
               You aren’t a member of any groups 😔{"\n"}Ask for an invite!
             </BodyText>
           ) : (
             <BodyText>
-              {groups.map(group => (
-                <BodyText key={group.id}>
-                  <Text selectable={false}>{"• "}</Text>
-                  <TouchableOpacity
-                    onPress={() =>
-                      route.push(GroupRoute, {
-                        groupSlug: group.slug || group.id,
-                      })
-                    }
-                  >
-                    <BodyLinkText>{group.name}</BodyLinkText>
-                  </TouchableOpacity>
-                  <Text selectable={false}>{"\n"}</Text>
-                </BodyText>
+              {groupIDs.map(groupID => (
+                <GroupLink key={groupID} route={route} groupID={groupID} />
               ))}
             </BodyText>
           )}
         </View>
       </StrokeLayout>
     </ScrollView>
+  );
+}
+
+function GroupLink({route, groupID}: {route: Route; groupID: GroupID}) {
+  const group = useCache(GroupCache, groupID);
+  return (
+    <BodyText>
+      <Text selectable={false}>{"• "}</Text>
+      <TouchableOpacity
+        onPress={() =>
+          route.push(GroupRoute, {
+            groupSlug: group.slug || group.id,
+          })
+        }
+      >
+        <BodyLinkText>{group.name}</BodyLinkText>
+      </TouchableOpacity>
+      <Text selectable={false}>{"\n"}</Text>
+    </BodyText>
   );
 }
 

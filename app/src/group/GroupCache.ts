@@ -2,6 +2,7 @@ import {Cache, useCache} from "../cache/Cache";
 import {Group, GroupID} from "@connect/api-client";
 import {API} from "../api/API";
 import {AppError} from "../api/AppError";
+import {CacheSingleton} from "../cache/CacheSingleton";
 import {Image} from "react-native";
 import {Repair} from "../cache/Repair";
 import defaultBackgroundImage from "../assets/images/group-banner-background.png";
@@ -59,6 +60,22 @@ export const GroupSlugCache = new Cache<string, GroupID>({
 
 // Register the cache for repairing when requested by the user...
 Repair.registerCache(GroupSlugCache);
+
+/**
+ * Cache that holds the group memberships for our current account.
+ */
+export const CurrentGroupMembershipsCache = new CacheSingleton<
+  ReadonlyArray<GroupID>
+>(async () => {
+  const {groups} = await API.account.getCurrentGroupMemberships();
+
+  return groups.map(group => {
+    GroupCache.insert(group.id, group);
+    GroupSlugCache.insert(group.id, group.id);
+    if (group.slug) GroupSlugCache.insert(group.slug, group.id);
+    return group.id;
+  });
+});
 
 /**
  * Preloads the account’s avatar if one exists. Any errors while loading the
