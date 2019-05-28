@@ -133,8 +133,8 @@ test("forks an unauthorized context with the scoped appropriate account ID setti
 test("forks an authorized context with the scoped appropriate account ID setting", () => {
   return ContextTest.with(async ctx => {
     expect(await getCurrentAccountID(ctx)).toEqual(null);
-    await ctx.withAuthorized(42 as any, async ctx => {
-      expect(await getCurrentAccountID(ctx)).toEqual(42);
+    await ctx.withAuthorized("42" as any, async ctx => {
+      expect(await getCurrentAccountID(ctx)).toEqual("42");
     });
     expect(await getCurrentAccountID(ctx)).toEqual(null);
   });
@@ -144,8 +144,8 @@ test("forks an authorized context with the scoped appropriate account ID setting
   return ContextTest.with(async ctx => {
     expect(await getCurrentAccountID(ctx)).toEqual(null);
     await ctx
-      .withAuthorized(42 as any, async ctx => {
-        expect(await getCurrentAccountID(ctx)).toEqual(42);
+      .withAuthorized("42" as any, async ctx => {
+        expect(await getCurrentAccountID(ctx)).toEqual("42");
         throw new Error("test");
       })
       .catch(() => {});

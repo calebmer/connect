@@ -21,8 +21,8 @@ test("sets the current account ID in the current transaction only", async () => 
   await Context.withUnauthorized(async ctx => {
     expect(await getCurrentAccountID(ctx)).toEqual(null);
   });
-  await Context.withAuthorized(42 as any, async ctx => {
-    expect(await getCurrentAccountID(ctx)).toEqual(42);
+  await Context.withAuthorized("42" as any, async ctx => {
+    expect(await getCurrentAccountID(ctx)).toEqual("42");
   });
   await Context.withUnauthorized(async ctx => {
     expect(await getCurrentAccountID(ctx)).toEqual(null);
@@ -33,8 +33,8 @@ test("sets the current account ID in the current transaction only even when an e
   await Context.withUnauthorized(async ctx => {
     expect(await getCurrentAccountID(ctx)).toEqual(null);
   });
-  await Context.withAuthorized(42 as any, async ctx => {
-    expect(await getCurrentAccountID(ctx)).toEqual(42);
+  await Context.withAuthorized("42" as any, async ctx => {
+    expect(await getCurrentAccountID(ctx)).toEqual("42");
     throw new Error("test");
   }).catch(() => {});
   await Context.withUnauthorized(async ctx => {

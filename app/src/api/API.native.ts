@@ -1,6 +1,3 @@
-// TODO: IMPORTANT: `AsyncStorage` is not secure! Use Expo’s
-// `SecureStorage` instead! https://docs.expo.io/versions/v32.0.0/sdk/securestore/
-
 import {APIClient, AccessToken, RefreshToken} from "@connect/api-client";
 import {NativeModules} from "react-native";
 import jwtDecode from "jwt-decode";
@@ -8,8 +5,7 @@ import url from "url";
 
 // NOTE: Yeah, this is weird. Jest freaks out if we try to import `AsyncStorage`
 // so we require it which seems to work.
-const AsyncStorage: (typeof import("@react-native-community/async-storage"))["default"] = require("@react-native-community/async-storage")
-  .default;
+const SecureStore: typeof import("expo-secure-store") = require("expo-secure-store");
 
 /** The URL our API is hosted at. */
 let apiURL = "http://localhost:4000";
@@ -35,8 +31,8 @@ export const API = APIClient.create({
 });
 
 // Keys to access the access/refresh tokens in async storage.
-const ACCESS_TOKEN_KEY = "@connect/app:accessToken";
-const REFRESH_TOKEN_KEY = "@connect/app:refreshToken";
+const ACCESS_TOKEN_KEY = "connect.accessToken";
+const REFRESH_TOKEN_KEY = "connect.refreshToken";
 
 // The current state of authentication in our app. If the user is signed out
 // then the current state will be `null`. Otherwise it will be an object with
@@ -48,7 +44,7 @@ let currentState: {
 } | null = null;
 
 /**
- * Loads our access tokens from persistent storage. (Currently `AsyncStorage`.)
+ * Loads our access tokens from persistent storage. (Currently `SecureStore`.)
  * If we find some tokens then we update our internal state and return true
  * so that the caller knows an account is authenticated. Otherwise we return
  * false so that the caller knows we are not authenticated.
@@ -56,28 +52,17 @@ let currentState: {
 export async function loadTokensFromStorage(): Promise<boolean> {
   // Load our tokens from our app storage. We assume this storage is private
   // and secure.
-  const entries = await AsyncStorage.multiGet([
-    ACCESS_TOKEN_KEY,
-    REFRESH_TOKEN_KEY,
+  const [accessToken, refreshToken] = await Promise.all([
+    SecureStore.getItemAsync(ACCESS_TOKEN_KEY) as Promise<AccessToken | null>,
+    SecureStore.getItemAsync(REFRESH_TOKEN_KEY) as Promise<RefreshToken | null>,
   ]);
-
-  // Extract our tokens from the list of entries we fetched from app storage.
-  let accessToken: AccessToken | undefined;
-  let refreshToken: RefreshToken | undefined;
-  for (let i = 0; i < entries.length; i++) {
-    const [key, value] = entries[i];
-    if (typeof value === "string") {
-      if (key === ACCESS_TOKEN_KEY) accessToken = value as AccessToken;
-      if (key === REFRESH_TOKEN_KEY) refreshToken = value as RefreshToken;
-    }
-  }
 
   // If we had both an access token and a refresh token in app storage then
   // update our state and return true.
-  if (accessToken !== undefined && refreshToken !== undefined) {
+  if (accessToken !== null && refreshToken !== null) {
     currentState = {
-      accessToken: accessToken!,
-      refreshToken: refreshToken!,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
       accessTokenExpiresAt: null,
     };
     return true;
@@ -137,14 +122,17 @@ async function refreshAccessToken(
   } catch (error) {
     // If we fail to refresh our access token then sign the user out!
     currentState = null;
-    await AsyncStorage.multiRemove([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
+    await Promise.all([
+      SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY),
+      SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY),
+    ]);
     throw error;
   }
 
   // Update our current state with the new access token and save it in async
   // storage so that when the app restarts we can restore the user’s session.
   currentState = {accessToken, refreshToken, accessTokenExpiresAt: null};
-  await AsyncStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
   return accessToken;
 }
 
@@ -154,9 +142,9 @@ const signIn = API.account.signIn;
 (API as any).account.signIn = async (input: any, options: any) => {
   const {accessToken, refreshToken} = await signIn(input, options);
   currentState = {accessToken, refreshToken, accessTokenExpiresAt: null};
-  await AsyncStorage.multiSet([
-    [ACCESS_TOKEN_KEY, accessToken],
-    [REFRESH_TOKEN_KEY, refreshToken],
+  await Promise.all([
+    SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken),
+    SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken),
   ]);
   return {accessToken: "", refreshToken: ""};
 };
@@ -167,9 +155,9 @@ const signUp = API.account.signUp;
 (API as any).account.signUp = async (input: any, options: any) => {
   const {accessToken, refreshToken} = await signUp(input, options);
   currentState = {accessToken, refreshToken, accessTokenExpiresAt: null};
-  await AsyncStorage.multiSet([
-    [ACCESS_TOKEN_KEY, accessToken],
-    [REFRESH_TOKEN_KEY, refreshToken],
+  await Promise.all([
+    SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken),
+    SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken),
   ]);
   return {accessToken: "", refreshToken: ""};
 };
@@ -190,7 +178,10 @@ const signOut = API.account.signOut;
   // Clear our current state and async storage of all API tokens whether or not
   // our actual API request fails or succeeds.
   currentState = null;
-  await AsyncStorage.multiRemove([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
+  await Promise.all([
+    SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY),
+    SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY),
+  ]);
 
   // Send a request to our API to destroy the refresh token using our original
   // `signOut` method before we wrapped it in this function.

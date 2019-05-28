@@ -10,7 +10,7 @@ import {Button} from "../molecules/Button";
 import {Route} from "../router/Route";
 import {SignUpLayout} from "./SignUpLayout";
 import {TextLink} from "../molecules/TextLink";
-import {logError} from "../../../api/server/src/logError";
+import {logError} from "../utils/logError";
 
 export function SignUp({
   route,
