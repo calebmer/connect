@@ -10,17 +10,12 @@ import {
 import {GroupCache, GroupSlugCache} from "../group/GroupCache";
 import {GroupRoute, SignInRoute} from "../router/AllRoutes";
 import React, {useEffect, useState} from "react";
-import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import {ScrollView, StyleSheet, TouchableOpacity, View} from "react-native";
 import {API} from "../api/API";
 import {ErrorAlert} from "../frame/ErrorAlert";
 import {Group} from "@connect/api-client";
 import {Route} from "../router/Route";
+import {StrokeLayout} from "../frame/StrokeLayout";
 import {useCurrentAccount} from "./AccountCache";
 
 export function AccountHomeAlpha({route}: {route: Route}) {
@@ -52,7 +47,7 @@ export function AccountHomeAlpha({route}: {route: Route}) {
 
   return (
     <ScrollView style={styles.scrollView}>
-      <SafeAreaView>
+      <StrokeLayout>
         <View style={styles.container}>
           {/* Account section */}
           <TitleText>Account</TitleText>
@@ -98,7 +93,7 @@ export function AccountHomeAlpha({route}: {route: Route}) {
             </BodyText>
           )}
         </View>
-      </SafeAreaView>
+      </StrokeLayout>
     </ScrollView>
   );
 }
@@ -109,7 +104,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.white,
   },
   container: {
-    padding: Space.space3,
+    padding: Space.space4,
   },
   bodyText: {
     maxWidth: Font.maxWidth,
