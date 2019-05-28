@@ -9,6 +9,7 @@ import {
 } from "../atoms";
 import {CurrentGroupMembershipsCache, GroupCache} from "../group/GroupCache";
 import {GroupRoute, SignInRoute} from "../router/AllRoutes";
+import React, {useEffect} from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -18,7 +19,6 @@ import {
 } from "react-native";
 import {API} from "../api/API";
 import {GroupID} from "@connect/api-client";
-import React from "react";
 import {Route} from "../router/Route";
 import {StrokeLayout} from "../frame/StrokeLayout";
 import {useCache} from "../cache/Cache";
@@ -36,6 +36,12 @@ export function AccountHomeAlpha({route}: {route: Route}) {
       .signOut({refreshToken: "" as any}) // NOTE: sign-out is handled by our native/web API proxy.
       .then(() => route.nativeSwapRoot(SignInRoute, {}));
   }
+
+  // Preload the group and post route components. It is very likely that’s where
+  // the user will be going next.
+  useEffect(() => {
+    GroupRoute.loadComponent();
+  }, []);
 
   return (
     <ScrollView style={styles.scrollView}>
