@@ -22,7 +22,7 @@ import {Group} from "@connect/api-client";
 import {Route} from "../router/Route";
 import {useCurrentAccount} from "./AccountCache";
 
-export function AccountTest({route}: {route: Route}) {
+export function AccountHomeAlpha({route}: {route: Route}) {
   const account = useCurrentAccount();
   const [groups, setGroups] = useState<null | ReadonlyArray<Group>>(null);
 
