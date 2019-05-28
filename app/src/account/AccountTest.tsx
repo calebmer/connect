@@ -9,7 +9,13 @@ import {
 import {GroupCache, GroupSlugCache} from "../group/GroupCache";
 import {GroupRoute, SignInRoute} from "../router/AllRoutes";
 import React, {useEffect, useState} from "react";
-import {SafeAreaView, StyleSheet, TouchableOpacity, View} from "react-native";
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {API} from "../api/API";
 import {ErrorAlert} from "../frame/ErrorAlert";
 import {Group} from "@connect/api-client";
@@ -44,50 +50,54 @@ export function AccountTest({route}: {route: Route}) {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {/* Account section */}
-        <TitleText>Account</TitleText>
-        <View style={styles.spacerSmall} />
-        <BodyText>Hello {account.name}</BodyText>
-        <TouchableOpacity onPress={handleSignOut}>
-          <MetaLinkText>Sign Out</MetaLinkText>
-        </TouchableOpacity>
-        <View style={styles.spacerLarge} />
+    <ScrollView style={styles.scrollView}>
+      <SafeAreaView>
+        <View style={styles.container}>
+          {/* Account section */}
+          <TitleText>Account</TitleText>
+          <View style={styles.spacerSmall} />
+          <BodyText>Hello {account.name}</BodyText>
+          <TouchableOpacity onPress={handleSignOut}>
+            <MetaLinkText>Sign Out</MetaLinkText>
+          </TouchableOpacity>
+          <View style={styles.spacerLarge} />
 
-        {/* Group memberships section */}
-        <TitleText>Groups</TitleText>
-        <View style={styles.spacerSmall} />
-        {groups === null ? (
-          <BodyText>Loading...</BodyText>
-        ) : groups.length === 0 ? (
-          <BodyText>
-            You aren’t a member of any groups 😔{"\n"}Ask for an invite!
-          </BodyText>
-        ) : (
-          <BodyText>
-            {groups.map(group => (
-              <BodyText key={group.id}>
-                •{" "}
-                <TouchableOpacity
-                  onPress={() =>
-                    route.push(GroupRoute, {groupSlug: group.slug || group.id})
-                  }
-                >
-                  <BodyLinkText>{group.name}</BodyLinkText>
-                </TouchableOpacity>
-                {"\n"}
-              </BodyText>
-            ))}
-          </BodyText>
-        )}
-      </View>
-    </SafeAreaView>
+          {/* Group memberships section */}
+          <TitleText>Groups</TitleText>
+          <View style={styles.spacerSmall} />
+          {groups === null ? (
+            <BodyText>Loading...</BodyText>
+          ) : groups.length === 0 ? (
+            <BodyText>
+              You aren’t a member of any groups 😔{"\n"}Ask for an invite!
+            </BodyText>
+          ) : (
+            <BodyText>
+              {groups.map(group => (
+                <BodyText key={group.id}>
+                  •{" "}
+                  <TouchableOpacity
+                    onPress={() =>
+                      route.push(GroupRoute, {
+                        groupSlug: group.slug || group.id,
+                      })
+                    }
+                  >
+                    <BodyLinkText>{group.name}</BodyLinkText>
+                  </TouchableOpacity>
+                  {"\n"}
+                </BodyText>
+              ))}
+            </BodyText>
+          )}
+        </View>
+      </SafeAreaView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  scrollView: {
     flex: 1,
     backgroundColor: Color.white,
   },
