@@ -57,6 +57,9 @@ Repair.registerCache(AccountCache);
  */
 export const CurrentAccountCache = new CacheSingleton<AccountID>(async () => {
   const {account} = await API.account.getCurrentProfile();
+  if (account === null) {
+    throw new AppError("Can not find the account you signed in as.");
+  }
   AccountCache.insert(account.id, account);
   await preloadAccountAvatar(account);
   return account.id;

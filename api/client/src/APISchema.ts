@@ -99,14 +99,25 @@ export const APISchema = Schema.namespace({
      * input because we use the authorization context to determine the
      * current profile.
      *
-     * If the current account’s profile does not exist then we throw a “not
-     * found” error.
+     * If the current account’s profile does not exist then we will return null.
      */
     getCurrentProfile: Schema.method({
       safe: true,
       input: {},
+      output: SchemaOutput.t<{readonly account: AccountProfile | null}>(),
+    }),
+
+    /**
+     * Get the groups that the current account is a member of.
+     *
+     * If the current account’s profile does not exist or they aren’t a member
+     * of any groups we will return an empty array.
+     */
+    getCurrentGroupsMemberships: Schema.method({
+      safe: true,
+      input: {},
       output: SchemaOutput.t<{
-        readonly account: AccountProfile;
+        readonly groups: ReadonlyArray<Group>;
       }>(),
     }),
 

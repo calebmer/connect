@@ -4,6 +4,7 @@ import {
   AccessToken,
   AccountID,
   AccountProfile,
+  Group,
   RefreshToken,
   generateID,
 } from "@connect/api-client";
@@ -261,9 +262,7 @@ async function generateTokens(
  */
 export async function getCurrentProfile(
   ctx: Context,
-): Promise<{
-  readonly account: AccountProfile;
-}> {
+): Promise<{readonly account: AccountProfile | null}> {
   // Select the profile of our current account.
   const {
     rows: [row],
@@ -276,7 +275,7 @@ export async function getCurrentProfile(
   // If the account does not exist then throw an error! We expect our
   // authorized account to exist.
   if (row === undefined) {
-    throw new APIError(APIErrorCode.NOT_FOUND);
+    return {account: null};
   }
 
   // Correctly format the selected row.
@@ -287,6 +286,33 @@ export async function getCurrentProfile(
   };
 
   return {account};
+}
+
+/**
+ * Gets all the groups that our current account is a member of. If the account
+ * does not exist or is not the member of any groups then we return an
+ * empty array.
+ */
+export async function getCurrentGroupsMemberships(
+  ctx: Context,
+): Promise<{readonly groups: ReadonlyArray<Group>}> {
+  const {rows} = await ctx.query(sql`
+       SELECT g.id, g.slug, g.name
+         FROM "group" AS g
+    LEFT JOIN group_member AS m ON m.group_id = g.id
+        WHERE m.account_id = ${ctx.accountID}
+  `);
+
+  const groups = rows.map(row => {
+    const group: Group = {
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+    };
+    return group;
+  });
+
+  return {groups};
 }
 
 /**
