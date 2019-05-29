@@ -11,7 +11,7 @@ import {PGClient} from "./pg/PGClient";
 import createDebugger from "debug";
 
 // Don’t allow this module to be used outside of a testing environment.
-if (!__TEST__) {
+if (typeof jest !== "undefined") {
   throw new Error("Can only use a test context in a test environment.");
 }
 

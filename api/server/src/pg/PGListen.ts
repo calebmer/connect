@@ -67,7 +67,7 @@ async function actuallyConnectClient(): Promise<Client> {
 
 // In a testing environment, disconnect the listening Postgres client after
 // all tests have completed.
-if (__TEST__) {
+if (typeof afterAll !== "undefined") {
   afterAll(async () => {
     if (client !== undefined) {
       debug("Disconnecting notification listener client");

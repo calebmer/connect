@@ -381,7 +381,7 @@ async function proxySignOutRequest(apiUrl, req, res) {
  * Handles an error and sends that error to our response.
  */
 function handleError(res, error) {
-  if (!__TEST__) {
+  if (typeof jest !== "undefined") {
     if (!error.apiError) {
       // Log the error for debugging purposes.
       logError(error);

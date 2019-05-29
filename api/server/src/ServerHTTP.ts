@@ -327,7 +327,7 @@ function initializeMiddlewareAfter(server: Express) {
       }
 
       // In development, print the error stack trace to stderr for debugging.
-      if (!__TEST__ && !(error instanceof APIError)) {
+      if (typeof jest !== "undefined" && !(error instanceof APIError)) {
         logError(error);
       }
 

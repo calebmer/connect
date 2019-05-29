@@ -10,7 +10,7 @@
  * [1]: https://graphemica.com/202F
  * [2]: https://graphemica.com/2009
  */
-const thinSpace = __TEST__ ? " " : "\u202F";
+const thinSpace = typeof jest !== "undefined" ? " " : "\u202F";
 
 /**
  * Communicates a time to a user.

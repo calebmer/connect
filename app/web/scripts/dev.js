@@ -2,7 +2,6 @@
 
 // Do this as the first thing so that any code reading it knows the right env.
 global.__DEV__ = true;
-global.__TEST__ = false;
 process.env.BABEL_ENV = "development";
 process.env.NODE_ENV = "development";
 
