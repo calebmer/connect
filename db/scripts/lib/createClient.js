@@ -5,6 +5,7 @@ const DATABASE = "connect";
 
 function createClient() {
   return new pg.Client({
+    host: process.env.PGHOST,
     port: process.env.PGPORT || PORT,
     database: process.env.PGDATABASE || DATABASE,
     ssl: process.env.NODE_ENV === "production",
