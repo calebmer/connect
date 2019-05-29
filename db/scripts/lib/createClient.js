@@ -7,6 +7,7 @@ function createClient() {
   return new pg.Client({
     port: process.env.PGPORT || PORT,
     database: process.env.PGDATABASE || DATABASE,
+    ssl: process.env.NODE_ENV === "production",
   });
 }
 

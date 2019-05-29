@@ -1,6 +1,7 @@
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {
   ClientBase,
+  ClientConfig,
   ConnectionConfig,
   Pool,
   QueryResult,
@@ -26,7 +27,7 @@ if (
 /**
  * Gets the Postgres connection configuration for the `pg` module.
  */
-function getConnectionConfig(): ConnectionConfig {
+function getConnectionConfig(): ClientConfig {
   return {
     // Always connect to Postgres with the `connect_api` role! No matter what
     // configuration we are given.
@@ -36,6 +37,9 @@ function getConnectionConfig(): ConnectionConfig {
     // them. Otherwise use our default values.
     port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : 5000,
     database: process.env.PGDATABASE || "connect",
+
+    // Require SSL outside of development mode.
+    ssl: !__DEV__,
   };
 }
 
