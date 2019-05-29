@@ -7,4 +7,7 @@ module.exports = {
   transform: {
     "^.+\\.[jt]sx?$": require.resolve("react-native/jest/preprocessor.js"),
   },
+  globals: {
+    __TEST__: true,
+  },
 };

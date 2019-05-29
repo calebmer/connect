@@ -58,7 +58,7 @@ function AppConcurrent() {
 // in React Native itself.
 //
 // [1]: https://reactjs.org/docs/strict-mode.html#warning-about-deprecated-finddomnode-usage
-if (process.env.NODE_ENV === "development") {
+if (__DEV__) {
   /* eslint-disable no-console */
   const consoleError = console.error;
   console.error = function() {

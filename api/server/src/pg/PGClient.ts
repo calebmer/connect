@@ -7,7 +7,6 @@ import {
   types as pgTypes,
 } from "pg";
 import {SQLQuery, sql} from "./SQL";
-import {TEST} from "../RunConfig";
 import createDebugger from "debug";
 import {logError} from "../logError";
 import parseDate from "postgres-date";
@@ -17,7 +16,7 @@ const debug = createDebugger("connect:api:pg");
 // We expect `jest-global-setup.js` to start a temporary test database we can
 // connect to. We also expect that it exposes its Postgres configuration through
 // environment variables.
-if (TEST && !(process.env.PGHOST || "").includes("connect-test-postgres")) {
+if (__TEST__ && !(process.env.PGHOST || "").includes("connect-test-postgres")) {
   throw new Error("Expected PGHOST to be a temporary test database.");
 }
 
@@ -68,7 +67,7 @@ pool.on("error", (error, _client) => {
 
 // In a testing environment, disconnect all the clients in our Pool after
 // all tests have completed.
-if (TEST) {
+if (__TEST__) {
   afterAll(async () => {
     await pool.end();
   });
@@ -122,7 +121,7 @@ export class PGClient {
       //
       // Unless we are in a test environment. If we are testing then always
       // rollback our transaction even if it succeeded.
-      if (!TEST) {
+      if (!__TEST__) {
         await client.query("COMMIT");
       } else {
         await client.query("ROLLBACK");
@@ -150,7 +149,7 @@ export class PGClient {
    * - We convert some database error codes into API error codes.
    */
   public static query(query: SQLQuery): Promise<QueryResult> {
-    if (TEST) {
+    if (__TEST__) {
       // In a testing environment use `PGClient.with` which will rollback the
       // transaction after the query finishes.
       return PGClient.with(client => client.query(query));

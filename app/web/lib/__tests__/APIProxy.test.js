@@ -1,5 +1,8 @@
 /* eslint-disable consistent-return */
 
+// Test production responses!
+global.__DEV__ = false;
+
 const url = require("url");
 const http = require("http");
 const jwt = require("jsonwebtoken");

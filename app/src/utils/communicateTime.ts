@@ -1,5 +1,3 @@
-import {TEST} from "../RunConfig";
-
 /**
  * Using [narrow no-break space (U+202F)][1] to get a smaller space mark which
  * ends up looking better.
@@ -12,7 +10,7 @@ import {TEST} from "../RunConfig";
  * [1]: https://graphemica.com/202F
  * [2]: https://graphemica.com/2009
  */
-const thinSpace = TEST ? " " : "\u202F";
+const thinSpace = __TEST__ ? " " : "\u202F";
 
 /**
  * Communicates a time to a user.

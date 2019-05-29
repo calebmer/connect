@@ -1,6 +1,9 @@
+import "./initializeEnv";
+
 import {APIServer} from "./APIServer";
-import {PORT} from "./RunConfig";
 import chalk from "chalk";
+
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000;
 
 // Start listening to the API server!
 APIServer.start(PORT, () => {

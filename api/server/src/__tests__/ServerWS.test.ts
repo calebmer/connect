@@ -5,8 +5,11 @@ import {
   AccountID,
   generateID,
 } from "@connect/api-client";
-import {AccessTokenData, AccessTokenGenerator} from "../AccessToken";
-import {JWT_SECRET} from "../RunConfig";
+import {
+  AccessTokenData,
+  AccessTokenGenerator,
+  JWT_SECRET,
+} from "../AccessToken";
 import {ServerWS} from "../ServerWS";
 import WebSocket from "ws";
 import getPort from "get-port";

@@ -8,11 +8,10 @@ import {
 import {Pool, PoolClient, QueryResult} from "pg";
 import {SQLQuery, sql} from "./pg/SQL";
 import {PGClient} from "./pg/PGClient";
-import {TEST} from "./RunConfig";
 import createDebugger from "debug";
 
 // Don’t allow this module to be used outside of a testing environment.
-if (!TEST) {
+if (!__TEST__) {
   throw new Error("Can only use a test context in a test environment.");
 }
 

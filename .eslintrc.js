@@ -24,6 +24,10 @@ module.exports = {
     browser: true,
     jest: true,
   },
+  globals: {
+    __DEV__: true,
+    __TEST__: true,
+  },
   rules: {
     "no-empty": "warn",
     "no-empty-pattern": "off",

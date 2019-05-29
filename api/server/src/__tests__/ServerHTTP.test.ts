@@ -1,5 +1,5 @@
 import {APIErrorCode, APISchema, generateID} from "@connect/api-client";
-import {JWT_SECRET} from "../RunConfig";
+import {JWT_SECRET} from "../AccessToken";
 import {ServerHTTP} from "../ServerHTTP";
 import express from "express";
 import getPort from "get-port";

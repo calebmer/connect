@@ -4,9 +4,13 @@ module.exports = {
   testMatch: ["**/__tests__/**/*.test.[tj]s?(x)"],
   testPathIgnorePatterns: ["/node_modules/", "/build/"],
   clearMocks: true,
-  globalSetup: require.resolve("./jest-global-setup"),
-  globalTeardown: require.resolve("./jest-global-teardown"),
   transform: {
     "^.+\\.[jt]sx?$": require.resolve("./jest-transformer"),
+  },
+  globalSetup: require.resolve("./jest-global-setup"),
+  globalTeardown: require.resolve("./jest-global-teardown"),
+  globals: {
+    __DEV__: false,
+    __TEST__: true,
   },
 };
