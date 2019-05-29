@@ -9,8 +9,14 @@ import {
 } from "../atoms";
 import {CurrentGroupMembershipsCache, GroupCache} from "../group/GroupCache";
 import {GroupRoute, SignInRoute} from "../router/AllRoutes";
+import {
+  Linking,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React, {useEffect} from "react";
-import {ScrollView, StyleSheet, TouchableOpacity, View} from "react-native";
 import {API} from "../api/API";
 import {GroupID} from "@connect/api-client";
 import {Route} from "../router/Route";
@@ -39,35 +45,45 @@ export function AccountHomeAlpha({route}: {route: Route}) {
 
   return (
     <StrokeLayout>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.container}>
-          {/* Account section */}
-          <TitleText>Account</TitleText>
-          <View style={styles.spacerSmall} />
-          <BodyText style={styles.bodyText}>
-            Hello {account.name}! Welcome to the Connect Alpha, we hope you
-            enjoy the product as much as we do. This is a work-in progress page
-            for navigating between your groups.{"\n\n"}You can email any
-            feedback directly to caleb@connect.ink
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.container}
+      >
+        {/* Account section */}
+        <TitleText>Account</TitleText>
+        <View style={styles.spacerSmall} />
+        <BodyText style={styles.bodyText}>
+          Hello {account.name}! Welcome to the Connect Alpha, we hope you enjoy
+          the product as much as we do. This is a work-in progress page for
+          navigating between your groups.{"\n\n"}You can email any feedback
+          directly to{" "}
+          <BodyLinkText
+            onPress={() =>
+              Linking.openURL("mailto:caleb@connect.ink").catch(() => {})
+            }
+          >
+            caleb@connect.ink
+          </BodyLinkText>
+        </BodyText>
+        <View style={styles.spacerLarge} />
+
+        {/* Group memberships section */}
+        <TitleText>Groups</TitleText>
+        <View style={styles.spacerSmall} />
+        {groupIDs.length === 0 ? (
+          <BodyText>
+            You aren’t a member of any groups 😔{"\n"}Ask for an invite!
           </BodyText>
-          <View style={styles.spacerSmall} />
+        ) : (
+          groupIDs.map(groupID => (
+            <GroupLink key={groupID} route={route} groupID={groupID} />
+          ))
+        )}
+
+        <View style={styles.signOut}>
           <TouchableOpacity onPress={handleSignOut}>
             <MetaLinkText>Sign Out</MetaLinkText>
           </TouchableOpacity>
-          <View style={styles.spacerLarge} />
-
-          {/* Group memberships section */}
-          <TitleText>Groups</TitleText>
-          <View style={styles.spacerSmall} />
-          {groupIDs.length === 0 ? (
-            <BodyText>
-              You aren’t a member of any groups 😔{"\n"}Ask for an invite!
-            </BodyText>
-          ) : (
-            groupIDs.map(groupID => (
-              <GroupLink key={groupID} route={route} groupID={groupID} />
-            ))
-          )}
         </View>
       </ScrollView>
     </StrokeLayout>
@@ -111,5 +127,10 @@ const styles = StyleSheet.create({
   },
   link: {
     flexDirection: "row",
+  },
+  signOut: {
+    position: "absolute",
+    top: Space.space4 + 6,
+    right: Space.space4,
   },
 });
