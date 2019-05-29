@@ -46,7 +46,7 @@ function initializeMiddlewareBefore(server: Express) {
   } else if (typeof jest === "undefined") {
     server.use(
       morgan(
-        "[:date[iso]] :remote-addr <:account-id> :method :url :status :res[content-length] - :response-time ms",
+        "[:date[iso]] :remote-addr :account-id :method :url :status :res[content-length] - :response-time ms",
       ),
     );
   }
@@ -60,7 +60,7 @@ morgan.token("account-id", req => {
   if ((req as any).accessToken) {
     return (req as any).accessToken.id;
   } else {
-    return "anonymous";
+    return "null";
   }
 });
 
