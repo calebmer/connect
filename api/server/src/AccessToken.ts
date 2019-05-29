@@ -80,4 +80,16 @@ export const AccessTokenGenerator = {
     });
     return accessTokenData;
   },
+
+  /**
+   * Attempts to decodes an access token to its JSON payload. This will not
+   * verify that the access token has an acceptable signature! Do not use this
+   * for cases where it is critical that we know the access token was generated
+   * by us.
+   */
+  dangerouslyDecodeWithoutVerifying(
+    accessToken: string,
+  ): AccessTokenData | null {
+    return jwt.decode(accessToken) as any;
+  },
 };

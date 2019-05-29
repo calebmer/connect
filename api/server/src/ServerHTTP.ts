@@ -38,10 +38,31 @@ function initializeMiddlewareBefore(server: Express) {
   server.set("etag", false);
 
   if (__DEV__) server.set("json spaces", 2);
-  if (__DEV__) server.use(morgan("dev"));
+
+  // Install a logger for our server. Use a pretty colorful logger in dev and a
+  // logger with tons of useful information in production.
+  if (__DEV__) {
+    server.use(morgan("dev"));
+  } else if (typeof jest === "undefined") {
+    server.use(
+      morgan(
+        "[:date[iso]] :remote-addr <:account-id> :method :url :status :res[content-length] - :response-time ms",
+      ),
+    );
+  }
 
   server.use(express.json());
 }
+
+// Add a token to Morgan which will display the ID of the account the request
+// was executed with.
+morgan.token("account-id", req => {
+  if ((req as any).accessToken) {
+    return (req as any).accessToken.id;
+  } else {
+    return "anonymous";
+  }
+});
 
 /**
  * Parses the `Bearer` auth scheme token out of the `Authorization` header as
@@ -292,6 +313,9 @@ async function getRequestAuthorization(req: Request): Promise<AccessTokenData> {
 
   // Next verify the JWT token using our shared JWT secret.
   const accessToken = await AccessTokenGenerator.verify(match[1]);
+
+  // Add the access token to our request object for anyone else to view!
+  (req as any).accessToken = accessToken;
 
   return accessToken;
 }
