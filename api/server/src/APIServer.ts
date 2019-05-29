@@ -11,6 +11,7 @@ import {ServerHTTP} from "./ServerHTTP";
 import {ServerWS} from "./ServerWS";
 import WebSocket from "ws";
 import http from "http";
+import https from "https";
 
 /**
  * The definition of all our API server methods. The method implementations live
@@ -26,9 +27,20 @@ const APIServerDefinition: Server<typeof APISchema> = _APIServerDefinition;
  * Initializes and starts our API server on the provided port.
  */
 function startServer(port: number, callback: () => void) {
-  // Create our server objects...
+  // Create an Express HTTP server...
   const serverHTTP = express();
-  const server = http.createServer(serverHTTP);
+
+  // If we have an HTTPS key and an HTTPS cert then create an HTTPS server
+  // instead of an HTTP server.
+  const server =
+    process.env.HTTPS_KEY && process.env.HTTPS_CERT
+      ? https.createServer(
+          {key: process.env.HTTPS_KEY, cert: process.env.HTTPS_CERT},
+          serverHTTP,
+        )
+      : http.createServer(serverHTTP);
+
+  // Create a WebSocket server...
   const serverWS = ServerWS.create(server);
 
   /// Initialize our server objects...
