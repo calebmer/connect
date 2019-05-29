@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "dev:web": "node web/scripts/dev.js",
-    "dev:native": "node node_modules/react-native/local-cli/cli.js start"
+    "dev:native": "node node_modules/react-native/local-cli/cli.js start",
+    "build:web": "NODE_ENV=production webpack --config web/webpack.config.js"
   },
   "dependencies": {
     "@connect/api-client": "0.0.0",
