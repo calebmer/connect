@@ -10,6 +10,7 @@ import express, {Express} from "express";
 import {ServerHTTP} from "./ServerHTTP";
 import {ServerWS} from "./ServerWS";
 import WebSocket from "ws";
+import fs from "fs";
 import http from "http";
 import https from "https";
 
@@ -35,7 +36,10 @@ function startServer(port: number, callback: () => void) {
   const server =
     process.env.HTTPS_KEY && process.env.HTTPS_CERT
       ? https.createServer(
-          {key: process.env.HTTPS_KEY, cert: process.env.HTTPS_CERT},
+          {
+            key: fs.readFileSync(process.env.HTTPS_KEY),
+            cert: fs.readFileSync(process.env.HTTPS_CERT),
+          },
           serverHTTP,
         )
       : http.createServer(serverHTTP);
