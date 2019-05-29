@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "yarn workspace @connect/db start && concurrently -n api,web,ntv -c magenta.dim,green.dim,cyan.dim 'DEBUG_COLORS=true yarn workspace @connect/api-server dev' 'yarn workspace @connect/app dev:web' 'yarn workspace @connect/app dev:native'",
     "types": "tsc",
+    "build-api": "yarn workspace @connect/api-client build && yarn workspace @connect/api-server build",
     "lint": "eslint . --ext .js,.ts,.tsx",
     "format": "prettier \"**/*.{js,ts,tsx}\" --write",
     "test": "jest --watch",

@@ -2,12 +2,16 @@
   "name": "@connect/api-client",
   "version": "0.0.0",
   "license": "UNLICENSED",
-  "main": "./src/index.ts",
+  "main": "index",
+  "scripts": {
+    "build": "babel src -d build --extensions .ts,.js"
+  },
   "dependencies": {
     "base-64": "^0.1.0",
     "xstream": "^11.11.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.4.4",
     "@types/base-64": "^0.1.3"
   }
 }

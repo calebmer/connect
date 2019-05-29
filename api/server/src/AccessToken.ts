@@ -14,6 +14,8 @@ import jwt from "jsonwebtoken";
 export const JWT_SECRET: string = (() => {
   if (__DEV__ || typeof jest !== "undefined") {
     return "secret";
+  } else if (process.env.JWT_SECRET) {
+    return process.env.JWT_SECRET;
   } else {
     throw new Error("JWT secret is not configured.");
   }
