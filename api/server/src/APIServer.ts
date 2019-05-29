@@ -27,7 +27,10 @@ const APIServerDefinition: Server<typeof APISchema> = _APIServerDefinition;
 /**
  * Initializes and starts our API server on the provided port.
  */
-function startServer(port: number, callback: () => void) {
+function startServer(
+  port: number,
+  callback: (server: http.Server | https.Server) => void,
+) {
   // Create an Express HTTP server...
   const serverHTTP = express();
 
@@ -60,7 +63,7 @@ function startServer(port: number, callback: () => void) {
   }, 30 * 1000);
 
   // Start listening to our API server on the right port!
-  server.listen(port, callback);
+  server.listen(port, () => callback(server));
 }
 
 export const APIServer = {
