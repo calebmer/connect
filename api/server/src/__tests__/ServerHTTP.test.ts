@@ -1,5 +1,5 @@
-import {APIErrorCode, APISchema} from "@connect/api-client";
-import {JWT_SECRET} from "../RunConfig";
+import {APIErrorCode, APISchema, generateID} from "@connect/api-client";
+import {JWT_SECRET} from "../AccessToken";
 import {ServerHTTP} from "../ServerHTTP";
 import express from "express";
 import getPort from "get-port";
@@ -346,10 +346,13 @@ test("GET /account/getCurrentProfile - without input", async () => {
 });
 
 test("GET /account/getManyProfiles - with many ids", async () => {
+  const id1 = generateID();
+  const id2 = generateID();
+  const id3 = generateID();
   const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
   await request
     .get("/account/getManyProfiles")
-    .query("ids=1&ids=2&ids=3")
+    .query(`ids=${id1}&ids=${id2}&ids=${id3}`)
     .set("Authorization", `Bearer ${accessToken}`)
     .expect("Content-Type", /json/)
     .expect(200, {
@@ -358,15 +361,16 @@ test("GET /account/getManyProfiles - with many ids", async () => {
     });
   expect(getManyProfiles).toHaveBeenCalledTimes(1);
   expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {
-    ids: [1, 2, 3],
+    ids: [id1, id2, id3],
   });
 });
 
 test("GET /account/getManyProfiles - with one id", async () => {
+  const id = generateID();
   const accessToken = jwt.sign({id: 42}, JWT_SECRET, {expiresIn: "1d"});
   await request
     .get("/account/getManyProfiles")
-    .query("ids=1")
+    .query(`ids=${id}`)
     .set("Authorization", `Bearer ${accessToken}`)
     .expect("Content-Type", /json/)
     .expect(200, {
@@ -374,7 +378,7 @@ test("GET /account/getManyProfiles - with one id", async () => {
       data: {works: true},
     });
   expect(getManyProfiles).toHaveBeenCalledTimes(1);
-  expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {ids: [1]});
+  expect(getManyProfiles).toHaveBeenCalledWith(expect.anything(), {ids: [id]});
 });
 
 test("GET /account/getManyProfiles - with no ids", async () => {

@@ -1,28 +1,28 @@
 import {BodyText, Font} from "../atoms";
-import React, {useContext, useEffect, useRef, useState} from "react";
+import {Group, PostID} from "@connect/api-client";
+import React, {useEffect, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableSelect} from "../cache/Mutable";
 import {useCache, useCacheWithLastKnownGood} from "../cache/Cache";
 import {AccountByline} from "../account/AccountByline";
 import {AccountCache} from "../account/AccountCache";
-import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupItem} from "./GroupItem";
 import {Platform} from "react-native";
 import {PostCache} from "../post/PostCache";
 import {PostCommentsCache} from "../comment/CommentCache";
-import {PostID} from "@connect/api-client";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
 import {stall} from "../utils/stall";
 import {unstable_scheduleCallback} from "scheduler";
+import {useGroupHomeLayout} from "./useGroupHomeLayout";
 
 function GroupItemFeed({
   route,
-  groupSlug,
+  group,
   postID,
   selectedPostID,
 }: {
   route: Route;
-  groupSlug: string;
+  group: Group;
   postID: PostID;
   selectedPostID: ReadonlyMutable<PostID | undefined>;
 }) {
@@ -36,9 +36,7 @@ function GroupItemFeed({
   }, []);
 
   // Load data from our cache!
-  const {
-    data: {post},
-  } = useCacheWithLastKnownGood(PostCache, postID);
+  const {data: post} = useCacheWithLastKnownGood(PostCache, postID);
   const account = useCache(AccountCache, post.authorID);
 
   // Is this post selected? We will only re-render if the value of
@@ -71,7 +69,13 @@ function GroupItemFeed({
   }
 
   function actuallyHandleSelect() {
-    route.push(PostRoute, {groupSlug, postID: String(postID)}).then(done, done);
+    const groupSlug = group.slug || group.id;
+    route
+      .push(PostRoute, {
+        groupSlug,
+        postID: String(postID),
+      })
+      .then(done, done);
 
     function done() {
       // Schedule a callback to unselect the item (which starts an animation).
@@ -91,8 +95,7 @@ function GroupItemFeed({
 
   // On a laptop, you can open a post without leaving the feed. So favor shorter
   // post previews and more posts on screen.
-  const numberOfLines =
-    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop ? 2 : 4;
+  const numberOfLines = useGroupHomeLayout() ? 2 : 4;
 
   return (
     <GroupItem

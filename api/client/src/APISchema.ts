@@ -99,14 +99,25 @@ export const APISchema = Schema.namespace({
      * input because we use the authorization context to determine the
      * current profile.
      *
-     * If the current account’s profile does not exist then we throw a “not
-     * found” error.
+     * If the current account’s profile does not exist then we will return null.
      */
     getCurrentProfile: Schema.method({
       safe: true,
       input: {},
+      output: SchemaOutput.t<{readonly account: AccountProfile | null}>(),
+    }),
+
+    /**
+     * Get the groups that the current account is a member of.
+     *
+     * If the current account’s profile does not exist or they aren’t a member
+     * of any groups we will return an empty array.
+     */
+    getCurrentGroupMemberships: Schema.method({
+      safe: true,
+      input: {},
       output: SchemaOutput.t<{
-        readonly account: AccountProfile;
+        readonly groups: ReadonlyArray<Group>;
       }>(),
     }),
 
@@ -119,7 +130,7 @@ export const APISchema = Schema.namespace({
      */
     getProfile: Schema.method({
       safe: true,
-      input: {id: SchemaInput.integer<AccountID>()},
+      input: {id: SchemaInput.string<AccountID>()},
       output: SchemaOutput.t<{readonly account: AccountProfile | null}>(),
     }),
 
@@ -132,7 +143,7 @@ export const APISchema = Schema.namespace({
      */
     getManyProfiles: Schema.method({
       safe: true,
-      input: {ids: SchemaInput.array(SchemaInput.integer<AccountID>())},
+      input: {ids: SchemaInput.array(SchemaInput.string<AccountID>())},
       output: SchemaOutput.t<{
         readonly accounts: ReadonlyArray<AccountProfile>;
       }>(),
@@ -141,7 +152,8 @@ export const APISchema = Schema.namespace({
 
   group: Schema.namespace({
     /**
-     * Fetches a group by its slug which was likely taken from a URL.
+     * Fetches a group by its slug which was likely taken from a URL. If the
+     * group does not have a slug then we will look it up by its ID.
      *
      * If we are not allowed to see a group or the group does not exist then
      * the method returns null.
@@ -177,7 +189,7 @@ export const APISchema = Schema.namespace({
     getGroupPosts: Schema.method({
       safe: true,
       input: {
-        groupID: SchemaInput.integer<GroupID>(),
+        groupID: SchemaInput.string<GroupID>(),
         ...RangeInputFields<PostCursor>(),
       },
       output: SchemaOutput.t<{
@@ -203,7 +215,7 @@ export const APISchema = Schema.namespace({
       safe: false,
       input: {
         id: SchemaInput.string<PostID>(),
-        groupID: SchemaInput.integer<GroupID>(),
+        groupID: SchemaInput.string<GroupID>(),
         content: SchemaInput.string(),
       },
       output: SchemaOutput.t<{

@@ -1,7 +1,5 @@
-import {AccountID} from "./AccountTypes";
-
 /** A unique type which is used as an identifier for groups. */
-export type GroupID = number & {readonly _type: typeof GroupID};
+export type GroupID = string & {readonly _type: typeof GroupID};
 declare const GroupID: unique symbol;
 
 /**
@@ -21,28 +19,13 @@ export type Group = {
    *
    * [1]: https://en.wikipedia.org/wiki/Clean_URL#Slug
    */
-  readonly slug: string;
+  readonly slug: string | null;
 
   /**
    * The human readable name of a group. This name will be displayed on the main
    * group banner which serves to white label the group.
    */
   readonly name: string;
-};
-
-/**
- * Represents an account‘s membership in a group.
- *
- * NOTE: We use this type in our backend as a kind of “authorization” token. You
- * can’t see the contents of a group if you are not a member of that group!
- */
-export type GroupMembership = {
-  /** The account whose membership this is. */
-  readonly accountID: AccountID;
-  /** The group the account is a member of. */
-  readonly groupID: GroupID;
-  /** The time at which the account became a member of the group. */
-  readonly joinedAt: DateTime;
 };
 
 /**

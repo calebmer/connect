@@ -2,7 +2,6 @@ import {
   APIError,
   APIErrorCode,
   DateTime,
-  GroupID,
   PostCursor,
   PostID,
   RangeDirection,
@@ -420,7 +419,7 @@ describe("publishPost", () => {
         try {
           await publishPost(ctx, {
             id: generateID(),
-            groupID: 1 as GroupID,
+            groupID: generateID(),
             content: "test",
           });
         } catch (e) {

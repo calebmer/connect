@@ -17,12 +17,9 @@ import {
   postCountMore,
 } from "../post/PostCache";
 import {PostID, Group as _Group} from "@connect/api-client";
-import React, {useContext, useMemo, useRef, useState} from "react";
+import React, {useMemo, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableContainer} from "../cache/Mutable";
-import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {GroupBanner} from "./GroupBanner";
-import {GroupCache} from "./GroupCache";
-import {GroupHomeLayout} from "./GroupHomeLayout";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
 import {Loading} from "../molecules/Loading";
@@ -32,6 +29,9 @@ import {Trough} from "../molecules/Trough";
 import {getAdjustedContentInsetTop} from "../utils/getAdjustedContentInset";
 import {useAnimatedValue} from "../utils/useAnimatedValue";
 import {useCacheSingletonData} from "../cache/CacheSingleton";
+import {useCacheWithPrev} from "../cache/Cache";
+import {useGroupHomeLayout} from "./useGroupHomeLayout";
+import {useGroupWithSlug} from "./GroupCache";
 
 // NOTE: Having a React component and a type with the same name is ok in
 // TypeScript, but eslint complains when it’s an import. So import the type with
@@ -63,8 +63,7 @@ function Group({
   const scrollView = useRef<any>(null);
 
   // Are we using the mobile group home layout?
-  const showNavbar =
-    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Mobile;
+  const showNavbar = !useGroupHomeLayout();
 
   // On iOS the top of the content is not zero! It is
   // `-adjustedContentInset.top`. `adjustedContentInset` is `contentInset` plus
@@ -103,7 +102,7 @@ function Group({
       renderItem: ({item: {id: postID}}) => (
         <GroupItemFeed
           route={route}
-          groupSlug={group.slug}
+          group={group}
           postID={postID}
           selectedPostID={selectedPostID}
         />
@@ -111,7 +110,7 @@ function Group({
     };
 
     return [feedSection];
-  }, [group.slug, posts, route, selectedPostID]);
+  }, [group, posts, route, selectedPostID]);
 
   return (
     <View style={styles.container}>
@@ -131,6 +130,8 @@ function Group({
       {showNavbar && (
         <Navbar
           title={group.name}
+          leftIcon="arrow-left"
+          onLeftIconPress={() => route.pop()}
           hideBackground={!showNavbarBackground}
           hideTitleWithBackground
           lightContentWithoutBackground
@@ -153,9 +154,7 @@ function Group({
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
-        ListHeaderComponent={
-          <GroupHeader route={route} groupSlug={group.slug} />
-        }
+        ListHeaderComponent={<GroupHeader route={route} group={group} />}
         ListFooterComponent={
           <GroupFooter
             loadingMorePosts={loadingMorePosts}
@@ -238,7 +237,7 @@ export function GroupRoute({
   CurrentAccountCache.preload();
 
   // Load the data we need for our group.
-  const group = useCache(GroupCache, groupSlug);
+  const group = useGroupWithSlug(groupSlug);
   const {loading, data: posts} = useCacheWithPrev(GroupPostsCache, group.id);
 
   // NOTE: `<ScrollView>` on native doesn’t really like being re-rendered with
@@ -263,15 +262,11 @@ export function GroupRoute({
   );
 }
 
-function GroupHeader({route, groupSlug}: {route: Route; groupSlug: string}) {
+function GroupHeader({route, group}: {route: Route; group: Group}) {
   const currentAccount = useCurrentAccount();
   return (
     <View style={styles.header}>
-      <GroupPostPrompt
-        route={route}
-        groupSlug={groupSlug}
-        account={currentAccount}
-      />
+      <GroupPostPrompt route={route} group={group} account={currentAccount} />
     </View>
   );
 }

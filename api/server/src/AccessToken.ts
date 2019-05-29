@@ -4,8 +4,22 @@ import {
   AccessToken,
   AccountID,
 } from "@connect/api-client";
-import {JWT_SECRET} from "./RunConfig";
 import jwt from "jsonwebtoken";
+
+/**
+ * The secret we use to sign our JSON Web Tokens (JWT). In development and test
+ * environments we use the super secret “`secret`” token. In production we need
+ * a real secret from our environment variables.
+ */
+export const JWT_SECRET: string = (() => {
+  if (__DEV__ || typeof jest !== "undefined") {
+    return "secret";
+  } else if (process.env.JWT_SECRET) {
+    return process.env.JWT_SECRET;
+  } else {
+    throw new Error("JWT secret is not configured.");
+  }
+})();
 
 /**
  * The data carried around in an access token.

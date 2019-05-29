@@ -1,5 +1,5 @@
 import {APIError, APIErrorCode} from "@connect/api-client";
-import {AccountTestRoute, SignInRoute} from "../router/AllRoutes";
+import {AccountHomeAlphaRoute, SignInRoute} from "../router/AllRoutes";
 import {BodyText, MetaLinkText, MetaText, Space, TitleText} from "../atoms";
 import {Platform, StyleSheet, View} from "react-native";
 import React, {useRef, useState} from "react";
@@ -10,7 +10,7 @@ import {Button} from "../molecules/Button";
 import {Route} from "../router/Route";
 import {SignUpLayout} from "./SignUpLayout";
 import {TextLink} from "../molecules/TextLink";
-import {logError} from "../../../api/server/src/logError";
+import {logError} from "../utils/logError";
 
 export function SignUp({
   route,
@@ -99,7 +99,7 @@ export function SignUp({
       .then(error => {
         if (error === undefined) {
           // Navigate into the app after successfully signing in!
-          route.nativeSwapRoot(AccountTestRoute, {});
+          route.nativeSwapRoot(AccountHomeAlphaRoute, {});
         } else {
           if (!(error instanceof APIError)) logError(error);
 

@@ -4,6 +4,7 @@ import {CacheSingleton, useCacheSingletonData} from "../cache/CacheSingleton";
 import {API} from "../api/API";
 import {AppError} from "../api/AppError";
 import {Image} from "react-native";
+import {Repair} from "../cache/Repair";
 
 /**
  * Caches accounts by their ID.
@@ -47,12 +48,18 @@ export const AccountCache = new Cache<AccountID, AccountProfile>({
   },
 });
 
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(AccountCache);
+
 /**
  * Cache that holds the identity of the current account. Also loads the current
  * account’s profile which we insert into `AccountCache`.
  */
 export const CurrentAccountCache = new CacheSingleton<AccountID>(async () => {
   const {account} = await API.account.getCurrentProfile();
+  if (account === null) {
+    throw new AppError("Can not find the account you signed in as.");
+  }
   AccountCache.insert(account.id, account);
   await preloadAccountAvatar(account);
   return account.id;

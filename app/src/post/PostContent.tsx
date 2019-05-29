@@ -9,7 +9,7 @@ import {communicateTime} from "../utils/communicateTime";
 import {useCache} from "../cache/Cache";
 
 function PostContent({postID}: {postID: PostID}) {
-  const {post} = useCache(PostCache, postID);
+  const post = useCache(PostCache, postID);
   const author = useCache(AccountCache, post.authorID);
 
   // NOTE: `new Date()` is a side-effect in render! Ideally we would use

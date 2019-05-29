@@ -23,6 +23,16 @@ enum AsyncStatus {
  * throw instead.
  */
 export class Async<Value> implements FastEquals {
+  /**
+   * Returns a rejected `Async` value.
+   */
+  public static rejected(error: unknown): Async<never> {
+    const asyncValue = Object.create(Async.prototype);
+    asyncValue.status = AsyncStatus.Rejected;
+    asyncValue.value = error;
+    return asyncValue;
+  }
+
   /** The status of our async value. */
   private status: AsyncStatus;
 
@@ -63,6 +73,13 @@ export class Async<Value> implements FastEquals {
    */
   public isLoading(): boolean {
     return this.status === AsyncStatus.Pending;
+  }
+
+  /**
+   * Was our async value rejected?
+   */
+  public isRejected(): boolean {
+    return this.status === AsyncStatus.Rejected;
   }
 
   /**

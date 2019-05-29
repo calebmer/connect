@@ -1,22 +1,80 @@
+import {Cache, useCache} from "../cache/Cache";
+import {Group, GroupID} from "@connect/api-client";
 import {API} from "../api/API";
 import {AppError} from "../api/AppError";
-import {Cache} from "../cache/Cache";
-import {Group} from "@connect/api-client";
+import {CacheSingleton} from "../cache/CacheSingleton";
 import {Image} from "react-native";
+import {Repair} from "../cache/Repair";
 import defaultBackgroundImage from "../assets/images/group-banner-background.png";
 
 /**
- * Caches groups by their URL slug.
+ * Caches groups by their ID.
  */
-export const GroupCache = new Cache<string, Group>({
+export const GroupCache = new Cache<GroupID, Group>({
+  async load(id) {
+    // We can use `getGroupBySlug()` since it detects whether or not the string
+    // is an ID or slug.
+    const {group} = await API.group.getGroupBySlug({slug: id});
+    if (group == null) {
+      throw new AppError("Can not find this group.");
+    }
+
+    await preloadGroupBackground(group);
+
+    // Insert the appropriate relationships into our `GroupSlugCache`.
+    GroupSlugCache.insert(group.id, group.id);
+    if (group.slug !== null) GroupSlugCache.insert(group.slug, group.id);
+
+    return group;
+  },
+});
+
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(GroupCache);
+
+/**
+ * Caches the relationship between a group slug and the group ID associated with
+ * that slug. After we fetch we’ll insert the group into `GroupCache`.
+ */
+export const GroupSlugCache = new Cache<string, GroupID>({
   async load(slug) {
     const {group} = await API.group.getGroupBySlug({slug});
     if (group == null) {
       throw new AppError("Can not find this group.");
     }
+
     await preloadGroupBackground(group);
-    return group;
+
+    GroupCache.insert(group.id, group);
+
+    // If our fetched group has a slug and the slug is not equal to what we
+    // requested (presumably we requested with an ID) then insert a relation
+    // into our group slug cache.
+    if (group.slug !== null && group.slug !== slug) {
+      GroupSlugCache.insert(group.slug, group.id);
+    }
+
+    return group.id;
   },
+});
+
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(GroupSlugCache);
+
+/**
+ * Cache that holds the group memberships for our current account.
+ */
+export const CurrentGroupMembershipsCache = new CacheSingleton<
+  ReadonlyArray<GroupID>
+>(async () => {
+  const {groups} = await API.account.getCurrentGroupMemberships();
+
+  return groups.map(group => {
+    GroupCache.insert(group.id, group);
+    GroupSlugCache.insert(group.id, group.id);
+    if (group.slug) GroupSlugCache.insert(group.slug, group.id);
+    return group.id;
+  });
 });
 
 /**
@@ -34,4 +92,13 @@ async function preloadGroupBackground(_group: Group): Promise<void> {
       // ignore error
     }
   }
+}
+
+/**
+ * Fetches a group from our cache using the slug of the group.
+ */
+export function useGroupWithSlug(groupSlug: string): Group {
+  const groupID = useCache(GroupSlugCache, groupSlug);
+  const group = useCache(GroupCache, groupID);
+  return group;
 }

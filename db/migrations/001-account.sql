@@ -8,7 +8,7 @@ CREATE TABLE account (
   -- Automatically generate a new ID for every account. In the future, we might
   -- not require an email to create an account. So an email would be a bad
   -- primary key.
-  id SERIAL PRIMARY KEY,
+  id CHAR(22) PRIMARY KEY,
   -- The display name for this account. This is how people will be able to
   -- reference each other. There will, of course, be duplicates.
   --
@@ -39,7 +39,6 @@ CREATE VIEW account_profile AS
 -- like `email` and `password_hash`.
 GRANT SELECT ON TABLE account TO connect_api_auth;
 GRANT INSERT ON TABLE account TO connect_api_auth;
-GRANT USAGE ON SEQUENCE account_id_seq TO connect_api_auth;
 
 -- Allow all users to select from `account_profile`. All account profile
 -- information is public.

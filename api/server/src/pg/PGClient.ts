@@ -1,13 +1,13 @@
 import {APIError, APIErrorCode} from "@connect/api-client";
 import {
   ClientBase,
+  ClientConfig,
   ConnectionConfig,
   Pool,
   QueryResult,
   types as pgTypes,
 } from "pg";
 import {SQLQuery, sql} from "./SQL";
-import {TEST} from "../RunConfig";
 import createDebugger from "debug";
 import {logError} from "../logError";
 import parseDate from "postgres-date";
@@ -17,14 +17,17 @@ const debug = createDebugger("connect:api:pg");
 // We expect `jest-global-setup.js` to start a temporary test database we can
 // connect to. We also expect that it exposes its Postgres configuration through
 // environment variables.
-if (TEST && !(process.env.PGHOST || "").includes("connect-test-postgres")) {
+if (
+  typeof jest !== "undefined" &&
+  !(process.env.PGHOST || "").includes("connect-test-postgres")
+) {
   throw new Error("Expected PGHOST to be a temporary test database.");
 }
 
 /**
  * Gets the Postgres connection configuration for the `pg` module.
  */
-function getConnectionConfig(): ConnectionConfig {
+function getConnectionConfig(): ClientConfig {
   return {
     // Always connect to Postgres with the `connect_api` role! No matter what
     // configuration we are given.
@@ -34,6 +37,9 @@ function getConnectionConfig(): ConnectionConfig {
     // them. Otherwise use our default values.
     port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : 5000,
     database: process.env.PGDATABASE || "connect",
+
+    // Require SSL outside of development mode.
+    ssl: !__DEV__,
   };
 }
 
@@ -68,7 +74,7 @@ pool.on("error", (error, _client) => {
 
 // In a testing environment, disconnect all the clients in our Pool after
 // all tests have completed.
-if (TEST) {
+if (typeof afterAll !== "undefined") {
   afterAll(async () => {
     await pool.end();
   });
@@ -122,7 +128,7 @@ export class PGClient {
       //
       // Unless we are in a test environment. If we are testing then always
       // rollback our transaction even if it succeeded.
-      if (!TEST) {
+      if (typeof jest !== "undefined") {
         await client.query("COMMIT");
       } else {
         await client.query("ROLLBACK");
@@ -150,7 +156,7 @@ export class PGClient {
    * - We convert some database error codes into API error codes.
    */
   public static query(query: SQLQuery): Promise<QueryResult> {
-    if (TEST) {
+    if (typeof jest === "undefined") {
       // In a testing environment use `PGClient.with` which will rollback the
       // transaction after the query finishes.
       return PGClient.with(client => client.query(query));

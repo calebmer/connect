@@ -1,41 +1,27 @@
 import {Color, Font, Icon, Space} from "../atoms";
-import React, {useContext} from "react";
 import {StyleSheet, Text, View} from "react-native";
 import {AppError} from "../api/AppError";
-import {GroupHomeLayout} from "../group/GroupHomeLayout";
-import {NavbarScrollView} from "../frame/NavbarScrollView";
-import {Route} from "../router/Route";
-import {PostID} from "@connect/api-client";
-import {PostCache} from "./PostCache";
-import {PostCommentsCache} from "../comment/CommentCache";
 import {Button} from "../molecules/Button";
+import {NavbarScrollView} from "./NavbarScrollView";
+import React from "react";
+import {Route} from "../router/Route";
+import {useGroupHomeLayout} from "../group/useGroupHomeLayout";
 
-export function PostError({
+export function ErrorScreen({
   route,
-  postID,
   error,
   onRetry,
 }: {
-  route: Route;
-  postID: PostID | null;
+  route?: Route;
   error: unknown;
-  onRetry: () => void;
+  onRetry?: () => void;
 }) {
   // Hide the navbar when we are using the laptop layout.
-  const hideNavbar =
-    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
-
-  function handleRetry() {
-    if (postID !== null) {
-      PostCache.forceReload(postID);
-      PostCommentsCache.forceReload(postID);
-    }
-    onRetry();
-  }
+  const hideNavbar = useGroupHomeLayout();
 
   return (
     <NavbarScrollView
-      route={route}
+      route={route || null}
       title="Error"
       hideNavbar={hideNavbar}
       contentContainerStyle={styles.container}
@@ -44,9 +30,11 @@ export function PostError({
         <Icon name="alert-triangle" size={Space.space7} color={Color.red4} />
       </View>
       <Text style={styles.message}>{AppError.displayMessage(error)}</Text>
-      <View style={styles.retry}>
-        <Button label="Retry" onPress={handleRetry} />
-      </View>
+      {onRetry && (
+        <View style={styles.retry}>
+          <Button label="Retry" onPress={onRetry} />
+        </View>
+      )}
     </NavbarScrollView>
   );
 }

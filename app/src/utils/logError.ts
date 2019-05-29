@@ -6,7 +6,5 @@
  */
 export function logError(error: unknown) {
   // eslint-disable-next-line no-console
-  console.error(
-    error instanceof Error ? error.stack || error.message : String(error),
-  );
+  console.error(error);
 }

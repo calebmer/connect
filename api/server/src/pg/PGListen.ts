@@ -1,7 +1,6 @@
 import {Client} from "pg";
 import {JSONValue} from "@connect/api-client";
 import {PGClient} from "./PGClient";
-import {TEST} from "../RunConfig";
 import createDebugger from "debug";
 import {logError} from "../logError";
 import {sql} from "./SQL";
@@ -68,7 +67,7 @@ async function actuallyConnectClient(): Promise<Client> {
 
 // In a testing environment, disconnect the listening Postgres client after
 // all tests have completed.
-if (TEST) {
+if (typeof afterAll !== "undefined") {
   afterAll(async () => {
     if (client !== undefined) {
       debug("Disconnecting notification listener client");

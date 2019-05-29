@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 // Do this as the first thing so that any code reading it knows the right env.
+global.__DEV__ = true;
 process.env.BABEL_ENV = "development";
 process.env.NODE_ENV = "development";
 
@@ -14,7 +15,6 @@ process.on("unhandledRejection", err => {
 const webpack = require("webpack");
 const WebpackDevServer = require("webpack-dev-server");
 const openBrowser = require("react-dev-utils/openBrowser");
-
 const webpackConfig = require("../webpack.config");
 const webpackDevServerConfig = require("../webpackDevServer.config");
 

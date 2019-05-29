@@ -22,7 +22,6 @@ const http = require("http");
 const cookie = require("cookie");
 const jwt = require("jsonwebtoken");
 const got = require("got");
-const {DEV} = require("./RunConfig");
 
 /**
  * Proxy these headers when calling our API.
@@ -241,7 +240,7 @@ const tokenCookieMaxAge = 60 * 60 * 24 * 365 * 100;
 const cookieSettings = {
   path: "/api",
   httpOnly: true,
-  secure: !DEV,
+  secure: !__DEV__,
   sameSite: "strict",
   maxAge: tokenCookieMaxAge,
 };
@@ -382,7 +381,7 @@ async function proxySignOutRequest(apiUrl, req, res) {
  * Handles an error and sends that error to our response.
  */
 function handleError(res, error) {
-  if (process.env.NODE_ENV !== "test") {
+  if (typeof jest !== "undefined") {
     if (!error.apiError) {
       // Log the error for debugging purposes.
       logError(error);
@@ -418,9 +417,7 @@ function handleError(res, error) {
           // If we are in development mode then include the stack of our error
           // from the server. This should help in debugging why an error ocurred.
           serverStack:
-            process.env.NODE_ENV === "development" && error instanceof Error
-              ? error.stack
-              : undefined,
+            __DEV__ && error instanceof Error ? error.stack : undefined,
         },
       }),
     );

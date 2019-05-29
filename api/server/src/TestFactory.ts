@@ -10,11 +10,10 @@ import {
   generateID,
 } from "@connect/api-client";
 import {ContextTest} from "./ContextTest";
-import {TEST} from "./RunConfig";
 import {sql} from "./pg/SQL";
 
 // Don’t allow this module to be used outside of a testing environment.
-if (!TEST) {
+if (typeof jest !== "undefined") {
   throw new Error("Can only use factories in a test environment.");
 }
 
@@ -68,43 +67,52 @@ type FactoryAccount = {
 };
 
 export async function createAccount(ctx: ContextTest): Promise<FactoryAccount> {
+  const id = generateID<AccountID>();
   const n = accountSequence(ctx);
 
   const name = `Test ${n}`;
   const email = `test${n}@example.com`;
   const passwordHash = simplePasswordHash;
 
-  const {
-    rows: [row],
-  } = await ctx.query(sql`
-    INSERT INTO account (name, email, password_hash)
-         VALUES (${name}, ${email}, ${passwordHash})
-      RETURNING id
+  await ctx.query(sql`
+    INSERT INTO account (id, name, email, password_hash)
+         VALUES (${id}, ${name}, ${email}, ${passwordHash})
   `);
 
   return {
-    id: row.id,
+    id,
   };
 }
 
-export async function createGroup(ctx: ContextTest): Promise<Group> {
+type FactoryGroupConfig = {
+  slug?: true | string | null;
+};
+
+export async function createGroup(
+  ctx: ContextTest,
+  config: FactoryGroupConfig = {},
+): Promise<Group> {
+  const id = generateID<GroupID>();
   const n = groupSequence(ctx);
 
-  const slug = `group${n}`;
+  const slug =
+    config.slug === true || config.slug === undefined
+      ? `group${n}`
+      : config.slug !== null
+      ? config.slug
+      : null;
+
   const name = `Group ${n}`;
 
   const ownerID = (await createAccount(ctx)).id;
 
-  const {
-    rows: [row],
-  } = await ctx.query(sql`
-    INSERT INTO "group" (slug, name, owner_id)
-         VALUES (${slug}, ${name}, ${ownerID})
-      RETURNING id
+  await ctx.query(sql`
+    INSERT INTO "group" (id, slug, name, owner_id)
+         VALUES (${id}, ${slug}, ${name}, ${ownerID})
   `);
 
   return {
-    id: row.id,
+    id,
     slug,
     name,
   };

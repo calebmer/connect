@@ -4,19 +4,21 @@ import {
   CommentID,
   Comment as _Comment,
 } from "@connect/api-client";
-import {BodyText, Font, Space} from "../atoms";
+import {BodyText, Color, Font, Icon, Space} from "../atoms";
+import {CommentCache, CommentCacheEntryStatus} from "./CommentCache";
 import {
   Platform,
   ScrollView,
+  StyleProp,
   StyleSheet,
   UIManager,
   View,
+  ViewStyle,
   findNodeHandle,
 } from "react-native";
-import React, {useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
 import {AccountByline} from "../account/AccountByline";
-import {CommentCache} from "./CommentCache";
 import {CommentMeasurements} from "./CommentMeasurements";
 import {useCache} from "../cache/Cache";
 
@@ -43,7 +45,7 @@ function Comment({
   }
 
   // Load our comment data.
-  const {comment} = useCache(CommentCache, commentID);
+  const {status, comment} = useCache(CommentCache, commentID);
   const author = useCache(AccountCache, comment.authorID);
 
   // A ref for our comment’s root view.
@@ -51,6 +53,31 @@ function Comment({
 
   // Scroll to the end of our scroll view if this is a realtime comment.
   useScrollToEnd(commentRef, scrollViewRef, author, realtime);
+
+  // Our optimistic status. We render our comment as commit even if it is
+  // actually pending. If it takes our comment a while to commit then we reflect
+  // the comment as pending in the UI.
+  const [optimisticStatus, setOptimisticStatus] = useState(
+    status === CommentCacheEntryStatus.Pending
+      ? CommentCacheEntryStatus.Commit
+      : status,
+  );
+
+  // If we have a “pending” status then we want to optimistically render our
+  // comment as if it is fully commit. After some time if our comment is still
+  // pending we’ll reflect that in the UI.
+  useEffect(() => {
+    if (status === CommentCacheEntryStatus.Pending) {
+      setOptimisticStatus(CommentCacheEntryStatus.Commit);
+      const timeoutID = setTimeout(() => {
+        setOptimisticStatus(CommentCacheEntryStatus.Pending);
+      }, 200);
+      return () => clearTimeout(timeoutID);
+    } else {
+      setOptimisticStatus(status);
+      return;
+    }
+  }, [status]);
 
   // If there was no comment before this one then we definitely want to render
   // the comment with a byline. Otherwise we want to do some conditional data
@@ -61,6 +88,7 @@ function Comment({
         commentRef={commentRef}
         comment={comment}
         author={author}
+        status={optimisticStatus}
       />
     );
   } else {
@@ -70,6 +98,7 @@ function Comment({
         comment={comment}
         author={author}
         lastCommentID={lastCommentID}
+        status={optimisticStatus}
       />
     );
   }
@@ -84,27 +113,68 @@ function CommentAfterFirst({
   comment,
   author,
   lastCommentID,
+  status,
 }: {
   commentRef: React.RefObject<View>;
   comment: Comment;
   author: AccountProfile;
   lastCommentID: CommentID;
+  status: CommentCacheEntryStatus;
 }) {
   const {comment: lastComment} = useCache(CommentCache, lastCommentID);
 
   // If this comment has the same author as our last comment then don’t add a
   // byline to our comment.
   if (lastComment.authorID === comment.authorID) {
-    return <CommentWithoutByline commentRef={commentRef} comment={comment} />;
+    return (
+      <CommentWithoutByline
+        commentRef={commentRef}
+        comment={comment}
+        status={status}
+      />
+    );
   } else {
     return (
       <CommentWithByline
         commentRef={commentRef}
         comment={comment}
         author={author}
+        status={status}
       />
     );
   }
+}
+
+/**
+ * Shared view container for our comments.
+ */
+function CommentView({
+  style,
+  commentRef,
+  status,
+  children,
+}: {
+  style: StyleProp<ViewStyle>;
+  commentRef: React.RefObject<View>;
+  status: CommentCacheEntryStatus;
+  children: React.Node;
+}) {
+  return (
+    <View
+      ref={commentRef}
+      style={[
+        styles.comment,
+        status === CommentCacheEntryStatus.Pending && styles.commentPending,
+        status === CommentCacheEntryStatus.Rollback && styles.commentRollback,
+        style,
+      ]}
+    >
+      {status === CommentCacheEntryStatus.Rollback && (
+        <Icon style={styles.commentRollbackIcon} name="x" color={Color.red4} />
+      )}
+      {children}
+    </View>
+  );
 }
 
 /**
@@ -115,19 +185,25 @@ function CommentWithByline({
   commentRef,
   comment,
   author,
+  status,
 }: {
   commentRef: React.RefObject<View>;
   comment: Comment;
   author: AccountProfile;
+  status: CommentCacheEntryStatus;
 }) {
   return (
-    <View ref={commentRef} style={styles.comment}>
+    <CommentView
+      style={styles.commentWithByline}
+      commentRef={commentRef}
+      status={status}
+    >
       <AccountAvatarSmall style={styles.commentAvatar} account={author} />
-      <View style={styles.commentWithByline}>
+      <View style={styles.commentWithBylineBody}>
         <AccountByline account={author} publishedAt={comment.publishedAt} />
         <BodyText selectable>{comment.content}</BodyText>
       </View>
-    </View>
+    </CommentView>
   );
 }
 
@@ -138,14 +214,20 @@ function CommentWithByline({
 function CommentWithoutByline({
   commentRef,
   comment,
+  status,
 }: {
   commentRef: React.RefObject<View>;
   comment: Comment;
+  status: CommentCacheEntryStatus;
 }) {
   return (
-    <View ref={commentRef} style={styles.commentWithoutByline}>
+    <CommentView
+      style={styles.commentWithoutByline}
+      commentRef={commentRef}
+      status={status}
+    >
       <BodyText selectable>{comment.content}</BodyText>
-    </View>
+    </CommentView>
   );
 }
 
@@ -242,24 +324,42 @@ function useScrollToEnd(
   ]);
 }
 
+const paddingVertical = Space.space0;
+
 const styles = StyleSheet.create({
   comment: {
+    paddingVertical: paddingVertical,
+    paddingLeft: Space.space3,
+    paddingRight: CommentMeasurements.paddingRight,
+    marginBottom: -paddingVertical,
+    backgroundColor: Color.white,
+    borderRightColor: Color.white,
+  },
+  commentPending: {
+    opacity: 0.3,
+  },
+  commentRollback: {
+    backgroundColor: Color.red0,
+  },
+  commentRollbackIcon: {
+    position: "absolute",
+    top: (Font.size2.lineHeight - Space.space3) / 2,
+    right: (Font.size2.lineHeight - Space.space3) / 2,
+  },
+  commentWithByline: {
     flexDirection: "row",
-    paddingTop: CommentMeasurements.paddingTopWithByline,
-    paddingHorizontal: Space.space3,
+    marginTop: CommentMeasurements.paddingTopWithByline - paddingVertical,
+  },
+  commentWithBylineBody: {
+    flex: 1,
+    paddingLeft: Space.space2,
   },
   commentAvatar: {
     position: "relative",
     top: Font.size2.lineHeight - AccountAvatarSmall.size / 2 - 4,
   },
-  commentWithByline: {
-    flex: 1,
-    paddingLeft: Space.space2,
-    paddingRight: CommentMeasurements.paddingRight,
-  },
   commentWithoutByline: {
-    paddingTop: CommentMeasurements.paddingTopWithoutByline,
+    marginTop: CommentMeasurements.paddingTopWithoutByline - paddingVertical,
     paddingLeft: CommentMeasurements.paddingLeft,
-    paddingRight: CommentMeasurements.paddingRight,
   },
 });

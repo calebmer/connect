@@ -12,7 +12,7 @@ CREATE TABLE refresh_token (
   token UUID PRIMARY KEY,
   -- The account that this refresh token is tied to. When refreshing an access
   -- token we will use this account ID for the new access token.
-  account_id INT NOT NULL REFERENCES account(id),
+  account_id CHAR(22) NOT NULL REFERENCES account(id),
   -- The last time this refresh token was used to generate a new access token.
   -- Used for keeping track of how refresh tokens are used.
   last_used_at TIMESTAMP WITH TIME ZONE DEFAULT now(),

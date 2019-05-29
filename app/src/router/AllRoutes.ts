@@ -22,13 +22,13 @@ export const SignUpRoute = new RouteConfig({
     ).then(m => m.SignUp),
 });
 
-export const AccountTestRoute = new RouteConfig({
+export const AccountHomeAlphaRoute = new RouteConfig({
   path: Path.create("account"),
   component: () =>
     import(
-      /* webpackChunkName: "AccountTest" */
-      "../account/AccountTest"
-    ).then(m => m.AccountTest),
+      /* webpackChunkName: "AccountHomeAlpha" */
+      "../account/AccountHomeAlpha"
+    ).then(m => m.AccountHomeAlpha),
 });
 
 export const GroupRoute = new RouteConfig({

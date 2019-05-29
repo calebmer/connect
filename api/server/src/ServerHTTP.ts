@@ -21,7 +21,6 @@ import {
   isSyntaxJSON,
 } from "@connect/api-client";
 import {AccessTokenData, AccessTokenGenerator} from "./AccessToken";
-import {DEV, TEST} from "./RunConfig";
 import {ServerMethod, ServerMethodUnauthorized} from "./Server";
 import express, {Express, NextFunction, Request, Response} from "express";
 import {Context} from "./Context";
@@ -38,8 +37,8 @@ function initializeMiddlewareBefore(server: Express) {
   server.set("x-powered-by", false);
   server.set("etag", false);
 
-  if (DEV) server.set("json spaces", 2);
-  if (DEV) server.use(morgan("dev"));
+  if (__DEV__) server.set("json spaces", 2);
+  if (__DEV__) server.use(morgan("dev"));
 
   server.use(express.json());
 }
@@ -146,7 +145,7 @@ function handleResponse<Output>(
     //
     // For safe requests (`GET`) throw an error 2% of the time. For unsafe
     // requests (`POST`) throw an error 10% of the time.
-    if (DEV) {
+    if (__DEV__) {
       if (safe) {
         if (Math.random() <= 0.02) {
           throw new APIError(APIErrorCode.CHAOS_MONKEY);
@@ -328,7 +327,7 @@ function initializeMiddlewareAfter(server: Express) {
       }
 
       // In development, print the error stack trace to stderr for debugging.
-      if (!TEST && !(error instanceof APIError)) {
+      if (typeof jest !== "undefined" && !(error instanceof APIError)) {
         logError(error);
       }
 

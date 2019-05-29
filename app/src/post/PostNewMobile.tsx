@@ -2,14 +2,15 @@ import {Color, Space} from "../atoms";
 import {Editor, EditorInstance} from "../editor/Editor";
 import {Keyboard, Platform, StyleSheet, View} from "react-native";
 import React, {useEffect, useRef, useState} from "react";
-import {GroupCache} from "../group/GroupCache";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
+import {PostID} from "@connect/api-client";
 import {PostNewHeader} from "./PostNewHeader";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
+import {logError} from "../utils/logError";
 import {publishPost} from "./PostCache";
-import {useCache} from "../cache/Cache";
 import {useCurrentAccount} from "../account/AccountCache";
+import {useGroupWithSlug} from "../group/GroupCache";
 import {useKeyboardHeight} from "../utils/useKeyboardHeight";
 
 export function PostNewMobile({
@@ -25,7 +26,7 @@ export function PostNewMobile({
   // in the component where we add the auto-focus effect. Otherwise the focus
   // will be a noop since the component is only “shadow mounted”.
   const currentAccount = useCurrentAccount();
-  const group = useCache(GroupCache, groupSlug);
+  const group = useGroupWithSlug(groupSlug);
 
   // Get an instance to our editor.
   const editor = useRef<EditorInstance>(null);
@@ -40,6 +41,12 @@ export function PostNewMobile({
   // Is the send button in our navbar enabled?
   const [sendEnabled, setSendEnabled] = useState(false);
 
+  // Is the post currently publishing? While we are publishing:
+  //
+  // - The user should not be able to edit the post’s contents.
+  // - The user should not be able to double publish.
+  const [publishing, setPublishing] = useState(false);
+
   // When entering new content in a `UITextView`, iOS will scroll any parent
   // `UIScrollView` down as the text view grows. We want to make sure that iOS
   // scrolls all the way to the bottom of our content (which includes some
@@ -52,33 +59,44 @@ export function PostNewMobile({
       // Get the post content from the editor.
       const content = editor.current.getContent();
 
-      // Publish the post using a utility function which will insert into all
-      // the right caches.
-      const postID = publishPost({
-        authorID: currentAccount.id,
-        groupID: group.id,
-        content,
-      });
-
       // Dismiss the keyboard since we are done editing, yay!
       Keyboard.dismiss();
 
-      // Navigate us to the new post route...
-      if (Platform.OS === "web") {
-        // On web, the most effective way to replace the route is to
-        // call `webReplace()`. Calling `pop()` then `push()` has some
-        // odd behaviors.
-        route.webReplace(PostRoute, {groupSlug, postID});
-      } else {
-        // On native, we want to display the animations of first popping our
-        // editor and then pushing the post route.
-        //
-        // Because of our native navigation implementation, we can’t use our
-        // current `route` to push a new route after we’ve popped. We need the
-        // previous route object to do that.
-        route.pop();
-        if (lastRoute) {
-          lastRoute.push(PostRoute, {groupSlug, postID});
+      setPublishing(true);
+
+      // Publish the post using a utility function which will insert into all
+      // the right caches.
+      publishPost({
+        authorID: currentAccount.id,
+        groupID: group.id,
+        content,
+      }).then(done, error => {
+        logError(error);
+        done(null);
+      });
+
+      function done(postID: PostID | null) {
+        setPublishing(false);
+
+        if (postID !== null) {
+          // Navigate us to the new post route...
+          if (Platform.OS === "web") {
+            // On web, the most effective way to replace the route is to
+            // call `webReplace()`. Calling `pop()` then `push()` has some
+            // odd behaviors.
+            route.webReplace(PostRoute, {groupSlug, postID});
+          } else {
+            // On native, we want to display the animations of first popping our
+            // editor and then pushing the post route.
+            //
+            // Because of our native navigation implementation, we can’t use our
+            // current `route` to push a new route after we’ve popped. We need the
+            // previous route object to do that.
+            route.pop();
+            if (lastRoute) {
+              lastRoute.push(PostRoute, {groupSlug, postID});
+            }
+          }
         }
       }
     }
@@ -91,7 +109,7 @@ export function PostNewMobile({
         contentContainerStyle={styles.container}
         title="New Post"
         rightIcon="send"
-        rightIconDisabled={!sendEnabled}
+        rightIconDisabled={!sendEnabled || publishing}
         onRightIconPress={handleSend}
         keyboardShouldPersistTaps="always"
         // Add some inset to the bottom of our scroll view which will replace
@@ -103,6 +121,7 @@ export function PostNewMobile({
           ref={editor}
           large
           placeholder="Start a conversation…"
+          disabled={publishing}
           onChange={({isWhitespaceOnly}) => setSendEnabled(!isWhitespaceOnly)}
         />
         {contentInsetHack && (

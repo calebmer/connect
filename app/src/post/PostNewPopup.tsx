@@ -11,14 +11,15 @@ import {Border, Color, Font, Icon, IconName, Shadow, Space} from "../atoms";
 import {Editor, EditorInstance} from "../editor/Editor";
 import React, {useEffect, useReducer, useRef, useState} from "react";
 import {Button} from "../molecules/Button";
-import {GroupCache} from "../group/GroupCache";
+import {PostID} from "@connect/api-client";
 import {PostNewHeader} from "./PostNewHeader";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
+import {logError} from "../utils/logError";
 import {publishPost} from "./PostCache";
 import {useAnimatedValue} from "../utils/useAnimatedValue";
-import {useCache} from "../cache/Cache";
 import {useCurrentAccount} from "../account/AccountCache";
+import {useGroupWithSlug} from "../group/GroupCache";
 
 // The height of our editor’s title bar.
 PostNewPopupTitleBar.height = Font.size1.fontSize + Space.space2 * 2;
@@ -132,7 +133,7 @@ export function PostNewPopup({
   // Load the data we will need for our popup. Including the current account and
   // the current group.
   const currentAccount = useCurrentAccount();
-  const group = useCache(GroupCache, groupSlug);
+  const group = useGroupWithSlug(groupSlug);
 
   // Get a reference to our editor...
   const editor = useRef<EditorInstance>(null);
@@ -147,6 +148,13 @@ export function PostNewPopup({
   // When the popup is not open we should hide its content from
   // assistive technologies.
   const hidden = state.type !== "OPENED";
+
+  // Is the post currently publishing? While we are publishing:
+  //
+  // - The user should not be able to edit the post’s contents.
+  // - The user should not be able to double publish.
+  // - The user should not be able to close the popup.
+  const [publishing, setPublishing] = useState(false);
 
   // Whenever the popup opens, we want to focus the editor.
   //
@@ -163,10 +171,14 @@ export function PostNewPopup({
   // When the popup closes we need to call our `onClose` callback which will
   // remove our popup from the view hierarchy.
   useEffect(() => {
-    if (!state.animating && state.type === "CLOSED") {
+    if (
+      state.type === "CLOSED" &&
+      state.animating === false &&
+      publishing === false
+    ) {
       onClose();
     }
-  }, [onClose, state.animating, state.type]);
+  }, [onClose, publishing, state.animating, state.type]);
 
   // When our state changes trigger our animations in response. When the
   // animation finishes let our state know.
@@ -243,31 +255,47 @@ export function PostNewPopup({
           ref={editor}
           minLines={PostNewPopup.editorMinLines}
           placeholder="Start a conversation…"
-          disabled={hidden}
+          disabled={hidden || publishing}
           onChange={({isWhitespaceOnly}) => setSendEnabled(!isWhitespaceOnly)}
         />
       </ScrollView>
       <PostNewPopupActionBar
-        sendEnabled={sendEnabled}
+        sendEnabled={sendEnabled && !publishing}
         showShadow={actionBarShadow}
         onSend={() => {
           if (editor.current) {
             // Get the post content from the editor.
             const content = editor.current.getContent();
 
+            setPublishing(true);
+
             // Publish the post using a utility function which will insert into
             // all the right caches.
-            const postID = publishPost({
+            //
+            // Wait until we are done publishing to close the popup...
+            publishPost({
               authorID: currentAccount.id,
               groupID: group.id,
               content,
+            }).then(done, error => {
+              logError(error);
+              done(null);
             });
 
-            // Close the editor popup. We done here.
-            dispatch({type: "CLOSE"});
+            function done(postID: PostID | null) {
+              setPublishing(false);
 
-            // Navigate to this post’s route.
-            route.push(PostRoute, {groupSlug, postID});
+              if (postID !== null) {
+                // Close the editor popup. We done here.
+                dispatch({type: "CLOSE"});
+
+                // Navigate to this post’s route.
+                route.push(PostRoute, {groupSlug, postID});
+              } else {
+                // Make sure the popup is open so that the user may re-publish.
+                dispatch({type: "MAXIMIZE"});
+              }
+            }
           }
         }}
       />

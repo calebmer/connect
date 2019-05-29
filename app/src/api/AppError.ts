@@ -65,7 +65,7 @@ function apiErrorDisplayMessage(errorCode: APIErrorCode): string {
       let message = unexpectedErrorMessage;
 
       // Display the error code with the message in development.
-      if (process.env.NODE_ENV === "development") {
+      if (__DEV__) {
         message += ` (APIErrorCode.${errorCode})`;
       }
 
@@ -87,7 +87,7 @@ function apiErrorDisplayMessage(errorCode: APIErrorCode): string {
       let message = unexpectedErrorMessage;
 
       // Display the error code with the message in development.
-      if (process.env.NODE_ENV === "development") {
+      if (__DEV__) {
         message += ` (APIErrorCode.${errorCode})`;
       }
 

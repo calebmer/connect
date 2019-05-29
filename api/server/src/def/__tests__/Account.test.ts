@@ -1,10 +1,12 @@
 import {
   APIError,
   APIErrorCode,
-  AccountID,
   RefreshToken,
+  generateID,
 } from "@connect/api-client";
+import {createAccount, createGroup, createGroupMember} from "../../TestFactory";
 import {
+  getCurrentGroupMemberships,
   getCurrentProfile,
   getManyProfiles,
   getProfile,
@@ -265,17 +267,11 @@ describe("refreshAccessToken", () => {
 });
 
 describe("getCurrentProfile", () => {
-  test("throws if the account does not exist", () => {
+  test("returns null if the account does not exist", () => {
     return Context.withAuthorized(42 as any, async ctx => {
-      let error: any;
-      try {
-        await getCurrentProfile(ctx);
-      } catch (e) {
-        error = e;
-      }
+      const {account} = await getCurrentProfile(ctx);
 
-      expect(error).toBeInstanceOf(APIError);
-      expect(error.code).toBe(APIErrorCode.NOT_FOUND);
+      expect(account).toEqual(null);
     });
   });
 
@@ -297,6 +293,78 @@ describe("getCurrentProfile", () => {
         id: accountID,
         name: testName,
         avatarURL: null,
+      });
+    });
+  });
+});
+
+describe("getCurrentGroupMemberships", () => {
+  test("returns an empty array if the account does not exist", () => {
+    return ContextTest.with(async ctx => {
+      await ctx.withAuthorized(generateID(), async ctx => {
+        expect(await getCurrentGroupMemberships(ctx)).toEqual({groups: []});
+      });
+    });
+  });
+
+  test("returns an empty array if the account is not a member of any groups", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        expect(await getCurrentGroupMemberships(ctx)).toEqual({groups: []});
+      });
+    });
+  });
+
+  test("returns the group an account is a member of", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const group = await createGroup(ctx);
+
+      await createGroupMember(ctx, {accountID: account.id, groupID: group.id});
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        expect(await getCurrentGroupMemberships(ctx)).toEqual({
+          groups: [group],
+        });
+      });
+    });
+  });
+
+  test("returns the groups an account is a member of", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const group1 = await createGroup(ctx);
+      const group2 = await createGroup(ctx);
+      const group3 = await createGroup(ctx);
+
+      await createGroupMember(ctx, {accountID: account.id, groupID: group1.id});
+      await createGroupMember(ctx, {accountID: account.id, groupID: group2.id});
+      await createGroupMember(ctx, {accountID: account.id, groupID: group3.id});
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        expect(await getCurrentGroupMemberships(ctx)).toEqual({
+          groups: [group1, group2, group3],
+        });
+      });
+    });
+  });
+
+  test("will not return the groups an account is not a member of", () => {
+    return ContextTest.with(async ctx => {
+      const account = await createAccount(ctx);
+      const group1 = await createGroup(ctx);
+      await createGroup(ctx);
+      const group3 = await createGroup(ctx);
+
+      await createGroupMember(ctx, {accountID: account.id, groupID: group1.id});
+      await createGroupMember(ctx, {accountID: account.id, groupID: group3.id});
+
+      await ctx.withAuthorized(account.id, async ctx => {
+        expect(await getCurrentGroupMemberships(ctx)).toEqual({
+          groups: [group1, group3],
+        });
       });
     });
   });
@@ -518,12 +586,7 @@ describe("getManyProfiles", () => {
       await ctx.withAuthorized(accountIDs[0], async ctx => {
         expect(
           await getManyProfiles(ctx, {
-            ids: [
-              accountIDs[1],
-              accountIDs[2],
-              -42 as AccountID,
-              accountIDs[3],
-            ],
+            ids: [accountIDs[1], accountIDs[2], generateID(), accountIDs[3]],
           }),
         ).toEqual({
           accounts: [

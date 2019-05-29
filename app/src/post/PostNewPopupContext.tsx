@@ -85,9 +85,6 @@ export function PostNewPopupContext({
   return (
     <_PostNewPopupContext.Provider value={context}>
       {children}
-
-      {/* TODO: Some loading indicator when the bundle is taking too long
-          to load. */}
       {available && visible && (
         <React.Suspense fallback={null}>
           <PostNewPopup

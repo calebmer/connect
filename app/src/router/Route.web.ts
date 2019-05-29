@@ -7,6 +7,7 @@ import {
   unstable_runWithPriority,
   unstable_scheduleCallback,
 } from "scheduler";
+import {RouteContainer} from "./RouteContainer";
 import {createBrowserHistory} from "history";
 
 // Utility type for removing keys from an object.
@@ -73,33 +74,18 @@ export class RouteConfig<
     routes.push({
       path: this.path,
       render: variables => {
-        return React.createElement(RouteRoot, {
-          RouteComponent: LazyComponent,
-          routeProps: {...variables, route},
-        } as any);
+        // NOTE: Unlike on the native side, we use the same component for every
+        // route root on the web. That way, when we render a new route if that
+        // route renders the same component as our old route then React will not
+        // unmount the old component.
+        return React.createElement(
+          RouteContainer,
+          {route} as any,
+          React.createElement(LazyComponent, {...variables, route} as any),
+        );
       },
     });
   }
-}
-
-/**
- * NOTE: Unlike on the native side, we use the same component for every route
- * root on the web. That way, when we render a new route if that route renders
- * the same component as our old route then React will not unmount the
- * old component.
- */
-function RouteRoot<Props>({
-  RouteComponent,
-  routeProps,
-}: {
-  RouteComponent: React.ComponentType<Props>;
-  routeProps: Props;
-}) {
-  return React.createElement(
-    React.Suspense,
-    {fallback: null},
-    React.createElement(RouteComponent, routeProps),
-  );
 }
 
 export class Route extends RouteBase {

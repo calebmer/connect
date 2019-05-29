@@ -4,7 +4,9 @@ import {
   AccessToken,
   AccountID,
   AccountProfile,
+  Group,
   RefreshToken,
+  generateID,
 } from "@connect/api-client";
 import {Context, ContextUnauthorized} from "../Context";
 import {AccessTokenGenerator} from "../AccessToken";
@@ -36,7 +38,11 @@ const SALT_ROUNDS = 10;
  */
 export async function signUp(
   ctx: ContextUnauthorized,
-  input: {
+  {
+    name,
+    email,
+    password,
+  }: {
     readonly name: string;
     readonly email: string;
     readonly password: string;
@@ -47,7 +53,7 @@ export async function signUp(
   readonly refreshToken: RefreshToken;
 }> {
   // Require a display name and an email. We will not accept an empty string!
-  if (input.name.length < 2 || input.email === "") {
+  if (name.length < 2 || email === "") {
     throw new APIError(APIErrorCode.BAD_INPUT);
   }
 
@@ -56,27 +62,27 @@ export async function signUp(
   await ctx.query(sql`SET LOCAL ROLE connect_api_auth`);
 
   // Hash the provided password with bcrypt.
-  const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
+  const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+
+  // Generate a new ID for the account.
+  const newAccountID = generateID<AccountID>();
 
   // Attempt to create a new account. If there is already an account with the
-  // same email then we’ll do nothing. Otherwise we’ll return the ID of the
-  // new account.
-  const {
-    rows: [row],
-  } = await ctx.query(sql`
-    INSERT INTO account (name, email, password_hash)
-         VALUES (${input.name}, ${input.email}, ${passwordHash})
-    ON CONFLICT (email) DO NOTHING
-      RETURNING id
-  `);
-
-  // Extract the account ID from the row.
-  const newAccountID: AccountID | undefined = row ? row.id : undefined;
-
-  // If we did not create an account then we know the email was already in use
-  // by some other account. Throw an API error for a nice error message.
-  if (newAccountID === undefined) {
-    throw new APIError(APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED);
+  // same email then throw an error saying so.
+  try {
+    await ctx.query(sql`
+      INSERT INTO account (id, name, email, password_hash)
+          VALUES (${newAccountID}, ${name}, ${email}, ${passwordHash})
+    `);
+  } catch (error) {
+    if (
+      error instanceof APIError &&
+      error.code === APIErrorCode.ALREADY_EXISTS
+    ) {
+      throw new APIError(APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED);
+    } else {
+      throw error;
+    }
   }
 
   // We also want to sign our new account in, so generate new
@@ -256,9 +262,7 @@ async function generateTokens(
  */
 export async function getCurrentProfile(
   ctx: Context,
-): Promise<{
-  readonly account: AccountProfile;
-}> {
+): Promise<{readonly account: AccountProfile | null}> {
   // Select the profile of our current account.
   const {
     rows: [row],
@@ -271,7 +275,7 @@ export async function getCurrentProfile(
   // If the account does not exist then throw an error! We expect our
   // authorized account to exist.
   if (row === undefined) {
-    throw new APIError(APIErrorCode.NOT_FOUND);
+    return {account: null};
   }
 
   // Correctly format the selected row.
@@ -282,6 +286,33 @@ export async function getCurrentProfile(
   };
 
   return {account};
+}
+
+/**
+ * Gets all the groups that our current account is a member of. If the account
+ * does not exist or is not the member of any groups then we return an
+ * empty array.
+ */
+export async function getCurrentGroupMemberships(
+  ctx: Context,
+): Promise<{readonly groups: ReadonlyArray<Group>}> {
+  const {rows} = await ctx.query(sql`
+       SELECT g.id, g.slug, g.name
+         FROM "group" AS g
+    LEFT JOIN group_member AS m ON m.group_id = g.id
+        WHERE m.account_id = ${ctx.accountID}
+  `);
+
+  const groups = rows.map(row => {
+    const group: Group = {
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+    };
+    return group;
+  });
+
+  return {groups};
 }
 
 /**

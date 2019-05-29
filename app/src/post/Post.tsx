@@ -1,22 +1,14 @@
+import {GroupSlugCache, useGroupWithSlug} from "../group/GroupCache";
 import {
   PostCommentsCache,
   PostCommentsCacheEntry,
   commentCountMore,
   watchPostComments,
 } from "../comment/CommentCache";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {ScrollEvent, ScrollView} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
-import {GroupCache} from "../group/GroupCache";
-import {GroupHomeLayout} from "../group/GroupHomeLayout";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
@@ -26,6 +18,7 @@ import {Route} from "../router/Route";
 import {Skimmer} from "../cache/Skimmer";
 import {Space} from "../atoms";
 import {Trough} from "../molecules/Trough";
+import {useGroupHomeLayout} from "../group/useGroupHomeLayout";
 
 // The threshold at which we will show the jump button. When the threshold is
 // passed we will hide the jump button.
@@ -44,13 +37,13 @@ function Post({
 
   // Preload all our post data so that they load in the background while we
   // render our component.
-  GroupCache.preload(groupSlug);
+  GroupSlugCache.preload(groupSlug);
   PostCache.preload(postID);
   PostCommentsCache.preload(postID);
 
   // Load the data we will need for this component.
-  const {post} = useCache(PostCache, postID);
-  const group = useCache(GroupCache, groupSlug);
+  const post = useCache(PostCache, postID);
+  const group = useGroupWithSlug(groupSlug);
 
   // Load the comments from our post comments cache. Never suspend, though. We
   // want the post content to be visible while we load comments.
@@ -69,8 +62,7 @@ function Post({
   }, [postID]);
 
   // Hide the navbar when we are using the laptop layout.
-  const hideNavbar =
-    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
+  const hideNavbar = useGroupHomeLayout();
 
   // HACK: A ref for an `onScroll` event handler that is set by our child
   // `<PostVirtualizedComments>` component. In this way that component passes

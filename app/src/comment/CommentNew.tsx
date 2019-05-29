@@ -1,19 +1,18 @@
 import {Color, Font, Shadow, Space} from "../atoms";
 import {Editor, EditorInstance} from "../editor/Editor";
 import {Platform, StyleSheet, View} from "react-native";
-import React, {useContext, useRef, useState} from "react";
-import {GroupHomeLayout} from "../group/GroupHomeLayout";
+import React, {useRef, useState} from "react";
 import {IconPatch} from "../molecules/IconPatch";
 import {IconPatchButton} from "../molecules/IconPatchButton";
 import {PostID} from "@connect/api-client";
 import {publishComment} from "./CommentCache";
 import {useCurrentAccount} from "../account/AccountCache";
+import {useGroupHomeLayout} from "../group/useGroupHomeLayout";
 
 function CommentNew({postID}: {postID: PostID}) {
   const currentAccount = useCurrentAccount();
 
-  const isLaptop =
-    useContext(GroupHomeLayout.Context) === GroupHomeLayout.Laptop;
+  const isLaptop = useGroupHomeLayout();
 
   // A reference to our editor.
   const editor = useRef<EditorInstance>(null);

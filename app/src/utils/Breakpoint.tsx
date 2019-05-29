@@ -1,5 +1,5 @@
 import {Dimensions, ScaledSize} from "react-native";
-import {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 
 /**
  * Breakpoint screen sizes we watch for. We use breakpoints to change the UI
@@ -19,11 +19,13 @@ export enum Breakpoint {
   LaptopLarge = 1440,
 }
 
+const _BreakpointContext = React.createContext<Breakpoint | null>(null);
+
 /**
- * Use the current breakpoint and watch the screen size for changes. When the
- * screen size changes we re-render the component with the updated breakpoint.
+ * Context provider for breakpoints. Will update the context when the screen
+ * size changes.
  */
-export function useBreakpoint(): Breakpoint {
+export function BreakpointContext({children}: {children: React.Node}) {
   // Create a state variable which uses the current screen size.
   const [breakpoint, setBreakpoint] = useState(() => {
     return fromWidth(Dimensions.get("window").width);
@@ -47,7 +49,28 @@ export function useBreakpoint(): Breakpoint {
       cancelled = true;
       Dimensions.removeEventListener("change", handleChange);
     };
-  }, []);
+  }, [breakpoint]);
+
+  return (
+    <_BreakpointContext.Provider value={breakpoint}>
+      {children}
+    </_BreakpointContext.Provider>
+  );
+}
+
+/**
+ * Returns true if we our width is less than or equal to the provided
+ * breakpoint. Watches the screen size for changes and re-renders when we cross
+ * the breakpoint threshold.
+ */
+export function useBreakpoint(): Breakpoint {
+  const breakpoint = useContext(_BreakpointContext);
+
+  if (breakpoint === null) {
+    throw new Error(
+      "You cannot call useBreakpoint() without adding a <BreakpointContext>",
+    );
+  }
 
   return breakpoint;
 }

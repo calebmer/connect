@@ -2,6 +2,7 @@ import {Layout, Navigation} from "react-native-navigation";
 import {PathBase, PathVariableProps} from "./Path";
 import React, {useMemo} from "react";
 import {RouteBase, RouteConfigBase} from "./RouteBase";
+import {RouteContainer} from "./RouteContainer";
 
 // Utility type for removing keys from an object.
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
@@ -21,8 +22,9 @@ export class RouteConfig<
   protected registerComponent(LazyComponent: React.ComponentType<Props>): void {
     // Register the navigation component at our route’s path.
     Navigation.registerComponent(this.path.getID(), () => {
-      return function RouteRoot({
+      return function RouteContainerNative({
         componentId: componentID,
+        componentStackRoot = false,
         componentModalRoot = false,
         ...props
       }) {
@@ -30,15 +32,19 @@ export class RouteConfig<
         // Make sure to use the default props object in case some of our
         // required props were not provided!
         const route = useMemo(() => {
-          return new Route({componentID, componentModalRoot});
-        }, [componentID, componentModalRoot]);
+          return new Route({
+            componentID,
+            componentStackRoot,
+            componentModalRoot,
+          });
+        }, [componentID, componentModalRoot, componentStackRoot]);
 
         props.route = route;
         const element = React.createElement(LazyComponent, props);
 
-        // We need to wrap our lazy component in `<React.Suspense>` to handle
-        // the `LazyComponent` suspend.
-        return React.createElement(React.Suspense, {fallback: null}, element);
+        // We need to wrap our lazy component in `<React.Suspense>` which is
+        // added by `<RouteContainer>` to handle the `LazyComponent` suspend.
+        return React.createElement(RouteContainer, {route} as any, element);
       };
     });
   }
@@ -70,17 +76,21 @@ export class RouteConfig<
  */
 export class Route extends RouteBase {
   private readonly componentID: string;
+  private readonly componentStackRoot: boolean;
   private readonly componentModalRoot: boolean;
 
   constructor({
     componentID,
+    componentStackRoot,
     componentModalRoot,
   }: {
     componentID: string;
+    componentStackRoot: boolean;
     componentModalRoot: boolean;
   }) {
     super();
     this.componentID = componentID;
+    this.componentStackRoot = componentStackRoot;
     this.componentModalRoot = componentModalRoot;
   }
 
@@ -157,9 +167,24 @@ export class Route extends RouteBase {
   ) {
     Navigation.showModal({
       stack: {
-        children: [nextRoute.getLayout({...props, componentModalRoot: true})],
+        children: [
+          nextRoute.getLayout({
+            ...props,
+            componentStackRoot: true,
+            componentModalRoot: true,
+          }),
+        ],
       },
     });
+  }
+
+  /**
+   * Is this route the root of a navigation stack?
+   *
+   * When `nativeIsModalRoot()` returns true this will also return true.
+   */
+  public nativeIsStackRoot(): boolean {
+    return this.componentStackRoot;
   }
 
   /**

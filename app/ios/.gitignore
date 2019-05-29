@@ -1,0 +1,31 @@
+# We make the decision to ignore the `Pods` folder. The tradeoffs of this
+# decision are documented here: https://guides.cocoapods.org/using/using-cocoapods.html
+#
+# > Benefits of checking in the Pods directory
+# >
+# > - After cloning the repo, the project can immediately build and run, even
+# >   without having CocoaPods installed on the machine. There is no need to run
+# >   pod install, and no Internet connection is necessary.
+# > - The Pod artifacts (code/libraries) are always available, even if the
+# >   source of a Pod (e.g. GitHub) were to go down.
+# > - The Pod artifacts are guaranteed to be identical to those in the original
+# >   installation after cloning the repo.
+# >
+# > Benefits of ignoring the Pods directory
+# >
+# > - The source control repo will be smaller and take up less space.
+# > - As long as the sources (e.g. GitHub) for all Pods are available, CocoaPods
+# >   is generally able to recreate the same installation. (Technically there is
+# >   no guarantee that running pod install will fetch and recreate identical
+# >   artifacts when not using a commit SHA in the Podfile. This is especially
+# >   true when using zip files in the Podfile.)
+# > - There won't be any conflicts to deal with when performing source control
+# >   operations, such as merging branches with different Pod versions.
+#
+# We don’t care about the benefits of checking in the Pods directorry.
+#
+# - We have to run `yarn install` anyway. We can run `pod install` too.
+# - It’s way more risky that npm goes down then GitHub.
+# - The `Podfile.lock` file gives us adequate reproducability.
+
+Pods/

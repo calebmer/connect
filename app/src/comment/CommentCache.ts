@@ -10,6 +10,8 @@ import {API} from "../api/API";
 import {AccountCache} from "../account/AccountCache";
 import {AppError} from "../api/AppError";
 import {Cache} from "../cache/Cache";
+import {ErrorAlert} from "../frame/ErrorAlert";
+import {Repair} from "../cache/Repair";
 import {Skimmer} from "../cache/Skimmer";
 
 /**
@@ -28,6 +30,9 @@ export const CommentCache = new Cache<CommentID, CommentCacheEntry>({
     };
   },
 });
+
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(CommentCache);
 
 /**
  * The status of a `CommentCacheEntry`. Uses common lingo from transaction status.
@@ -122,6 +127,9 @@ export const PostCommentsCache = new Cache<
   },
 });
 
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(PostCommentsCache);
+
 /**
  * A set of comments that were published locally. We use this set to ignore
  * messages from our subscription if we know a comment was published locally.
@@ -179,7 +187,6 @@ export function publishComment({
   // Mark this comment as a locally published comment.
   locallyPublishedComments.add(commentID);
 
-  // TODO: Error handling!
   (async () => {
     try {
       // Actually publish the comment using our API! The API will give us the
@@ -204,7 +211,8 @@ export function publishComment({
         comment: pendingComment,
       });
 
-      throw error;
+      // Display the error to the user...
+      ErrorAlert.alert(error, "Could not publish your comment");
     }
   })();
 
@@ -259,8 +267,8 @@ export function watchPostComments(postID: PostID): {unsubscribe: () => void} {
         }
       }
     },
-    error() {
-      // TODO: error handling
+    error(error) {
+      ErrorAlert.alert("Could not watch for new post comments", error);
     },
   });
 }

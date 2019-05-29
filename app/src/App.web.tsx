@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from "react";
 import {getRoute, history} from "./router/Route.web";
-import {TitleText} from "./atoms";
+import {AppError} from "./api/AppError";
+import {BreakpointContext} from "./utils/Breakpoint";
+import {ErrorScreen} from "./frame/ErrorScreen";
 
 /**
  * Manages routing based on the location for our web-app.
@@ -30,7 +32,13 @@ function AppConcurrent() {
   // Render a 404 page if our router was not able to create an element for
   // this location.
   if (element === undefined) {
-    return <TitleText>TODO: 404 Not Found</TitleText>;
+    return (
+      <BreakpointContext>
+        <ErrorScreen
+          error={new AppError("Could not find the page you are looking for.")}
+        />
+      </BreakpointContext>
+    );
   } else {
     return element;
   }
@@ -50,7 +58,7 @@ function AppConcurrent() {
 // in React Native itself.
 //
 // [1]: https://reactjs.org/docs/strict-mode.html#warning-about-deprecated-finddomnode-usage
-if (process.env.NODE_ENV === "development") {
+if (__DEV__) {
   /* eslint-disable no-console */
   const consoleError = console.error;
   console.error = function() {
