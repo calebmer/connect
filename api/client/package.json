@@ -11,6 +11,7 @@
     "xstream": "^11.11.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.4.4",
     "@types/base-64": "^0.1.3"
   }
 }
