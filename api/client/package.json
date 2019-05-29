@@ -2,7 +2,8 @@
   "name": "@connect/api-client",
   "version": "0.0.0",
   "license": "UNLICENSED",
-  "main": "index",
+  "main": "./index.js",
+  "module": "./src/index.ts",
   "scripts": {
     "build": "babel src -d build --extensions .ts,.js"
   },

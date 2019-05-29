@@ -1,1 +1,9 @@
-module.exports = require("./build");
+if (typeof window !== "undefined") {
+  throw new Error("Should only run in a Node.js runtime.");
+}
+
+if (process.env.NODE_ENV === "development") {
+  module.exports = require("./src");
+} else {
+  module.exports = require("./build");
+}
