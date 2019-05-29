@@ -48,7 +48,7 @@ export function AccountHomeAlpha({route}: {route: Route}) {
             Hello {account.name}! Welcome to the Connect Alpha, we hope you
             enjoy the product as much as we do. This is a work-in progress page
             for navigating between your groups.{"\n\n"}You can email any
-            feedback directly to calebmeredith8@gmail.com
+            feedback directly to caleb@connect.ink
           </BodyText>
           <View style={styles.spacerSmall} />
           <TouchableOpacity onPress={handleSignOut}>
