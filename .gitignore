@@ -11,5 +11,8 @@ yarn-error.log*
 # Jest
 coverage/
 
+# Environment
+.env*
+
 # MacOS
 .DS_Store
