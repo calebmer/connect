@@ -33,7 +33,7 @@
     "@types/history": "^4.7.2",
     "@types/jwt-decode": "^2.2.1",
     "@types/react": "^16.8.6",
-    "@types/react-native": "^0.57.43",
+    "@types/react-native": "0.57.47",
     "@types/react-test-renderer": "^16.8.1",
     "@types/scheduler": "^0.12.1",
     "babel-loader": "^8.0.5",
