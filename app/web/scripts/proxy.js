@@ -1,3 +1,5 @@
+global.__DEV__ = process.env.NODE_ENV === "development";
+
 const url = require("url");
 const http = require("http");
 const chalk = require("chalk");
