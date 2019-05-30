@@ -19,6 +19,7 @@
  */
 
 const http = require("http");
+const https = require("https");
 const cookie = require("cookie");
 const jwt = require("jsonwebtoken");
 const got = require("got");
@@ -177,7 +178,7 @@ function proxyNormalRequest(apiUrl, req, res) {
     }
 
     // Construct the actual HTTP request...
-    const apiRequest = http.request({
+    const apiRequest = (apiUrl.protocol === "https" ? https : http).request({
       protocol: apiUrl.protocol,
       hostname: apiUrl.hostname,
       port: apiUrl.port,
@@ -493,7 +494,7 @@ function proxyUpgrade(apiUrl, req, socket, firstPacket) {
     newAccessToken = _newAccessToken;
 
     // Construct the HTTP request which should trigger an upgrade...
-    const apiRequest = http.request({
+    const apiRequest = (apiUrl.protocol === "https" ? https : http).request({
       protocol: apiUrl.protocol,
       hostname: apiUrl.hostname,
       port: apiUrl.port,
