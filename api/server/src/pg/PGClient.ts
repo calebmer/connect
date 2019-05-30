@@ -32,7 +32,7 @@ function getConnectionConfig(): ClientConfig {
     // Always connect to Postgres with the `connect_api` role! No matter what
     // configuration we are given.
     user: "connect_api",
-    password: "",
+    password: "connect_api",
 
     // If the port and database are available in environment variables then use
     // them. Otherwise use our default values.
