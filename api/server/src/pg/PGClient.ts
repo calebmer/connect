@@ -129,7 +129,7 @@ export class PGClient {
       //
       // Unless we are in a test environment. If we are testing then always
       // rollback our transaction even if it succeeded.
-      if (typeof jest !== "undefined") {
+      if (typeof jest === "undefined") {
         await client.query("COMMIT");
       } else {
         await client.query("ROLLBACK");
