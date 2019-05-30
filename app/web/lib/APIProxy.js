@@ -178,7 +178,7 @@ function proxyNormalRequest(apiUrl, req, res) {
     }
 
     // Construct the actual HTTP request...
-    const apiRequest = (apiUrl.protocol === "https" ? https : http).request({
+    const apiRequest = (apiUrl.protocol === "https:" ? https : http).request({
       protocol: apiUrl.protocol,
       hostname: apiUrl.hostname,
       port: apiUrl.port,
@@ -494,7 +494,7 @@ function proxyUpgrade(apiUrl, req, socket, firstPacket) {
     newAccessToken = _newAccessToken;
 
     // Construct the HTTP request which should trigger an upgrade...
-    const apiRequest = (apiUrl.protocol === "https" ? https : http).request({
+    const apiRequest = (apiUrl.protocol === "https:" ? https : http).request({
       protocol: apiUrl.protocol,
       hostname: apiUrl.hostname,
       port: apiUrl.port,
