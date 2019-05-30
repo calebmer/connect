@@ -157,7 +157,7 @@ export class PGClient {
    * - We convert some database error codes into API error codes.
    */
   public static query(query: SQLQuery): Promise<QueryResult> {
-    if (typeof jest === "undefined") {
+    if (typeof jest !== "undefined") {
       // In a testing environment use `PGClient.with` which will rollback the
       // transaction after the query finishes.
       return PGClient.with(client => client.query(query));
