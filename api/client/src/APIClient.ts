@@ -626,12 +626,15 @@ class APIClientSubscription {
       url = "ws" + url.slice(4);
     }
 
+    // We must connect to the subscription endpoint of our API.
+    url += "/subscription";
+
     // If we were given a function to fetch our authorization then let’s call
     // that so we can attach an access token to our WebSocket request.
     if (this.config.auth !== undefined) {
       const accessToken = await this.config.auth();
       if (accessToken !== null) {
-        url += `/?access_token=${accessToken}`;
+        url += `?access_token=${accessToken}`;
       }
     }
 

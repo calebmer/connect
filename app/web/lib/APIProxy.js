@@ -505,7 +505,11 @@ function proxyUpgrade(apiUrl, req, socket, firstPacket) {
       port: apiUrl.port,
       agent: isHTTPS ? apiProxyAgent.https : apiProxyAgent.http,
       method: req.method,
-      path: accessToken ? `/?access_token=${accessToken}` : "",
+      path:
+        // Use the path we were given, minus `/api` plus the access token if we
+        // have one.
+        req.url.replace(/^\/api/, "") +
+        (accessToken ? `?access_token=${accessToken}` : ""),
     });
 
     apiRequest.on("error", error => {

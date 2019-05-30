@@ -69,7 +69,7 @@ beforeAll(async () => {
 function createWebSocketClient(done: jest.DoneCallback): WebSocket {
   const port = (server.address() as any).port;
   const socket = new WebSocket(
-    `ws://localhost:${port}?access_token=${accessToken}`,
+    `ws://localhost:${port}/subscription?access_token=${accessToken}`,
   );
 
   // When an error occurs, implicitly call our “done” callback with an error.
@@ -826,9 +826,31 @@ test("will unsubscribe with and re-subscribe with the same subscription ID", don
   });
 });
 
-test("will error if no access token was provided", done => {
+test("will error if trying to connect directly to the URL", done => {
   const port = (server.address() as any).port;
   const socket = new WebSocket(`ws://localhost:${port}`);
+  openSockets.push(socket);
+
+  socket.on("error", error => {
+    expect(error.message).toMatch("404");
+    done();
+  });
+});
+
+test("will error if trying to connect anywhere other than `/subscription`", done => {
+  const port = (server.address() as any).port;
+  const socket = new WebSocket(`ws://localhost:${port}/foobar`);
+  openSockets.push(socket);
+
+  socket.on("error", error => {
+    expect(error.message).toMatch("404");
+    done();
+  });
+});
+
+test("will error if no access token was provided", done => {
+  const port = (server.address() as any).port;
+  const socket = new WebSocket(`ws://localhost:${port}/subscription`);
   openSockets.push(socket);
 
   socket.on("error", error => {
@@ -839,7 +861,9 @@ test("will error if no access token was provided", done => {
 
 test("will error if a poorly formatted access token was provided", done => {
   const port = (server.address() as any).port;
-  const socket = new WebSocket(`ws://localhost:${port}?access_token=test`);
+  const socket = new WebSocket(
+    `ws://localhost:${port}/subscription?access_token=test`,
+  );
   openSockets.push(socket);
 
   socket.on("error", error => {
@@ -854,7 +878,7 @@ test("will error if an access token with the wrong signature was provided", done
 
     const port = (server.address() as any).port;
     const socket = new WebSocket(
-      `ws://localhost:${port}?access_token=${accessToken}`,
+      `ws://localhost:${port}/subscription?access_token=${accessToken}`,
     );
     openSockets.push(socket);
 
@@ -871,7 +895,7 @@ test("will succeed if a good access token was provided", done => {
 
     const port = (server.address() as any).port;
     const socket = new WebSocket(
-      `ws://localhost:${port}?access_token=${accessToken}`,
+      `ws://localhost:${port}/subscription?access_token=${accessToken}`,
     );
     openSockets.push(socket);
 
@@ -895,7 +919,7 @@ test("will fail if the access token expired", done => {
 
       const port = (server.address() as any).port;
       const socket = new WebSocket(
-        `ws://localhost:${port}?access_token=${accessToken}`,
+        `ws://localhost:${port}/subscription?access_token=${accessToken}`,
       );
       openSockets.push(socket);
 

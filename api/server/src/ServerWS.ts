@@ -119,8 +119,16 @@ function initializeSubscription<
 async function verifyClient(
   req: http.IncomingMessage,
 ): Promise<AccessTokenData> {
+  const reqUrl = parseURL(req.url!, true);
+
+  // We expect that a WebSocket client will access our `/subscription` path. If
+  // they don’t then we throw an error.
+  if (reqUrl.pathname !== "/subscription") {
+    throw new APIError(APIErrorCode.NOT_FOUND);
+  }
+
   // Get the access token from the request URL.
-  const accessToken = parseURL(req.url!, true).query.access_token;
+  const accessToken = reqUrl.query.access_token;
   if (typeof accessToken !== "string") {
     throw new APIError(APIErrorCode.UNAUTHORIZED);
   }
