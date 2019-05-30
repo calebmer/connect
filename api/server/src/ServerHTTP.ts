@@ -335,12 +335,6 @@ function initializeMiddlewareAfter(server: Express) {
   // Add an error handler.
   server.use(
     (error: unknown, _req: Request, res: Response, next: NextFunction) => {
-      // If the headers have already been sent, let Express handle the error.
-      if (res.headersSent) {
-        next(error);
-        return;
-      }
-
       // If `body-parser` failed to parse this error then it will set the `type`
       // field to a constant we can check for.
       if (
@@ -351,8 +345,14 @@ function initializeMiddlewareAfter(server: Express) {
       }
 
       // In development, print the error stack trace to stderr for debugging.
-      if (typeof jest !== "undefined" && !(error instanceof APIError)) {
+      if (typeof jest === "undefined" && !(error instanceof APIError)) {
         logError(error);
+      }
+
+      // If the headers have already been sent, let Express handle the error.
+      if (res.headersSent) {
+        next(error);
+        return;
       }
 
       // If the response status code is not an error status code then we need to
