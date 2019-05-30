@@ -267,8 +267,8 @@ export function watchPostComments(postID: PostID): {unsubscribe: () => void} {
         }
       }
     },
-    error(error) {
-      ErrorAlert.alert("Could not watch for new post comments", error);
+    error(error: unknown) {
+      ErrorAlert.alert(error, "Could not watch for new post comments");
     },
   });
 }
