@@ -72,7 +72,7 @@ export function AccountHomeAlpha({route}: {route: Route}) {
         <View style={styles.spacerSmall} />
         {groupIDs.length === 0 ? (
           <BodyText>
-            You aren’t a member of any groups 😔{"\n"}Ask for an invite!
+            You aren’t a member of any groups. Ask for an invite!
           </BodyText>
         ) : (
           groupIDs.map(groupID => (
