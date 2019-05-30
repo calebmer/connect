@@ -140,25 +140,25 @@ function getAccessToken(apiUrl, req, callback) {
  * tokens to a cookie. Future requests will use those cookies to authorize us
  * with the API.
  */
-function proxyRequest(apiUrl, req, res, pathname) {
+function proxyRequest(apiUrl, req, res) {
   if (req.method === "POST") {
-    if (pathname === "/account/signUp" || pathname === "/account/signIn") {
-      proxySignInRequest(apiUrl, req, res, pathname);
+    if (req.url === "/account/signUp" || req.url === "/account/signIn") {
+      proxySignInRequest(apiUrl, req, res);
       return;
     }
-    if (pathname === "/account/signOut") {
+    if (req.url === "/account/signOut") {
       proxySignOutRequest(apiUrl, req, res);
       return;
     }
   }
-  proxyNormalRequest(apiUrl, req, res, pathname);
+  proxyNormalRequest(apiUrl, req, res);
 }
 
 /**
  * Simply proxies a request to our API. We use the low-level HTTP library for
  * this since we really need to be fast.
  */
-function proxyNormalRequest(apiUrl, req, res, pathname) {
+function proxyNormalRequest(apiUrl, req, res) {
   getAccessToken(apiUrl, req, (error, accessToken, newAccessToken) => {
     // If our request failed then handle the error...
     if (error) {
@@ -183,7 +183,7 @@ function proxyNormalRequest(apiUrl, req, res, pathname) {
       port: apiUrl.port,
       agent: apiProxyAgent,
       method: req.method,
-      path: pathname,
+      path: req.url,
     });
 
     apiRequest.on("error", error => {
@@ -257,13 +257,13 @@ const cookieExpireSettings = {
  * Proxies a request to sign the person in. We want to intercept the response
  * body and
  */
-async function proxySignInRequest(apiUrl, req, res, pathname) {
+async function proxySignInRequest(apiUrl, req, res) {
   try {
     // Make the request to our API with `got` in JSON mode. We will want to
     // inspect the result of this request instead of simply streaming
     // it through.
     const apiResponse = await apiClient.post(
-      {...apiUrl, path: pathname},
+      {...apiUrl, path: req.url},
       {
         json: false,
         headers: {

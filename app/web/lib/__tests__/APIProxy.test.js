@@ -16,13 +16,17 @@ describe("HTTP", () => {
   const apiUrl = url.parse(API_URL);
 
   const APIProxy = http.createServer((req, res) => {
-    proxyRequest(apiUrl, req, res, url.parse(req.url).pathname);
+    proxyRequest(apiUrl, req, res);
   });
 
   beforeAll(() => {
     APIProxy.listen(0);
     nock.disableNetConnect();
     nock.enableNetConnect(`127.0.0.1:${APIProxy.address().port}`);
+  });
+
+  afterEach(() => {
+    nock.cleanAll();
   });
 
   afterAll(() => {
@@ -509,10 +513,21 @@ describe("HTTP", () => {
   });
 
   test("fails gracefully if the request fails", async () => {
-    await request(APIProxy)
-      .get("/")
-      .ok(() => true)
-      .expect(404, {ok: false, error: {code: "UNKNOWN"}});
+    /* eslint-disable no-console */
+    const consoleError = console.error;
+
+    // We expect this test to log an error. That’s fine, ignore it.
+    console.error = () => {};
+
+    try {
+      await request(APIProxy)
+        .get("/")
+        .ok(() => true)
+        .expect(500, {ok: false, error: {code: "UNKNOWN"}});
+    } finally {
+      console.error = consoleError;
+    }
+    /* eslint-enable no-console */
   });
 
   test("adds a `Forwarded` header to proxied requests", async () => {
