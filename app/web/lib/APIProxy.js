@@ -39,7 +39,10 @@ const apiProxyHeaders = new Set([
  * Our API proxy agent will keep alive TCP connections so we don’t have to keep
  * reconnecting them.
  */
-const apiProxyAgent = new http.Agent({keepAlive: true});
+const apiProxyAgent = {
+  http: new http.Agent({keepAlive: true}),
+  https: new https.Agent({keepAlive: true}),
+};
 
 /**
  * Extend `got` with some default settings.
@@ -178,11 +181,12 @@ function proxyNormalRequest(apiUrl, req, res) {
     }
 
     // Construct the actual HTTP request...
-    const apiRequest = (apiUrl.protocol === "https:" ? https : http).request({
+    const isHTTPS = apiUrl.protocol === "https:";
+    const apiRequest = (isHTTPS ? https : http).request({
       protocol: apiUrl.protocol,
       hostname: apiUrl.hostname,
       port: apiUrl.port,
-      agent: apiProxyAgent,
+      agent: isHTTPS ? apiProxyAgent.https : apiProxyAgent.http,
       method: req.method,
       path: req.url,
     });
@@ -494,11 +498,12 @@ function proxyUpgrade(apiUrl, req, socket, firstPacket) {
     newAccessToken = _newAccessToken;
 
     // Construct the HTTP request which should trigger an upgrade...
-    const apiRequest = (apiUrl.protocol === "https:" ? https : http).request({
+    const isHTTPS = apiUrl.protocol === "https:";
+    const apiRequest = (isHTTPS ? https : http).request({
       protocol: apiUrl.protocol,
       hostname: apiUrl.hostname,
       port: apiUrl.port,
-      agent: apiProxyAgent,
+      agent: isHTTPS ? apiProxyAgent.https : apiProxyAgent.http,
       method: req.method,
       path: accessToken ? `/?access_token=${accessToken}` : "",
     });
