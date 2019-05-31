@@ -9266,10 +9266,10 @@ react-native-unimodules@^0.3.1:
     prop-types "^15.6.0"
     react-timer-mixin "^0.13.4"
 
-"react-native@npm:@calebmer/react-native@0.59.8-patch.5":
-  version "0.59.8-patch.5"
-  resolved "https://registry.yarnpkg.com/@calebmer/react-native/-/react-native-0.59.8-patch.5.tgz#5a361b3f6c75885758612b6193e64cb82c3db1f4"
-  integrity sha512-r9qsS50C66MBd+ZmqkVvjaZy3hJj3nj48iIU0Ze9E/vEjdKCvDYbAknMbU3CrgCyz7dRmOvqroCAEyUV/RRv1Q==
+"react-native@npm:@calebmer/react-native@0.59.8-patch.6":
+  version "0.59.8-patch.6"
+  resolved "https://registry.yarnpkg.com/@calebmer/react-native/-/react-native-0.59.8-patch.6.tgz#f6ec183b912f8f6e75c227bd83e710005d41ef5a"
+  integrity sha512-dIVcHHoDmmoSAaCyer3l26Y4K3uokEXfk45Vl2LOtUt0L9DaPdZ/NMi41iM5DsHh23DvASf2iDu4xFPBX0uDAQ==
   dependencies:
     "@babel/runtime" "^7.0.0"
     "@react-native-community/cli" "^1.2.1"
