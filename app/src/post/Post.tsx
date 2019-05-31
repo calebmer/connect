@@ -20,10 +20,6 @@ import {Space} from "../atoms";
 import {Trough} from "../molecules/Trough";
 import {useGroupHomeLayout} from "../group/useGroupHomeLayout";
 
-// The threshold at which we will show the jump button. When the threshold is
-// passed we will hide the jump button.
-const showJumpButtonThreshold = Space.space6;
-
 function Post({
   route,
   groupSlug,
@@ -73,6 +69,10 @@ function Post({
   const jumpButtonAvailable = post.commentCount > commentCountMore;
   const [showJumpButton, setShowJumpButton] = useState(true);
 
+  // Where should the scroll view be pinned to? Should we pin the scroll view
+  // to the top of the screen or the bottom of the screen?
+  const [pinTo, setPinTo] = useState<"top" | "bottom">("top");
+
   // HACK: A ref for an `onScroll` event handler that is set by our child
   // `<PostVirtualizedComments>` component. In this way that component passes
   // an event handler “up”.
@@ -89,13 +89,26 @@ function Post({
       virtualizeScroll.current(event);
     }
 
+    const {contentOffset, contentSize, layoutMeasurement} = event.nativeEvent;
+
     // Measure the offset of the scrolled content from the top of the
     // scrollable container.
-    const offset = event.nativeEvent.contentOffset.y;
+    const offset = contentOffset.y;
 
     // Only show the jump button if our scroll offset is below the jump
     // button threshold.
+    const showJumpButtonThreshold = Space.space6;
     setShowJumpButton(offset <= showJumpButtonThreshold);
+
+    // Pin our scroll view to the bottom if we’ve scrolled near the bottom of
+    // the content.
+    const pinToBottomThreshold = Space.space6;
+    if (
+      offset + layoutMeasurement.height + pinToBottomThreshold >=
+      contentSize.height
+    ) {
+      setPinTo("bottom");
+    }
   }, []);
 
   // The current visible range of comments in our virtualized comment list.
@@ -160,6 +173,7 @@ function Post({
         hideNavbar={hideNavbar}
         keyboardDismissMode="interactive"
         scrollEventThrottle={PostVirtualizedComments.scrollEventThrottle}
+        pinWindowTo={pinTo}
         onScroll={handleScroll}
       >
         <PostContent postID={post.id} />
@@ -175,7 +189,12 @@ function Post({
       <CommentNewToolbar
         postID={postID}
         showJumpButton={showJumpButton && jumpButtonAvailable}
-        scrollViewRef={scrollViewRef}
+        onJumpToEnd={useCallback(() => {
+          if (scrollViewRef.current) {
+            setPinTo("bottom");
+            scrollViewRef.current.scrollToEnd({animated: false});
+          }
+        }, [])}
       />
     </>
   );

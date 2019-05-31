@@ -9,7 +9,13 @@ import {publishComment} from "./CommentCache";
 import {useCurrentAccount} from "../account/AccountCache";
 import {useGroupHomeLayout} from "../group/useGroupHomeLayout";
 
-function CommentNew({postID}: {postID: PostID}) {
+function CommentNew({
+  postID,
+  onJumpToEnd,
+}: {
+  postID: PostID;
+  onJumpToEnd: () => void;
+}) {
   const currentAccount = useCurrentAccount();
 
   const isLaptop = useGroupHomeLayout();
@@ -36,6 +42,10 @@ function CommentNew({postID}: {postID: PostID}) {
 
       // Clear the content from our editor but don’t lose focus.
       editor.current.clearContent();
+
+      // Jump to the end of our comment list so that the user can see their
+      // newly published comment.
+      onJumpToEnd();
     }
   }
 

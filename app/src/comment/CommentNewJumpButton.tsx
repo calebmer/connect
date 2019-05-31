@@ -1,6 +1,5 @@
 import {
   Animated,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
@@ -11,10 +10,10 @@ import {useAnimatedSpring} from "../utils/useAnimatedValue";
 
 export function CommentNewJumpButton({
   show,
-  scrollViewRef,
+  onJumpToEnd,
 }: {
   show: boolean;
-  scrollViewRef: React.RefObject<ScrollView>;
+  onJumpToEnd: () => void;
 }) {
   const translateY = useAnimatedSpring(
     show ? 0 : CommentNewJumpButton.fullHeight + 10,
@@ -22,13 +21,7 @@ export function CommentNewJumpButton({
   );
 
   return (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        if (scrollViewRef.current) {
-          scrollViewRef.current.scrollToEnd({animated: false});
-        }
-      }}
-    >
+    <TouchableWithoutFeedback onPress={onJumpToEnd}>
       <Animated.View style={[styles.button, {transform: [{translateY}]}]}>
         <Icon
           name="arrow-down"

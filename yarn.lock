@@ -9250,10 +9250,10 @@ react-native-unimodules@^0.3.1:
     unimodules-sensors-interface "~1.0.0"
     unimodules-task-manager-interface "~1.0.0"
 
-"react-native-web@npm:@calebmer/react-native-web@0.11.2-patch.9":
-  version "0.11.2-patch.9"
-  resolved "https://registry.yarnpkg.com/@calebmer/react-native-web/-/react-native-web-0.11.2-patch.9.tgz#692294432372918c763970e40fa1e4bf4cd828a1"
-  integrity sha512-pNQqYE4diUcQbL5A/ywI1K56hzXvkuFkGzY29AmAWP/qmiPoDCsCLd7UHYoXz/7KkVAt8DMaCG7cCLz202zu5w==
+"react-native-web@npm:@calebmer/react-native-web@0.11.2-patch.11":
+  version "0.11.2-patch.11"
+  resolved "https://registry.yarnpkg.com/@calebmer/react-native-web/-/react-native-web-0.11.2-patch.11.tgz#76061098d87968c73e3f8a59ab71fe2b462ee9ba"
+  integrity sha512-iLdSU6nofL9ck9j6UofM4o01Abr/h/QZYQ5NAMuAmKP869XRaXiJmJ7DsbRqoE6reneJHQ9QQ3Yk8Yu0QWvbRQ==
   dependencies:
     array-find-index "^1.0.2"
     create-react-class "^15.6.2"

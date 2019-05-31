@@ -780,7 +780,6 @@ function renderItem(
           <Comment
             commentID={comment.id}
             lastCommentID={lastComment !== undefined ? lastComment.id : null}
-            realtime={comment.realtime}
             scrollViewRef={scrollViewRef}
           />
         </View>

@@ -1,5 +1,5 @@
 import {Font, Space} from "../atoms";
-import {ScrollView, StyleSheet, View} from "react-native";
+import {StyleSheet, View} from "react-native";
 import {CommentNew} from "./CommentNew";
 import {CommentNewJumpButton} from "./CommentNewJumpButton";
 import {KeyboardTrackingView} from "react-native-keyboard-tracking-view";
@@ -9,26 +9,23 @@ import React from "react";
 export function CommentNewToolbar({
   postID,
   showJumpButton,
-  scrollViewRef,
+  onJumpToEnd,
 }: {
   postID: PostID;
   showJumpButton: boolean;
-  scrollViewRef: React.RefObject<ScrollView>;
+  onJumpToEnd: () => void;
 }) {
   return (
     <>
       <View style={styles.jump} pointerEvents="box-none">
-        <CommentNewJumpButton
-          show={showJumpButton}
-          scrollViewRef={scrollViewRef}
-        />
+        <CommentNewJumpButton show={showJumpButton} onJumpToEnd={onJumpToEnd} />
       </View>
       <KeyboardTrackingView
         style={styles.toolbar}
         requiresSameParentToManageScrollView
         scrollBehavior="KeyboardTrackingScrollBehaviorFixedOffset"
       >
-        <CommentNew postID={postID} />
+        <CommentNew postID={postID} onJumpToEnd={onJumpToEnd} />
       </KeyboardTrackingView>
     </>
   );

@@ -15,8 +15,7 @@ export const CommentNewToolbar: React.ComponentType<{
   showJumpButton: boolean;
 
   /**
-   * The toolbar might scroll the scroll view it is associated with. So we
-   * require a ref to that scroll view.
+   * Scrolls to the end of the scroll view that the toolbar is attached to.
    */
-  scrollViewRef: React.RefObject<ScrollView>;
+  onJumpToEnd: () => void;
 }>;
