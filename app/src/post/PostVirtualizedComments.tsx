@@ -162,10 +162,9 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // our event handler.
     this.props.handleScroll.current = this.handleScroll;
 
-    // NOTE: We don’t report the initial visible range since it is inaccurate.
-    // We only get an accurate visible range once we scroll for the first time.
-    //
-    // this.props.onVisibleRangeChange(this.state.visibleRange);
+    // NOTE: The initial visible range is an estimate! We only get an accurate
+    // visible range once we scroll for the first time.
+    this.props.onVisibleRangeChange(this.state.visibleRange);
 
     // We determine whether or not the browser has painted with `setTimeout`.
     // It’s not perfect but it gets the job done. `setTimeout` schedules a

@@ -164,6 +164,21 @@ function Post({
     };
   }, [postID]);
 
+  // The comment count is either the number of comments declared on the post or
+  // the number of comments our list has capacity for.
+  const commentCount = Math.max(post.commentCount, comments.length);
+
+  useEffect(() => {
+    // Help the linter know we depend on `commentCount`.
+    ((_commentCount: number) => {})(commentCount);
+
+    // Whenever the comment count changes try to load more comments. This will
+    // be a noop if all the comments in the visible range are loaded.
+    if (visibleRange.current !== null) {
+      handleVisibleRangeChange(visibleRange.current);
+    }
+  }, [commentCount, handleVisibleRangeChange]);
+
   return (
     <>
       <NavbarScrollView
@@ -179,7 +194,7 @@ function Post({
         <PostContent postID={post.id} />
         <Trough title="Comments" />
         <PostVirtualizedComments
-          commentCount={Math.max(post.commentCount, comments.length)}
+          commentCount={commentCount}
           comments={comments}
           scrollViewRef={scrollViewRef}
           handleScroll={virtualizeScroll}
