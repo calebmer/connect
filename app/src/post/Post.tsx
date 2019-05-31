@@ -64,6 +64,15 @@ function Post({
   // Hide the navbar when we are using the laptop layout.
   const hideNavbar = useGroupHomeLayout();
 
+  // State variables which determine if the jump button should be shown or not.
+  // We show the button if the user hasn’t scrolled a view which is scrollable.
+  //
+  // The first state variable answers the question “is the scroll view
+  // scrollable?” The second state variable answers the question “has the
+  // user scrolled?”
+  const jumpButtonAvailable = post.commentCount > commentCountMore;
+  const [showJumpButton, setShowJumpButton] = useState(true);
+
   // HACK: A ref for an `onScroll` event handler that is set by our child
   // `<PostVirtualizedComments>` component. In this way that component passes
   // an event handler “up”.
@@ -141,15 +150,6 @@ function Post({
       PostCommentsCache.updateWhenReady(postID, loadMoreComments);
     };
   }, [postID]);
-
-  // State variables which determine if the jump button should be shown or not.
-  // We show the button if the user hasn’t scrolled a view which is scrollable.
-  //
-  // The first state variable answers the question “is the scroll view
-  // scrollable?” The second state variable answers the question “has the
-  // user scrolled?”
-  const jumpButtonAvailable = post.commentCount > commentCountMore;
-  const [showJumpButton, setShowJumpButton] = useState(true);
 
   return (
     <>
