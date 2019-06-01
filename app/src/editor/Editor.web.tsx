@@ -28,8 +28,8 @@ import {createElement} from "react-native-web";
  *
  * Importantly, we don’t try to render HTML created with `contentEditable`
  * anywhere outside of the editor it was created in. We serialize to a markup
- * format (using an [`innerText`][4] like algorithm) and render that wherever
- * the content is viewed.
+ * format using an [`innerText`][4] like algorithm specified in
+ * `getEditorContent()` and render that wherever the content is viewed.
  *
  * To get an overview of the user input events we should watch out for, see
  * the [Draft.js event listeners][5] and their corresponding
@@ -90,11 +90,11 @@ function Editor(
     () => ({
       getContent() {
         if (editor.current) {
-          // The content of our editor is currently represented by the
-          // `innerText` property. Getting the inner text from our editor can
-          // be expensive. It is O(n) and will trigger a browser reflow if all
-          // the content hasn’t been laid out.
-          return editor.current.innerText;
+          // The content of our editor currently needs to be computed. Getting
+          // the inner text from our editor can be expensive. It is O(n) and
+          // will trigger a browser reflow if all the content hasn’t been
+          // laid out.
+          return getEditorContent(editor.current);
         } else {
           return "";
         }
@@ -203,6 +203,82 @@ export {_Editor as Editor};
 type DOMText = ReturnType<Document["createTextNode"]>;
 
 /**
+ * Gets the content out of a `contentEditable` editor into a string we can save
+ * to the database and display on all platforms.
+ *
+ * Roughly based on the [HTML `innerText` algorithm][1].
+ *
+ * [1]: https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
+ */
+function getEditorContent(node: Node): string {
+  let result = "";
+
+  // Recursively process our node’s children...
+  for (let i = 0; i < node.childNodes.length; i++) {
+    innerTextCollection(node.childNodes[i]);
+  }
+
+  return result;
+
+  function innerTextCollection(node: Node) {
+    // Add an optional line break if this is a block display node.
+    if (
+      isElement(node) &&
+      isBlockLevelDisplay(getComputedStyle(node).display)
+    ) {
+      addOptionalLineBreak();
+    }
+
+    // Recursively process our node’s children...
+    for (let i = 0; i < node.childNodes.length; i++) {
+      innerTextCollection(node.childNodes[i]);
+    }
+
+    // Is this a text node then add its content to our results list.
+    if (isElement(node) && node.tagName === "BR") addText("\n");
+
+    // Is this a text node then add its content to our results list.
+    if (isText(node) && node.wholeText.length > 0) addText(node.wholeText);
+
+    // Add an optional line break if this is a block display node.
+    if (
+      isElement(node) &&
+      isBlockLevelDisplay(getComputedStyle(node).display)
+    ) {
+      addOptionalLineBreak();
+    }
+  }
+
+  function addText(text: string) {
+    result += text;
+  }
+
+  function addOptionalLineBreak() {
+    if (result.length > 0 && result[result.length - 1] !== "\n") {
+      result += "\n";
+    }
+  }
+}
+
+/**
+ * Is this a [`block-level`][1] display?
+ *
+ * [1]: https://drafts.csswg.org/css-display/#block-level
+ */
+function isBlockLevelDisplay(display: string | null): boolean {
+  switch (display) {
+    case "block":
+    case "flow-root":
+    case "flex":
+    case "grid":
+    case "table":
+      return true;
+    default:
+      return false;
+  }
+}
+
+/**
  * Is our editor element empty? We use this to determine whether or not we
  * should show the placeholder.
  *
@@ -217,17 +293,13 @@ function isEditorEmpty(node: Node): boolean {
   //
   // We want to consider a single `<br>` element in the editor to be an
   // empty editor.
-  if (
-    node.nodeType === 1 &&
-    (node as HTMLElement).tagName === "BR" &&
-    !isFirstNode(node)
-  ) {
+  if (isElement(node) && node.tagName === "BR" && !isFirstNode(node)) {
     return false;
   }
 
   // Is this a text node with some text content? If so then our editor is
   // not empty.
-  if (node.nodeType === 3 && (node as DOMText).wholeText.length > 0) {
+  if (isText(node) && node.wholeText.length > 0) {
     return false;
   }
 
@@ -281,6 +353,14 @@ function isEditorWhitespaceOnly(node: Node): boolean {
   }
 
   return true;
+}
+
+function isElement(node: Node): node is Element {
+  return node.nodeType === 1;
+}
+
+function isText(node: Node): node is DOMText {
+  return node.nodeType === 3;
 }
 
 const styles = StyleSheet.create({
