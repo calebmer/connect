@@ -32,6 +32,7 @@ import {useCacheSingletonData} from "../cache/CacheSingleton";
 import {useCacheWithPrev} from "../cache/Cache";
 import {useGroupHomeLayout} from "./useGroupHomeLayout";
 import {useGroupWithSlug} from "./GroupCache";
+import {AccountHomeAlphaRoute} from "../router/AllRoutes";
 
 // NOTE: Having a React component and a type with the same name is ok in
 // TypeScript, but eslint complains when it’s an import. So import the type with
@@ -131,7 +132,16 @@ function Group({
         <Navbar
           title={group.name}
           leftIcon="arrow-left"
-          onLeftIconPress={() => route.pop()}
+          onLeftIconPress={() => {
+            // On web, popping is un-predictable so instead we will push the
+            // account home route which is where we expect the user would go
+            // on native.
+            if (Platform.OS === "web") {
+              route.push(AccountHomeAlphaRoute, {});
+            } else {
+              route.pop();
+            }
+          }}
           hideBackground={!showNavbarBackground}
           hideTitleWithBackground
           lightContentWithoutBackground
