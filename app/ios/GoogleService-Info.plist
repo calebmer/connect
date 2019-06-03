@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>407043036696-0p7b5c4c4qhiiu2nuogbf54knnh4qkgq.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.407043036696-0p7b5c4c4qhiiu2nuogbf54knnh4qkgq</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAJvtv2Rbmw335PdKXnZmulO1pzPRk1dd0</string>
+	<key>GCM_SENDER_ID</key>
+	<string>407043036696</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.calebmer.Connect</string>
+	<key>PROJECT_ID</key>
+	<string>connect-a9d50</string>
+	<key>STORAGE_BUCKET</key>
+	<string>connect-a9d50.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:407043036696:ios:271b1abbd495bfde</string>
+	<key>DATABASE_URL</key>
+	<string>https://connect-a9d50.firebaseio.com</string>
+</dict>
+</plist>
