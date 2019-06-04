@@ -4,6 +4,9 @@ import {Navigation} from "react-native-navigation";
 import {YellowBox} from "react-native";
 import {loadTokensFromStorage} from "./api/API.native";
 
+// TODO: Maybe don’t initialize Firebase in the main module?
+import firebase from "react-native-firebase";
+
 // Load our authentication tokens from storage.
 let isAuthenticated: Promise<boolean> | boolean = loadTokensFromStorage();
 
@@ -55,7 +58,15 @@ function main(isAuthenticated: boolean) {
         ],
       },
     },
-  });
+  }).then(navigationDidMount);
+}
+
+function navigationDidMount() {
+  // TODO: Fix this so that we actually store the token.
+  firebase
+    .messaging()
+    .getToken()
+    .then(token => alert(token));
 }
 
 YellowBox.ignoreWarnings([
