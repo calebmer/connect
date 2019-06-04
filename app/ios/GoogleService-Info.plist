@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1001942403967-6dc0qh9h1qrp2bpjc76ktd1f438mndre.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1001942403967-6dc0qh9h1qrp2bpjc76ktd1f438mndre</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCOfYKfNPUIMlJUFfNNOifFMLHPVBR0NxY</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1001942403967</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>ink.connect.ios</string>
+	<key>PROJECT_ID</key>
+	<string>connect-ink</string>
+	<key>STORAGE_BUCKET</key>
+	<string>connect-ink.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1001942403967:ios:96b57ec9d056d455</string>
+	<key>DATABASE_URL</key>
+	<string>https://connect-ink.firebaseio.com</string>
+</dict>
+</plist>

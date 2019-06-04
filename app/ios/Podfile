@@ -21,6 +21,9 @@ target 'Connect' do
 
   use_unimodules!(:modules_paths => ['../node_modules', '../../node_modules'])
 
+  pod 'Firebase/Core', '~> 5.20.1'
+  pod 'Firebase/Messaging', '~> 5.20.1'
+
   target 'ConnectTests' do
     inherit! :search_paths
   end
