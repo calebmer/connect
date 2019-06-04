@@ -3,7 +3,6 @@ import {AppError} from "../api/AppError";
 import {BreakpointContext} from "../utils/Breakpoint";
 import {ErrorScreen} from "../frame/ErrorScreen";
 import React from "react";
-import {Repair} from "../cache/Repair";
 import {Route} from "./Route";
 
 type Props = {
@@ -41,7 +40,7 @@ export class RouteContainer extends React.Component<Props, State> {
       if (error instanceof APIError || error instanceof AppError) {
         (error as any).disableReactErrorOverlay = true;
       } else {
-        console.error(error);
+        console.error(error); // eslint-disable-line no-console
       }
     }
 
@@ -51,26 +50,11 @@ export class RouteContainer extends React.Component<Props, State> {
     };
   }
 
-  private handleRetry = () => {
-    // Attempt to repair our application state!
-    Repair.attempt();
-
-    // Clear the error from our state.
-    this.setState({
-      hasError: false,
-      error: null,
-    });
-  };
-
   render() {
     return (
       <BreakpointContext>
         {this.state.hasError ? (
-          <ErrorScreen
-            route={this.props.route}
-            error={this.state.error}
-            onRetry={this.handleRetry}
-          />
+          <ErrorScreen route={this.props.route} error={this.state.error} />
         ) : (
           <React.Suspense fallback={null}>{this.props.children}</React.Suspense>
         )}

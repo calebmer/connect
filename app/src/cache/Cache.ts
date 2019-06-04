@@ -182,26 +182,6 @@ export class Cache<Key extends string | number, Data> {
   }
 
   /**
-   * Forces a reload for all of the entries in our cache that failed to load. We
-   * use this as a “retry” mechanism to try and get our cache back to a
-   * good state.
-   *
-   * WARNING: This method can be expensive since we synchronously search through
-   * all of the cache’s items!
-   */
-  public async forceReloadFailedEntries(): Promise<void> {
-    const promises: Array<Promise<unknown>> = [];
-
-    this.entries.forEach((data, key) => {
-      if (data.getAtThisMomentInTime().isRejected()) {
-        promises.push(this.forceReload(key));
-      }
-    });
-
-    await Promise.all(promises);
-  }
-
-  /**
    * Loads many keys into our cache and returns a promise which resolves when
    * all of our keys have finished loading. We don’t return an array of loaded
    * values, though. You can use `load()` to get individual values if you want.

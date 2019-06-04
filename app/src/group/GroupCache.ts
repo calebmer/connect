@@ -5,7 +5,6 @@ import {AccountCache} from "../account/AccountCache";
 import {AppError} from "../api/AppError";
 import {CacheSingleton} from "../cache/CacheSingleton";
 import {Image} from "react-native";
-import {Repair} from "../cache/Repair";
 import defaultBackgroundImage from "../assets/images/group-banner-background.png";
 
 /**
@@ -29,9 +28,6 @@ export const GroupCache = new Cache<GroupID, Group>({
     return group;
   },
 });
-
-// Register the cache for repairing when requested by the user...
-Repair.registerCache(GroupCache);
 
 /**
  * Caches the relationship between a group slug and the group ID associated with
@@ -59,9 +55,6 @@ export const GroupSlugCache = new Cache<string, GroupID>({
   },
 });
 
-// Register the cache for repairing when requested by the user...
-Repair.registerCache(GroupSlugCache);
-
 /**
  * Caches the members of each group. Currently holds _all_ the group members at
  * once. This is not scalable. Eventually we will need to incrementally load
@@ -84,9 +77,6 @@ export const GroupMembershipsCache = new Cache<
     return memberships;
   },
 });
-
-// Register the cache for repairing when requested by the user...
-Repair.registerCache(GroupMembershipsCache);
 
 /**
  * Cache that holds the group memberships for our current account.

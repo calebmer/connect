@@ -14,7 +14,6 @@ import {AppError} from "../api/AppError";
 import {Cache} from "../cache/Cache";
 import {ErrorAlert} from "../frame/ErrorAlert";
 import {Paginator} from "../cache/Paginator";
-import {Repair} from "../cache/Repair";
 
 /**
  * Caches posts by their ID.
@@ -29,9 +28,6 @@ export const PostCache = new Cache<PostID, Post>({
     return post;
   },
 });
-
-// Register the cache for repairing when requested by the user...
-Repair.registerCache(PostCache);
 
 /**
  * An entry for a `Post` in a `CacheList`. Notice how this only has the post ID?
@@ -93,9 +89,6 @@ export const GroupPostsCache = new Cache<
     return await posts.loadMore(postCountInitial);
   },
 });
-
-// Register the cache for repairing when requested by the user...
-Repair.registerCache(GroupPostsCache);
 
 /**
  * Publishes a new post! Unlike `publishComment()`, we do not optimistically add
