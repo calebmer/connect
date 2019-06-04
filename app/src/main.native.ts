@@ -1,3 +1,5 @@
+import "./initializeEnv.native";
+
 import {AccountHomeAlphaRoute, SignInRoute} from "./router/AllRoutes";
 import {Color} from "./atoms";
 import {Navigation} from "react-native-navigation";

@@ -17,10 +17,7 @@ const debug = createDebugger("connect:api:pg");
 // We expect `jest-global-setup.js` to start a temporary test database we can
 // connect to. We also expect that it exposes its Postgres configuration through
 // environment variables.
-if (
-  typeof jest !== "undefined" &&
-  !(process.env.PGHOST || "").includes("connect-test-postgres")
-) {
+if (__TEST__ && !(process.env.PGHOST || "").includes("connect-test-postgres")) {
   throw new Error("Expected PGHOST to be a temporary test database.");
 }
 
@@ -40,7 +37,7 @@ function getConnectionConfig(): ClientConfig {
     database: process.env.PGDATABASE || "connect",
 
     // Require SSL outside of development mode.
-    ssl: !(__DEV__ || typeof jest !== "undefined"),
+    ssl: !__DEV__ && !__TEST__,
   };
 }
 
@@ -129,10 +126,10 @@ export class PGClient {
       //
       // Unless we are in a test environment. If we are testing then always
       // rollback our transaction even if it succeeded.
-      if (typeof jest === "undefined") {
-        await client.query("COMMIT");
-      } else {
+      if (__TEST__) {
         await client.query("ROLLBACK");
+      } else {
+        await client.query("COMMIT");
       }
 
       // Return the result.
@@ -157,7 +154,7 @@ export class PGClient {
    * - We convert some database error codes into API error codes.
    */
   public static query(query: SQLQuery): Promise<QueryResult> {
-    if (typeof jest !== "undefined") {
+    if (__TEST__) {
       // In a testing environment use `PGClient.with` which will rollback the
       // transaction after the query finishes.
       return PGClient.with(client => client.query(query));

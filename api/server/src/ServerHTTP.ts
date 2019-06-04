@@ -43,7 +43,7 @@ function initializeMiddlewareBefore(server: Express) {
   // logger with tons of useful information in production.
   if (__DEV__) {
     server.use(morgan("dev"));
-  } else if (typeof jest === "undefined") {
+  } else if (!__TEST__) {
     server.use(
       morgan(
         "[:date[iso]] :remote-addr :account-id :method :url :status :res[content-length] - :response-time ms",
@@ -345,7 +345,7 @@ function initializeMiddlewareAfter(server: Express) {
       }
 
       // In development, print the error stack trace to stderr for debugging.
-      if (typeof jest === "undefined" && !(error instanceof APIError)) {
+      if (!__TEST__ && !(error instanceof APIError)) {
         logError(error);
       }
 

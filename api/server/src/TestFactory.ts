@@ -13,7 +13,7 @@ import {ContextTest} from "./ContextTest";
 import {sql} from "./pg/SQL";
 
 // Don’t allow this module to be used outside of a testing environment.
-if (typeof jest === "undefined") {
+if (!__TEST__) {
   throw new Error("Can only use factories in a test environment.");
 }
 

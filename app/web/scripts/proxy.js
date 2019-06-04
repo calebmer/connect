@@ -1,4 +1,5 @@
 global.__DEV__ = process.env.NODE_ENV === "development";
+global.__TEST__ = false;
 
 const url = require("url");
 const http = require("http");

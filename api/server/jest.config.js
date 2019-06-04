@@ -11,5 +11,6 @@ module.exports = {
   globalTeardown: require.resolve("./jest-global-teardown"),
   globals: {
     __DEV__: false,
+    __TEST__: true,
   },
 };

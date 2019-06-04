@@ -9,5 +9,6 @@ module.exports = {
   },
   globals: {
     __DEV__: false,
+    __TEST__: true,
   },
 };

@@ -12,7 +12,7 @@ import jwt from "jsonwebtoken";
  * a real secret from our environment variables.
  */
 export const JWT_SECRET: string = (() => {
-  if (__DEV__ || typeof jest !== "undefined") {
+  if (__DEV__ || __TEST__) {
     return "secret";
   } else if (process.env.JWT_SECRET) {
     return process.env.JWT_SECRET;
