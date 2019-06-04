@@ -40,7 +40,7 @@ function getConnectionConfig(): ClientConfig {
     database: process.env.PGDATABASE || "connect",
 
     // Require SSL outside of development mode.
-    ssl: !__DEV__,
+    ssl: !(__DEV__ || typeof jest !== "undefined"),
   };
 }
 
