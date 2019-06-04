@@ -1,6 +1,7 @@
 import {createAccount, createGroup, createGroupMember} from "../../TestFactory";
 import {getAllGroupMemberships, getGroupBySlug} from "../Group";
 import {ContextTest} from "../../ContextTest";
+import {generateID} from "@connect/api-client";
 
 describe("getGroupBySlug", () => {
   test("does not return a group that does not exist", () => {
@@ -134,7 +135,7 @@ describe("getAllGroupMemberships", () => {
       const account = await createAccount(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getAllGroupMemberships(ctx, {slug: "nope"})).toEqual({
+        expect(await getAllGroupMemberships(ctx, {id: generateID()})).toEqual({
           memberships: [],
           accounts: [],
         });
@@ -152,25 +153,7 @@ describe("getAllGroupMemberships", () => {
       await createGroupMember(ctx, {groupID: group.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getAllGroupMemberships(ctx, {slug: group.id})).toEqual({
-          memberships: [],
-          accounts: [],
-        });
-      });
-    });
-  });
-
-  test("will return no memberships for a group we can’t see by slug", () => {
-    return ContextTest.with(async ctx => {
-      const account = await createAccount(ctx);
-      const group = await createGroup(ctx);
-
-      await createGroupMember(ctx, {groupID: group.id});
-      await createGroupMember(ctx, {groupID: group.id});
-      await createGroupMember(ctx, {groupID: group.id});
-
-      await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getAllGroupMemberships(ctx, {slug: group.slug!})).toEqual({
+        expect(await getAllGroupMemberships(ctx, {id: group.id})).toEqual({
           memberships: [],
           accounts: [],
         });
@@ -205,7 +188,7 @@ describe("getAllGroupMemberships", () => {
       });
 
       await ctx.withAuthorized(account1.id, async ctx => {
-        expect(await getAllGroupMemberships(ctx, {slug: group.slug!})).toEqual({
+        expect(await getAllGroupMemberships(ctx, {id: group.id})).toEqual({
           memberships: [member1, member2, member3, member4],
           accounts: [account1, account2, account3, account4],
         });

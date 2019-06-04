@@ -1,6 +1,7 @@
 import {Cache, useCache} from "../cache/Cache";
-import {Group, GroupID} from "@connect/api-client";
+import {Group, GroupID, GroupMembership} from "@connect/api-client";
 import {API} from "../api/API";
+import {AccountCache} from "../account/AccountCache";
 import {AppError} from "../api/AppError";
 import {CacheSingleton} from "../cache/CacheSingleton";
 import {Image} from "react-native";
@@ -60,6 +61,32 @@ export const GroupSlugCache = new Cache<string, GroupID>({
 
 // Register the cache for repairing when requested by the user...
 Repair.registerCache(GroupSlugCache);
+
+/**
+ * Caches the members of each group. Currently holds _all_ the group members at
+ * once. This is not scalable. Eventually we will need to incrementally load
+ * the list of group members.
+ */
+export const GroupMembershipsCache = new Cache<
+  GroupID,
+  ReadonlyArray<GroupMembership>
+>({
+  async load(id) {
+    const {memberships, accounts} = await API.group.getAllGroupMemberships({
+      id,
+    });
+
+    // Insert any accounts we received into our account cache.
+    accounts.forEach(account => {
+      AccountCache.insert(account.id, account);
+    });
+
+    return memberships;
+  },
+});
+
+// Register the cache for repairing when requested by the user...
+Repair.registerCache(GroupMembershipsCache);
 
 /**
  * Cache that holds the group memberships for our current account.

@@ -49,7 +49,7 @@ export async function getGroupBySlug(
  */
 export async function getAllGroupMemberships(
   ctx: Context,
-  {slug}: {readonly slug: string},
+  input: {readonly id: GroupID},
 ): Promise<{
   readonly memberships: ReadonlyArray<GroupMembership>;
   readonly accounts: ReadonlyArray<AccountProfile>;
@@ -59,11 +59,7 @@ export async function getAllGroupMemberships(
               account_profile.id, account_profile.name, account_profile.avatar_url
          FROM group_member
     LEFT JOIN account_profile ON account_profile.id = group_member.account_id
-        WHERE group_member.group_id = ${
-          isGroupID(slug)
-            ? slug
-            : sql`(SELECT id FROM "group" WHERE slug = ${slug})`
-        }
+        WHERE group_member.group_id = ${input.id}
   `);
 
   const memberships: Array<GroupMembership> = [];

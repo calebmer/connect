@@ -179,7 +179,7 @@ export const APISchema = Schema.namespace({
      */
     getAllGroupMemberships: Schema.method({
       safe: true,
-      input: {slug: SchemaInput.string()},
+      input: {id: SchemaInput.string<GroupID>()},
       output: SchemaOutput.t<{
         readonly memberships: ReadonlyArray<GroupMembership>;
         readonly accounts: ReadonlyArray<AccountProfile>;
