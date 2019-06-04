@@ -385,6 +385,7 @@ function PostNewPopupActionBar({
 
 const styles = StyleSheet.create({
   container: {
+    zIndex: 10,
     position: "absolute",
     bottom: 0,
     right: Space.space6,

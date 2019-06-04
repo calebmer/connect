@@ -3,10 +3,12 @@ import {
   Platform,
   SectionList,
   SectionListData,
+  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from "react-native";
 import {Color, Font, Space} from "../atoms";
 import {CurrentAccountCache, useCurrentAccount} from "../account/AccountCache";
@@ -46,6 +48,7 @@ const AnimatedSectionList: SectionList<
 
 // TODO: Fix virtualization on web. https://github.com/necolas/react-native-web/issues/1295
 function Group({
+  style,
   route,
   group,
   posts,
@@ -53,6 +56,7 @@ function Group({
   loadingMorePosts,
   onLoadMorePosts,
 }: {
+  style?: StyleProp<ViewStyle>;
   route: Route;
   group: Group;
   posts: ReadonlyArray<GroupPostsCacheEntry>;
@@ -114,7 +118,7 @@ function Group({
   }, [group, posts, route, selectedPostID]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       {/* The banner which exists in the background of the view. */}
       <Animated.View
         // TODO: Scale background only instead of background and text? Only do

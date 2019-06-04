@@ -12,15 +12,21 @@ export function Trough({
   title,
   hideTopShadow,
   hideBottomShadow,
+  paddingHorizontal,
   children,
 }: {
   title?: string;
   hideTopShadow?: boolean;
   hideBottomShadow?: boolean;
+  paddingHorizontal?: number;
   children?: React.Node;
 }) {
   return (
-    <View style={styles.trough}>
+    <View
+      style={
+        paddingHorizontal ? [styles.trough, {paddingHorizontal}] : styles.trough
+      }
+    >
       {hideTopShadow !== true && <View style={styles.troughShadowTop} />}
       {hideBottomShadow !== true && <View style={styles.troughShadowBottom} />}
       {children}

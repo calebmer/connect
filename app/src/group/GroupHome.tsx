@@ -4,9 +4,11 @@ import {Platform, StyleSheet, View} from "react-native";
 import React, {useCallback, useEffect, useRef} from "react";
 import {CurrentAccountCache} from "../account/AccountCache";
 import {GroupHomeContainer} from "./GroupHomeContainer";
+import {GroupMemberSidebar} from "./GroupMemberSidebar";
 import {GroupPostsCache} from "../post/PostCache";
 import {PostContainer} from "../post/PostContainer";
 import {PostID} from "@connect/api-client";
+import {PostMeasurements} from "../post/PostMeasurements";
 import {PostNewPopupContext} from "../post/PostNewPopupContext";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
@@ -35,15 +37,17 @@ function GroupHome({
         groupSlug={groupSlug}
         available={useBreakpoint() > Breakpoint.Tablet}
       >
-        <View style={styles.group}>
+        <View style={styles.main}>
           <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
+          <PostContainer
+            key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
+            style={styles.post}
+            route={route}
+            groupSlug={groupSlug}
+            postID={postID || null}
+          />
         </View>
-        <PostContainer
-          key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
-          route={route}
-          groupSlug={groupSlug}
-          postID={postID || null}
-        />
+        <GroupMemberSidebar groupSlug={groupSlug} />
       </PostNewPopupContext>
     </GroupHomeContainer>
   );
@@ -78,6 +82,7 @@ function GroupSuspense({
 
   return (
     <Group
+      style={styles.group}
       route={route}
       group={group}
       posts={posts.items}
@@ -155,8 +160,17 @@ export function GroupHomeRoute({
 }
 
 const styles = StyleSheet.create({
+  main: {
+    flex: 1,
+    flexDirection: "row",
+    zIndex: 2,
+  },
   group: {
     flex: 3 / 4,
     maxWidth: Space.space12,
+  },
+  post: {
+    flex: 1,
+    maxWidth: PostMeasurements.maxWidth,
   },
 });

@@ -1,16 +1,16 @@
 import {Color, Shadow} from "../atoms";
-import {StyleSheet, View} from "react-native";
+import {StyleProp, StyleSheet, View, ViewStyle} from "react-native";
 import {ErrorScreen} from "../frame/ErrorScreen";
 import {Post} from "./Post";
 import {PostCache} from "./PostCache";
 import {PostCommentsCache} from "../comment/CommentCache";
 import {PostID} from "@connect/api-client";
-import {PostMeasurements} from "./PostMeasurements";
 import {PostShimmer} from "./PostShimmer";
 import React from "react";
 import {Route} from "../router/Route";
 
 type Props = {
+  style?: StyleProp<ViewStyle>;
   route: Route;
   groupSlug: string;
   postID: PostID | null;
@@ -59,10 +59,10 @@ export class PostContainer extends React.Component<Props, State> {
   };
 
   render() {
-    const {route, groupSlug, postID} = this.props;
+    const {style, route, groupSlug, postID} = this.props;
     const {hasError, error} = this.state;
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, style]}>
         {hasError ? (
           <ErrorScreen route={route} error={error} onRetry={this.handleRetry} />
         ) : postID != null ? (
@@ -83,6 +83,5 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: Color.white,
     ...Shadow.elevation3,
-    maxWidth: PostMeasurements.maxWidth,
   },
 });
