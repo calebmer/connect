@@ -100,12 +100,13 @@ function Post({
     const showJumpButtonThreshold = Space.space6;
     setShowJumpButton(offset <= showJumpButtonThreshold);
 
-    // Pin our scroll view to the bottom if we’ve scrolled near the bottom of
-    // the content.
-    const pinToBottomThreshold = Space.space6;
     if (
-      offset + layoutMeasurement.height + pinToBottomThreshold >=
-      contentSize.height
+      // Will be zero before the layout is measured. Ignore those
+      // unmeasured scroll events.
+      layoutMeasurement.height !== 0 &&
+      // Pin our scroll view to the bottom if we’ve scrolled near the bottom of
+      // the content.
+      offset + layoutMeasurement.height + Space.space6 >= contentSize.height
     ) {
       setPinTo("bottom");
     }
