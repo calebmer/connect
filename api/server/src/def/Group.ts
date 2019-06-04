@@ -1,5 +1,10 @@
+import {
+  AccountProfile,
+  Group,
+  GroupID,
+  GroupMembership,
+} from "@connect/api-client";
 import {Context} from "../Context";
-import {Group} from "@connect/api-client";
 import {sql} from "../pg/SQL";
 
 /**
@@ -18,9 +23,9 @@ export async function getGroupBySlug(
     SELECT id, slug, name
       FROM "group"
      WHERE ${
-       input.slug.length < 22
-         ? sql`slug = ${input.slug}`
-         : sql`id = ${input.slug}`
+       isGroupID(input.slug)
+         ? sql`id = ${input.slug}`
+         : sql`slug = ${input.slug}`
      }
   `);
 
@@ -35,4 +40,58 @@ export async function getGroupBySlug(
       },
     };
   }
+}
+
+/**
+ * Gets _all_ the memberships in a group. As we start to support larger and
+ * larger groups we should introduce a function for getting only a few
+ * memberships at a time.
+ */
+export async function getAllGroupMemberships(
+  ctx: Context,
+  {slug}: {readonly slug: string},
+): Promise<{
+  readonly memberships: ReadonlyArray<GroupMembership>;
+  readonly accounts: ReadonlyArray<AccountProfile>;
+}> {
+  const {rows} = await ctx.query(sql`
+       SELECT group_member.group_id, group_member.joined_at,
+              account_profile.id, account_profile.name, account_profile.avatar_url
+         FROM group_member
+    LEFT JOIN account_profile ON account_profile.id = group_member.account_id
+        WHERE group_member.group_id = ${
+          isGroupID(slug)
+            ? slug
+            : sql`(SELECT id FROM "group" WHERE slug = ${slug})`
+        }
+  `);
+
+  const memberships: Array<GroupMembership> = [];
+  const accounts: Array<AccountProfile> = [];
+
+  rows.forEach(row => {
+    const membership: GroupMembership = {
+      groupID: row.group_id,
+      accountID: row.id,
+      joinedAt: row.joined_at,
+    };
+
+    const account: AccountProfile = {
+      id: row.id,
+      name: row.name,
+      avatarURL: row.avatar_url,
+    };
+
+    memberships.push(membership);
+    accounts.push(account);
+  });
+
+  return {
+    memberships,
+    accounts,
+  };
+}
+
+function isGroupID(slug: string): slug is GroupID {
+  return slug.length >= 22;
 }

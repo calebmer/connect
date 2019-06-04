@@ -1,3 +1,5 @@
+import {AccountID} from "./AccountTypes";
+
 /** A unique type which is used as an identifier for groups. */
 export type GroupID = string & {readonly _type: typeof GroupID};
 declare const GroupID: unique symbol;
@@ -26,6 +28,20 @@ export type Group = {
    * group banner which serves to white label the group.
    */
   readonly name: string;
+};
+
+/**
+ * An association between an account and a group which means that the account
+ * is a member of that group. Carries around information like the account’s
+ * status in the group and the time the account joined the group.
+ */
+export type GroupMembership = {
+  /** The group this account is a member of. */
+  readonly groupID: GroupID;
+  /** The account that this group membership is for. */
+  readonly accountID: AccountID;
+  /** The time when the account joined the group. */
+  readonly joinedAt: DateTime;
 };
 
 /**

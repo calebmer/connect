@@ -1,7 +1,7 @@
 import {AccessToken, RefreshToken} from "./types/TokenTypes";
 import {AccountID, AccountProfile} from "./types/AccountTypes";
 import {Comment, CommentID, PostCommentEvent} from "./types/CommentTypes";
-import {DateTime, Group, GroupID} from "./types/GroupTypes";
+import {DateTime, Group, GroupID, GroupMembership} from "./types/GroupTypes";
 import {Post, PostCursor, PostID} from "./types/PostTypes";
 import {RangeInputFields} from "./Range";
 import {Schema} from "./Schema";
@@ -162,6 +162,28 @@ export const APISchema = Schema.namespace({
       safe: true,
       input: {slug: SchemaInput.string()},
       output: SchemaOutput.t<{readonly group: Group | null}>(),
+    }),
+
+    /**
+     * Gets _all_ the memberships in this group. For smaller groups this is
+     * fine, but for larger groups the list will be really long.
+     *
+     * Finds the group using the slug you’d find in a URL which could be the
+     * group’s ID.
+     *
+     * We return a separate list for memberships and accounts since we want to
+     * cache accounts and memberships separately.
+     *
+     * If we are not allowed to see a group or the group does not exist then
+     * the method returns empty arrays.
+     */
+    getAllGroupMemberships: Schema.method({
+      safe: true,
+      input: {slug: SchemaInput.string()},
+      output: SchemaOutput.t<{
+        readonly memberships: ReadonlyArray<GroupMembership>;
+        readonly accounts: ReadonlyArray<AccountProfile>;
+      }>(),
     }),
   }),
 

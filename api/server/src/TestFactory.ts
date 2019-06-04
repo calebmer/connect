@@ -64,6 +64,8 @@ const maybeCreatePost = maybeCreate(createPost);
 
 type FactoryAccount = {
   id: AccountID;
+  name: string;
+  avatarURL: string | null;
 };
 
 export async function createAccount(ctx: ContextTest): Promise<FactoryAccount> {
@@ -81,6 +83,8 @@ export async function createAccount(ctx: ContextTest): Promise<FactoryAccount> {
 
   return {
     id,
+    name,
+    avatarURL: null,
   };
 }
 
@@ -126,6 +130,7 @@ type FactoryGroupMemberConfig = {
 type FactoryGroupMember = {
   accountID: AccountID;
   groupID: GroupID;
+  joinedAt: DateTime;
 };
 
 export async function createGroupMember(
@@ -137,14 +142,18 @@ export async function createGroupMember(
     maybeCreateGroup(ctx, config.groupID),
   ]);
 
-  await ctx.query(sql`
+  const {
+    rows: [row],
+  } = await ctx.query(sql`
     INSERT INTO group_member (account_id, group_id)
          VALUES (${accountID}, ${groupID})
+      RETURNING joined_at
   `);
 
   return {
     accountID,
     groupID,
+    joinedAt: row.joined_at,
   };
 }
 
