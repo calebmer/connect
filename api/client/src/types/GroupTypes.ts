@@ -35,7 +35,7 @@ export type Group = {
  * is a member of that group. Carries around information like the account’s
  * status in the group and the time the account joined the group.
  */
-export type GroupMembership = {
+export type GroupMember = {
   /** The group this account is a member of. */
   readonly groupID: GroupID;
   /** The account that this group membership is for. */

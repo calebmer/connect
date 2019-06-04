@@ -1,5 +1,5 @@
 import {Cache, useCache} from "../cache/Cache";
-import {Group, GroupID, GroupMembership} from "@connect/api-client";
+import {Group, GroupID, GroupMember} from "@connect/api-client";
 import {API} from "../api/API";
 import {AccountCache} from "../account/AccountCache";
 import {AppError} from "../api/AppError";
@@ -60,23 +60,20 @@ export const GroupSlugCache = new Cache<string, GroupID>({
  * once. This is not scalable. Eventually we will need to incrementally load
  * the list of group members.
  */
-export const GroupMembershipsCache = new Cache<
-  GroupID,
-  ReadonlyArray<GroupMembership>
->({
-  async load(id) {
-    const {memberships, accounts} = await API.group.getAllGroupMemberships({
-      id,
-    });
+export const GroupMembersCache = new Cache<GroupID, ReadonlyArray<GroupMember>>(
+  {
+    async load(id) {
+      const {memberships, accounts} = await API.group.getAllGroupMembers({id});
 
-    // Insert any accounts we received into our account cache.
-    accounts.forEach(account => {
-      AccountCache.insert(account.id, account);
-    });
+      // Insert any accounts we received into our account cache.
+      accounts.forEach(account => {
+        AccountCache.insert(account.id, account);
+      });
 
-    return memberships;
+      return memberships;
+    },
   },
-});
+);
 
 /**
  * Cache that holds the group memberships for our current account.

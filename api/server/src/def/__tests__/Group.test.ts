@@ -1,5 +1,5 @@
 import {createAccount, createGroup, createGroupMember} from "../../TestFactory";
-import {getAllGroupMemberships, getGroupBySlug} from "../Group";
+import {getAllGroupMembers, getGroupBySlug} from "../Group";
 import {ContextTest} from "../../ContextTest";
 import {generateID} from "@connect/api-client";
 
@@ -129,13 +129,13 @@ describe("getGroupBySlug", () => {
   });
 });
 
-describe("getAllGroupMemberships", () => {
+describe("getAllGroupMembers", () => {
   test("will return no memberships if the group does not exist", () => {
     return ContextTest.with(async ctx => {
       const account = await createAccount(ctx);
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getAllGroupMemberships(ctx, {id: generateID()})).toEqual({
+        expect(await getAllGroupMembers(ctx, {id: generateID()})).toEqual({
           memberships: [],
           accounts: [],
         });
@@ -153,7 +153,7 @@ describe("getAllGroupMemberships", () => {
       await createGroupMember(ctx, {groupID: group.id});
 
       await ctx.withAuthorized(account.id, async ctx => {
-        expect(await getAllGroupMemberships(ctx, {id: group.id})).toEqual({
+        expect(await getAllGroupMembers(ctx, {id: group.id})).toEqual({
           memberships: [],
           accounts: [],
         });
@@ -188,7 +188,7 @@ describe("getAllGroupMemberships", () => {
       });
 
       await ctx.withAuthorized(account1.id, async ctx => {
-        expect(await getAllGroupMemberships(ctx, {id: group.id})).toEqual({
+        expect(await getAllGroupMembers(ctx, {id: group.id})).toEqual({
           memberships: [member1, member2, member3, member4],
           accounts: [account1, account2, account3, account4],
         });

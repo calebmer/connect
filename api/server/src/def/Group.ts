@@ -1,9 +1,4 @@
-import {
-  AccountProfile,
-  Group,
-  GroupID,
-  GroupMembership,
-} from "@connect/api-client";
+import {AccountProfile, Group, GroupID, GroupMember} from "@connect/api-client";
 import {Context} from "../Context";
 import {sql} from "../pg/SQL";
 
@@ -47,11 +42,11 @@ export async function getGroupBySlug(
  * larger groups we should introduce a function for getting only a few
  * memberships at a time.
  */
-export async function getAllGroupMemberships(
+export async function getAllGroupMembers(
   ctx: Context,
   input: {readonly id: GroupID},
 ): Promise<{
-  readonly memberships: ReadonlyArray<GroupMembership>;
+  readonly memberships: ReadonlyArray<GroupMember>;
   readonly accounts: ReadonlyArray<AccountProfile>;
 }> {
   const {rows} = await ctx.query(sql`
@@ -62,11 +57,11 @@ export async function getAllGroupMemberships(
         WHERE group_member.group_id = ${input.id}
   `);
 
-  const memberships: Array<GroupMembership> = [];
+  const memberships: Array<GroupMember> = [];
   const accounts: Array<AccountProfile> = [];
 
   rows.forEach(row => {
-    const membership: GroupMembership = {
+    const membership: GroupMember = {
       groupID: row.group_id,
       accountID: row.id,
       joinedAt: row.joined_at,

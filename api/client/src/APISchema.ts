@@ -1,7 +1,7 @@
 import {AccessToken, RefreshToken} from "./types/TokenTypes";
 import {AccountID, AccountProfile} from "./types/AccountTypes";
 import {Comment, CommentID, PostCommentEvent} from "./types/CommentTypes";
-import {DateTime, Group, GroupID, GroupMembership} from "./types/GroupTypes";
+import {DateTime, Group, GroupID, GroupMember} from "./types/GroupTypes";
 import {Post, PostCursor, PostID} from "./types/PostTypes";
 import {RangeInputFields} from "./Range";
 import {Schema} from "./Schema";
@@ -177,11 +177,11 @@ export const APISchema = Schema.namespace({
      * If we are not allowed to see a group or the group does not exist then
      * the method returns empty arrays.
      */
-    getAllGroupMemberships: Schema.method({
+    getAllGroupMembers: Schema.method({
       safe: true,
       input: {id: SchemaInput.string<GroupID>()},
       output: SchemaOutput.t<{
-        readonly memberships: ReadonlyArray<GroupMembership>;
+        readonly memberships: ReadonlyArray<GroupMember>;
         readonly accounts: ReadonlyArray<AccountProfile>;
       }>(),
     }),
