@@ -55,6 +55,7 @@ export async function getAllGroupMembers(
          FROM group_member
     LEFT JOIN account_profile ON account_profile.id = group_member.account_id
         WHERE group_member.group_id = ${input.id}
+     ORDER BY group_member.joined_at
   `);
 
   const memberships: Array<GroupMember> = [];

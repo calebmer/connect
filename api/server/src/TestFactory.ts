@@ -125,6 +125,7 @@ export async function createGroup(
 type FactoryGroupMemberConfig = {
   accountID?: AccountID;
   groupID?: GroupID;
+  joinedAt?: DateTime;
 };
 
 type FactoryGroupMember = {
@@ -142,18 +143,17 @@ export async function createGroupMember(
     maybeCreateGroup(ctx, config.groupID),
   ]);
 
-  const {
-    rows: [row],
-  } = await ctx.query(sql`
-    INSERT INTO group_member (account_id, group_id)
-         VALUES (${accountID}, ${groupID})
-      RETURNING joined_at
+  const joinedAt = config.joinedAt || DateTime.now();
+
+  await ctx.query(sql`
+    INSERT INTO group_member (account_id, group_id, joined_at)
+         VALUES (${accountID}, ${groupID}, ${joinedAt})
   `);
 
   return {
     accountID,
     groupID,
-    joinedAt: row.joined_at,
+    joinedAt,
   };
 }
 
