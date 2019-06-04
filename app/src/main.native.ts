@@ -63,4 +63,7 @@ YellowBox.ignoreWarnings([
   // on multiple projects, though and it doesn’t seem to mean much. Only that an
   // image in a virtualized list was unmounted or something.
   "Task orphaned",
+  // React Native Firebase uses module cycles in its codebase. Ignore the
+  // require cycle warnings specifically for React Native Firebase.
+  "Require cycle: app/node_modules/react-native-firebase",
 ]);
