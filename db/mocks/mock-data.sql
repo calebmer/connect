@@ -117,4 +117,15 @@ INSERT INTO comment (id, post_id, author_id, published_at, content)
                               (11, '01dbxf9nj5syvwkmpf4h70'::CHAR(22), interval '34m 0s', 'I''m planning on ejecting probably by the end of this week tbh, there are too many things (functionality wise) that I''m missing with expo since the modules are not compatible'::TEXT)])
                               AS mock_comment (id INT, author_id CHAR(22), published_at INTERVAL, content TEXT)) AS mock_comment;
 
+-- For all posts have the author of that post follow the post.
+INSERT INTO post_follower (post_id, account_id)
+  SELECT id, author_id FROM post
+  ON CONFLICT DO NOTHING;
+
+-- For all comments have the author of that comment follow the post the comment
+-- was left on.
+INSERT INTO post_follower (post_id, account_id)
+  SELECT post_id, author_id FROM comment
+  ON CONFLICT DO NOTHING;
+
 COMMIT;

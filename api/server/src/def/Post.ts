@@ -97,6 +97,7 @@ export async function publishPost(
     throw new APIError(APIErrorCode.BAD_INPUT);
   }
 
+  // Actually insert the comment...
   const {
     rows: [row],
   } = await ctx.query(sql`
@@ -106,6 +107,12 @@ export async function publishPost(
                  ${ctx.accountID},
                  ${input.content.trim()})
       RETURNING published_at
+  `);
+
+  // Follow the post we just published...
+  await ctx.query(sql`
+    INSERT INTO post_follower (post_id, account_id)
+         VALUES (${input.id}, ${ctx.accountID})
   `);
 
   return {

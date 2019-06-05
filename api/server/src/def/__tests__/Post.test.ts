@@ -15,6 +15,7 @@ import {
 } from "../../TestFactory";
 import {getGroupPosts, getPost, publishPost} from "../Post";
 import {ContextTest} from "../../ContextTest";
+import {sql} from "../../pg/SQL";
 
 describe("getPost", () => {
   test("does not get a post which does not exist", () => {
@@ -699,6 +700,69 @@ describe("publishPost", () => {
 
         expect(post!.content).toEqual("test");
       });
+    });
+  });
+
+  test("will automatically follow a post we publish", () => {
+    return ContextTest.with(async ctx => {
+      const postID = generateID<PostID>();
+      const {accountID, groupID} = await createGroupMember(ctx);
+
+      const {rowCount: rowCount1} = await ctx.query(sql`
+        SELECT 1
+          FROM post_follower
+         WHERE account_id = ${accountID} AND
+               post_id = ${postID}
+      `);
+      expect(rowCount1).toEqual(0);
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        await publishPost(ctx, {
+          id: postID,
+          groupID,
+          content: "test",
+        });
+      });
+
+      const {rowCount: rowCount2} = await ctx.query(sql`
+        SELECT 1
+          FROM post_follower
+         WHERE account_id = ${accountID} AND
+               post_id = ${postID}
+      `);
+      expect(rowCount2).toEqual(1);
+    });
+  });
+
+  test("will not follow a post published by someone else", () => {
+    return ContextTest.with(async ctx => {
+      const postID = generateID<PostID>();
+      const {accountID, groupID} = await createGroupMember(ctx);
+      const {accountID: accountID2} = await createGroupMember(ctx, {groupID});
+
+      const {rowCount: rowCount1} = await ctx.query(sql`
+        SELECT 1
+          FROM post_follower
+         WHERE account_id = ${accountID2} AND
+               post_id = ${postID}
+      `);
+      expect(rowCount1).toEqual(0);
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        await publishPost(ctx, {
+          id: postID,
+          groupID,
+          content: "test",
+        });
+      });
+
+      const {rowCount: rowCount2} = await ctx.query(sql`
+        SELECT 1
+          FROM post_follower
+         WHERE account_id = ${accountID2} AND
+               post_id = ${postID}
+      `);
+      expect(rowCount2).toEqual(0);
     });
   });
 });

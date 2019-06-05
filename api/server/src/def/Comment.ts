@@ -114,6 +114,14 @@ export async function publishComment(
       RETURNING published_at
   `);
 
+  // Follow the post we just commented on. If we are already following the post
+  // then don’t bother doing anything else.
+  await ctx.query(sql`
+    INSERT INTO post_follower (post_id, account_id)
+         VALUES (${input.postID}, ${ctx.accountID})
+    ON CONFLICT DO NOTHING
+  `);
+
   // Notify anyone listening that a comment was just inserted! Send the post and
   // comment ID so that listeners can determine if they are interested or not.
   //

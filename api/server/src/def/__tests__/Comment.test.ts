@@ -529,6 +529,110 @@ describe("publishComment", () => {
       });
     });
   });
+
+  test("will automatically follow the post we commented on", () => {
+    return ContextTest.with(async ctx => {
+      const {accountID, groupID} = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID});
+
+      const {rowCount: rowCount1} = await ctx.query(sql`
+        SELECT 1
+          FROM post_follower
+         WHERE account_id = ${accountID} AND
+               post_id = ${post.id}
+      `);
+      expect(rowCount1).toEqual(0);
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        await publishComment(ctx, {
+          id: generateID(),
+          postID: post.id,
+          content: "test",
+        });
+      });
+
+      const {rowCount: rowCount2} = await ctx.query(sql`
+        SELECT 1
+          FROM post_follower
+         WHERE account_id = ${accountID} AND
+               post_id = ${post.id}
+      `);
+      expect(rowCount2).toEqual(1);
+    });
+  });
+
+  test("will not follow a comment published by someone else", () => {
+    return ContextTest.with(async ctx => {
+      const {accountID, groupID} = await createGroupMember(ctx);
+      const {accountID: accountID2} = await createGroupMember(ctx, {groupID});
+      const post = await createPost(ctx, {groupID});
+
+      const {rowCount: rowCount1} = await ctx.query(sql`
+        SELECT 1
+          FROM post_follower
+         WHERE account_id = ${accountID2} AND
+               post_id = ${post.id}
+      `);
+      expect(rowCount1).toEqual(0);
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        await publishComment(ctx, {
+          id: generateID(),
+          postID: post.id,
+          content: "test",
+        });
+      });
+
+      const {rowCount: rowCount2} = await ctx.query(sql`
+        SELECT 1
+          FROM post_follower
+         WHERE account_id = ${accountID2} AND
+               post_id = ${post.id}
+      `);
+      expect(rowCount2).toEqual(0);
+    });
+  });
+
+  test("will only follow the post we commented on once if there are multiple comments", () => {
+    return ContextTest.with(async ctx => {
+      const {accountID, groupID} = await createGroupMember(ctx);
+      const post = await createPost(ctx, {groupID});
+
+      const {rowCount: rowCount1} = await ctx.query(sql`
+        SELECT 1
+          FROM post_follower
+         WHERE account_id = ${accountID} AND
+               post_id = ${post.id}
+      `);
+      expect(rowCount1).toEqual(0);
+
+      await ctx.withAuthorized(accountID, async ctx => {
+        await publishComment(ctx, {
+          id: generateID(),
+          postID: post.id,
+          content: "test",
+        });
+        await publishComment(ctx, {
+          id: generateID(),
+          postID: post.id,
+          content: "test",
+        });
+        await publishComment(ctx, {
+          id: generateID(),
+          postID: post.id,
+          content: "test",
+        });
+      });
+
+      const {rowCount: rowCount2} = await ctx.query(sql`
+        SELECT 1
+          FROM post_follower
+         WHERE account_id = ${accountID} AND
+               post_id = ${post.id}
+      `);
+      expect(rowCount2).toEqual(1);
+    });
+  });
 });
 
 describe("watchPostComments", () => {
