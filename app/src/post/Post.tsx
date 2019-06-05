@@ -9,6 +9,7 @@ import {
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {ScrollEvent, ScrollView, StyleSheet, View} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
+import {AppError} from "../api/AppError";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
 import {ErrorBoundary} from "../frame/ErrorBoundary";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
@@ -43,6 +44,12 @@ function Post({
   // Load the data we will need for this component.
   const post = useCache(PostCache, postID);
   const group = useGroupWithSlug(groupSlug);
+
+  // If the post exists but in a different group then throw an error saying we
+  // can’t find the post.
+  if (post.groupID !== group.id) {
+    throw new AppError("Can not find this post.");
+  }
 
   // Load the comments from our post comments cache. Never suspend, though. We
   // want the post content to be visible while we load comments.
