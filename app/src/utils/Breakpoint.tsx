@@ -16,6 +16,7 @@ export enum Breakpoint {
   TabletSmall = 575,
   Tablet = 768,
   Laptop = 1024,
+  LaptopMedium = 1180,
   LaptopLarge = 1440,
 }
 
@@ -91,6 +92,8 @@ function fromWidth(width: number): Breakpoint {
     return Breakpoint.Tablet;
   } else if (width <= Breakpoint.Laptop) {
     return Breakpoint.Laptop;
+  } else if (width <= Breakpoint.LaptopMedium) {
+    return Breakpoint.LaptopMedium;
   } else {
     return Breakpoint.LaptopLarge;
   }

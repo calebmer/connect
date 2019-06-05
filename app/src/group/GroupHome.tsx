@@ -45,7 +45,9 @@ function GroupHome({
             postID={postID || null}
           />
         </View>
-        <GroupMemberSidebar route={route} groupSlug={groupSlug} />
+        {useBreakpoint() > Breakpoint.LaptopMedium && (
+          <GroupMemberSidebar route={route} groupSlug={groupSlug} />
+        )}
       </PostNewPopupContext>
     </GroupHomeContainer>
   );

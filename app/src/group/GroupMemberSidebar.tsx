@@ -116,9 +116,10 @@ const padding = Space.space2;
 
 const styles = StyleSheet.create({
   sidebar: {
+    flex: 1 / 5,
     zIndex: 1,
     backgroundColor: Trough.backgroundColor,
-    width: Space.space11,
+    maxWidth: Space.space11,
     ...Shadow.elevation2,
   },
   container: {

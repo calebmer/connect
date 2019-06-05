@@ -42,6 +42,7 @@ export function ErrorScreen({
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
+    paddingHorizontal: Space.space3,
   },
   icon: {
     flexDirection: "row",
