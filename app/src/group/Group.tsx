@@ -22,6 +22,7 @@ import {PostID, Group as _Group} from "@connect/api-client";
 import React, {useMemo, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableContainer} from "../cache/Mutable";
 import {AccountHomeAlphaRoute} from "../router/AllRoutes";
+import {ErrorBoundary} from "../frame/ErrorBoundary";
 import {GroupBanner} from "./GroupBanner";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
@@ -240,18 +241,11 @@ export {GroupMemo as Group};
  * Component we use for a group’s route. It does data loading instead of letting
  * the parent component do data loading.
  */
-export function GroupRoute({
-  route,
-  groupSlug,
-}: {
-  route: Route;
-  groupSlug: string;
-}) {
+function GroupRoute({route, group}: {route: Route; group: Group}) {
   // Always preload the current account...
   CurrentAccountCache.preload();
 
   // Load the data we need for our group.
-  const group = useGroupWithSlug(groupSlug);
   const {loading, data: posts} = useCacheWithPrev(GroupPostsCache, group.id);
 
   // NOTE: `<ScrollView>` on native doesn’t really like being re-rendered with
@@ -275,6 +269,27 @@ export function GroupRoute({
     />
   );
 }
+
+function GroupRouteContainer({
+  route,
+  groupSlug,
+}: {
+  route: Route;
+  groupSlug: string;
+}) {
+  const group = useGroupWithSlug(groupSlug);
+
+  return (
+    <ErrorBoundary
+      route={route}
+      onRetry={() => GroupPostsCache.forceReload(group.id)}
+    >
+      <GroupRoute route={route} group={group} />
+    </ErrorBoundary>
+  );
+}
+
+export {GroupRouteContainer as GroupRoute};
 
 function GroupHeader({route, group}: {route: Route; group: Group}) {
   const currentAccount = useCurrentAccount();
