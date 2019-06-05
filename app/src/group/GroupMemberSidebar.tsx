@@ -38,13 +38,22 @@ function GroupMemberSidebar({groupID}: {groupID: GroupID}) {
   const members = useCache(GroupMembersCache, groupID);
   const currentAccount = useCurrentAccount();
 
+  // Uh oh! This is a side-effect in render. The better solution would be to
+  // setup some subscription on the clock so that when the time changes we can
+  // update the component. This works for now, though.
+  const currentTime = new Date();
+
   return (
     <ScrollView>
       <Trough title="Members" hideTopShadow paddingHorizontal={padding} />
       <View style={styles.container}>
         {members.map(member =>
           currentAccount.id === member.accountID ? null : (
-            <GroupMemberSidebarItem key={member.accountID} member={member} />
+            <GroupMemberSidebarItem
+              key={member.accountID}
+              member={member}
+              currentTime={currentTime}
+            />
           ),
         )}
       </View>
@@ -53,7 +62,13 @@ function GroupMemberSidebar({groupID}: {groupID: GroupID}) {
   );
 }
 
-function GroupMemberSidebarItem({member}: {member: GroupMember}) {
+function GroupMemberSidebarItem({
+  member,
+  currentTime,
+}: {
+  member: GroupMember;
+  currentTime: Date;
+}) {
   const account = useCache(AccountCache, member.accountID);
 
   return (
@@ -61,10 +76,40 @@ function GroupMemberSidebarItem({member}: {member: GroupMember}) {
       <AccountAvatarSmall style={styles.memberAvatar} account={account} />
       <View style={styles.memberDetails}>
         <LabelText numberOfLines={1}>{account.name}</LabelText>
-        <MetaText numberOfLines={1}>{member.joinedAt}</MetaText>
+        <MetaText numberOfLines={1}>
+          joined {displayHowLongAgo(currentTime, new Date(member.joinedAt))}
+        </MetaText>
       </View>
     </View>
   );
+}
+
+// NOTE: This function was mostly copied from `communicateTime()`. We should
+// find a way to unify the logic...
+function displayHowLongAgo(currentTime: Date, time: Date): string {
+  const millisecondsAgo = currentTime.getTime() - time.getTime();
+  const daysAgo = millisecondsAgo / 1000 / 60 / 60 / 24;
+
+  if (currentTime.getFullYear() !== time.getFullYear()) {
+    const n = currentTime.getFullYear() - time.getFullYear();
+    return `${n} year${n === 1 ? "" : "s"} ago`;
+  }
+
+  if (currentTime.getMonth() !== time.getMonth() && daysAgo >= 30) {
+    const n = currentTime.getMonth() - time.getMonth();
+    return `${n} month${n === 1 ? "" : "s"} ago`;
+  }
+
+  if (currentTime.getDate() !== time.getDate()) {
+    const n = Math.max(1, Math.floor(daysAgo));
+    if (n === 1) {
+      return "yesterday";
+    } else {
+      return `${n} day${n === 1 ? "" : "s"} ago`;
+    }
+  }
+
+  return "today";
 }
 
 const padding = Space.space2;
