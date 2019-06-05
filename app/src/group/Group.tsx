@@ -68,9 +68,6 @@ function Group({
   // Keep a reference to our scroll view.
   const scrollView = useRef<any>(null);
 
-  // Are we using the mobile group home layout?
-  const showNavbar = !useGroupHomeLayout();
-
   // On iOS the top of the content is not zero! It is
   // `-adjustedContentInset.top`. `adjustedContentInset` is `contentInset` plus
   // some safe area as determined by `contentInsetAdjustmentBehavior`. So say
@@ -93,8 +90,25 @@ function Group({
           extrapolateRight: "clamp",
         });
 
-  // Should we show the navbar or not?
-  const [showNavbarBackground, setShowNavbarBackground] = useState(false);
+  // Are we using the mobile group home layout?
+  const stickyNavbar = !useGroupHomeLayout();
+
+  // Have we scrolled our group content enough so that we overlap the navbar?
+  // Usually there is space between the navbar and the content thanks to the
+  // group, but once we scroll past the group we need to change the
+  // navbar’s style.
+  const [scrollOverlapsNavbar, setScrollOverlapsNavbar] = useState(false);
+
+  function handleNavbarLeftIconPress() {
+    // On web, popping is un-predictable so instead we will push the
+    // account home route which is where we expect the user would go
+    // on native.
+    if (Platform.OS === "web") {
+      route.push(AccountHomeAlphaRoute, {});
+    } else {
+      route.pop();
+    }
+  }
 
   // All the section data that our list will render. Memoized to avoid
   // unnecessary calculations in the virtualized list.
@@ -133,23 +147,22 @@ function Group({
       </Animated.View>
 
       {/* Include the navbar but only on mobile. */}
-      {showNavbar && (
+      {stickyNavbar ? (
         <Navbar
           title={group.name}
           leftIcon="arrow-left"
-          onLeftIconPress={() => {
-            // On web, popping is un-predictable so instead we will push the
-            // account home route which is where we expect the user would go
-            // on native.
-            if (Platform.OS === "web") {
-              route.push(AccountHomeAlphaRoute, {});
-            } else {
-              route.pop();
-            }
-          }}
-          hideBackground={!showNavbarBackground}
+          onLeftIconPress={handleNavbarLeftIconPress}
+          hideBackground={!scrollOverlapsNavbar}
           hideTitleWithBackground
           lightContentWithoutBackground
+        />
+      ) : (
+        <Navbar
+          leftIcon="arrow-left"
+          onLeftIconPress={handleNavbarLeftIconPress}
+          hideBackground
+          lightContentWithoutBackground
+          zIndex={scrollOverlapsNavbar ? 0 : Navbar.zIndex}
         />
       )}
 
@@ -198,34 +211,28 @@ function Group({
         // don’t need near-realtime animations attached to scrolling. Also, on
         // native we can use the native animation driver. We don’t have that
         // luxury on web.
-        scrollIndicatorInsets={{top: showNavbar ? Navbar.height : 0}}
+        scrollIndicatorInsets={{top: stickyNavbar ? Navbar.height : 0}}
         scrollEventThrottle={Platform.OS === "web" ? 16 : 1}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {
             useNativeDriver: Platform.OS !== "web",
             listener: (event: any) => {
-              if (showNavbar) {
-                // On iOS, `adjustedContentInset` factors in the top and bottom
-                // safe area.
-                const eventAdjustedContentInsetTop = getAdjustedContentInsetTop(
-                  event,
-                );
+              // On iOS, `adjustedContentInset` factors in the top and bottom
+              // safe area.
+              const eventAdjustedContentInsetTop = getAdjustedContentInsetTop(
+                event,
+              );
 
-                // Set our adjusted content inset state...
-                setAdjustedContentInsetTop(eventAdjustedContentInsetTop);
+              // Set our adjusted content inset state...
+              setAdjustedContentInsetTop(eventAdjustedContentInsetTop);
 
-                // We should show the navbar when scrolling anymore would mean
-                // scrolling under the navbar.
-                const shouldShowNavbarBackground =
-                  event.nativeEvent.contentOffset.y +
-                    eventAdjustedContentInsetTop >=
-                  GroupBanner.height - Navbar.height;
-
-                // Update our navbar state depending on whether we should or
-                // should not show the navbar.
-                setShowNavbarBackground(shouldShowNavbarBackground);
-              }
+              // Measure whether or not we are now overlapping the navbar.
+              setScrollOverlapsNavbar(
+                event.nativeEvent.contentOffset.y +
+                  eventAdjustedContentInsetTop >=
+                  GroupBanner.height - Navbar.height,
+              );
             },
           },
         )}
@@ -294,7 +301,7 @@ export {GroupRouteContainer as GroupRoute};
 function GroupHeader({route, group}: {route: Route; group: Group}) {
   const currentAccount = useCurrentAccount();
   return (
-    <View style={styles.header}>
+    <View style={styles.header} pointerEvents="box-none">
       <GroupPostPrompt route={route} group={group} account={currentAccount} />
     </View>
   );

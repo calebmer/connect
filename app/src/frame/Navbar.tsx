@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {Breakpoint, useBreakpoint} from "../utils/Breakpoint";
 import {Color, Font, Icon, IconName, Shadow, Space} from "../atoms";
 import React, {useEffect} from "react";
 import {IconPatchButton} from "../molecules/IconPatchButton";
@@ -68,6 +69,12 @@ type NavbarProps = {
    * or dark content.
    */
   lightContentWithoutBackground?: boolean;
+
+  /**
+   * Allows us to customize the z-index of the navbar. In case we want the
+   * navbar to display behind something.
+   */
+  zIndex?: number;
 };
 
 export function Navbar({
@@ -80,9 +87,10 @@ export function Navbar({
   hideBackground,
   hideTitleWithBackground,
   lightContentWithoutBackground,
+  zIndex,
 }: NavbarProps) {
+  const breakpoint = useBreakpoint();
   const backgroundOpacity = useAnimatedValue(hideBackground ? 0 : 1);
-
   const titleOpacity = hideTitleWithBackground ? backgroundOpacity : undefined;
 
   useEffect(() => {
@@ -112,7 +120,7 @@ export function Navbar({
         }
       />
       <SafeAreaView
-        style={styles.container}
+        style={zIndex != null ? [styles.container, {zIndex}] : styles.container}
         accessibilityRole={
           Platform.OS === "web" ? ("navigation" as any) : undefined
         }
@@ -123,7 +131,10 @@ export function Navbar({
         <View style={styles.navbar}>
           <View style={styles.button}>
             {leftIcon && (
-              <TouchableOpacity hitSlop={hitSlop} onPress={onLeftIconPress}>
+              <TouchableOpacity
+                hitSlop={breakpoint <= Breakpoint.Tablet ? hitSlop : undefined} // Only add `hitSlop` on small, touch, screens.
+                onPress={onLeftIconPress}
+              >
                 <Icon
                   name={leftIcon}
                   size={Space.space4}
@@ -158,6 +169,7 @@ export function Navbar({
 }
 
 Navbar.height = Space.space6;
+Navbar.zIndex = 200;
 
 const hitSlop = {
   top: Space.space4,
@@ -168,7 +180,7 @@ const hitSlop = {
 
 const styles = StyleSheet.create({
   container: {
-    zIndex: 200,
+    zIndex: Navbar.zIndex,
     position: "absolute",
     top: 0,
     left: 0,
