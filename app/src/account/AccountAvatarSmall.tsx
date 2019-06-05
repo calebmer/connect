@@ -1,5 +1,12 @@
-import {Color, Space} from "../atoms";
-import {Image, StyleProp, StyleSheet, View, ViewStyle} from "react-native";
+import {Color, Font, Space} from "../atoms";
+import {
+  Image,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from "react-native";
 import {AccountProfile} from "@connect/api-client";
 import React from "react";
 
@@ -12,8 +19,17 @@ export function AccountAvatarSmall({
 }) {
   return (
     <View style={[style, styles.container]}>
-      {account.avatarURL && (
+      {account.avatarURL ? (
         <Image style={styles.image} source={{uri: account.avatarURL}} />
+      ) : (
+        <Text
+          style={styles.initial}
+          accessible={false}
+          selectable={false}
+          allowFontScaling={false}
+        >
+          {(account.name[0] || "?").toUpperCase()}
+        </Text>
       )}
     </View>
   );
@@ -32,5 +48,13 @@ const styles = StyleSheet.create({
     width: AccountAvatarSmall.size,
     height: AccountAvatarSmall.size,
     borderRadius: AccountAvatarSmall.size / 2,
+  },
+  initial: {
+    width: AccountAvatarSmall.size,
+    color: Color.grey5,
+    textAlign: "center",
+    ...Font.sansBold,
+    fontSize: Font.size4.fontSize,
+    lineHeight: AccountAvatarSmall.size,
   },
 });
