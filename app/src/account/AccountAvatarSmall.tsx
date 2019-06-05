@@ -51,9 +51,9 @@ const styles = StyleSheet.create({
   },
   initial: {
     width: AccountAvatarSmall.size,
-    color: Color.grey5,
+    color: Color.grey4,
     textAlign: "center",
-    ...Font.sansBold,
+    ...Font.sans,
     fontSize: Font.size4.fontSize,
     lineHeight: AccountAvatarSmall.size,
   },
