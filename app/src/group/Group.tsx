@@ -19,7 +19,7 @@ import {
   postCountMore,
 } from "../post/PostCache";
 import {PostID, Group as _Group} from "@connect/api-client";
-import React, {useMemo, useRef, useState} from "react";
+import React, {useCallback, useMemo, useRef, useState} from "react";
 import {ReadonlyMutable, useMutableContainer} from "../cache/Mutable";
 import {AccountHomeAlphaRoute} from "../router/AllRoutes";
 import {ErrorBoundary} from "../frame/ErrorBoundary";
@@ -178,27 +178,33 @@ function Group({
         // trigger `onEndReached` when this list initially renders.
         initialNumToRender={postCountInitial}
         onEndReachedThreshold={0.3}
-        onEndReached={() => onLoadMorePosts(postCountMore)}
+        onEndReached={useCallback(() => {
+          return onLoadMorePosts(postCountMore);
+        }, [onLoadMorePosts])}
         // Components for rendering various parts of the group section list
         // layout. Our list design is more stylized then standard native list
         // designs, so we have to jump through some hoops.
-        ListHeaderComponent={<GroupHeader route={route} group={group} />}
-        ListFooterComponent={
-          <GroupFooter
-            loadingMorePosts={loadingMorePosts}
-            onScrollToTop={() => {
-              if (scrollView.current) {
-                scrollView.current
-                  .getNode()
-                  .getScrollResponder()
-                  .scrollTo({
-                    y: -(adjustedContentInsetTop || 0),
-                    animated: false,
-                  });
-              }
-            }}
-          />
-        }
+        ListHeaderComponent={useMemo(() => {
+          return <GroupHeader route={route} group={group} />;
+        }, [group, route])}
+        ListFooterComponent={useMemo(() => {
+          return (
+            <GroupFooter
+              loadingMorePosts={loadingMorePosts}
+              onScrollToTop={() => {
+                if (scrollView.current) {
+                  scrollView.current
+                    .getNode()
+                    .getScrollResponder()
+                    .scrollTo({
+                      y: -(adjustedContentInsetTop || 0),
+                      animated: false,
+                    });
+                }
+              }}
+            />
+          );
+        }, [adjustedContentInsetTop, loadingMorePosts])}
         stickySectionHeadersEnabled={false}
         renderSectionHeader={GroupSectionHeader}
         // Watch scroll events and keep track of:
@@ -211,31 +217,33 @@ function Group({
         // don’t need near-realtime animations attached to scrolling. Also, on
         // native we can use the native animation driver. We don’t have that
         // luxury on web.
-        scrollIndicatorInsets={{top: stickyNavbar ? Navbar.height : 0}}
-        scrollEventThrottle={Platform.OS === "web" ? 16 : 1}
-        onScroll={Animated.event(
-          [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {
-            useNativeDriver: Platform.OS !== "web",
-            listener: (event: any) => {
-              // On iOS, `adjustedContentInset` factors in the top and bottom
-              // safe area.
-              const eventAdjustedContentInsetTop = getAdjustedContentInsetTop(
-                event,
-              );
-
-              // Set our adjusted content inset state...
-              setAdjustedContentInsetTop(eventAdjustedContentInsetTop);
-
-              // Measure whether or not we are now overlapping the navbar.
-              setScrollOverlapsNavbar(
-                event.nativeEvent.contentOffset.y +
-                  eventAdjustedContentInsetTop >=
-                  GroupBanner.height - Navbar.height,
-              );
-            },
-          },
+        scrollIndicatorInsets={useMemo(
+          () => ({top: stickyNavbar ? Navbar.height : 0}),
+          [stickyNavbar],
         )}
+        scrollEventThrottle={Platform.OS === "web" ? 16 : 1}
+        onScroll={useMemo(() => {
+          return Animated.event(
+            [{nativeEvent: {contentOffset: {y: scrollY}}}],
+            {
+              useNativeDriver: Platform.OS !== "web",
+              listener: (event: any) => {
+                // On iOS, `adjustedContentInset` factors in the top and bottom
+                // safe area.
+                const contentInsetTop = getAdjustedContentInsetTop(event);
+
+                // Set our adjusted content inset state...
+                setAdjustedContentInsetTop(contentInsetTop);
+
+                // Measure whether or not we are now overlapping the navbar.
+                setScrollOverlapsNavbar(
+                  event.nativeEvent.contentOffset.y + contentInsetTop >=
+                    GroupBanner.height - Navbar.height,
+                );
+              },
+            },
+          );
+        }, [scrollY])}
       />
     </View>
   );
