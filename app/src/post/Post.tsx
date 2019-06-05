@@ -23,7 +23,7 @@ import {Skimmer} from "../cache/Skimmer";
 import {Trough} from "../molecules/Trough";
 import {useGroupHomeLayout} from "../group/useGroupHomeLayout";
 
-function PostSuspense({
+function Post({
   route,
   groupSlug,
   postID,
@@ -219,14 +219,11 @@ function PostSuspense({
   );
 }
 
-// Don’t re-render `<PostSuspense>` unless the props change.
-const PostSuspenseMemo = React.memo(PostSuspense);
-
 type RenderRange = {first: number; last: number};
 
 type MaybePromise<T> = T | Promise<T>;
 
-export function Post({
+function PostContainer({
   route,
   groupSlug,
   postID,
@@ -248,11 +245,7 @@ export function Post({
       <ErrorBoundary route={route} onRetry={handleRetry}>
         {postID != null ? (
           <React.Suspense fallback={<PostShimmer route={route} />}>
-            <PostSuspenseMemo
-              route={route}
-              groupSlug={groupSlug}
-              postID={postID}
-            />
+            <Post route={route} groupSlug={groupSlug} postID={postID} />
           </React.Suspense>
         ) : (
           <PostShimmer route={route} />
@@ -261,6 +254,9 @@ export function Post({
     </View>
   );
 }
+
+const PostContainerMemo = React.memo(PostContainer);
+export {PostContainerMemo as Post};
 
 const styles = StyleSheet.create({
   container: {
