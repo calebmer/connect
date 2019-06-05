@@ -1,6 +1,6 @@
 import {Color, Shadow} from "../atoms";
 import {StyleProp, StyleSheet, View, ViewStyle} from "react-native";
-import {ErrorScreen} from "../frame/ErrorScreen";
+import {ErrorBoundary} from "../frame/ErrorBoundary";
 import {Post} from "./Post";
 import {PostCache} from "./PostCache";
 import {PostCommentsCache} from "../comment/CommentCache";
@@ -9,72 +9,38 @@ import {PostShimmer} from "./PostShimmer";
 import React from "react";
 import {Route} from "../router/Route";
 
-type Props = {
+export function PostContainer({
+  style,
+  route,
+  groupSlug,
+  postID,
+}: {
   style?: StyleProp<ViewStyle>;
   route: Route;
   groupSlug: string;
   postID: PostID | null;
-};
-
-type State = {
-  hasError: boolean;
-  error: unknown;
-};
-
-export class PostContainer extends React.Component<Props, State> {
-  state = {
-    hasError: false,
-    error: null,
-  };
-
-  static getDerivedStateFromError(error: unknown): Partial<State> {
-    // Don’t show the React error overlay if we’ve caught the error.
-    if (__DEV__ && typeof error === "object" && error !== null) {
-      (error as any).disableReactErrorOverlay = true;
-    }
-
-    return {
-      hasError: true,
-      error,
-    };
-  }
-
-  componentDidCatch() {
-    // Seems like adding this will cause React to print the component stack.
-  }
-
-  handleRetry = () => {
-    const {postID} = this.props;
-
+}) {
+  function handleRetry() {
     // Force ourselves to reload the post and comments before we retry.
     if (postID !== null) {
       PostCache.forceReload(postID);
       PostCommentsCache.forceReload(postID);
     }
+  }
 
-    this.setState({
-      hasError: false,
-      error: null,
-    });
-  };
-
-  render() {
-    const {style, route, groupSlug, postID} = this.props;
-    const {hasError, error} = this.state;
-    return (
-      <View style={[styles.container, style]}>
-        {hasError ? (
-          <ErrorScreen route={route} error={error} onRetry={this.handleRetry} />
-        ) : postID != null ? (
+  return (
+    <View style={[styles.container, style]}>
+      <ErrorBoundary route={route} onRetry={handleRetry}>
+        {postID != null ? (
           <React.Suspense fallback={<PostShimmer route={route} />}>
             <Post route={route} groupSlug={groupSlug} postID={postID} />
           </React.Suspense>
         ) : (
           <PostShimmer route={route} />
         )}
-      </View>
-    );
-  }
+      </ErrorBoundary>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
