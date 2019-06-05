@@ -22,7 +22,7 @@ export const blue8 = "hsl(203, 87%, 34%)";
 export const blue9 = "hsl(204, 96%, 27%)";
 
 // Neutral colors:
-export const grey0 = "hsl(0, 0%, 97%)";
+export const grey0 = "hsl(0, 0%, 96%)";
 export const grey1 = "hsl(0, 0%, 88%)";
 export const grey2 = "hsl(0, 0%, 81%)";
 export const grey3 = "hsl(0, 0%, 69%)";
