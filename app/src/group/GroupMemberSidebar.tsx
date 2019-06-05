@@ -1,36 +1,59 @@
 import {AccountCache, useCurrentAccount} from "../account/AccountCache";
 import {Color, Font, LabelText, MetaText, Shadow, Space} from "../atoms";
+import {GroupID, GroupMember} from "@connect/api-client";
 import {GroupMembersCache, GroupSlugCache} from "./GroupCache";
 import {ScrollView, StyleSheet, View} from "react-native";
 import {AccountAvatarSmall} from "../account/AccountAvatarSmall";
-import {GroupMember} from "@connect/api-client";
+import {ErrorBoundary} from "../frame/ErrorBoundary";
 import React from "react";
+import {Route} from "../router/Route";
 import {Trough} from "../molecules/Trough";
 import {useCache} from "../cache/Cache";
 
-export function GroupMemberSidebar({groupSlug}: {groupSlug: string}) {
+function GroupMemberSidebarContainer({
+  route,
+  groupSlug,
+}: {
+  route: Route;
+  groupSlug: string;
+}) {
   const groupID = useCache(GroupSlugCache, groupSlug);
-  const members = useCache(GroupMembersCache, groupID);
-  const currentAccount = useCurrentAccount();
 
   return (
     <View style={styles.sidebar}>
-      <ScrollView>
-        <Trough title="Members" hideTopShadow paddingHorizontal={padding} />
-        <View style={styles.container}>
-          {members.map(member =>
-            currentAccount.id === member.accountID ? null : (
-              <GroupMemberItem key={member.accountID} member={member} />
-            ),
-          )}
-        </View>
-        <Trough hideBottomShadow paddingHorizontal={padding} />
-      </ScrollView>
+      <ErrorBoundary
+        route={route}
+        onRetry={() => GroupMembersCache.forceReload(groupID)}
+      >
+        <GroupMemberSidebar groupID={groupID} />
+      </ErrorBoundary>
     </View>
   );
 }
 
-function GroupMemberItem({member}: {member: GroupMember}) {
+const GroupMemberSidebarContainerMemo = React.memo(GroupMemberSidebarContainer);
+export {GroupMemberSidebarContainerMemo as GroupMemberSidebar};
+
+function GroupMemberSidebar({groupID}: {groupID: GroupID}) {
+  const members = useCache(GroupMembersCache, groupID);
+  const currentAccount = useCurrentAccount();
+
+  return (
+    <ScrollView>
+      <Trough title="Members" hideTopShadow paddingHorizontal={padding} />
+      <View style={styles.container}>
+        {members.map(member =>
+          currentAccount.id === member.accountID ? null : (
+            <GroupMemberSidebarItem key={member.accountID} member={member} />
+          ),
+        )}
+      </View>
+      <Trough hideBottomShadow paddingHorizontal={padding} />
+    </ScrollView>
+  );
+}
+
+function GroupMemberSidebarItem({member}: {member: GroupMember}) {
   const account = useCache(AccountCache, member.accountID);
 
   return (

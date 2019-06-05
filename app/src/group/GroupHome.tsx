@@ -45,7 +45,7 @@ function GroupHome({
             postID={postID || null}
           />
         </View>
-        <GroupMemberSidebar groupSlug={groupSlug} />
+        <GroupMemberSidebar route={route} groupSlug={groupSlug} />
       </PostNewPopupContext>
     </GroupHomeContainer>
   );
