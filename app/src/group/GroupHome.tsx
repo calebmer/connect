@@ -6,9 +6,8 @@ import {CurrentAccountCache} from "../account/AccountCache";
 import {GroupHomeContainer} from "./GroupHomeContainer";
 import {GroupMemberSidebar} from "./GroupMemberSidebar";
 import {GroupPostsCache} from "../post/PostCache";
-import {PostContainer} from "../post/PostContainer";
+import {Post} from "../post/Post";
 import {PostID} from "@connect/api-client";
-import {PostMeasurements} from "../post/PostMeasurements";
 import {PostNewPopupContext} from "../post/PostNewPopupContext";
 import {PostRoute} from "../router/AllRoutes";
 import {Route} from "../router/Route";
@@ -39,9 +38,8 @@ function GroupHome({
       >
         <View style={styles.main}>
           <GroupSuspense route={route} groupSlug={groupSlug} postID={postID} />
-          <PostContainer
+          <Post
             key={postID} // NOTE: Use a key so that React re-mounts the component when the ID changes.
-            style={styles.post}
             route={route}
             groupSlug={groupSlug}
             postID={postID || null}
@@ -149,11 +147,7 @@ export function GroupHomeRoute({
       return <GroupRouteComponent route={route} groupSlug={groupSlug} />;
     } else {
       return (
-        <PostContainer
-          route={route}
-          groupSlug={groupSlug}
-          postID={postID || null}
-        />
+        <Post route={route} groupSlug={groupSlug} postID={postID || null} />
       );
     }
   }
@@ -168,9 +162,5 @@ const styles = StyleSheet.create({
   group: {
     flex: 3 / 4,
     maxWidth: Space.space12,
-  },
-  post: {
-    flex: 1,
-    maxWidth: PostMeasurements.maxWidth,
   },
 });

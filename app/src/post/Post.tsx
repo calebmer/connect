@@ -1,3 +1,4 @@
+import {Color, Shadow, Space} from "../atoms";
 import {GroupSlugCache, useGroupWithSlug} from "../group/GroupCache";
 import {
   PostCommentsCache,
@@ -6,21 +7,23 @@ import {
   watchPostComments,
 } from "../comment/CommentCache";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {ScrollEvent, ScrollView} from "react-native";
+import {ScrollEvent, ScrollView, StyleSheet, View} from "react-native";
 import {useCache, useCacheWithPrev} from "../cache/Cache";
 import {CommentNewToolbar} from "../comment/CommentNewToolbar";
+import {ErrorBoundary} from "../frame/ErrorBoundary";
 import {NavbarScrollView} from "../frame/NavbarScrollView";
 import {PostCache} from "./PostCache";
 import {PostContent} from "./PostContent";
 import {PostID} from "@connect/api-client";
+import {PostMeasurements} from "./PostMeasurements";
+import {PostShimmer} from "./PostShimmer";
 import {PostVirtualizedComments} from "./PostVirtualizedComments";
 import {Route} from "../router/Route";
 import {Skimmer} from "../cache/Skimmer";
-import {Space} from "../atoms";
 import {Trough} from "../molecules/Trough";
 import {useGroupHomeLayout} from "../group/useGroupHomeLayout";
 
-function Post({
+function PostSuspense({
   route,
   groupSlug,
   postID,
@@ -216,10 +219,55 @@ function Post({
   );
 }
 
-// Don’t re-render `<Post>` unless the props change.
-const PostMemo = React.memo(Post);
-export {PostMemo as Post};
+// Don’t re-render `<PostSuspense>` unless the props change.
+const PostSuspenseMemo = React.memo(PostSuspense);
 
 type RenderRange = {first: number; last: number};
 
 type MaybePromise<T> = T | Promise<T>;
+
+export function Post({
+  route,
+  groupSlug,
+  postID,
+}: {
+  route: Route;
+  groupSlug: string;
+  postID: PostID | null;
+}) {
+  function handleRetry() {
+    // Force ourselves to reload the post and comments before we retry.
+    if (postID !== null) {
+      PostCache.forceReload(postID);
+      PostCommentsCache.forceReload(postID);
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <ErrorBoundary route={route} onRetry={handleRetry}>
+        {postID != null ? (
+          <React.Suspense fallback={<PostShimmer route={route} />}>
+            <PostSuspenseMemo
+              route={route}
+              groupSlug={groupSlug}
+              postID={postID}
+            />
+          </React.Suspense>
+        ) : (
+          <PostShimmer route={route} />
+        )}
+      </ErrorBoundary>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    overflow: "hidden",
+    maxWidth: PostMeasurements.maxWidth,
+    backgroundColor: Color.white,
+    ...Shadow.elevation3,
+  },
+});
