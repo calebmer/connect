@@ -42,6 +42,11 @@ const trailingCount = commentCountMore;
 
 type Props = {
   /**
+   * Are we currently loading new comments?
+   */
+  loading: boolean;
+
+  /**
    * The total number of comments in our list. We will render a list that can
    * fit this many comments.
    */
@@ -150,13 +155,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     };
   }
 
-  /**
-   * Has the browser painted this component yet? True if the browser has. This
-   * is different from whether or not the component has rendered. The component
-   * may render multiple times without a browser paint.
-   */
-  private hasPainted = false;
-
   componentDidMount() {
     // HACK: Set our scroll handler to the mutable ref. This is how we “pass up”
     // our event handler.
@@ -165,20 +163,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // NOTE: The initial visible range is an estimate! We only get an accurate
     // visible range once we scroll for the first time.
     this.props.onVisibleRangeChange(this.state.visibleRange);
-
-    // We determine whether or not the browser has painted with `setTimeout`.
-    // It’s not perfect but it gets the job done. `setTimeout` schedules a
-    // macro-task which will run after the browser paints. Unlike
-    // `Promise.resolve()` which schedules a micro-task and will run before the
-    // browser paints. `postMessage()` is perhaps a more reliable way to
-    // determine if the browser has painted?
-    //
-    // `componentDidMount()` runs before the browser paints. However,
-    // `useEffect()` will run after the browser paints. (I think? I might
-    // be wrong.)
-    setTimeout(() => {
-      this.hasPainted = true;
-    }, 0);
 
     // After we’ve rendered, schedule a low priority callback to render the rest
     // of the leading/trailing/overscan items.
@@ -280,6 +264,17 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
   } | null = null;
 
   /**
+   * Is the next comment height flush important? If true when we call
+   * `flushCommentHeights()` then we will automatically make the
+   * flush important.
+   *
+   * If our comment data is loaded when our virtualized comment list is
+   * mounted then the next flush is important since we don’t want the
+   * shimmers to flicker in.
+   */
+  private nextCommentHeightsFlushImportant = this.props.loading === false;
+
+  /**
    * When a comment’s layout changes we fire this event...
    */
   private handleCommentLayout: HandleCommentLayout = (
@@ -315,9 +310,10 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // Should we make this batch of pending comment heights important? The
     // answer is yes if:
     //
-    // 1. If the browser has not painted then we don’t want to show a flash of
-    //    unmeasured comments so we will synchronously re-render to avoid
-    //    the flash.
+    // 1. If we are immediately rendering comments after the component mounts.
+    //    We don’t want to flicker the comment shimmers for a millisecond. We
+    //    want to show our comments immediately. (This is handled
+    //    by `nextCommentHeightsFlushImportant`.)
     //
     // 2. If the comment is already measured. If a comment changes size then we
     //    need to immediately re-layout everything. If we let the browser paint
@@ -329,7 +325,6 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     //    unmeasured comment.
     this.pendingCommentHeights.important =
       this.pendingCommentHeights.important ||
-      this.hasPainted === false ||
       this.state.commentHeights[index] !== undefined ||
       comment.realtime === true;
 
@@ -348,6 +343,12 @@ export class PostVirtualizedComments extends React.Component<Props, State> {
     // Reset our pending comment heights.
     const pendingCommentHeights = this.pendingCommentHeights;
     this.pendingCommentHeights = null;
+
+    // Escalate the importance of our flush if we were instructed to.
+    if (this.nextCommentHeightsFlushImportant === true) {
+      pendingCommentHeights.important = true;
+      this.nextCommentHeightsFlushImportant = false;
+    }
 
     function updateState(prevState: State) {
       let newCommentHeights: Array<number | undefined> | undefined;

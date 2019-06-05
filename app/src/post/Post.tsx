@@ -54,6 +54,7 @@ function Post({
   // Load the comments from our post comments cache. Never suspend, though. We
   // want the post content to be visible while we load comments.
   const {
+    loading,
     data: {items: comments},
   } = useCacheWithPrev<
     PostID,
@@ -205,6 +206,7 @@ function Post({
         <PostContent postID={post.id} />
         <Trough title="Comments" />
         <PostVirtualizedComments
+          loading={loading}
           commentCount={commentCount}
           comments={comments}
           scrollViewRef={scrollViewRef}
