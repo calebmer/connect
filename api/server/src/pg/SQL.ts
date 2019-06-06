@@ -212,14 +212,15 @@ sql.join = function join(
   };
 };
 
-/**
- * Empty SQL query.
- */
-sql.empty = sql``;
+// NOTE: We use `sql.dangerouslyInjectRawString` for constant queries because
+// it has a lower memory footprint than a SQL template.
 
-const trueNode = sql.dangerouslyInjectRawString(`TRUE`);
-const falseNode = sql.dangerouslyInjectRawString(`FALSE`);
-const nullNode = sql.dangerouslyInjectRawString(`NULL`);
+/** Empty SQL query. */
+sql.empty = sql.dangerouslyInjectRawString("");
+
+const trueNode = sql.dangerouslyInjectRawString("TRUE");
+const falseNode = sql.dangerouslyInjectRawString("FALSE");
+const nullNode = sql.dangerouslyInjectRawString("NULL");
 
 /**
  * If the value is simple will inline it into the query, otherwise will defer
