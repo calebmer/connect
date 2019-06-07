@@ -124,7 +124,7 @@ export class ContextTest implements ContextQueryable {
       throw error;
     } finally {
       try {
-        await this.client.query("RESET ROLE");
+        await this.client.query("SET LOCAL ROLE connect_api_test");
       } catch (error) {
         // Ignore errors here...
       }
@@ -184,7 +184,7 @@ export class ContextTest implements ContextQueryable {
       throw error;
     } finally {
       try {
-        await this.client.query("RESET ROLE");
+        await this.client.query("SET LOCAL ROLE connect_api_test");
         await this.client.query("RESET connect.account_id");
       } catch (error) {
         // Ignore errors here...

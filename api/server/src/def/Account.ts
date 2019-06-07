@@ -8,7 +8,11 @@ import {
   RefreshToken,
   generateID,
 } from "@connect/api-client";
-import {Context, ContextUnauthorized} from "../Context";
+import {
+  Context,
+  ContextDangerousSecurityBypass,
+  ContextUnauthorized,
+} from "../Context";
 import {AccessTokenGenerator} from "../AccessToken";
 import bcrypt from "bcrypt";
 import {sql} from "../pg/SQL";
@@ -36,7 +40,7 @@ const SALT_ROUNDS = 10;
  * verified don’t access our API. Right now, anyone can make a request against
  * our API!
  */
-export async function signUp(
+export function signUp(
   ctx: ContextUnauthorized,
   {
     name,
@@ -52,48 +56,46 @@ export async function signUp(
   readonly accessToken: AccessToken;
   readonly refreshToken: RefreshToken;
 }> {
-  // Require a display name and an email. We will not accept an empty string!
-  if (name.length < 2 || email === "") {
-    throw new APIError(APIErrorCode.BAD_INPUT);
-  }
-
-  // Use the `connect_api_auth` role in this transaction. This will give us full
-  // access to the `account` and `refresh_token` tables but nothing else.
-  await ctx.query(sql`SET LOCAL ROLE connect_api_auth`);
-
-  // Hash the provided password with bcrypt.
-  const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-
-  // Generate a new ID for the account.
-  const newAccountID = generateID<AccountID>();
-
-  // Attempt to create a new account. If there is already an account with the
-  // same email then throw an error saying so.
-  try {
-    await ctx.query(sql`
-      INSERT INTO account (id, name, email, password_hash)
-          VALUES (${newAccountID}, ${name}, ${email}, ${passwordHash})
-    `);
-  } catch (error) {
-    if (
-      error instanceof APIError &&
-      error.code === APIErrorCode.ALREADY_EXISTS
-    ) {
-      throw new APIError(APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED);
-    } else {
-      throw error;
+  return ctx.withDangerousSecurityBypass(async ctx => {
+    // Require a display name and an email. We will not accept an empty string!
+    if (name.length < 2 || email === "") {
+      throw new APIError(APIErrorCode.BAD_INPUT);
     }
-  }
 
-  // We also want to sign our new account in, so generate new
-  // authorization tokens...
-  const {accessToken, refreshToken} = await generateTokens(ctx, newAccountID);
+    // Hash the provided password with bcrypt.
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  return {
-    accountID: newAccountID,
-    accessToken,
-    refreshToken,
-  };
+    // Generate a new ID for the account.
+    const newAccountID = generateID<AccountID>();
+
+    // Attempt to create a new account. If there is already an account with the
+    // same email then throw an error saying so.
+    try {
+      await ctx.dangerousQuery(sql`
+        INSERT INTO account (id, name, email, password_hash)
+             VALUES (${newAccountID}, ${name}, ${email}, ${passwordHash})
+      `);
+    } catch (error) {
+      if (
+        error instanceof APIError &&
+        error.code === APIErrorCode.ALREADY_EXISTS
+      ) {
+        throw new APIError(APIErrorCode.SIGN_UP_EMAIL_ALREADY_USED);
+      } else {
+        throw error;
+      }
+    }
+
+    // We also want to sign our new account in, so generate new
+    // authorization tokens...
+    const {accessToken, refreshToken} = await generateTokens(ctx, newAccountID);
+
+    return {
+      accountID: newAccountID,
+      accessToken,
+      refreshToken,
+    };
+  });
 }
 
 /**
@@ -104,7 +106,7 @@ export async function signUp(
  * verified don’t access our API. Right now, anyone can make a request against
  * our API!
  */
-export async function signIn(
+export function signIn(
   ctx: ContextUnauthorized,
   input: {
     readonly email: string;
@@ -115,44 +117,42 @@ export async function signIn(
   readonly accessToken: AccessToken;
   readonly refreshToken: RefreshToken;
 }> {
-  // Use the `connect_api_auth` role in this transaction. This will give us full
-  // access to the `account` and `refresh_token` tables but nothing else.
-  await ctx.query(sql`SET LOCAL ROLE connect_api_auth`);
+  return ctx.withDangerousSecurityBypass(async ctx => {
+    // Lookup the account associated with the provided email address.
+    const {
+      rows: [account],
+    } = await ctx.dangerousQuery(
+      sql`SELECT id, password_hash FROM account WHERE email = ${input.email}`,
+    );
 
-  // Lookup the account associated with the provided email address.
-  const {
-    rows: [account],
-  } = await ctx.query(
-    sql`SELECT id, password_hash FROM account WHERE email = ${input.email}`,
-  );
+    // If there is no account for the provided email address then throw an error.
+    //
+    // It may help an attacker to know whether the email was incorrect or the
+    // password. However, they could get this information anyway from our sign-up
+    // method by checking whether an account with a given email exists.
+    if (account === undefined) {
+      throw new APIError(APIErrorCode.SIGN_IN_UNRECOGNIZED_EMAIL);
+    }
 
-  // If there is no account for the provided email address then throw an error.
-  //
-  // It may help an attacker to know whether the email was incorrect or the
-  // password. However, they could get this information anyway from our sign-up
-  // method by checking whether an account with a given email exists.
-  if (account === undefined) {
-    throw new APIError(APIErrorCode.SIGN_IN_UNRECOGNIZED_EMAIL);
-  }
+    // Use bcrypt to compare the new password against the hashed password in
+    // our database.
+    const same = await bcrypt.compare(input.password, account.password_hash);
 
-  // Use bcrypt to compare the new password against the hashed password in
-  // our database.
-  const same = await bcrypt.compare(input.password, account.password_hash);
+    // If the passwords are not the same then throw an error. We must not sign
+    // the person in if they gave us the wrong password.
+    if (same === false) {
+      throw new APIError(APIErrorCode.SIGN_IN_INCORRECT_PASSWORD);
+    }
 
-  // If the passwords are not the same then throw an error. We must not sign
-  // the person in if they gave us the wrong password.
-  if (same === false) {
-    throw new APIError(APIErrorCode.SIGN_IN_INCORRECT_PASSWORD);
-  }
+    // Generate tokens for this account, officially signing the person in!
+    const {accessToken, refreshToken} = await generateTokens(ctx, account.id);
 
-  // Generate tokens for this account, officially signing the person in!
-  const {accessToken, refreshToken} = await generateTokens(ctx, account.id);
-
-  return {
-    accountID: account.id,
-    accessToken,
-    refreshToken,
-  };
+    return {
+      accountID: account.id,
+      accessToken,
+      refreshToken,
+    };
+  });
 }
 
 /**
@@ -160,65 +160,61 @@ export async function signIn(
  * the private information associated with their account again the user must
  * sign back in.
  */
-export async function signOut(
+export function signOut(
   ctx: ContextUnauthorized,
   input: {readonly refreshToken: RefreshToken},
 ): Promise<{}> {
-  // Use the `connect_api_auth` role in this transaction. This will give us full
-  // access to the `account` and `refresh_token` tables but nothing else.
-  await ctx.query(sql`SET LOCAL ROLE connect_api_auth`);
+  return ctx.withDangerousSecurityBypass(async ctx => {
+    // Delete the refresh token from our database!
+    await ctx.dangerousQuery(
+      sql`DELETE FROM refresh_token WHERE token = ${input.refreshToken}`,
+    );
 
-  // Delete the refresh token from our database!
-  await ctx.query(
-    sql`DELETE FROM refresh_token WHERE token = ${input.refreshToken}`,
-  );
-
-  return {};
+    return {};
+  });
 }
 
 /**
  * Uses a refresh token to generate a new access token. This method can be
  * used when you have an expired access token and you need to get a new one.
  */
-export async function refreshAccessToken(
+export function refreshAccessToken(
   ctx: ContextUnauthorized,
   {refreshToken}: {readonly refreshToken: RefreshToken},
 ): Promise<{
   readonly accessToken: AccessToken;
 }> {
-  // Use the `connect_api_auth` role in this transaction. This will give us full
-  // access to the `account` and `refresh_token` tables but nothing else.
-  await ctx.query(sql`SET LOCAL ROLE connect_api_auth`);
+  return ctx.withDangerousSecurityBypass(async ctx => {
+    // Fetch the refresh token from our database.
+    //
+    // When we use a refresh token we also update the `last_used_at` column. By
+    // updating `last_used_at` we can tell, roughly, the last hour or so the
+    // associated account was active.
+    const {
+      rows: [row],
+    } = await ctx.dangerousQuery(sql`
+        UPDATE refresh_token
+            SET last_used_at = now()
+          WHERE token = ${refreshToken}
+      RETURNING account_id
+    `);
 
-  // Fetch the refresh token from our database.
-  //
-  // When we use a refresh token we also update the `last_used_at` column. By
-  // updating `last_used_at` we can tell, roughly, the last hour or so the
-  // associated account was active.
-  const {
-    rows: [row],
-  } = await ctx.query(sql`
-       UPDATE refresh_token
-          SET last_used_at = now()
-        WHERE token = ${refreshToken}
-    RETURNING account_id
-  `);
+    // Extract the account ID from the query.
+    const accountID: AccountID | undefined = row ? row.account_id : undefined;
 
-  // Extract the account ID from the query.
-  const accountID: AccountID | undefined = row ? row.account_id : undefined;
+    // If the refresh token does not exist then we can’t create a new
+    // access token.
+    if (accountID === undefined) {
+      throw new APIError(APIErrorCode.REFRESH_TOKEN_INVALID);
+    }
 
-  // If the refresh token does not exist then we can’t create a new
-  // access token.
-  if (accountID === undefined) {
-    throw new APIError(APIErrorCode.REFRESH_TOKEN_INVALID);
-  }
+    // Generate a new access token.
+    const accessToken = await AccessTokenGenerator.generate({id: accountID});
 
-  // Generate a new access token.
-  const accessToken = await AccessTokenGenerator.generate({id: accountID});
-
-  return {
-    accessToken,
-  };
+    return {
+      accessToken,
+    };
+  });
 }
 
 /**
@@ -228,7 +224,7 @@ export async function refreshAccessToken(
  * tokens after they have verify the identity of the person trying to sign in.
  */
 async function generateTokens(
-  ctx: ContextUnauthorized,
+  ctx: ContextDangerousSecurityBypass,
   accountID: AccountID,
 ): Promise<{
   readonly accessToken: AccessToken;
@@ -239,7 +235,7 @@ async function generateTokens(
   const refreshToken = uuidV4() as RefreshToken;
 
   // Insert our refresh token into the database.
-  await ctx.query(sql`
+  await ctx.dangerousQuery(sql`
     INSERT INTO refresh_token (token, account_id)
          VALUES (${refreshToken}, ${accountID})
   `);
