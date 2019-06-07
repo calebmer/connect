@@ -1,4 +1,4 @@
-import {Color, Font, Shadow, Space} from "../atoms";
+import {Color, Font, Icon, IconName, Shadow, Space} from "../atoms";
 import {StyleSheet, Text, View} from "react-native";
 import React from "react";
 
@@ -10,12 +10,14 @@ import React from "react";
  */
 export function Trough({
   title,
+  icon,
   hideTopShadow,
   hideBottomShadow,
   paddingHorizontal,
   children,
 }: {
   title?: string;
+  icon?: IconName;
   hideTopShadow?: boolean;
   hideBottomShadow?: boolean;
   paddingHorizontal?: number;
@@ -30,7 +32,14 @@ export function Trough({
       {hideTopShadow !== true && <View style={styles.troughShadowTop} />}
       {hideBottomShadow !== true && <View style={styles.troughShadowBottom} />}
       {children}
-      {title !== undefined && <Text style={styles.troughTitle}>{title}</Text>}
+      {title !== undefined && (
+        <Text style={styles.troughTitle}>
+          {icon && (
+            <Icon style={styles.troughIcon} name={icon} size={Space.space2} />
+          )}
+          {title}
+        </Text>
+      )}
     </View>
   );
 }
@@ -69,5 +78,8 @@ const styles = StyleSheet.create({
     color: Color.grey6,
     ...Font.sans,
     ...Font.size1,
+  },
+  troughIcon: {
+    marginRight: 7,
   },
 });
