@@ -78,17 +78,48 @@ function Group({
   const [adjustedContentInsetTop, setAdjustedContentInsetTop] = useState(
     Platform.OS === "ios" ? null : 0,
   );
-  const bannerScale =
+
+  // Let’s model the group banner animation with math to understand how we get
+  // to these equations.
+  //
+  // Let `x` be the number of pixels of “overflow” we’ve scrolled. That means
+  // the number of pixels between the top of the scroll view and the top of the
+  // window when the top of the scroll view is _below_ the top of the window.
+  //
+  // In code that means take the `scrollY` position, negate it, and clamp it
+  // to zero.
+  //
+  // Let `c` be the original height of our group banner.
+  //
+  // The height of our group banner at any point in time can be modeled by
+  // the equation: `f(x) = x + c`. That is the height of our group banner is
+  // the original height (`c`) plus any extra overflow pixels (`x`).
+  //
+  // To get the scale of our banner at any point in time we need: `f(x) / c`.
+  // That implies when `x = c` (we’ve scrolled a whole extra banner in overflow)
+  // we’ll need to scale our banner by a factor of 2.
+  //
+  // We scale our banner from the middle so then we need to translate the banner
+  // so it actually fills the overflow space. The transform origin is the center
+  // of the banner.
+  const bannerProgress =
     adjustedContentInsetTop === null
-      ? 1
-      : scrollY.interpolate({
-          inputRange: [-GroupBanner.height, 0].map(
-            y => y - adjustedContentInsetTop,
-          ),
-          outputRange: [2.8, 1], // NOTE: I would expect this number to be 2 and not 2.8, but experimental evidence proves otherwise.
-          extrapolateLeft: "extend",
-          extrapolateRight: "clamp",
+      ? 0
+      : Animated.multiply(
+          // iOS is weird so we have to factor in the adjusted content inset.
+          Animated.add(scrollY, adjustedContentInsetTop),
+          -1,
+        ).interpolate({
+          inputRange: [0, 100],
+          outputRange: [0, 100],
+          extrapolateLeft: "clamp",
+          extrapolateRight: "extend",
         });
+  const bannerScale = Animated.add(
+    Animated.divide(bannerProgress, GroupBanner.height),
+    1,
+  );
+  const bannerTranslate = Animated.divide(bannerProgress, 2);
 
   // Are we using the mobile group home layout?
   const stickyNavbar = !useGroupHomeLayout();
@@ -136,12 +167,10 @@ function Group({
     <View style={[styles.container, style]}>
       {/* The banner which exists in the background of the view. */}
       <Animated.View
-        // TODO: Scale background only instead of background and text? Only do
-        // this when we have a background image to test against.
-        //
-        // TODO: Scale and translate. We can translate the banner down while
-        // scaling so it needs to grow less.
-        style={[styles.banner, {transform: [{scale: bannerScale}]}]}
+        style={[
+          styles.banner,
+          {transform: [{translateY: bannerTranslate}, {scale: bannerScale}]},
+        ]}
       >
         <GroupBanner group={group} />
       </Animated.View>
