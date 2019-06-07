@@ -79,17 +79,10 @@ export class ContextUnauthorized implements ContextQueryable {
    * Creates a child context that bypasses security. This is very DANGEROUS! If
    * used incorrectly you can expose data to a user that violates our
    * privacy rules!
-   *
-   * Note that we expect the action to return `void`! We don’t want our action
-   * returning any data they selected while bypassing security. By forcing a
-   * void return type we make it difficult for the programmer to move private
-   * data out of the action scope. It might even be worth adding a lint rule
-   * that warns when you try to assign to a variable outside of the dangerous
-   * action scope!
    */
-  public withDangerousSecurityBypass(
-    action: (ctx: ContextDangerousSecurityBypass) => Promise<void>,
-  ): Promise<void> {
+  public withDangerousSecurityBypass<T>(
+    action: (ctx: ContextDangerousSecurityBypass) => Promise<T>,
+  ): Promise<T> {
     return ContextDangerousSecurityBypass.with(this, action);
   }
 
@@ -206,18 +199,17 @@ export class ContextDangerousSecurityBypass {
    * Creates a child context that bypasses security. This is very DANGEROUS! If
    * used incorrectly you can expose data to a user that violates our
    * privacy rules!
-   *
-   * We very intentionally return void here instead of the action’s result.
-   * See `withDangerousSecurityBypass()` for an explanation as to why.
    */
-  public static async with(
+  public static async with<T>(
     ctx: ContextUnauthorized,
-    action: (ctx: ContextDangerousSecurityBypass) => Promise<void>,
-  ): Promise<void> {
+    action: (ctx: ContextDangerousSecurityBypass) => Promise<T>,
+  ): Promise<T> {
     await ctx.query(sql`SET LOCAL ROLE connect_api_dangerous_security_bypass`);
     const childCtx = new ContextDangerousSecurityBypass(ctx);
     try {
-      await action(childCtx);
+      // NOTE: The `return await` is intentional here so that our finally block
+      // will run.
+      return await action(childCtx);
     } finally {
       childCtx.invalidate();
       await ctx.query(sql`SET LOCAL ROLE connect_api`).catch(() => {});
