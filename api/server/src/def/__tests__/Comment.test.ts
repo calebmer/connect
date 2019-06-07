@@ -10,6 +10,7 @@ import {
   createComment,
   createGroupMember,
   createPost,
+  createPostFollower,
 } from "../../TestFactory";
 import {
   getComment,
@@ -631,6 +632,138 @@ describe("publishComment", () => {
                post_id = ${post.id}
       `);
       expect(rowCount2).toEqual(1);
+    });
+  });
+
+  test("will add a message to post follower inboxes", () => {
+    return ContextTest.with(async ctx => {
+      const commentID = generateID<CommentID>();
+      const {accountID: accountID1, groupID} = await createGroupMember(ctx);
+      const {accountID: accountID2} = await createGroupMember(ctx, {groupID});
+      const post = await createPost(ctx, {groupID});
+      await createPostFollower(ctx, {postID: post.id, accountID: accountID1});
+      await createPostFollower(ctx, {postID: post.id, accountID: accountID2});
+
+      expect(
+        await ctx.queryRowCount(sql`
+          SELECT 1
+            FROM inbox
+           WHERE recipient_id = ${accountID2} AND
+                 dismissed = FALSE AND
+                 kind = 'comment' AND
+                 comment_id = ${commentID}
+        `),
+      ).toEqual(0);
+
+      await ctx.withAuthorized(accountID1, async ctx => {
+        await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test",
+        });
+      });
+
+      expect(
+        await ctx.queryRowCount(sql`
+          SELECT 1
+            FROM inbox
+           WHERE recipient_id = ${accountID2} AND
+                 dismissed = FALSE AND
+                 kind = 'comment' AND
+                 comment_id = ${commentID}
+        `),
+      ).toEqual(1);
+    });
+  });
+
+  test("will not add a message to own post follower inbox", () => {
+    return ContextTest.with(async ctx => {
+      const commentID = generateID<CommentID>();
+      const {accountID: accountID1, groupID} = await createGroupMember(ctx);
+      const {accountID: accountID2} = await createGroupMember(ctx, {groupID});
+      const post = await createPost(ctx, {groupID});
+      await createPostFollower(ctx, {postID: post.id, accountID: accountID1});
+      await createPostFollower(ctx, {postID: post.id, accountID: accountID2});
+
+      expect(
+        await ctx.queryRowCount(sql`
+          SELECT 1
+            FROM inbox
+           WHERE recipient_id = ${accountID1} AND
+                 dismissed = FALSE AND
+                 kind = 'comment' AND
+                 comment_id = ${commentID}
+        `),
+      ).toEqual(0);
+
+      await ctx.withAuthorized(accountID1, async ctx => {
+        await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test",
+        });
+      });
+
+      expect(
+        await ctx.queryRowCount(sql`
+          SELECT 1
+            FROM inbox
+           WHERE recipient_id = ${accountID1} AND
+                 dismissed = FALSE AND
+                 kind = 'comment' AND
+                 comment_id = ${commentID}
+        `),
+      ).toEqual(0);
+    });
+  });
+
+  test("will add a message to the inbox of many post followers", () => {
+    return ContextTest.with(async ctx => {
+      const commentID = generateID<CommentID>();
+      const {accountID: accountID1, groupID} = await createGroupMember(ctx);
+      const {accountID: accountID2} = await createGroupMember(ctx, {groupID});
+      const {accountID: accountID3} = await createGroupMember(ctx, {groupID});
+      const {accountID: accountID4} = await createGroupMember(ctx, {groupID});
+      const {accountID: accountID5} = await createGroupMember(ctx, {groupID});
+      const post = await createPost(ctx, {groupID});
+      await createPostFollower(ctx, {postID: post.id, accountID: accountID1});
+      await createPostFollower(ctx, {postID: post.id, accountID: accountID2});
+      await createPostFollower(ctx, {postID: post.id, accountID: accountID3});
+      await createPostFollower(ctx, {postID: post.id, accountID: accountID4});
+      await createPostFollower(ctx, {postID: post.id, accountID: accountID5});
+
+      expect(
+        await ctx.queryRows(sql`
+          SELECT recipient_id
+            FROM inbox
+           WHERE dismissed = FALSE AND
+                 kind = 'comment' AND
+                 comment_id = ${commentID}
+        `),
+      ).toEqual([]);
+
+      await ctx.withAuthorized(accountID1, async ctx => {
+        await publishComment(ctx, {
+          id: commentID,
+          postID: post.id,
+          content: "test",
+        });
+      });
+
+      expect(
+        await ctx.queryRows(sql`
+          SELECT recipient_id
+            FROM inbox
+           WHERE dismissed = FALSE AND
+                 kind = 'comment' AND
+                 comment_id = ${commentID}
+        `),
+      ).toEqual([
+        {recipient_id: accountID2},
+        {recipient_id: accountID3},
+        {recipient_id: accountID4},
+        {recipient_id: accountID5},
+      ]);
     });
   });
 });

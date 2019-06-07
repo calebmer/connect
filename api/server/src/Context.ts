@@ -79,10 +79,17 @@ export class ContextUnauthorized implements ContextQueryable {
    * Creates a child context that bypasses security. This is very DANGEROUS! If
    * used incorrectly you can expose data to a user that violates our
    * privacy rules!
+   *
+   * Note that we expect the action to return `void`! We don’t want our action
+   * returning any data they selected while bypassing security. By forcing a
+   * void return type we make it difficult for the programmer to move private
+   * data out of the action scope. It might even be worth adding a lint rule
+   * that warns when you try to assign to a variable outside of the dangerous
+   * action scope!
    */
-  public withDangerousSecurityBypass<T>(
-    action: (ctx: ContextDangerousSecurityBypass) => Promise<T>,
-  ): Promise<T> {
+  public withDangerousSecurityBypass(
+    action: (ctx: ContextDangerousSecurityBypass) => Promise<void>,
+  ): Promise<void> {
     return ContextDangerousSecurityBypass.with(this, action);
   }
 
@@ -189,23 +196,28 @@ export class Context extends ContextUnauthorized {
  * that violates our privacy rules!!!
  *
  * Use this context very sparingly and be so so so careful please.
+ *
+ * We intentionally don’t extend `ContextUnauthorized`! That way if a function
+ * expects a `ContextUnauthorized` we won’t accidentally pass them a dangerous
+ * context instead.
  */
 export class ContextDangerousSecurityBypass {
   /**
    * Creates a child context that bypasses security. This is very DANGEROUS! If
    * used incorrectly you can expose data to a user that violates our
    * privacy rules!
+   *
+   * We very intentionally return void here instead of the action’s result.
+   * See `withDangerousSecurityBypass()` for an explanation as to why.
    */
-  public static async with<T>(
+  public static async with(
     ctx: ContextUnauthorized,
-    action: (ctx: ContextDangerousSecurityBypass) => Promise<T>,
-  ): Promise<T> {
+    action: (ctx: ContextDangerousSecurityBypass) => Promise<void>,
+  ): Promise<void> {
     await ctx.query(sql`SET LOCAL ROLE connect_api_dangerous_security_bypass`);
     const childCtx = new ContextDangerousSecurityBypass(ctx);
     try {
-      // NOTE: The `return await` here is intentional so that our finally block
-      // will run after the await.
-      return await action(childCtx);
+      await action(childCtx);
     } finally {
       childCtx.invalidate();
       await ctx.query(sql`SET LOCAL ROLE connect_api`).catch(() => {});
@@ -231,6 +243,21 @@ export class ContextDangerousSecurityBypass {
       throw new Error("Cannot use the context after it has been invalidated.");
     }
     return this.parent.query(query);
+  }
+
+  /**
+   * Schedules a callback to run after the parent context successfully commits.
+   * This callback will not run if the action owning the transaction throws!
+   *
+   * This callback will not be able to query the database! The callback also is
+   * not able to dangerously bypass security. This only schedules a very vanilla
+   * callback to run at the end of the database transaction.
+   */
+  public afterCommit(callback: () => Promise<void>) {
+    if (this.parent === null) {
+      throw new Error("Cannot use the context after it has been invalidated.");
+    }
+    return this.parent.afterCommit(callback);
   }
 
   private invalidate() {

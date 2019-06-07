@@ -239,6 +239,24 @@ export class ContextTest implements ContextQueryable {
   }
 
   /**
+   * Returns the rows selected by the provided query directly. A convenience
+   * function for `this.query()` which makes it easier to write tests.
+   */
+  async queryRows(query: SQLQuery): Promise<Array<any>> {
+    const {rows} = await this.query(query);
+    return rows;
+  }
+
+  /**
+   * Returns the number of rows selected by the provided query. A convenience
+   * function for `this.query()` which makes it easier to write tests.
+   */
+  async queryRowCount(query: SQLQuery): Promise<number> {
+    const {rowCount} = await this.query(query);
+    return rowCount;
+  }
+
+  /**
    * Invalidates our test context. Useful for preventing contexts from leaking
    * out of their transaction.
    */
