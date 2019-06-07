@@ -200,7 +200,7 @@ export class ContextDangerousSecurityBypass {
     ctx: ContextUnauthorized,
     action: (ctx: ContextDangerousSecurityBypass) => Promise<T>,
   ): Promise<T> {
-    await ctx.query(sql`SET LOCAL ROLE connect_api_auth`);
+    await ctx.query(sql`SET LOCAL ROLE connect_api_dangerous_security_bypass`);
     const childCtx = new ContextDangerousSecurityBypass(ctx);
     try {
       // NOTE: The `return await` here is intentional so that our finally block

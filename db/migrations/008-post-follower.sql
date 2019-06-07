@@ -22,6 +22,13 @@ GRANT SELECT ON TABLE post_follower TO connect_api;
 GRANT INSERT ON TABLE post_follower TO connect_api;
 
 -- Account must be the one following to see it.
+--
+-- We don’t allow a user to see which accounts are following a post. We don’t
+-- make it clear when following/unfollowing a post that doing so will be a
+-- public act so instead we default to keeping post follower
+-- information private.
+--
+-- Lurkers might appreciate being able to privately follow posts for updates.
 CREATE POLICY select_post_follower ON post_follower FOR SELECT USING
   (account_id = current_account_id());
 
