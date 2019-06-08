@@ -55,7 +55,7 @@ export const GlyphMap = {
   // cast: 0xe92a,
   // "check-circle": 0xe92b,
   // "check-square": 0xe92c,
-  // check: 0xe92d,
+  check: 0xe92d,
   "chevron-down": 0xe92e,
   // "chevron-left": 0xe92f,
   "chevron-right": 0xe930,

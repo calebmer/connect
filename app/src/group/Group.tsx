@@ -1,8 +1,8 @@
 import {
   Animated,
   Platform,
+  SectionBase,
   SectionList,
-  SectionListData,
   StyleProp,
   StyleSheet,
   Text,
@@ -10,7 +10,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import {Color, Font, Space} from "../atoms";
+import {Color, Font, IconName, Space} from "../atoms";
 import {CurrentAccountCache, useCurrentAccount} from "../account/AccountCache";
 import {
   GroupPostsCache,
@@ -26,6 +26,7 @@ import {ErrorBoundary} from "../frame/ErrorBoundary";
 import {GroupBanner} from "./GroupBanner";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
+import {IconPatch} from "../molecules/IconPatch";
 import {Loading} from "../molecules/Loading";
 import {Navbar} from "../frame/Navbar";
 import {Route} from "../router/Route";
@@ -144,11 +145,23 @@ function Group({
   // All the section data that our list will render. Memoized to avoid
   // unnecessary calculations in the virtualized list.
   const sections = useMemo(() => {
+    // The inbox section of our `<SectionList>`. Contains messages that are
+    // relevant to the signed in user.
+    const inboxSection: GroupSectionListData<null> = {
+      title: "Inbox",
+      titleIcon: "inbox",
+      hasContent: false,
+      data: [null],
+      keyExtractor: item => String(item),
+      renderItem: () => <GroupInboxEmpty />,
+    };
+
     // The feed section of our `<SectionList>`. Contains all the posts from the
     // group in reverse chronological order.
-    const feedSection: SectionListData<GroupPostsCacheEntry> = {
+    const feedSection: GroupSectionListData<GroupPostsCacheEntry> = {
       title: "Feed",
       titleIcon: "rss",
+      hasContent: posts.length > 0,
       data: posts as Array<GroupPostsCacheEntry>,
       keyExtractor: post => String(post.id),
       renderItem: ({item: {id: postID}}) => (
@@ -159,9 +172,10 @@ function Group({
           selectedPostID={selectedPostID}
         />
       ),
+      lastSection: inboxSection,
     };
 
-    return [feedSection];
+    return [inboxSection, feedSection];
   }, [group, posts, route, selectedPostID]);
 
   return (
@@ -236,7 +250,7 @@ function Group({
           );
         }, [adjustedContentInsetTop, loadingMorePosts])}
         stickySectionHeadersEnabled={false}
-        renderSectionHeader={GroupSectionHeader}
+        renderSectionHeader={GroupSectionHeader as any}
         // Watch scroll events and keep track of:
         //
         // - The starting Y offset for our scroll view.
@@ -281,6 +295,30 @@ function Group({
 
 const GroupMemo = React.memo(Group);
 export {GroupMemo as Group};
+
+/**
+ * The data for a section in our group.
+ */
+interface GroupSectionListData<Data> extends SectionBase<Data> {
+  /**
+   * The title of our group section.
+   */
+  readonly title: string;
+  /**
+   * An icon for the title of our section.
+   */
+  readonly titleIcon: IconName;
+  /**
+   * Does this section have some elevated content? If yes then we need to render
+   * appropriate shadows.
+   */
+  readonly hasContent: boolean;
+  /**
+   * The section before ours. Useful when we need to change our rendering based
+   * on the last section.
+   */
+  readonly lastSection?: GroupSectionListData<any>;
+}
 
 /**
  * Component we use for a group’s route. It does data loading instead of letting
@@ -346,11 +384,19 @@ function GroupHeader({route, group}: {route: Route; group: Group}) {
 }
 
 function GroupSectionHeader({
-  section: {title, titleIcon},
+  section,
 }: {
-  section: SectionListData<unknown>;
+  section: GroupSectionListData<unknown>;
 }) {
-  return <Trough title={title} icon={titleIcon} />;
+  const {lastSection} = section;
+  return (
+    <Trough
+      title={section.title}
+      icon={section.titleIcon}
+      hideBottomShadow={!section.hasContent}
+      hideTopShadow={lastSection && !lastSection.hasContent}
+    />
+  );
 }
 
 function GroupFooter({
@@ -373,6 +419,20 @@ function GroupFooter({
         )}
       </View>
     </Trough>
+  );
+}
+
+function GroupInboxEmpty() {
+  // Make this fun with a dancing animation?
+  return (
+    <View style={styles.inboxEmpty}>
+      <Text style={styles.inboxEmptyText}>
+        <Text style={styles.inboxEmptyTextBold}>You’re all caught up!</Text>
+        {"\n"}
+        Updates for conversations you take part in will appear here.
+      </Text>
+      <IconPatch icon="check" theme="stamp" />
+    </View>
   );
 }
 
@@ -404,5 +464,24 @@ const styles = StyleSheet.create({
     textAlign: "center",
     ...Font.sans,
     ...Font.size1,
+  },
+  inboxEmpty: {
+    flexDirection: "row",
+    paddingLeft: Space.space3,
+    paddingRight: Space.space4,
+    paddingBottom: Space.space4,
+    backgroundColor: Trough.backgroundColor,
+  },
+  inboxEmptyText: {
+    flex: 1,
+    marginRight: Space.space3,
+    color: Color.grey7,
+    ...Font.serif,
+    ...Font.size2,
+    lineHeight: Font.size2.fontSize * 1.3,
+  },
+  inboxEmptyTextBold: {
+    color: Color.grey8,
+    ...Font.serifBold,
   },
 });

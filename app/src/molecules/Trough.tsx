@@ -35,7 +35,9 @@ export function Trough({
       {title !== undefined && (
         <Text style={styles.troughTitle}>
           {icon && (
-            <Icon style={styles.troughIcon} name={icon} size={Space.space2} />
+            <>
+              <Icon name={icon} size={13} />{" "}
+            </>
           )}
           {title}
         </Text>
@@ -73,13 +75,10 @@ const styles = StyleSheet.create({
     ...Shadow.elevation0,
   },
   troughTitle: {
-    paddingTop: Space.space3,
-    paddingBottom: Space.space0 / 2,
+    paddingTop: Space.space3 - Space.space0 / 2,
+    paddingBottom: Space.space0,
     color: Color.grey6,
     ...Font.sans,
     ...Font.size1,
-  },
-  troughIcon: {
-    marginRight: 7,
   },
 });

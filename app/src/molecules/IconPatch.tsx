@@ -12,7 +12,7 @@ interface IconPatchProps extends ViewProps {
    * The color theme for our patch. If the color theme changes then we will
    * update the theme with an animation.
    */
-  theme?: "primary" | "primary-active" | "disabled";
+  theme?: keyof typeof themeColors;
 }
 
 /**
@@ -92,6 +92,10 @@ const themeColors = {
   disabled: {
     patchColor: "hsl(0, 0%, 95%)", // `Color.grey0` is too light and `Color.grey1` is too dark
     iconColor: Color.grey4,
+  },
+  stamp: {
+    patchColor: "hsl(0, 0%, 91%)", // `Color.grey0` is the background light and `Color.grey1` is too dark
+    iconColor: Color.grey7,
   },
 };
 
