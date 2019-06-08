@@ -148,6 +148,7 @@ function Group({
     // group in reverse chronological order.
     const feedSection: SectionListData<GroupPostsCacheEntry> = {
       title: "Feed",
+      titleIcon: "rss",
       data: posts as Array<GroupPostsCacheEntry>,
       keyExtractor: post => String(post.id),
       renderItem: ({item: {id: postID}}) => (
@@ -345,11 +346,11 @@ function GroupHeader({route, group}: {route: Route; group: Group}) {
 }
 
 function GroupSectionHeader({
-  section: {title},
+  section: {title, titleIcon},
 }: {
   section: SectionListData<unknown>;
 }) {
-  return <Trough title={title} />;
+  return <Trough title={title} icon={titleIcon} />;
 }
 
 function GroupFooter({
