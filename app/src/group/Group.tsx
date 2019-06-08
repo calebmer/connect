@@ -26,7 +26,7 @@ import {ErrorBoundary} from "../frame/ErrorBoundary";
 import {GroupBanner} from "./GroupBanner";
 import {GroupItemFeed} from "./GroupItemFeed";
 import {GroupPostPrompt} from "./GroupPostPrompt";
-import {IconPatch} from "../molecules/IconPatch";
+import {InboxEmpty} from "../inbox/InboxEmpty";
 import {Loading} from "../molecules/Loading";
 import {Navbar} from "../frame/Navbar";
 import {Route} from "../router/Route";
@@ -153,7 +153,7 @@ function Group({
       hasContent: false,
       data: [null],
       keyExtractor: item => String(item),
-      renderItem: () => <GroupInboxEmpty />,
+      renderItem: () => <InboxEmpty />,
     };
 
     // The feed section of our `<SectionList>`. Contains all the posts from the
@@ -422,20 +422,6 @@ function GroupFooter({
   );
 }
 
-function GroupInboxEmpty() {
-  // Make this fun with a dancing animation?
-  return (
-    <View style={styles.inboxEmpty}>
-      <Text style={styles.inboxEmptyText}>
-        <Text style={styles.inboxEmptyTextBold}>You’re all caught up!</Text>
-        {"\n"}
-        Updates for conversations you take part in will appear here.
-      </Text>
-      <IconPatch icon="check" theme="stamp" />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
     overflow: "hidden",
@@ -464,24 +450,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     ...Font.sans,
     ...Font.size1,
-  },
-  inboxEmpty: {
-    flexDirection: "row",
-    paddingLeft: Space.space3,
-    paddingRight: Space.space4,
-    paddingBottom: Space.space4,
-    backgroundColor: Trough.backgroundColor,
-  },
-  inboxEmptyText: {
-    flex: 1,
-    marginRight: Space.space3,
-    color: Color.grey7,
-    ...Font.serif,
-    ...Font.size2,
-    lineHeight: Font.size2.fontSize * 1.3,
-  },
-  inboxEmptyTextBold: {
-    color: Color.grey8,
-    ...Font.serifBold,
   },
 });
