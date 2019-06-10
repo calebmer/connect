@@ -37,10 +37,10 @@
  * - We use 60 bits of randomness whereas ULID uses 80 and Firebase uses 72.
  *   initially when writing this algorithm, I (@calebmer) thought I was using
  *   72 bits of randomness like Firebase. However, I did the math in the
- *   implementation wrong. I was counting base 64 encoded bits for 12 characters
- *   (bits in a base 64 character: 2 ^ 6 = 64, bits in 12 base 64 characters: 6 * 12 = 72)
- *   instead of base 32 encoded bits for 12 characters (bits in a base 32
- *   character: 2 ^ 5 = 32, bits in 12 base 32 characters: 5 * 12 = 60). Since
+ *   implementation wrong. I was counting base64 encoded bits for 12 characters
+ *   (bits in a base64 character: 2 ^ 6 = 64; bits in 12 base64 characters: 6 * 12 = 72)
+ *   instead of base32 encoded bits for 12 characters (bits in a base32
+ *   character: 2 ^ 5 = 32; bits in 12 base32 characters: 5 * 12 = 60). Since
  *   that mistake, this algorithm has been shipped to production and numerous places
  *   in the code expect an ID that is 22 characters long. For now, I’m fine with
  *   tolerating only 60 bits of randomness. If we ever start seeing collisions then
