@@ -45,7 +45,12 @@ function GroupMemberSidebar({groupID}: {groupID: GroupID}) {
 
   return (
     <ScrollView>
-      <Trough title="Members" hideTopShadow paddingHorizontal={padding} />
+      <Trough
+        title="Members"
+        icon="users"
+        hideTopShadow
+        paddingHorizontal={padding}
+      />
       <View style={styles.container}>
         {members.map(member =>
           currentAccount.id === member.accountID ? null : (

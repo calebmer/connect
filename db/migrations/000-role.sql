@@ -15,6 +15,10 @@ CREATE ROLE connect_api LOGIN PASSWORD 'connect_api' NOINHERIT;
 --
 -- We only use this role in auth functions to help avoid accidentally leaking
 -- private information.
+--
+-- MIGRATION NOTE: We rename this role to `connect_api_dangerous_security_bypass`
+-- in a later migration! This is because we gave it a more general pupose role
+-- in bypassing security. We also want to discourage usage of the role.
 CREATE ROLE connect_api_auth ROLE connect_api;
 
 -- Allow our new roles to see the objects in the Connect schema.

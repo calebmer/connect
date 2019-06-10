@@ -201,6 +201,7 @@ export class PGClient {
       debug((poolID != null ? `[${poolID}] ` : "") + queryText);
     }
 
+    // TODO: Fix error stack traces for `pg`
     return this.client.query(queryConfig).catch(handlePGError);
   }
 }

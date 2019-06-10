@@ -200,6 +200,36 @@ export async function createPost(
   };
 }
 
+type FactoryPostFollowerConfig = {
+  postID?: PostID;
+  accountID?: AccountID;
+};
+
+type FactoryPostFollower = {
+  postID: PostID;
+  accountID: AccountID;
+};
+
+export async function createPostFollower(
+  ctx: ContextTest,
+  config: FactoryPostFollowerConfig = {},
+): Promise<FactoryPostFollower> {
+  const [accountID, postID] = await Promise.all([
+    maybeCreateAccount(ctx, config.accountID),
+    maybeCreatePost(ctx, config.postID),
+  ]);
+
+  await ctx.query(sql`
+    INSERT INTO post_follower (account_id, post_id)
+         VALUES (${accountID}, ${postID})
+  `);
+
+  return {
+    postID,
+    accountID,
+  };
+}
+
 type FactoryCommentConfig = {
   groupID?: GroupID; // Not used if a `postID` is provided.
   postID?: PostID;

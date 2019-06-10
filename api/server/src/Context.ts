@@ -1,7 +1,7 @@
 import {AccountID, SubscriptionID} from "@connect/api-client";
+import {SQLQuery, sql} from "./pg/SQL";
 import {PGClient} from "./pg/PGClient";
 import {QueryResult} from "pg";
-import {SQLQuery} from "./pg/SQL";
 
 /**
  * A context that can be queried.
@@ -73,6 +73,17 @@ export class ContextUnauthorized implements ContextQueryable {
 
   protected constructor(client: PGClient) {
     this.client = client;
+  }
+
+  /**
+   * Creates a child context that bypasses security. This is very DANGEROUS! If
+   * used incorrectly you can expose data to a user that violates our
+   * privacy rules!
+   */
+  public withDangerousSecurityBypass<T>(
+    action: (ctx: ContextDangerousSecurityBypass) => Promise<T>,
+  ): Promise<T> {
+    return ContextDangerousSecurityBypass.with(this, action);
   }
 
   /**
@@ -169,6 +180,80 @@ export class Context extends ContextUnauthorized {
   protected constructor(client: PGClient, accountID: AccountID) {
     super(client);
     this.accountID = accountID;
+  }
+}
+
+/**
+ * Context that bypasses Row Level Security policies for some tables. This
+ * context is very DANGEROUS! If used incorrectly you can expose data to a user
+ * that violates our privacy rules!!!
+ *
+ * Use this context very sparingly and be so so so careful please.
+ *
+ * We intentionally don’t extend `ContextUnauthorized`! That way if a function
+ * expects a `ContextUnauthorized` we won’t accidentally pass them a dangerous
+ * context instead.
+ */
+export class ContextDangerousSecurityBypass {
+  /**
+   * Creates a child context that bypasses security. This is very DANGEROUS! If
+   * used incorrectly you can expose data to a user that violates our
+   * privacy rules!
+   */
+  public static async with<T>(
+    ctx: ContextUnauthorized,
+    action: (ctx: ContextDangerousSecurityBypass) => Promise<T>,
+  ): Promise<T> {
+    await ctx.query(sql`SET LOCAL ROLE connect_api_dangerous_security_bypass`);
+    const childCtx = new ContextDangerousSecurityBypass(ctx);
+    try {
+      // NOTE: The `return await` is intentional here so that our finally block
+      // will run.
+      return await action(childCtx);
+    } finally {
+      childCtx.invalidate();
+      await ctx.query(sql`SET LOCAL ROLE connect_api`).catch(() => {});
+    }
+  }
+
+  /**
+   * The parent context. Might be a `ContextUnauthorized` or `Context`. We
+   * invalidate the context by setting the parent to null after its
+   * action completes.
+   */
+  private parent: ContextUnauthorized | null;
+
+  private constructor(parent: ContextUnauthorized) {
+    this.parent = parent;
+  }
+
+  /**
+   * Dangerously queries our database while bypassing security.
+   */
+  public dangerousQuery(query: SQLQuery): Promise<QueryResult> {
+    if (this.parent === null) {
+      throw new Error("Cannot use the context after it has been invalidated.");
+    }
+    return this.parent.query(query);
+  }
+
+  /**
+   * Schedules a callback to run after the parent context successfully commits.
+   * This callback will not run if the action owning the transaction throws!
+   *
+   * This callback will not be able to query the database! The callback also is
+   * not able to dangerously bypass security. This only schedules a very vanilla
+   * callback to run at the end of the database transaction.
+   */
+  public afterCommit(callback: () => Promise<void>) {
+    if (this.parent === null) {
+      throw new Error("Cannot use the context after it has been invalidated.");
+    }
+    return this.parent.afterCommit(callback);
+  }
+
+  private invalidate() {
+    this.parent = null;
   }
 }
 

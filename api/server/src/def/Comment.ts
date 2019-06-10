@@ -1,11 +1,13 @@
 import {
   APIError,
   APIErrorCode,
+  AccountID,
   Comment,
   CommentID,
   DateTime,
   PostCommentEvent,
   PostID,
+  generateID,
 } from "@connect/api-client";
 import {Context, ContextSubscription} from "../Context";
 import {PGListen, PGListenChannel} from "../pg/PGListen";
@@ -102,23 +104,43 @@ export async function publishComment(
     throw new APIError(APIErrorCode.BAD_INPUT);
   }
 
+  const {accountID} = ctx;
+  const {id, postID, content} = input;
+
   // Actually insert the comment...
   const {
     rows: [row],
   } = await ctx.query(sql`
     INSERT INTO comment (id, post_id, author_id, content)
-         VALUES (${input.id},
-                 ${input.postID},
-                 ${ctx.accountID},
-                 ${input.content.trim()})
+         VALUES (${id}, ${postID}, ${accountID}, ${content.trim()})
       RETURNING published_at
   `);
+
+  // Normally we aren’t allowed to see the followers of a post. That would be
+  // a privacy violation. But we need to send push notifications and inbox
+  // messages so temporarily escalate our privileges...
+  await ctx.withDangerousSecurityBypass(async ctx => {
+    // Get all the followers for this post excluding ourselves...
+    const followers: ReadonlyArray<AccountID> = (await ctx.dangerousQuery(sql`
+      SELECT account_id
+        FROM post_follower
+       WHERE post_id = ${postID} AND account_id <> ${accountID}
+    `)).rows.map(row => row.account_id);
+
+    // Insert a new message into the inbox of all our post followers.
+    await ctx.dangerousQuery(sql`
+      INSERT INTO inbox (id, recipient_id, kind, comment_id)
+           SELECT *, 'comment', ${id}
+             FROM unnest(${followers.map(() => generateID())}::char(22)[],
+                         ${followers}::char(22)[])
+    `);
+  });
 
   // Follow the post we just commented on. If we are already following the post
   // then don’t bother doing anything else.
   await ctx.query(sql`
     INSERT INTO post_follower (post_id, account_id)
-         VALUES (${input.postID}, ${ctx.accountID})
+         VALUES (${postID}, ${accountID})
     ON CONFLICT DO NOTHING
   `);
 
@@ -131,10 +153,7 @@ export async function publishComment(
   // We manually notify in our API method instead of using a Postgres trigger
   // in case we want to swap out Postgres for dedicated pub/sub infrastructure.
   ctx.afterCommit(async () => {
-    await PGListen.notify(CommentInsertChannel, {
-      postID: input.postID,
-      commentID: input.id,
-    });
+    await PGListen.notify(CommentInsertChannel, {postID, commentID: id});
   });
 
   return {

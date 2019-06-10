@@ -124,7 +124,7 @@ export class ContextTest implements ContextQueryable {
       throw error;
     } finally {
       try {
-        await this.client.query("RESET ROLE");
+        await this.client.query("SET LOCAL ROLE connect_api_test");
       } catch (error) {
         // Ignore errors here...
       }
@@ -184,7 +184,7 @@ export class ContextTest implements ContextQueryable {
       throw error;
     } finally {
       try {
-        await this.client.query("RESET ROLE");
+        await this.client.query("SET LOCAL ROLE connect_api_test");
         await this.client.query("RESET connect.account_id");
       } catch (error) {
         // Ignore errors here...
@@ -236,6 +236,24 @@ export class ContextTest implements ContextQueryable {
     debug(typeof queryConfig === "string" ? queryConfig : queryConfig.text);
 
     return this.client.query(queryConfig);
+  }
+
+  /**
+   * Returns the rows selected by the provided query directly. A convenience
+   * function for `this.query()` which makes it easier to write tests.
+   */
+  async queryRows(query: SQLQuery): Promise<Array<any>> {
+    const {rows} = await this.query(query);
+    return rows;
+  }
+
+  /**
+   * Returns the number of rows selected by the provided query. A convenience
+   * function for `this.query()` which makes it easier to write tests.
+   */
+  async queryRowCount(query: SQLQuery): Promise<number> {
+    const {rowCount} = await this.query(query);
+    return rowCount;
   }
 
   /**

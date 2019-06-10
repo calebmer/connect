@@ -45,6 +45,7 @@ async function drop() {
       DROP SCHEMA IF EXISTS connect CASCADE;
       DROP ROLE IF EXISTS connect_api;
       DROP ROLE IF EXISTS connect_api_auth;
+      DROP ROLE IF EXISTS connect_api_dangerous_security_bypass;
       DROP TABLE IF EXISTS connect_migration;
       COMMIT;
     `);
