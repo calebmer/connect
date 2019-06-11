@@ -1544,7 +1544,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = ink.connect.ios;
 				PRODUCT_NAME = Connect;
-				PROVISIONING_PROFILE_SPECIFIER = "Connect iOS Development Caleb";
+				PROVISIONING_PROFILE_SPECIFIER = "Connect iOS Development Dominic";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -1572,7 +1572,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = ink.connect.ios;
 				PRODUCT_NAME = Connect;
-				PROVISIONING_PROFILE_SPECIFIER = "Connect iOS Development Caleb";
+				PROVISIONING_PROFILE_SPECIFIER = "Connect iOS Development Dominic";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;

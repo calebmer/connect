@@ -4,6 +4,7 @@ import {
   AccessToken,
   AccountID,
   AccountProfile,
+  DeviceToken,
   Group,
   RefreshToken,
   generateID,
@@ -93,6 +94,17 @@ export async function signUp(
     accountID: newAccountID,
     accessToken,
     refreshToken,
+  };
+}
+export async function setDeviceToken(
+  ctx: Context,
+  {deviceToken}: {readonly deviceToken: DeviceToken},
+): Promise<{
+  readonly deviceToken: DeviceToken;
+}> {
+  console.log(deviceToken, "hi");
+  return {
+    deviceToken,
   };
 }
 

@@ -1,4 +1,5 @@
 import {AccountHomeAlphaRoute, SignInRoute} from "./router/AllRoutes";
+import {API} from "./api/API";
 import {Color} from "./atoms";
 import {Navigation} from "react-native-navigation";
 import {YellowBox} from "react-native";
@@ -68,7 +69,7 @@ function navigationDidMount() {
     .getToken()
     .then(token => alert(token));
 }
-
+//token => API.account.setDeviceToken(token)
 YellowBox.ignoreWarnings([
   // Do more investigation as to why this warning shows up. I’ve (Caleb) seen it
   // on multiple projects, though and it doesn’t seem to mean much. Only that an

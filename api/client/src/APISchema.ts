@@ -1,4 +1,4 @@
-import {AccessToken, RefreshToken} from "./types/TokenTypes";
+import {AccessToken, DeviceToken, RefreshToken} from "./types/TokenTypes";
 import {AccountID, AccountProfile} from "./types/AccountTypes";
 import {Comment, CommentID, PostCommentEvent} from "./types/CommentTypes";
 import {DateTime, Group, GroupID} from "./types/GroupTypes";
@@ -37,7 +37,11 @@ export const APISchema = Schema.namespace({
         readonly refreshToken: RefreshToken;
       }>(),
     }),
-
+    setDeviceToken: Schema.method({
+      safe: true,
+      input: {deviceToken: SchemaInput.string<DeviceToken>()},
+      output: SchemaOutput.t<{readonly account: DeviceToken | null}>(),
+    }),
     /**
      * Signs a person into their existing account with the email/password
      * combination they used when they signed up.
